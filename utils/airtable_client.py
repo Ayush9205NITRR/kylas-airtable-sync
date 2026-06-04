@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 from pyairtable import Api
 
 
@@ -9,6 +9,8 @@ class AirtableClient:
         base = base_id or os.environ["AIRTABLE_BASE_ID"]
         self.table = api.table(base, table_name)
         self._cache: Dict[str, dict] = {}
+        self._creates: List[Tuple[str, dict]] = []   # (kylas_id, fields)
+        self._updates: List[Tuple[str, str, dict]] = []  # (kylas_id, record_id, fields)
 
     def build_cache(self, key_field: str) -> int:
         records = self.table.all()
@@ -22,17 +24,31 @@ class AirtableClient:
     def upsert(
         self, key_field: str, kylas_id: str, fields: dict, updated_at: str
     ) -> Tuple[str, str]:
-        """Returns (action, record_id). action = 'created' | 'updated' | 'skipped'."""
+        """Buffer the operation. Call flush() after the loop."""
         existing = self._cache.get(str(kylas_id))
 
         if existing is None:
-            record = self.table.create(fields)
-            self._cache[str(kylas_id)] = record
-            return "created", record["id"]
+            self._creates.append((str(kylas_id), fields))
+            return "created", ""
 
         if existing["fields"].get("Updated At", "") == updated_at:
             return "skipped", existing["id"]
 
-        record = self.table.update(existing["id"], fields)
-        self._cache[str(kylas_id)] = record
-        return "updated", record["id"]
+        self._updates.append((str(kylas_id), existing["id"], fields))
+        return "updated", existing["id"]
+
+    def flush(self) -> None:
+        """Execute all buffered creates and updates in batches of 10."""
+        if self._creates:
+            created_records = self.table.batch_create(
+                [fields for _, fields in self._creates]
+            )
+            for (kylas_id, _), record in zip(self._creates, created_records):
+                self._cache[kylas_id] = record
+            self._creates.clear()
+
+        if self._updates:
+            self.table.batch_update(
+                [{"id": rid, "fields": fields} for _, rid, fields in self._updates]
+            )
+            self._updates.clear()

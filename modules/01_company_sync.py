@@ -72,7 +72,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
 
         companies = kylas.get_companies()
         if test_mode:
-            companies = companies[:1]
+            companies = companies[:5]
         print(f"[Companies] Fetched {len(companies)} from Kylas")
 
         for co in companies:
@@ -88,10 +88,12 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
                 elif action == "updated":
                     updated += 1
                     per_user.setdefault(user, {"created": 0, "updated": 0})["updated"] += 1
-                print(f"  [{action.upper():8}] {co.get('name', co['id'])} ({user})")
             except Exception as e:
                 failed += 1
                 print(f"  [FAILED  ] Company {co.get('id')}: {e}")
+
+        print(f"[Companies] Flushing {created} creates + {updated} updates to Airtable...")
+        airtable.flush()
 
         logger.finish(log_id, created, updated, failed)
         print(f"[Companies] Done -> created={created} updated={updated} failed={failed}")

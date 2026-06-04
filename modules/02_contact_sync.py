@@ -72,7 +72,7 @@ def run(test_mode: bool = False, test_id: int = None, logger: SyncLogger = None)
         else:
             contacts = kylas.get_contacts()
             if test_mode:
-                contacts = contacts[:1]
+                contacts = contacts[:5]
         print(f"[Contacts] Fetched {len(contacts)} from Kylas")
 
         for ct in contacts:
@@ -95,11 +95,12 @@ def run(test_mode: bool = False, test_id: int = None, logger: SyncLogger = None)
                 elif action == "updated":
                     updated += 1
                     per_user.setdefault(user, {"created": 0, "updated": 0})["updated"] += 1
-                name = f"{ct.get('firstName', '')} {ct.get('lastName', '')}".strip()
-                print(f"  [{action.upper():8}] {name or ct['id']} ({user})")
             except Exception as e:
                 failed += 1
                 print(f"  [FAILED  ] Contact {ct.get('id')}: {e}")
+
+        print(f"[Contacts] Flushing {created} creates + {updated} updates to Airtable...")
+        airtable.flush()
 
         logger.finish(log_id, created, updated, failed)
         print(f"[Contacts] Done -> created={created} updated={updated} pre-cutoff={pre_cutoff} failed={failed}")

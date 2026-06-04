@@ -89,7 +89,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
 
         deals = kylas.get_deals()
         if test_mode:
-            deals = deals[:1]
+            deals = deals[:5]
         print(f"[Deals] Fetched {len(deals)} from Kylas")
 
         for deal in deals:
@@ -105,10 +105,12 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
                 elif action == "updated":
                     updated += 1
                     per_user.setdefault(user, {"created": 0, "updated": 0})["updated"] += 1
-                print(f"  [{action.upper():8}] {deal.get('name', deal['id'])} ({user})")
             except Exception as e:
                 failed += 1
                 print(f"  [FAILED  ] Deal {deal.get('id')}: {e}")
+
+        print(f"[Deals] Flushing {created} creates + {updated} updates to Airtable...")
+        airtable.flush()
 
         logger.finish(log_id, created, updated, failed)
         print(f"[Deals] Done -> created={created} updated={updated} failed={failed}")
