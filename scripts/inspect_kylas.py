@@ -1,6 +1,7 @@
 """
-Fetch 2 raw records from each Kylas entity (no field filter) and
-print every key/value so we can build a complete field map.
+Fetch 1 raw record per entity (no field filter) and print all fields.
+Custom field values are printed in full (not truncated).
+Also fetches contacts with explicit ownedBy to test owner resolution.
 """
 import json
 import os
@@ -17,11 +18,11 @@ HEADERS = {
 }
 
 
-def fetch_raw(entity: str, n: int = 2) -> list:
+def search(entity: str, fields=None, n: int = 1) -> list:
     r = requests.post(
         f"{BASE}/search/{entity}",
         params={"page": 0, "size": n, "sort": "updatedAt,desc"},
-        json={"fields": None, "jsonRule": None},
+        json={"fields": fields, "jsonRule": None},
         headers=HEADERS,
         timeout=60,
     )
@@ -29,21 +30,42 @@ def fetch_raw(entity: str, n: int = 2) -> list:
     return r.json().get("content", [])
 
 
-def show(label: str, entity: str):
+def show(label: str, entity: str, fields=None):
     print(f"\n{'='*60}")
-    print(f"ENTITY: {label}")
+    print(f"ENTITY: {label}  (fields={fields!r})")
     print("=" * 60)
-    records = fetch_raw(entity, n=2)
+    records = search(entity, fields=fields, n=1)
     if not records:
-        print("  (no records found)")
+        print("  (no records)")
         return
     rec = records[0]
     for key, value in rec.items():
-        print(f"  {key:<35} {json.dumps(value, default=str)[:120]}")
+        if key == "customFieldValues":
+            print(f"\n  --- customFieldValues ---")
+            if isinstance(value, dict):
+                for cf_key, cf_val in value.items():
+                    print(f"    {cf_key:<40} {json.dumps(cf_val, default=str)}")
+            else:
+                print(f"    {json.dumps(value, default=str)}")
+            print(f"  --- end customFieldValues ---\n")
+        else:
+            s = json.dumps(value, default=str)
+            print(f"  {key:<35} {s[:200]}")
 
 
-show("Contact", "contact")
+# All fields unfiltered
+show("Contact (all fields)", "contact", fields=None)
 time.sleep(0.5)
-show("Company", "company")
+
+# Contacts with explicit ownedBy to see if it returns as object
+show("Contact (explicit ownedBy)", "contact",
+     fields=["id", "name", "firstName", "lastName", "ownedBy", "emails",
+             "phoneNumbers", "designation", "company", "linkedin",
+             "city", "state", "country", "source", "customFieldValues",
+             "createdAt", "updatedAt"])
 time.sleep(0.5)
-show("Deal", "deal")
+
+show("Company (all fields)", "company", fields=None)
+time.sleep(0.5)
+
+show("Deal (all fields)", "deal", fields=None)
