@@ -13,6 +13,31 @@ from utils.logger import SyncLogger
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 _FM = None
 
+_PIPELINE_STAGE = {
+    2862826: "Yet to Be Mined",
+    2862827: "CNC (Could Not Connect) - 1",
+    2862828: "MQL (Marketing Qualified Lead)",
+    2862829: "Activation",
+    2862831: "Not Interested",
+    2864173: "Yet to Be Mined",
+    2864175: "Invalid Contact",
+    2867816: "CNC (Could Not Connect) - 2",
+    2867817: "MQL (Marketing Qualified Lead)",
+    2870484: "SQL (Sales Qualified Lead)",
+    2870485: "Not a Decision Maker (NDM)",
+    2873316: "Follow-up (1)",
+    2873317: "Follow-up (2)",
+    2873318: "Follow-up (3)",
+    2873321: "POC - Organisation - Changed",
+    2873487: "Followup - CNC",
+    2909379: "Discovery Call Booked",
+    2909380: "Reschedule Pending",
+    2909381: "Closing Loops - Low Value",
+    2909382: "Discovery Call No-Show",
+    2909383: "Offsite Delayed",
+    2910918: "Discovery Call Done - Awaiting Client Inputs",
+}
+
 
 def _fm():
     global _FM
@@ -49,7 +74,7 @@ def _map(raw: dict, user_map: dict = None) -> dict:
     if isinstance(psd, dict):
         pipeline_stage = psd.get("name", "")
     elif psd is not None:
-        pipeline_stage = str(psd)
+        pipeline_stage = _PIPELINE_STAGE.get(int(psd), str(psd))
     else:
         pipeline_stage = ""
 
