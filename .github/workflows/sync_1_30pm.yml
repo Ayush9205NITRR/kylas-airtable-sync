@@ -1,0 +1,31 @@
+name: Sync - 1:30 PM IST
+
+on:
+  schedule:
+    - cron: '0 8 * * 1-6'   # 08:00 UTC = 1:30 PM IST, Mon-Sat
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run sync
+        run: python run_sync.py --slot=first_half
+        env:
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+          RESEND_API_KEY:           ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL:        ${{ secrets.RESEND_FROM_EMAIL }}
+          ALERT_EMAIL:              ${{ secrets.ALERT_EMAIL }}

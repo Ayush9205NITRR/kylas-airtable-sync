@@ -1,0 +1,40 @@
+{
+  "company": {
+    "id":          "Kylas Company Id",
+    "name":        "Company Name",
+    "industry":    "Industry",
+    "website":     "Website",
+    "phone":       "Phone",
+    "email":       "Email",
+    "city":        "City",
+    "state":       "State",
+    "country":     "Country",
+    "description": "Description",
+    "createdAt":   "Created At",
+    "updatedAt":   "Updated At"
+  },
+  "contact": {
+    "id":          "Kylas Contact Id",
+    "firstName":   "First Name",
+    "lastName":    "Last Name",
+    "email":       "Email",
+    "phone":       "Phone",
+    "companyId":   "Company Id",
+    "designation": "Designation",
+    "createdAt":   "Created At",
+    "updatedAt":   "Updated At"
+  },
+  "deal": {
+    "id":                  "Kylas Deal Id",
+    "name":               "Deal Name",
+    "dealValue":          "Deal Value",
+    "currency":           "Currency",
+    "pipeline":           "Pipeline",
+    "pipelineStage":      "Stage",
+    "contactId":          "Contact Id",
+    "companyId":          "Company Id",
+    "expectedClosureDate": "Expected Close Date",
+    "createdAt":          "Created At",
+    "updatedAt":          "Updated At"
+  }
+}

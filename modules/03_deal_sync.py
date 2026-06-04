@@ -1,0 +1,117 @@
+import argparse
+import json
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from utils.kylas_client import KylasClient
+from utils.airtable_client import AirtableClient
+from utils.logger import SyncLogger
+
+_FM = None
+
+
+def _fm():
+    global _FM
+    if _FM is None:
+        p = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "field_map.json")
+        with open(p) as f:
+            _FM = json.load(f)["deal"]
+    return _FM
+
+
+def _clean(d):
+    return {k: v for k, v in d.items() if v is not None and (v != "" if isinstance(v, str) else True)}
+
+
+def _map(raw: dict) -> dict:
+    fm = _fm()
+
+    deal_val = raw.get("dealValue") or {}
+    value    = deal_val.get("value", 0) if isinstance(deal_val, dict) else 0
+    currency = deal_val.get("currency", "") if isinstance(deal_val, dict) else ""
+
+    pipeline = raw.get("pipeline") or {}
+    stage    = raw.get("pipelineStage") or {}
+
+    contact = raw.get("contact") or {}
+    contact_id = str(contact.get("id", "")) if isinstance(contact, dict) else ""
+    if not contact_id:
+        for key in ("contacts", "associatedContacts"):
+            lst = raw.get(key) or []
+            if lst:
+                contact_id = str(lst[0].get("id", ""))
+                break
+
+    company = raw.get("company") or {}
+    company_id = str(company.get("id", "")) if isinstance(company, dict) else ""
+    if not company_id:
+        for key in ("companies", "associatedCompanies"):
+            lst = raw.get(key) or []
+            if lst:
+                company_id = str(lst[0].get("id", ""))
+                break
+
+    return _clean({
+        fm["id"]:                   str(raw["id"]),
+        fm["name"]:                 raw.get("name", ""),
+        fm["dealValue"]:            value,
+        fm["currency"]:             currency,
+        fm["pipeline"]:             pipeline.get("name", "") if isinstance(pipeline, dict) else str(pipeline),
+        fm["pipelineStage"]:        stage.get("name", "")    if isinstance(stage, dict)    else str(stage),
+        fm["contactId"]:            contact_id,
+        fm["companyId"]:            company_id,
+        fm["expectedClosureDate"]:  raw.get("expectedClosureDate", ""),
+        fm["createdAt"]:            raw.get("createdAt", ""),
+        fm["updatedAt"]:            raw.get("updatedAt", ""),
+    })
+
+
+def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
+    kylas = KylasClient()
+    airtable = AirtableClient("Deals")
+    if logger is None:
+        logger = SyncLogger()
+
+    log_id = logger.start("Deals")
+    created = updated = failed = 0
+
+    try:
+        cached = airtable.build_cache("Kylas Deal Id")
+        print(f"[Deals] Cache loaded: {cached} existing")
+
+        deals = kylas.get_deals()
+        if test_mode:
+            deals = deals[:1]
+        print(f"[Deals] Fetched {len(deals)} from Kylas")
+
+        for deal in deals:
+            try:
+                action, _ = airtable.upsert(
+                    "Kylas Deal Id", str(deal["id"]),
+                    _map(deal), deal.get("updatedAt", "")
+                )
+                if action == "created":   created += 1
+                elif action == "updated": updated += 1
+                print(f"  [{action.upper():8}] {deal.get('name', deal['id'])}")
+            except Exception as e:
+                failed += 1
+                print(f"  [FAILED  ] Deal {deal.get('id')}: {e}")
+
+        logger.finish(log_id, created, updated, failed)
+        print(f"[Deals] Done -> created={created} updated={updated} failed={failed}")
+
+    except Exception as e:
+        logger.fail(log_id, str(e))
+        raise
+
+    return {"created": created, "updated": updated, "failed": failed}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test", action="store_true")
+    args = parser.parse_args()
+    from dotenv import load_dotenv; load_dotenv()
+    run(test_mode=args.test)
