@@ -26,7 +26,7 @@ def _clean(d):
 
 
 def _assigned_name(raw: dict) -> str:
-    a = raw.get("assignedTo") or {}
+    a = raw.get("ownedBy") or raw.get("assignedTo") or {}
     if isinstance(a, dict):
         return a.get("name") or a.get("firstName") or "Unassigned"
     return str(a) if a else "Unassigned"
@@ -35,30 +35,27 @@ def _assigned_name(raw: dict) -> str:
 def _map(raw: dict) -> dict:
     fm = _fm()
 
-    deal_val = raw.get("dealValue") or {}
+    deal_val = raw.get("estimatedValue") or raw.get("dealValue") or {}
     value    = deal_val.get("value", 0) if isinstance(deal_val, dict) else 0
     currency = deal_val.get("currency", "") if isinstance(deal_val, dict) else ""
 
     pipeline = raw.get("pipeline") or {}
-    stage    = raw.get("pipelineStage") or {}
+    stage    = raw.get("pipelineStage") or (pipeline.get("stage") if isinstance(pipeline, dict) else None) or {}
 
-    contact = raw.get("contact") or {}
-    contact_id = str(contact.get("id", "")) if isinstance(contact, dict) else ""
-    if not contact_id:
-        for key in ("contacts", "associatedContacts"):
-            lst = raw.get(key) or []
-            if lst:
-                contact_id = str(lst[0].get("id", ""))
-                break
+    contact_id = ""
+    for key in ("contact", "associatedContacts", "contacts"):
+        val = raw.get(key)
+        if isinstance(val, dict) and val.get("id"):
+            contact_id = str(val["id"])
+            break
+        if isinstance(val, list) and val:
+            contact_id = str(val[0].get("id", ""))
+            break
 
     company = raw.get("company") or {}
     company_id = str(company.get("id", "")) if isinstance(company, dict) else ""
-    if not company_id:
-        for key in ("companies", "associatedCompanies"):
-            lst = raw.get(key) or []
-            if lst:
-                company_id = str(lst[0].get("id", ""))
-                break
+
+    closure_date = raw.get("estimatedClosureOn") or raw.get("expectedClosureDate", "")
 
     return _clean({
         fm["id"]:                  str(raw["id"]),
@@ -69,7 +66,7 @@ def _map(raw: dict) -> dict:
         fm["pipelineStage"]:       stage.get("name", "")    if isinstance(stage, dict)    else str(stage),
         fm["contactId"]:           contact_id,
         fm["companyId"]:           company_id,
-        fm["expectedClosureDate"]: raw.get("expectedClosureDate", ""),
+        fm["expectedClosureDate"]: closure_date,
         fm["assignedTo"]:          _assigned_name(raw),
         fm["createdAt"]:           raw.get("createdAt", ""),
         fm["updatedAt"]:           raw.get("updatedAt", ""),

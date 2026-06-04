@@ -28,7 +28,7 @@ def _clean(d):
 
 
 def _assigned_name(raw: dict) -> str:
-    a = raw.get("assignedTo") or {}
+    a = raw.get("ownedBy") or raw.get("assignedTo") or {}
     if isinstance(a, dict):
         return a.get("name") or a.get("firstName") or "Unassigned"
     return str(a) if a else "Unassigned"

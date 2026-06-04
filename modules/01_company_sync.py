@@ -26,7 +26,7 @@ def _clean(d):
 
 
 def _assigned_name(raw: dict) -> str:
-    a = raw.get("assignedTo") or {}
+    a = raw.get("ownedBy") or raw.get("assignedTo") or {}
     if isinstance(a, dict):
         return a.get("name") or a.get("firstName") or "Unassigned"
     return str(a) if a else "Unassigned"
@@ -45,9 +45,9 @@ def _map(raw: dict) -> dict:
         fm["website"]:     raw.get("website", ""),
         fm["phone"]:       phones[0].get("value", "") if phones else "",
         fm["email"]:       emails[0].get("value", "") if emails else "",
-        fm["city"]:        addr.get("city",    raw.get("city", "")),
-        fm["state"]:       addr.get("state",   raw.get("state", "")),
-        fm["country"]:     addr.get("country", raw.get("country", "")),
+        fm["city"]:        addr.get("city",    raw.get("city", "")) if isinstance(addr, dict) else raw.get("city", ""),
+        fm["state"]:       addr.get("state",   raw.get("state", "")) if isinstance(addr, dict) else raw.get("state", ""),
+        fm["country"]:     addr.get("country", raw.get("country", "")) if isinstance(addr, dict) else raw.get("country", ""),
         fm["description"]: raw.get("description", ""),
         fm["assignedTo"]:  _assigned_name(raw),
         fm["createdAt"]:   raw.get("createdAt", ""),

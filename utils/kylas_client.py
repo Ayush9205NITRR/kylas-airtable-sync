@@ -6,6 +6,20 @@ from typing import List
 KYLAS_BASE = "https://api.kylas.io/v1"
 PAGE_SIZE = 200
 
+_COMPANY_FIELDS = [
+    "id", "name", "industry", "website", "phoneNumbers", "emails",
+    "city", "state", "country", "description", "ownedBy", "createdAt", "updatedAt",
+]
+_CONTACT_FIELDS = [
+    "id", "firstName", "lastName", "emails", "phoneNumbers",
+    "company", "designation", "ownedBy", "createdAt", "updatedAt",
+]
+_DEAL_FIELDS = [
+    "id", "name", "estimatedValue", "pipeline", "pipelineStage",
+    "associatedContacts", "company", "estimatedClosureOn",
+    "ownedBy", "createdAt", "updatedAt",
+]
+
 
 class KylasClient:
     def __init__(self):
@@ -22,29 +36,33 @@ class KylasClient:
         r.raise_for_status()
         return r.json()
 
-    def _fetch_all(self, entity: str) -> List[dict]:
+    def _search_all(self, entity: str, fields: list) -> List[dict]:
         records, page = [], 0
         while True:
-            resp = self._get(entity, params={"page": page, "size": PAGE_SIZE})
-            data = resp.get("data", resp)
-            if isinstance(data, list):
-                records.extend(data)
-                break
-            content = data.get("content", [])
+            time.sleep(self._delay)
+            r = self.session.post(
+                f"{KYLAS_BASE}/search/{entity}",
+                params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
+                json={"fields": fields, "jsonRule": None},
+                timeout=60,
+            )
+            r.raise_for_status()
+            resp = r.json()
+            content = resp.get("content", [])
             records.extend(content)
-            if page >= data.get("totalPages", 1) - 1 or not content:
+            if page >= resp.get("totalPages", 1) - 1 or not content:
                 break
             page += 1
         return records
 
     def get_companies(self) -> List[dict]:
-        return self._fetch_all("companies")
+        return self._search_all("company", _COMPANY_FIELDS)
 
     def get_contacts(self) -> List[dict]:
-        return self._fetch_all("contacts")
+        return self._search_all("contact", _CONTACT_FIELDS)
 
     def get_deals(self) -> List[dict]:
-        return self._fetch_all("deals")
+        return self._search_all("deal", _DEAL_FIELDS)
 
     def get_company(self, cid: int) -> dict:
         resp = self._get(f"companies/{cid}")
