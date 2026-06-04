@@ -1,7 +1,11 @@
 """
-One-shot script: creates missing columns in Company List + Contacts tables,
-and creates the Deals table if it doesn't exist.
-Run this once before the first full sync.
+One-shot schema setup. Run this before the first full sync.
+
+Creates:
+  - New columns in Company List (Company Database base)
+  - Companies table in CRM Sales Pipeline base
+  - New columns in Contacts (CRM base) + Company linked record field
+  - Deals table in CRM base + Company linked record field
 """
 import os
 import time
@@ -10,21 +14,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PAT          = os.environ["AIRTABLE_PAT"]
-COMPANY_BASE = os.environ.get("AIRTABLE_COMPANY_BASE_ID") or os.environ["AIRTABLE_BASE_ID"]
-CONTACTS_BASE = os.environ["AIRTABLE_BASE_ID"]
-HEADERS      = {"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"}
-META         = "https://api.airtable.com/v0/meta/bases"
+PAT           = os.environ["AIRTABLE_PAT"]
+COMPANY_BASE  = os.environ.get("AIRTABLE_COMPANY_BASE_ID") or os.environ["AIRTABLE_BASE_ID"]
+CRM_BASE      = os.environ["AIRTABLE_BASE_ID"]
+HEADERS       = {"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"}
+META          = "https://api.airtable.com/v0/meta/bases"
 
-T = "singleLineText"
+T  = "singleLineText"
 ML = "multilineText"
-N2 = {"type": "number", "options": {"precision": 2}}
 
 
 def get_tables(base_id):
     r = requests.get(f"{META}/{base_id}/tables", headers=HEADERS, timeout=30)
     r.raise_for_status()
     return {t["name"]: t for t in r.json().get("tables", [])}
+
+
+def field_names(table):
+    return {f["name"] for f in table.get("fields", [])}
 
 
 def add_field(base_id, table_id, field):
@@ -39,11 +46,11 @@ def add_field(base_id, table_id, field):
     elif r.status_code == 422:
         print(f"    ~ {name} (already exists)")
     else:
-        print(f"    ! {name} FAILED {r.status_code}: {r.text[:120]}")
+        print(f"    ! {name} FAILED {r.status_code}: {r.text[:150]}")
 
 
 def add_missing(base_id, table, new_fields):
-    existing = {f["name"] for f in table.get("fields", [])}
+    existing = field_names(table)
     for f in new_fields:
         if f["name"] not in existing:
             add_field(base_id, table["id"], f)
@@ -52,23 +59,40 @@ def add_missing(base_id, table, new_fields):
 
 
 def create_table(base_id, table_def):
-    r = requests.post(f"{META}/{base_id}/tables", json=table_def, headers=HEADERS, timeout=30)
+    r = requests.post(f"{META}/{base_id}/tables", json=table_def,
+                      headers=HEADERS, timeout=30)
     if r.status_code in (200, 201):
-        print(f"  + Created table: {table_def['name']}")
-        return r.json()
+        result = r.json()
+        print(f"    + Created: {table_def['name']}")
+        return result
     else:
-        print(f"  ! Failed {table_def['name']}: {r.status_code} {r.text[:200]}")
+        print(f"    ! Failed {table_def['name']}: {r.status_code} {r.text[:200]}")
         return None
 
 
-# ── Company List ────────────────────────────────────────────────────────────
-COMPANY_NEW = [
+# ── Company List (master database) ───────────────────────────────────────────
+COMPANY_LIST_NEW = [
     {"name": "Batch",             "type": T},
     {"name": "Pipeline Stage BD", "type": T},
     {"name": "Source of Data",    "type": T},
 ]
 
-# ── Contacts ─────────────────────────────────────────────────────────────────
+# ── Companies table (CRM base — for linking) ─────────────────────────────────
+COMPANIES_TABLE = {
+    "name": "Companies",
+    "fields": [
+        {"name": "Company Name",     "type": T},
+        {"name": "Kylas Company Id", "type": T},
+        {"name": "Industry",         "type": T},
+        {"name": "Owner",            "type": T},
+        {"name": "Pipeline Stage BD","type": T},
+        {"name": "Batch",            "type": T},
+        {"name": "Source of Data",   "type": T},
+        {"name": "Updated At",       "type": T},
+    ],
+}
+
+# ── Contacts: new columns ─────────────────────────────────────────────────────
 CONTACT_NEW = [
     {"name": "Designation",     "type": T},
     {"name": "Kylas Company Id","type": T},
@@ -83,58 +107,88 @@ CONTACT_NEW = [
     {"name": "Updated At",      "type": T},
 ]
 
-# ── Deals table (create fresh) ───────────────────────────────────────────────
-DEALS_TABLE = {
-    "name": "Deals",
-    "fields": [
-        {"name": "Deal Name",             "type": T},
-        {"name": "Kylas Deal Id",         "type": T},
-        {"name": "Pipeline Stage",        "type": T},
-        {"name": "Pipeline",              "type": T},
-        {"name": "Contact Name",          "type": T},
-        {"name": "Kylas Contact Id",      "type": T},
-        {"name": "Company Name",          "type": T},
-        {"name": "Kylas Company Id",      "type": T},
-        N2 | {"name": "Deal Value"},
-        N2 | {"name": "Actual Value"},
-        {"name": "Owner",                 "type": T},
-        {"name": "Source",                "type": T},
-        {"name": "Forecast Type",         "type": T},
-        {"name": "Expected Closure Date", "type": T},
-        {"name": "Execution Date",        "type": T},
-        {"name": "Location",              "type": T},
-        {"name": "Pax Count",             "type": T},
-        {"name": "Created At",            "type": T},
-        {"name": "Updated At",            "type": T},
-    ],
-}
+# ── Deals table ───────────────────────────────────────────────────────────────
+DEALS_TABLE_BASE_FIELDS = [
+    {"name": "Deal Name",             "type": T},
+    {"name": "Kylas Deal Id",         "type": T},
+    {"name": "Pipeline Stage",        "type": T},
+    {"name": "Pipeline",              "type": T},
+    {"name": "Contact Name",          "type": T},
+    {"name": "Kylas Contact Id",      "type": T},
+    {"name": "Company Name",          "type": T},
+    {"name": "Kylas Company Id",      "type": T},
+    {"name": "Deal Value",            "type": "number", "options": {"precision": 2}},
+    {"name": "Actual Value",          "type": "number", "options": {"precision": 2}},
+    {"name": "Owner",                 "type": T},
+    {"name": "Source",                "type": T},
+    {"name": "Forecast Type",         "type": T},
+    {"name": "Expected Closure Date", "type": T},
+    {"name": "Execution Date",        "type": T},
+    {"name": "Location",              "type": T},
+    {"name": "Pax Count",             "type": T},
+    {"name": "Created At",            "type": T},
+    {"name": "Updated At",            "type": T},
+]
 
 
 def main():
     print("=== Airtable Schema Setup ===\n")
 
-    # Company List
-    print("1. Company List base")
+    # ── 1. Company Database base ──────────────────────────────────────────────
+    print("1. Company Database base (Company List)")
     co_tables = get_tables(COMPANY_BASE)
     if "Company List" in co_tables:
-        add_missing(COMPANY_BASE, co_tables["Company List"], COMPANY_NEW)
+        add_missing(COMPANY_BASE, co_tables["Company List"], COMPANY_LIST_NEW)
     else:
-        print("   ! Company List table not found")
+        print("    ! Company List table not found")
 
-    # Contacts
-    print("\n2. Contacts table")
-    ct_tables = get_tables(CONTACTS_BASE)
-    if "Contacts" in ct_tables:
-        add_missing(CONTACTS_BASE, ct_tables["Contacts"], CONTACT_NEW)
-    else:
-        print("   ! Contacts table not found")
+    # ── 2. CRM Sales Pipeline base ────────────────────────────────────────────
+    print("\n2. CRM Sales Pipeline base")
+    crm_tables = get_tables(CRM_BASE)
 
-    # Deals
-    print("\n3. Deals table")
-    if "Deals" in ct_tables:
-        print("   ~ Already exists — skipping")
+    # 2a. Companies table
+    print("\n  [Companies]")
+    if "Companies" in crm_tables:
+        companies_id = crm_tables["Companies"]["id"]
+        print("    ~ Already exists")
+        add_missing(CRM_BASE, crm_tables["Companies"],
+                    [f for f in COMPANIES_TABLE["fields"] if f["name"] != "Company Name"])
     else:
-        create_table(CONTACTS_BASE, DEALS_TABLE)
+        result = create_table(CRM_BASE, COMPANIES_TABLE)
+        companies_id = result.get("id") if result else None
+
+    # 2b. Contacts
+    print("\n  [Contacts]")
+    if "Contacts" in crm_tables:
+        add_missing(CRM_BASE, crm_tables["Contacts"], CONTACT_NEW)
+        if companies_id and "Company" not in field_names(crm_tables["Contacts"]):
+            add_field(CRM_BASE, crm_tables["Contacts"]["id"], {
+                "name": "Company",
+                "type": "multipleRecordLinks",
+                "options": {"linkedTableId": companies_id},
+            })
+    else:
+        print("    ! Contacts table not found")
+
+    # 2c. Deals
+    print("\n  [Deals]")
+    if "Deals" in crm_tables:
+        print("    ~ Already exists")
+        if companies_id and "Company" not in field_names(crm_tables["Deals"]):
+            add_field(CRM_BASE, crm_tables["Deals"]["id"], {
+                "name": "Company",
+                "type": "multipleRecordLinks",
+                "options": {"linkedTableId": companies_id},
+            })
+    else:
+        fields = list(DEALS_TABLE_BASE_FIELDS)
+        if companies_id:
+            fields.append({
+                "name": "Company",
+                "type": "multipleRecordLinks",
+                "options": {"linkedTableId": companies_id},
+            })
+        create_table(CRM_BASE, {"name": "Deals", "fields": fields})
 
     print("\n=== Done ===")
 

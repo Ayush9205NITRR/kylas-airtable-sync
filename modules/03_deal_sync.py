@@ -32,7 +32,7 @@ def _assigned_name(raw: dict) -> str:
     return str(a) if a else "Unassigned"
 
 
-def _map(raw: dict) -> dict:
+def _map(raw: dict, company_id_map: dict = None) -> dict:
     fm = _fm()
 
     deal_val = raw.get("estimatedValue") or {}
@@ -62,7 +62,7 @@ def _map(raw: dict) -> dict:
         exec_date = str(exec_date)[:10]
     location  = str(cf.get("cfLocation") or "")
 
-    return _clean({
+    fields = _clean({
         fm["id"]:                  str(raw["id"]),
         fm["name"]:                raw.get("name", ""),
         fm["dealValue"]:           value,
@@ -84,8 +84,17 @@ def _map(raw: dict) -> dict:
         fm["updatedAt"]:           raw.get("updatedAt", ""),
     })
 
+    # Link to Companies table if Airtable record ID is available
+    if company_id_map and co_id:
+        airtable_id = company_id_map.get(co_id)
+        if airtable_id:
+            fields[fm["companyLink"]] = [airtable_id]
 
-def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
+    return fields
+
+
+def run(test_mode: bool = False, logger: SyncLogger = None,
+        company_id_map: dict = None) -> dict:
     kylas    = KylasClient()
     airtable = AirtableClient("Deals")
     if logger is None:
@@ -115,7 +124,8 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
                 user   = _assigned_name(deal)
                 action, _ = airtable.upsert(
                     "Kylas Deal Id", str(deal["id"]),
-                    _map(deal), deal.get("updatedAt", ""),
+                    _map(deal, company_id_map=company_id_map),
+                    deal.get("updatedAt", ""),
                     updated_at_field=_fm()["updatedAt"],
                 )
                 if action == "created":

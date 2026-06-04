@@ -9,6 +9,16 @@
     "pipelineStageBd": "Pipeline Stage BD",
     "sourceOfData":    "Source of Data"
   },
+  "company_crm": {
+    "id":              "Kylas Company Id",
+    "name":            "Company Name",
+    "industry":        "Industry",
+    "assignedTo":      "Owner",
+    "updatedAt":       "Updated At",
+    "batch":           "Batch",
+    "pipelineStageBd": "Pipeline Stage BD",
+    "sourceOfData":    "Source of Data"
+  },
   "contact": {
     "id":            "Kylas Contact Id",
     "fullName":      "Contact Name",
@@ -17,6 +27,7 @@
     "assignedTo":    "Contact Owner",
     "designation":   "Designation",
     "companyId":     "Kylas Company Id",
+    "companyLink":   "Company",
     "linkedin":      "LinkedIn",
     "city":          "City",
     "state":         "State",
@@ -38,6 +49,7 @@
     "contactId":           "Kylas Contact Id",
     "companyName":         "Company Name",
     "companyId":           "Kylas Company Id",
+    "companyLink":         "Company",
     "assignedTo":          "Owner",
     "source":              "Source",
     "forecastType":        "Forecast Type",

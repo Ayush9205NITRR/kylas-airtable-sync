@@ -50,15 +50,21 @@ def main():
     stats = {}
 
     print("=" * 40 + "\nMODULE 1: Companies\n" + "=" * 40)
-    stats["companies"] = _load("01_company_sync.py").run(test_mode=args.test, logger=logger)
+    company_result    = _load("01_company_sync.py").run(test_mode=args.test, logger=logger)
+    stats["companies"] = company_result
+    company_id_map    = company_result.get("id_map", {})
+    print(f"[run_sync] {len(company_id_map)} company IDs available for linking\n")
 
     print("\n" + "=" * 40 + "\nMODULE 2: Contacts\n" + "=" * 40)
     stats["contacts"] = _load("02_contact_sync.py").run(
-        test_mode=args.test, logger=logger, user_map=user_map
+        test_mode=args.test, logger=logger,
+        user_map=user_map, company_id_map=company_id_map,
     )
 
     print("\n" + "=" * 40 + "\nMODULE 3: Deals\n" + "=" * 40)
-    stats["deals"] = _load("03_deal_sync.py").run(test_mode=args.test, logger=logger)
+    stats["deals"] = _load("03_deal_sync.py").run(
+        test_mode=args.test, logger=logger, company_id_map=company_id_map,
+    )
 
     print("\n" + "=" * 40 + "\nMODULE 4: Email Alert\n" + "=" * 40)
     _load("04_email_alert.py").send_alert(stats, args.slot)

@@ -64,7 +64,7 @@ def _owner_name(raw: dict, user_map: dict = None) -> str:
     return "Unassigned"
 
 
-def _map(raw: dict, user_map: dict = None) -> dict:
+def _map(raw: dict, user_map: dict = None, company_id_map: dict = None) -> dict:
     fm     = _fm()
     emails = raw.get("emails") or []
     phones = raw.get("phoneNumbers") or []
@@ -86,7 +86,7 @@ def _map(raw: dict, user_map: dict = None) -> dict:
         str(co.get("id", "")) if isinstance(co, dict) else ""
     )
 
-    return _clean({
+    fields = _clean({
         fm["id"]:            str(raw["id"]),
         fm["fullName"]:      raw.get("name") or "",
         fm["email"]:         emails[0].get("value", "") if emails else "",
@@ -105,9 +105,18 @@ def _map(raw: dict, user_map: dict = None) -> dict:
         fm["updatedAt"]:     raw.get("updatedAt") or "",
     })
 
+    # Link to Companies table if Airtable record ID is available
+    if company_id_map and company_id:
+        airtable_id = company_id_map.get(company_id)
+        if airtable_id:
+            fields[fm["companyLink"]] = [airtable_id]
+
+    return fields
+
 
 def run(test_mode: bool = False, test_id: int = None,
-        logger: SyncLogger = None, user_map: dict = None) -> dict:
+        logger: SyncLogger = None, user_map: dict = None,
+        company_id_map: dict = None) -> dict:
     kylas    = KylasClient()
     airtable = AirtableClient("Contacts")
     if logger is None:
@@ -141,7 +150,8 @@ def run(test_mode: bool = False, test_id: int = None,
                 owner  = _owner_name(ct, user_map)
                 action, _ = airtable.upsert(
                     "Kylas Contact Id", str(ct["id"]),
-                    _map(ct, user_map=user_map), ct.get("updatedAt", ""),
+                    _map(ct, user_map=user_map, company_id_map=company_id_map),
+                    ct.get("updatedAt", ""),
                     updated_at_field=_fm()["updatedAt"],
                 )
                 if action == "created":
