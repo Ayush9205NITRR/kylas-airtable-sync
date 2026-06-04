@@ -50,13 +50,19 @@ def send_alert(stats: dict, slot: str = "test"):
             f"{'=' * 36}\n"
         )
 
-        resend.Emails.send({
-            "from":    from_email,
-            "to":      [email],
-            "subject": f"Tera Kylas Report — {today} | {slot_label}",
-            "text":    body,
-        })
-        print(f"[Email] Sent to {name} <{email}>")
+        try:
+            resend.Emails.send({
+                "from":    from_email,
+                "to":      [email],
+                "subject": f"Tera Kylas Report — {today} | {slot_label}",
+                "text":    body,
+            })
+            print(f"[Email] Sent to {name} <{email}>")
+        except Exception as e:
+            print(f"[Email] WARNING: could not send to {name} <{email}>: {e}")
+            if "verify a domain" in str(e) or "testing emails" in str(e):
+                print("[Email] Fix: verify enout.in at resend.com/domains, then set")
+                print("[Email]      RESEND_FROM_EMAIL secret to noreply@enout.in")
 
 
 if __name__ == "__main__":

@@ -108,19 +108,21 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
         for co in companies:
             try:
                 user = _assigned_name(co)
-                action = "skipped"
+                list_action = crm_action = "skipped"
                 if list_ok:
-                    action, _ = tbl_list.upsert(
+                    list_action, _ = tbl_list.upsert(
                         "Kylas Company Id", str(co["id"]),
                         _build_fields(co, _fm()), co.get("updatedAt", ""),
                         updated_at_field=_fm()["updatedAt"],
                     )
                 if crm_ok:
-                    tbl_crm.upsert(
+                    crm_action, _ = tbl_crm.upsert(
                         "Kylas Company Id", str(co["id"]),
                         _build_fields(co, _fm_crm()), co.get("updatedAt", ""),
                         updated_at_field=_fm_crm()["updatedAt"],
                     )
+                # Use Company List action as primary; fall back to CRM action
+                action = list_action if list_ok else crm_action
                 if action == "created":
                     created += 1
                     per_user.setdefault(user, {"created": 0, "updated": 0})["created"] += 1
