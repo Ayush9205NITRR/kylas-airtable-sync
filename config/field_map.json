@@ -10,6 +10,7 @@
     "state":       "State",
     "country":     "Country",
     "description": "Description",
+    "assignedTo":  "Assigned To",
     "createdAt":   "Created At",
     "updatedAt":   "Updated At"
   },
@@ -21,6 +22,7 @@
     "phone":       "Phone",
     "companyId":   "Company Id",
     "designation": "Designation",
+    "assignedTo":  "Assigned To",
     "createdAt":   "Created At",
     "updatedAt":   "Updated At"
   },
@@ -34,6 +36,7 @@
     "contactId":          "Contact Id",
     "companyId":          "Company Id",
     "expectedClosureDate": "Expected Close Date",
+    "assignedTo":         "Assigned To",
     "createdAt":          "Created At",
     "updatedAt":          "Updated At"
   }

@@ -27,10 +27,17 @@ def _clean(d):
     return {k: v for k, v in d.items() if v is not None and (v != "" if isinstance(v, str) else True)}
 
 
+def _assigned_name(raw: dict) -> str:
+    a = raw.get("assignedTo") or {}
+    if isinstance(a, dict):
+        return a.get("name") or a.get("firstName") or "Unassigned"
+    return str(a) if a else "Unassigned"
+
+
 def _map(raw: dict) -> dict:
-    fm = _fm()
-    emails = raw.get("emails") or []
-    phones = raw.get("phoneNumbers") or []
+    fm      = _fm()
+    emails  = raw.get("emails") or []
+    phones  = raw.get("phoneNumbers") or []
     company = raw.get("company") or {}
     return _clean({
         fm["id"]:          str(raw["id"]),
@@ -40,19 +47,21 @@ def _map(raw: dict) -> dict:
         fm["phone"]:       phones[0].get("value", "") if phones else "",
         fm["companyId"]:   str(company.get("id", "")) if isinstance(company, dict) else "",
         fm["designation"]: raw.get("designation", ""),
+        fm["assignedTo"]:  _assigned_name(raw),
         fm["createdAt"]:   raw.get("createdAt", ""),
         fm["updatedAt"]:   raw.get("updatedAt", ""),
     })
 
 
 def run(test_mode: bool = False, test_id: int = None, logger: SyncLogger = None) -> dict:
-    kylas = KylasClient()
+    kylas    = KylasClient()
     airtable = AirtableClient("Contacts")
     if logger is None:
         logger = SyncLogger()
 
     log_id = logger.start("Contacts")
     created = updated = failed = pre_cutoff = 0
+    per_user = {}
 
     try:
         cached = airtable.build_cache("Kylas Contact Id")
@@ -75,14 +84,19 @@ def run(test_mode: bool = False, test_id: int = None, logger: SyncLogger = None)
                         pre_cutoff += 1
                         continue
 
+                user   = _assigned_name(ct)
                 action, _ = airtable.upsert(
                     "Kylas Contact Id", str(ct["id"]),
                     _map(ct), ct.get("updatedAt", "")
                 )
-                if action == "created":   created += 1
-                elif action == "updated": updated += 1
+                if action == "created":
+                    created += 1
+                    per_user.setdefault(user, {"created": 0, "updated": 0})["created"] += 1
+                elif action == "updated":
+                    updated += 1
+                    per_user.setdefault(user, {"created": 0, "updated": 0})["updated"] += 1
                 name = f"{ct.get('firstName', '')} {ct.get('lastName', '')}".strip()
-                print(f"  [{action.upper():8}] {name or ct['id']}")
+                print(f"  [{action.upper():8}] {name or ct['id']} ({user})")
             except Exception as e:
                 failed += 1
                 print(f"  [FAILED  ] Contact {ct.get('id')}: {e}")
@@ -94,7 +108,7 @@ def run(test_mode: bool = False, test_id: int = None, logger: SyncLogger = None)
         logger.fail(log_id, str(e))
         raise
 
-    return {"created": created, "updated": updated, "failed": failed}
+    return {"created": created, "updated": updated, "failed": failed, "per_user": per_user}
 
 
 if __name__ == "__main__":

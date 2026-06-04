@@ -25,6 +25,13 @@ def _clean(d):
     return {k: v for k, v in d.items() if v is not None and (v != "" if isinstance(v, str) else True)}
 
 
+def _assigned_name(raw: dict) -> str:
+    a = raw.get("assignedTo") or {}
+    if isinstance(a, dict):
+        return a.get("name") or a.get("firstName") or "Unassigned"
+    return str(a) if a else "Unassigned"
+
+
 def _map(raw: dict) -> dict:
     fm = _fm()
 
@@ -54,28 +61,30 @@ def _map(raw: dict) -> dict:
                 break
 
     return _clean({
-        fm["id"]:                   str(raw["id"]),
-        fm["name"]:                 raw.get("name", ""),
-        fm["dealValue"]:            value,
-        fm["currency"]:             currency,
-        fm["pipeline"]:             pipeline.get("name", "") if isinstance(pipeline, dict) else str(pipeline),
-        fm["pipelineStage"]:        stage.get("name", "")    if isinstance(stage, dict)    else str(stage),
-        fm["contactId"]:            contact_id,
-        fm["companyId"]:            company_id,
-        fm["expectedClosureDate"]:  raw.get("expectedClosureDate", ""),
-        fm["createdAt"]:            raw.get("createdAt", ""),
-        fm["updatedAt"]:            raw.get("updatedAt", ""),
+        fm["id"]:                  str(raw["id"]),
+        fm["name"]:                raw.get("name", ""),
+        fm["dealValue"]:           value,
+        fm["currency"]:            currency,
+        fm["pipeline"]:            pipeline.get("name", "") if isinstance(pipeline, dict) else str(pipeline),
+        fm["pipelineStage"]:       stage.get("name", "")    if isinstance(stage, dict)    else str(stage),
+        fm["contactId"]:           contact_id,
+        fm["companyId"]:           company_id,
+        fm["expectedClosureDate"]: raw.get("expectedClosureDate", ""),
+        fm["assignedTo"]:          _assigned_name(raw),
+        fm["createdAt"]:           raw.get("createdAt", ""),
+        fm["updatedAt"]:           raw.get("updatedAt", ""),
     })
 
 
 def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
-    kylas = KylasClient()
+    kylas    = KylasClient()
     airtable = AirtableClient("Deals")
     if logger is None:
         logger = SyncLogger()
 
     log_id = logger.start("Deals")
     created = updated = failed = 0
+    per_user = {}
 
     try:
         cached = airtable.build_cache("Kylas Deal Id")
@@ -88,13 +97,18 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
 
         for deal in deals:
             try:
+                user   = _assigned_name(deal)
                 action, _ = airtable.upsert(
                     "Kylas Deal Id", str(deal["id"]),
                     _map(deal), deal.get("updatedAt", "")
                 )
-                if action == "created":   created += 1
-                elif action == "updated": updated += 1
-                print(f"  [{action.upper():8}] {deal.get('name', deal['id'])}")
+                if action == "created":
+                    created += 1
+                    per_user.setdefault(user, {"created": 0, "updated": 0})["created"] += 1
+                elif action == "updated":
+                    updated += 1
+                    per_user.setdefault(user, {"created": 0, "updated": 0})["updated"] += 1
+                print(f"  [{action.upper():8}] {deal.get('name', deal['id'])} ({user})")
             except Exception as e:
                 failed += 1
                 print(f"  [FAILED  ] Deal {deal.get('id')}: {e}")
@@ -106,7 +120,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
         logger.fail(log_id, str(e))
         raise
 
-    return {"created": created, "updated": updated, "failed": failed}
+    return {"created": created, "updated": updated, "failed": failed, "per_user": per_user}
 
 
 if __name__ == "__main__":
