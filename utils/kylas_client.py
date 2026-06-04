@@ -1,23 +1,28 @@
 import os
 import time
 import requests
-from typing import List
+from typing import Dict, List
 
 KYLAS_BASE = "https://api.kylas.io/v1"
-PAGE_SIZE = 200
+PAGE_SIZE  = 200
 
 _COMPANY_FIELDS = [
-    "id", "name", "industry", "website", "phoneNumbers", "emails",
-    "city", "state", "country", "description", "ownedBy", "createdAt", "updatedAt",
+    "id", "name", "industry", "ownedBy", "ownerId",
+    "createdAt", "updatedAt", "customFieldValues",
 ]
+
 _CONTACT_FIELDS = [
-    "id", "firstName", "lastName", "emails", "phoneNumbers",
-    "company", "designation", "ownedBy", "createdAt", "updatedAt",
+    "id", "name", "firstName", "lastName", "emails", "phoneNumbers",
+    "company", "designation", "ownedBy", "ownerId",
+    "linkedin", "city", "state", "country", "source",
+    "createdAt", "updatedAt", "customFieldValues",
 ]
+
 _DEAL_FIELDS = [
-    "id", "name", "estimatedValue", "pipeline", "pipelineStage",
+    "id", "name", "estimatedValue", "actualValue", "pipeline", "pipelineStage",
     "associatedContacts", "company", "estimatedClosureOn",
-    "ownedBy", "createdAt", "updatedAt",
+    "ownedBy", "ownerId", "source", "forecastingType",
+    "createdAt", "updatedAt", "customFieldValues",
 ]
 
 
@@ -28,7 +33,7 @@ class KylasClient:
             "api-key": os.environ["KYLAS_API_KEY"],
             "Content-Type": "application/json",
         })
-        self._delay = 0.25  # ~4 req/s
+        self._delay = 0.25
 
     def _get(self, path: str, params: dict = None) -> dict:
         time.sleep(self._delay)
@@ -47,7 +52,7 @@ class KylasClient:
                 timeout=60,
             )
             r.raise_for_status()
-            resp = r.json()
+            resp    = r.json()
             content = resp.get("content", [])
             records.extend(content)
             if page >= resp.get("totalPages", 1) - 1 or not content:
@@ -75,3 +80,24 @@ class KylasClient:
     def get_deal(self, did: int) -> dict:
         resp = self._get(f"deals/{did}")
         return resp.get("data", resp)
+
+    def get_users(self) -> Dict[int, str]:
+        """Return {user_id: name} for contact owner resolution."""
+        for path in ["tenant/team-members", "users"]:
+            try:
+                resp    = self._get(path)
+                members = resp.get("content") or resp.get("data") or []
+                if isinstance(members, list) and members:
+                    result = {}
+                    for m in members:
+                        if "id" not in m:
+                            continue
+                        name = (m.get("name") or
+                                f"{m.get('firstName', '')} {m.get('lastName', '')}".strip() or
+                                f"User {m['id']}")
+                        result[int(m["id"])] = name
+                    if result:
+                        return result
+            except Exception:
+                continue
+        return {}

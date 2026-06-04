@@ -1,0 +1,25 @@
+name: Setup Airtable Schema (run once)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create missing Airtable fields and Deals table
+        run: python scripts/setup_airtable.py
+        env:
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}

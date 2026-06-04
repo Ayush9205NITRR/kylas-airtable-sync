@@ -31,8 +31,18 @@ def main():
 
     sys.path.insert(0, os.path.dirname(__file__))
     from utils.logger import SyncLogger
+    from utils.kylas_client import KylasClient
+
     logger = SyncLogger()
     print(f"[run_sync] Run ID={logger.run_id}  slot={args.slot}\n")
+
+    # Build user ID→name map once — used by contact sync for owner resolution
+    user_map = {}
+    try:
+        user_map = KylasClient().get_users()
+        print(f"[run_sync] Loaded {len(user_map)} users for owner lookup\n")
+    except Exception as e:
+        print(f"[run_sync] WARNING: user lookup failed ({e}) — owners may show as Unassigned\n")
 
     if args.test:
         print("[TEST MODE] Only first 5 records per module will be processed.\n")
@@ -43,7 +53,9 @@ def main():
     stats["companies"] = _load("01_company_sync.py").run(test_mode=args.test, logger=logger)
 
     print("\n" + "=" * 40 + "\nMODULE 2: Contacts\n" + "=" * 40)
-    stats["contacts"] = _load("02_contact_sync.py").run(test_mode=args.test, logger=logger)
+    stats["contacts"] = _load("02_contact_sync.py").run(
+        test_mode=args.test, logger=logger, user_map=user_map
+    )
 
     print("\n" + "=" * 40 + "\nMODULE 3: Deals\n" + "=" * 40)
     stats["deals"] = _load("03_deal_sync.py").run(test_mode=args.test, logger=logger)

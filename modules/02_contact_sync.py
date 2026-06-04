@@ -27,30 +27,62 @@ def _clean(d):
     return {k: v for k, v in d.items() if v is not None and (v != "" if isinstance(v, str) else True)}
 
 
-def _assigned_name(raw: dict) -> str:
-    a = raw.get("ownedBy") or raw.get("assignedTo") or {}
-    if isinstance(a, dict):
-        return a.get("name") or a.get("firstName") or "Unassigned"
-    return str(a) if a else "Unassigned"
+def _owner_name(raw: dict, user_map: dict = None) -> str:
+    ob = raw.get("ownedBy")
+    if isinstance(ob, dict) and ob.get("name"):
+        return ob["name"]
+    oid = raw.get("ownerId")
+    if oid and user_map:
+        name = user_map.get(int(oid)) or user_map.get(str(oid))
+        if name:
+            return name
+    return "Unassigned"
 
 
-def _map(raw: dict) -> dict:
+def _map(raw: dict, user_map: dict = None) -> dict:
     fm     = _fm()
     emails = raw.get("emails") or []
     phones = raw.get("phoneNumbers") or []
-    first  = raw.get("firstName") or ""
-    last   = raw.get("lastName") or ""
-    full   = f"{first} {last}".strip() or first or last
+    cf     = raw.get("customFieldValues") or {}
+
+    psd = cf.get("cfPipelineStageBd")
+    if isinstance(psd, dict):
+        pipeline_stage = psd.get("name", "")
+    elif psd is not None:
+        pipeline_stage = str(psd)
+    else:
+        pipeline_stage = ""
+
+    src    = raw.get("source")
+    source = src.get("name", "") if isinstance(src, dict) else (str(src) if src else "")
+
+    co         = raw.get("company")
+    company_id = str(co) if isinstance(co, (int, float)) else (
+        str(co.get("id", "")) if isinstance(co, dict) else ""
+    )
+
     return _clean({
-        fm["id"]:         str(raw["id"]),
-        fm["fullName"]:   full,
-        fm["email"]:      emails[0].get("value", "") if emails else "",
-        fm["phone"]:      phones[0].get("value", "") if phones else "",
-        fm["assignedTo"]: _assigned_name(raw),
+        fm["id"]:            str(raw["id"]),
+        fm["fullName"]:      raw.get("name") or "",
+        fm["email"]:         emails[0].get("value", "") if emails else "",
+        fm["phone"]:         phones[0].get("value", "") if phones else "",
+        fm["assignedTo"]:    _owner_name(raw, user_map),
+        fm["designation"]:   raw.get("designation") or "",
+        fm["companyId"]:     company_id,
+        fm["linkedin"]:      raw.get("linkedin") or "",
+        fm["city"]:          raw.get("city") or "",
+        fm["state"]:         raw.get("state") or "",
+        fm["country"]:       raw.get("country") or "",
+        fm["source"]:        source,
+        fm["pipelineStage"]: pipeline_stage,
+        fm["remarks"]:       cf.get("cfRemarks") or "",
+        fm["createdAt"]:     raw.get("createdAt") or "",
+        fm["updatedAt"]:     raw.get("updatedAt") or "",
     })
 
 
-def run(test_mode: bool = False, test_id: int = None, logger: SyncLogger = None) -> dict:
+def run(test_mode: bool = False, test_id: int = None,
+        logger: SyncLogger = None, user_map: dict = None) -> dict:
     kylas    = KylasClient()
     airtable = AirtableClient("Contacts")
     if logger is None:
@@ -81,18 +113,18 @@ def run(test_mode: bool = False, test_id: int = None, logger: SyncLogger = None)
                         pre_cutoff += 1
                         continue
 
-                user   = _assigned_name(ct)
+                owner  = _owner_name(ct, user_map)
                 action, _ = airtable.upsert(
                     "Kylas Contact Id", str(ct["id"]),
-                    _map(ct), ct.get("updatedAt", ""),
-                    updated_at_field="",
+                    _map(ct, user_map=user_map), ct.get("updatedAt", ""),
+                    updated_at_field=_fm()["updatedAt"],
                 )
                 if action == "created":
                     created += 1
-                    per_user.setdefault(user, {"created": 0, "updated": 0})["created"] += 1
+                    per_user.setdefault(owner, {"created": 0, "updated": 0})["created"] += 1
                 elif action == "updated":
                     updated += 1
-                    per_user.setdefault(user, {"created": 0, "updated": 0})["updated"] += 1
+                    per_user.setdefault(owner, {"created": 0, "updated": 0})["updated"] += 1
             except Exception as e:
                 failed += 1
                 print(f"  [FAILED  ] Contact {ct.get('id')}: {e}")
@@ -116,4 +148,9 @@ if __name__ == "__main__":
     parser.add_argument("--id", type=int, dest="contact_id")
     args = parser.parse_args()
     from dotenv import load_dotenv; load_dotenv()
-    run(test_mode=args.test, test_id=args.contact_id)
+    _user_map = {}
+    try:
+        _user_map = KylasClient().get_users()
+    except Exception:
+        pass
+    run(test_mode=args.test, test_id=args.contact_id, user_map=_user_map)

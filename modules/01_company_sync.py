@@ -35,12 +35,25 @@ def _assigned_name(raw: dict) -> str:
 def _map(raw: dict) -> dict:
     fm       = _fm()
     industry = raw.get("industry") or {}
+    cf       = raw.get("customFieldValues") or {}
+
+    psd = cf.get("cfPipelineStageBd")
+    if isinstance(psd, dict):
+        stage_bd = psd.get("name", "")
+    elif psd is not None:
+        stage_bd = str(psd)
+    else:
+        stage_bd = ""
+
     return _clean({
-        fm["id"]:         str(raw["id"]),
-        fm["name"]:       raw.get("name", ""),
-        fm["industry"]:   industry.get("name", "") if isinstance(industry, dict) else str(industry),
-        fm["assignedTo"]: _assigned_name(raw),
-        fm["updatedAt"]:  raw.get("updatedAt", ""),
+        fm["id"]:              str(raw["id"]),
+        fm["name"]:            raw.get("name", ""),
+        fm["industry"]:        industry.get("name", "") if isinstance(industry, dict) else str(industry),
+        fm["assignedTo"]:      _assigned_name(raw),
+        fm["updatedAt"]:       raw.get("updatedAt", ""),
+        fm["batch"]:           cf.get("cfBatch") or "",
+        fm["pipelineStageBd"]: stage_bd,
+        fm["sourceOfData"]:    cf.get("cfSourceOfData") or "",
     })
 
 

@@ -26,7 +26,7 @@ def _clean(d):
 
 
 def _assigned_name(raw: dict) -> str:
-    a = raw.get("ownedBy") or raw.get("assignedTo") or {}
+    a = raw.get("ownedBy") or {}
     if isinstance(a, dict):
         return a.get("name") or a.get("firstName") or "Unassigned"
     return str(a) if a else "Unassigned"
@@ -35,46 +35,58 @@ def _assigned_name(raw: dict) -> str:
 def _map(raw: dict) -> dict:
     fm = _fm()
 
-    deal_val = raw.get("estimatedValue") or raw.get("dealValue") or {}
+    deal_val = raw.get("estimatedValue") or {}
     value    = deal_val.get("value", 0) if isinstance(deal_val, dict) else 0
-    currency = deal_val.get("currency", "") if isinstance(deal_val, dict) else ""
+
+    actual_val = raw.get("actualValue") or {}
+    actual     = actual_val.get("value", 0) if isinstance(actual_val, dict) else 0
 
     pipeline = raw.get("pipeline") or {}
-    stage    = raw.get("pipelineStage") or (pipeline.get("stage") if isinstance(pipeline, dict) else None) or {}
+    stage    = raw.get("pipelineStage") or {}
 
-    contact_id = ""
-    for key in ("contact", "associatedContacts", "contacts"):
-        val = raw.get(key)
-        if isinstance(val, dict) and val.get("id"):
-            contact_id = str(val["id"])
-            break
-        if isinstance(val, list) and val:
-            contact_id = str(val[0].get("id", ""))
-            break
+    contacts_list = raw.get("associatedContacts") or []
+    contact_name  = contacts_list[0].get("name", "").strip() if contacts_list else ""
+    contact_id    = str(contacts_list[0].get("id", "")) if contacts_list else ""
 
-    company = raw.get("company") or {}
-    company_id = str(company.get("id", "")) if isinstance(company, dict) else ""
+    company  = raw.get("company") or {}
+    co_name  = company.get("name", "") if isinstance(company, dict) else ""
+    co_id    = str(company.get("id", "")) if isinstance(company, dict) else ""
 
-    closure_date = raw.get("estimatedClosureOn") or raw.get("expectedClosureDate", "")
+    src    = raw.get("source") or {}
+    source = src.get("name", "") if isinstance(src, dict) else ""
+
+    cf        = raw.get("customFieldValues") or {}
+    pax       = str(cf.get("cfPaxNumberOfParticipants") or "")
+    exec_date = cf.get("cfExecutionDate") or ""
+    if exec_date and "T" in str(exec_date):
+        exec_date = str(exec_date)[:10]
+    location  = str(cf.get("cfLocation") or "")
 
     return _clean({
         fm["id"]:                  str(raw["id"]),
         fm["name"]:                raw.get("name", ""),
         fm["dealValue"]:           value,
-        fm["currency"]:            currency,
+        fm["actualValue"]:         actual,
         fm["pipeline"]:            pipeline.get("name", "") if isinstance(pipeline, dict) else str(pipeline),
-        fm["pipelineStage"]:       stage.get("name", "")    if isinstance(stage, dict)    else str(stage),
+        fm["pipelineStage"]:       stage.get("name", "") if isinstance(stage, dict) else str(stage),
+        fm["contactName"]:         contact_name,
         fm["contactId"]:           contact_id,
-        fm["companyId"]:           company_id,
-        fm["expectedClosureDate"]: closure_date,
+        fm["companyName"]:         co_name,
+        fm["companyId"]:           co_id,
         fm["assignedTo"]:          _assigned_name(raw),
+        fm["source"]:              source,
+        fm["forecastType"]:        raw.get("forecastingType") or "",
+        fm["paxCount"]:            pax,
+        fm["executionDate"]:       exec_date,
+        fm["location"]:            location,
+        fm["expectedClosureDate"]: raw.get("estimatedClosureOn") or "",
         fm["createdAt"]:           raw.get("createdAt", ""),
         fm["updatedAt"]:           raw.get("updatedAt", ""),
     })
 
 
 def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
-    kylas = KylasClient()
+    kylas    = KylasClient()
     airtable = AirtableClient("Deals")
     if logger is None:
         logger = SyncLogger()
@@ -87,7 +99,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
         try:
             cached = airtable.build_cache("Kylas Deal Id")
         except Exception as e:
-            msg = f"Deals table not accessible — create a 'Deals' table in Airtable to enable this sync. Error: {e}"
+            msg = f"Deals table not accessible — run 'Setup Airtable Schema' workflow first. Error: {e}"
             print(f"[Deals] WARNING: {msg}")
             logger.fail(log_id, msg)
             return {"created": 0, "updated": 0, "failed": 0, "per_user": {}}
