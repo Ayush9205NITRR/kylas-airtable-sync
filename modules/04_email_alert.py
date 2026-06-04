@@ -1,8 +1,11 @@
 import argparse
 import json
 import os
+import smtplib
 import sys
 from datetime import date
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -19,13 +22,30 @@ def _member_stats(member_name: str, stats: dict, module: str) -> dict:
     return result
 
 
+def _send_smtp(from_addr: str, password: str, to_addr: str, subject: str, body: str):
+    msg = MIMEMultipart()
+    msg["From"]    = from_addr
+    msg["To"]      = to_addr
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.ehlo()
+        server.starttls()
+        server.login(from_addr, password)
+        server.send_message(msg)
+
+
 def send_alert(stats: dict, slot: str = "test"):
-    import resend
-    resend.api_key = os.environ["RESEND_API_KEY"]
+    smtp_user = os.environ.get("SMTP_USER", "")
+    smtp_pass = os.environ.get("SMTP_PASS", "")
+
+    if not smtp_user or not smtp_pass:
+        print("[Email] SMTP_USER / SMTP_PASS secrets not set — skipping email alert")
+        return
 
     today      = date.today().strftime("%d %b %Y")
     slot_label = slot.replace("_", " ").title()
-    from_email = os.environ.get("RESEND_FROM_EMAIL", "onboarding@resend.dev")
 
     with open(TEAM_PATH) as f:
         team = json.load(f)["members"]
@@ -40,50 +60,43 @@ def send_alert(stats: dict, slot: str = "test"):
 
         body = (
             f"Hi {name},\n\n"
-            f"Tera Kylas Sync Report\n"
+            f"Kylas Sync Report\n"
             f"{'=' * 36}\n"
             f"Date  : {today}\n"
             f"Slot  : {slot_label}\n\n"
             f"Companies : {co['created']} new  |  {co['updated']} updated\n"
             f"Contacts  : {ct['created']} new  |  {ct['updated']} updated\n"
             f"Deals     : {d['created']} new  |  {d['updated']} updated\n"
-            f"{'=' * 36}\n"
+            f"{'=' * 36}\n\n"
+            f"-- Kylas Sync Bot"
         )
 
         try:
-            resend.Emails.send({
-                "from":    from_email,
-                "to":      [email],
-                "subject": f"Tera Kylas Report — {today} | {slot_label}",
-                "text":    body,
-            })
+            _send_smtp(smtp_user, smtp_pass, email,
+                       f"Kylas Sync Report — {today} | {slot_label}", body)
             print(f"[Email] Sent to {name} <{email}>")
         except Exception as e:
             print(f"[Email] WARNING: could not send to {name} <{email}>: {e}")
-            if "verify a domain" in str(e) or "testing emails" in str(e):
-                print("[Email] Fix: verify enout.in at resend.com/domains, then set")
-                print("[Email]      RESEND_FROM_EMAIL secret to noreply@enout.in")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--test", action="store_true")
     parser.add_argument("--slot", default="test")
     args = parser.parse_args()
     from dotenv import load_dotenv; load_dotenv()
 
     test_stats = {
         "companies": {"created": 5, "updated": 3, "failed": 0, "per_user": {
-            "Ayush Tiwari":    {"created": 3, "updated": 2},
-            "Bhamumik Patel": {"created": 2, "updated": 1},
+            "Ayush Tiwari":   {"created": 3, "updated": 2},
+            "Bhaumik Sachdeva": {"created": 2, "updated": 1},
         }},
         "contacts": {"created": 12, "updated": 5, "failed": 0, "per_user": {
-            "Ayush Tiwari":    {"created": 8, "updated": 3},
-            "Bhamumik Patel": {"created": 4, "updated": 2},
+            "Ayush Tiwari":   {"created": 8, "updated": 3},
+            "Bhaumik Sachdeva": {"created": 4, "updated": 2},
         }},
         "deals": {"created": 4, "updated": 2, "failed": 0, "per_user": {
-            "Ayush Tiwari":    {"created": 3, "updated": 1},
-            "Bhamumik Patel": {"created": 1, "updated": 1},
+            "Ayush Tiwari":   {"created": 3, "updated": 1},
+            "Bhaumik Sachdeva": {"created": 1, "updated": 1},
         }},
     }
-    send_alert(test_stats if args.test else {}, args.slot)
+    send_alert(test_stats, args.slot)
