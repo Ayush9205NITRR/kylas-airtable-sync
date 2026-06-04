@@ -26,16 +26,21 @@ class AirtableClient:
         return len(self._cache)
 
     def upsert(
-        self, key_field: str, kylas_id: str, fields: dict, updated_at: str
+        self, key_field: str, kylas_id: str, fields: dict, updated_at: str,
+        updated_at_field: str = "Updated At",
     ) -> Tuple[str, str]:
-        """Buffer the operation. Call flush() after the loop."""
+        """Buffer the operation. Call flush() after the loop.
+
+        Pass updated_at_field="" to always update (e.g. when the table has no
+        timestamp column to compare against).
+        """
         existing = self._cache.get(str(kylas_id))
 
         if existing is None:
             self._creates.append((str(kylas_id), fields))
             return "created", ""
 
-        if existing["fields"].get("Updated At", "") == updated_at:
+        if updated_at_field and existing["fields"].get(updated_at_field, "") == updated_at:
             return "skipped", existing["id"]
 
         self._updates.append((str(kylas_id), existing["id"], fields))

@@ -1,43 +1,30 @@
 {
   "company": {
-    "id":          "Kylas Company Id",
-    "name":        "Company Name",
-    "industry":    "Industry",
-    "website":     "Website",
-    "phone":       "Phone",
-    "email":       "Email",
-    "city":        "City",
-    "state":       "State",
-    "country":     "Country",
-    "description": "Description",
-    "assignedTo":  "Owner",
-    "createdAt":   "Created At",
-    "updatedAt":   "Updated At"
+    "id":         "Kylas Company Id",
+    "name":       "Company Name - Kylas",
+    "industry":   "Industry (Kylas)",
+    "assignedTo": "Owner - Kylas",
+    "updatedAt":  "Updated At Kylas"
   },
   "contact": {
-    "id":          "Kylas Contact Id",
-    "firstName":   "First Name",
-    "lastName":    "Last Name",
-    "email":       "Email",
-    "phone":       "Phone",
-    "companyId":   "Company Id",
-    "designation": "Designation",
-    "assignedTo":  "Owner",
-    "createdAt":   "Created At",
-    "updatedAt":   "Updated At"
+    "id":         "Kylas Contact Id",
+    "fullName":   "Contact Name",
+    "email":      "Email",
+    "phone":      "Phone",
+    "assignedTo": "Contact Owner"
   },
   "deal": {
-    "id":                  "Kylas Deal Id",
-    "name":               "Deal Name",
-    "dealValue":          "Deal Value",
-    "currency":           "Currency",
-    "pipeline":           "Pipeline",
-    "pipelineStage":      "Stage",
-    "contactId":          "Contact Id",
-    "companyId":          "Company Id",
-    "expectedClosureDate": "Expected Close Date",
-    "assignedTo":         "Owner",
-    "createdAt":          "Created At",
-    "updatedAt":          "Updated At"
+    "id":                   "Kylas Deal Id",
+    "name":                 "Deal Name",
+    "dealValue":            "Deal Value",
+    "currency":             "Currency",
+    "pipeline":             "Pipeline",
+    "pipelineStage":        "Stage",
+    "contactId":            "Contact Id",
+    "companyId":            "Company Id",
+    "expectedClosureDate":  "Expected Close Date",
+    "assignedTo":           "Owner",
+    "createdAt":            "Created At",
+    "updatedAt":            "Updated At"
   }
 }

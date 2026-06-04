@@ -35,21 +35,18 @@ def _assigned_name(raw: dict) -> str:
 
 
 def _map(raw: dict) -> dict:
-    fm      = _fm()
-    emails  = raw.get("emails") or []
-    phones  = raw.get("phoneNumbers") or []
-    company = raw.get("company") or {}
+    fm     = _fm()
+    emails = raw.get("emails") or []
+    phones = raw.get("phoneNumbers") or []
+    first  = raw.get("firstName", "")
+    last   = raw.get("lastName", "")
+    full   = f"{first} {last}".strip() or first or last
     return _clean({
-        fm["id"]:          str(raw["id"]),
-        fm["firstName"]:   raw.get("firstName", ""),
-        fm["lastName"]:    raw.get("lastName", ""),
-        fm["email"]:       emails[0].get("value", "") if emails else "",
-        fm["phone"]:       phones[0].get("value", "") if phones else "",
-        fm["companyId"]:   str(company.get("id", "")) if isinstance(company, dict) else "",
-        fm["designation"]: raw.get("designation", ""),
-        fm["assignedTo"]:  _assigned_name(raw),
-        fm["createdAt"]:   raw.get("createdAt", ""),
-        fm["updatedAt"]:   raw.get("updatedAt", ""),
+        fm["id"]:         str(raw["id"]),
+        fm["fullName"]:   full,
+        fm["email"]:      emails[0].get("value", "") if emails else "",
+        fm["phone"]:      phones[0].get("value", "") if phones else "",
+        fm["assignedTo"]: _assigned_name(raw),
     })
 
 
@@ -87,7 +84,8 @@ def run(test_mode: bool = False, test_id: int = None, logger: SyncLogger = None)
                 user   = _assigned_name(ct)
                 action, _ = airtable.upsert(
                     "Kylas Contact Id", str(ct["id"]),
-                    _map(ct), ct.get("updatedAt", "")
+                    _map(ct), ct.get("updatedAt", ""),
+                    updated_at_field="",
                 )
                 if action == "created":
                     created += 1

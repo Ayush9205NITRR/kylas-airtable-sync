@@ -74,7 +74,7 @@ def _map(raw: dict) -> dict:
 
 
 def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
-    kylas    = KylasClient()
+    kylas = KylasClient()
     airtable = AirtableClient("Deals")
     if logger is None:
         logger = SyncLogger()
@@ -84,7 +84,13 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
     per_user = {}
 
     try:
-        cached = airtable.build_cache("Kylas Deal Id")
+        try:
+            cached = airtable.build_cache("Kylas Deal Id")
+        except Exception as e:
+            msg = f"Deals table not accessible — create a 'Deals' table in Airtable to enable this sync. Error: {e}"
+            print(f"[Deals] WARNING: {msg}")
+            logger.fail(log_id, msg)
+            return {"created": 0, "updated": 0, "failed": 0, "per_user": {}}
         print(f"[Deals] Cache loaded: {cached} existing")
 
         deals = kylas.get_deals()
@@ -97,7 +103,8 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
                 user   = _assigned_name(deal)
                 action, _ = airtable.upsert(
                     "Kylas Deal Id", str(deal["id"]),
-                    _map(deal), deal.get("updatedAt", "")
+                    _map(deal), deal.get("updatedAt", ""),
+                    updated_at_field=_fm()["updatedAt"],
                 )
                 if action == "created":
                     created += 1

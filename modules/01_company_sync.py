@@ -33,25 +33,14 @@ def _assigned_name(raw: dict) -> str:
 
 
 def _map(raw: dict) -> dict:
-    fm = _fm()
-    phones   = raw.get("phoneNumbers") or []
-    emails   = raw.get("emails") or []
+    fm       = _fm()
     industry = raw.get("industry") or {}
-    addr     = raw.get("address") or {}
     return _clean({
-        fm["id"]:          str(raw["id"]),
-        fm["name"]:        raw.get("name", ""),
-        fm["industry"]:    industry.get("name", "") if isinstance(industry, dict) else str(industry),
-        fm["website"]:     raw.get("website", ""),
-        fm["phone"]:       phones[0].get("value", "") if phones else "",
-        fm["email"]:       emails[0].get("value", "") if emails else "",
-        fm["city"]:        addr.get("city",    raw.get("city", "")) if isinstance(addr, dict) else raw.get("city", ""),
-        fm["state"]:       addr.get("state",   raw.get("state", "")) if isinstance(addr, dict) else raw.get("state", ""),
-        fm["country"]:     addr.get("country", raw.get("country", "")) if isinstance(addr, dict) else raw.get("country", ""),
-        fm["description"]: raw.get("description", ""),
-        fm["assignedTo"]:  _assigned_name(raw),
-        fm["createdAt"]:   raw.get("createdAt", ""),
-        fm["updatedAt"]:   raw.get("updatedAt", ""),
+        fm["id"]:         str(raw["id"]),
+        fm["name"]:       raw.get("name", ""),
+        fm["industry"]:   industry.get("name", "") if isinstance(industry, dict) else str(industry),
+        fm["assignedTo"]: _assigned_name(raw),
+        fm["updatedAt"]:  raw.get("updatedAt", ""),
     })
 
 
@@ -80,7 +69,8 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
                 user   = _assigned_name(co)
                 action, _ = airtable.upsert(
                     "Kylas Company Id", str(co["id"]),
-                    _map(co), co.get("updatedAt", "")
+                    _map(co), co.get("updatedAt", ""),
+                    updated_at_field=_fm()["updatedAt"],
                 )
                 if action == "created":
                     created += 1
