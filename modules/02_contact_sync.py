@@ -38,8 +38,8 @@ def _map(raw: dict) -> dict:
     fm     = _fm()
     emails = raw.get("emails") or []
     phones = raw.get("phoneNumbers") or []
-    first  = raw.get("firstName", "")
-    last   = raw.get("lastName", "")
+    first  = raw.get("firstName") or ""
+    last   = raw.get("lastName") or ""
     full   = f"{first} {last}".strip() or first or last
     return _clean({
         fm["id"]:         str(raw["id"]),
