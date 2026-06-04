@@ -1,5 +1,8 @@
 import os
-from typing import Dict, List, Tuple
+import re
+from typing import Dict, List, Set, Tuple
+
+import requests
 from pyairtable import Api
 
 
@@ -11,6 +14,7 @@ class AirtableClient:
         self._cache: Dict[str, dict] = {}
         self._creates: List[Tuple[str, dict]] = []   # (kylas_id, fields)
         self._updates: List[Tuple[str, str, dict]] = []  # (kylas_id, record_id, fields)
+        self._skip_fields: Set[str] = set()
 
     def build_cache(self, key_field: str) -> int:
         records = self.table.all()
@@ -37,10 +41,54 @@ class AirtableClient:
         self._updates.append((str(kylas_id), existing["id"], fields))
         return "updated", existing["id"]
 
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _strip_skip(self, fields: dict) -> dict:
+        if not self._skip_fields:
+            return fields
+        return {k: v for k, v in fields.items() if k not in self._skip_fields}
+
+    def _batch_create_safe(self, records_fields: List[dict]) -> List[dict]:
+        """batch_create with auto-retry on computed-field 422."""
+        while True:
+            try:
+                return self.table.batch_create(
+                    [self._strip_skip(f) for f in records_fields]
+                )
+            except requests.exceptions.HTTPError as exc:
+                field = _extract_computed_field(str(exc))
+                if field:
+                    print(f"[AirtableClient] WARNING: skipping computed field {field!r}")
+                    self._skip_fields.add(field)
+                else:
+                    raise
+
+    def _batch_update_safe(self, updates: List[dict]) -> None:
+        """batch_update with auto-retry on computed-field 422."""
+        while True:
+            try:
+                self.table.batch_update(
+                    [{"id": u["id"], "fields": self._strip_skip(u["fields"])} for u in updates]
+                )
+                return
+            except requests.exceptions.HTTPError as exc:
+                field = _extract_computed_field(str(exc))
+                if field:
+                    print(f"[AirtableClient] WARNING: skipping computed field {field!r}")
+                    self._skip_fields.add(field)
+                else:
+                    raise
+
+    # ------------------------------------------------------------------
+    # Public flush
+    # ------------------------------------------------------------------
+
     def flush(self) -> None:
         """Execute all buffered creates and updates in batches of 10."""
         if self._creates:
-            created_records = self.table.batch_create(
+            created_records = self._batch_create_safe(
                 [fields for _, fields in self._creates]
             )
             for (kylas_id, _), record in zip(self._creates, created_records):
@@ -48,7 +96,16 @@ class AirtableClient:
             self._creates.clear()
 
         if self._updates:
-            self.table.batch_update(
+            self._batch_update_safe(
                 [{"id": rid, "fields": fields} for _, rid, fields in self._updates]
             )
             self._updates.clear()
+
+
+def _extract_computed_field(error_msg: str) -> str:
+    """Parse field name from Airtable 422 INVALID_VALUE_FOR_COLUMN message."""
+    m = re.search(
+        r'Field "([^"]+)" cannot accept a value because the field is computed',
+        error_msg,
+    )
+    return m.group(1) if m else ""
