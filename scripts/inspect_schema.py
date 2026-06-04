@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PAT = os.environ["AIRTABLE_PAT"]
-BASES = {
-    "Contacts/Deals/Sync Log": os.environ["AIRTABLE_BASE_ID"],
-    "Company List":             os.environ["AIRTABLE_COMPANY_BASE_ID"],
-}
+BASES = [
+    ("Company List",             os.environ["AIRTABLE_COMPANY_BASE_ID"]),
+    ("Contacts/Deals/Sync Log",  os.environ["AIRTABLE_BASE_ID"]),
+]
 
 def inspect(label: str, base_id: str):
     print(f"\n{'='*60}")
@@ -23,12 +23,12 @@ def inspect(label: str, base_id: str):
     r.raise_for_status()
     for table in r.json().get("tables", []):
         print(f"\n  TABLE: {table['name']}")
-        print(f"  {'FIELD NAME':<35} TYPE")
-        print(f"  {'-'*35} {'─'*20}")
+        print(f"  {'FIELD NAME':<40} TYPE")
+        print(f"  {'-'*40} {'-'*20}")
         for field in table.get("fields", []):
-            print(f"  {field['name']:<35} {field['type']}")
+            print(f"  {field['name']:<40} {field['type']}")
 
-for label, base_id in BASES.items():
+for label, base_id in BASES:
     inspect(label, base_id)
 
 print("\nDone.")
