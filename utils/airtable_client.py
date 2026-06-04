@@ -1,5 +1,6 @@
 import os
 import re
+import time
 from typing import Dict, List, Optional, Set, Tuple
 
 import requests
@@ -12,18 +13,28 @@ class AirtableClient:
         base = base_id or os.environ["AIRTABLE_BASE_ID"]
         self.table = api.table(base, table_name)
         self._cache: Dict[str, dict] = {}
-        self._creates: List[Tuple[str, dict]] = []   # (kylas_id, fields)
-        self._updates: List[Tuple[str, str, dict]] = []  # (kylas_id, record_id, fields)
+        self._creates: List[Tuple[str, dict]] = []
+        self._updates: List[Tuple[str, str, dict]] = []
         self._skip_fields: Set[str] = set()
 
     def build_cache(self, key_field: str) -> int:
-        records = self.table.all()
-        self._cache = {
-            str(r["fields"][key_field]): r
-            for r in records
-            if key_field in r["fields"]
-        }
-        return len(self._cache)
+        for attempt in range(4):
+            try:
+                records = self.table.all()
+                self._cache = {
+                    str(r["fields"][key_field]): r
+                    for r in records
+                    if key_field in r["fields"]
+                }
+                return len(self._cache)
+            except requests.exceptions.HTTPError as exc:
+                if exc.response is not None and exc.response.status_code in (406, 429, 503):
+                    wait = 2 ** attempt
+                    print(f"[AirtableClient] {exc.response.status_code} on build_cache, retrying in {wait}s...")
+                    time.sleep(wait)
+                else:
+                    raise
+        raise RuntimeError(f"build_cache failed after 4 attempts for field {key_field!r}")
 
     def upsert(
         self, key_field: str, kylas_id: str, fields: dict, updated_at: str,
