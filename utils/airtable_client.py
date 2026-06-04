@@ -50,23 +50,28 @@ class AirtableClient:
             return fields
         return {k: v for k, v in fields.items() if k not in self._skip_fields}
 
+    def _handle_422(self, exc: requests.exceptions.HTTPError) -> bool:
+        """Return True if we can retry after stripping the offending field."""
+        field = _extract_skip_field(str(exc))
+        if field:
+            print(f"[AirtableClient] WARNING: skipping field {field!r} ({exc})")
+            self._skip_fields.add(field)
+            return True
+        return False
+
     def _batch_create_safe(self, records_fields: List[dict]) -> List[dict]:
-        """batch_create with auto-retry on computed-field 422."""
+        """batch_create with auto-retry on computed or unknown-field 422."""
         while True:
             try:
                 return self.table.batch_create(
                     [self._strip_skip(f) for f in records_fields]
                 )
             except requests.exceptions.HTTPError as exc:
-                field = _extract_computed_field(str(exc))
-                if field:
-                    print(f"[AirtableClient] WARNING: skipping computed field {field!r}")
-                    self._skip_fields.add(field)
-                else:
+                if not self._handle_422(exc):
                     raise
 
     def _batch_update_safe(self, updates: List[dict]) -> None:
-        """batch_update with auto-retry on computed-field 422."""
+        """batch_update with auto-retry on computed or unknown-field 422."""
         while True:
             try:
                 self.table.batch_update(
@@ -74,11 +79,7 @@ class AirtableClient:
                 )
                 return
             except requests.exceptions.HTTPError as exc:
-                field = _extract_computed_field(str(exc))
-                if field:
-                    print(f"[AirtableClient] WARNING: skipping computed field {field!r}")
-                    self._skip_fields.add(field)
-                else:
+                if not self._handle_422(exc):
                     raise
 
     # ------------------------------------------------------------------
@@ -102,10 +103,17 @@ class AirtableClient:
             self._updates.clear()
 
 
-def _extract_computed_field(error_msg: str) -> str:
-    """Parse field name from Airtable 422 INVALID_VALUE_FOR_COLUMN message."""
+def _extract_skip_field(error_msg: str) -> str:
+    """Extract field name from Airtable 422 errors we can skip and retry."""
+    # INVALID_VALUE_FOR_COLUMN: Field "X" cannot accept a value because the field is computed
     m = re.search(
         r'Field "([^"]+)" cannot accept a value because the field is computed',
         error_msg,
     )
-    return m.group(1) if m else ""
+    if m:
+        return m.group(1)
+    # UNKNOWN_FIELD_NAME: Unknown field name: "X"
+    m = re.search(r'Unknown field name: "([^"]+)"', error_msg)
+    if m:
+        return m.group(1)
+    return ""
