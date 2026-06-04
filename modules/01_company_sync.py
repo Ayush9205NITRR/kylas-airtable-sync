@@ -83,8 +83,15 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
     crm_ok = True
 
     try:
-        list_cached = tbl_list.build_cache("Kylas Company Id")
-        print(f"[Companies] Company List cache: {list_cached} existing")
+        list_ok = True
+        try:
+            list_cached = tbl_list.build_cache("Kylas Company Id")
+            print(f"[Companies] Company List cache: {list_cached} existing")
+        except Exception as e:
+            list_ok = False
+            print(f"[Companies] WARNING: Company List not accessible — {e}")
+            print("[Companies] Check that AIRTABLE_COMPANY_BASE_ID secret = app55PsyRKqkf2CAQ")
+            print("[Companies] Skipping Company List sync; CRM Companies table will still sync.")
 
         try:
             crm_cached = tbl_crm.build_cache("Kylas Company Id")
@@ -100,12 +107,14 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
 
         for co in companies:
             try:
-                user   = _assigned_name(co)
-                action, _ = tbl_list.upsert(
-                    "Kylas Company Id", str(co["id"]),
-                    _build_fields(co, _fm()), co.get("updatedAt", ""),
-                    updated_at_field=_fm()["updatedAt"],
-                )
+                user = _assigned_name(co)
+                action = "skipped"
+                if list_ok:
+                    action, _ = tbl_list.upsert(
+                        "Kylas Company Id", str(co["id"]),
+                        _build_fields(co, _fm()), co.get("updatedAt", ""),
+                        updated_at_field=_fm()["updatedAt"],
+                    )
                 if crm_ok:
                     tbl_crm.upsert(
                         "Kylas Company Id", str(co["id"]),
@@ -123,7 +132,8 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
                 print(f"  [FAILED  ] Company {co.get('id')}: {e}")
 
         print(f"[Companies] Flushing {created} creates + {updated} updates...")
-        tbl_list.flush()
+        if list_ok:
+            tbl_list.flush()
         if crm_ok:
             tbl_crm.flush()
 

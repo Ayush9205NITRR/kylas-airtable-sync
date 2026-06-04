@@ -28,13 +28,14 @@ class AirtableClient:
                 }
                 return len(self._cache)
             except requests.exceptions.HTTPError as exc:
-                if exc.response is not None and exc.response.status_code in (406, 429, 503):
+                err = str(exc)
+                if any(code in err for code in ("406", "429", "503")):
                     wait = 2 ** attempt
-                    print(f"[AirtableClient] {exc.response.status_code} on build_cache, retrying in {wait}s...")
+                    print(f"[AirtableClient] transient error on build_cache (attempt {attempt+1}/4), retrying in {wait}s...")
                     time.sleep(wait)
                 else:
                     raise
-        raise RuntimeError(f"build_cache failed after 4 attempts for field {key_field!r}")
+        raise RuntimeError(f"build_cache failed after 4 attempts for {key_field!r}")
 
     def upsert(
         self, key_field: str, kylas_id: str, fields: dict, updated_at: str,
