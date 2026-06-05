@@ -1,0 +1,29 @@
+name: Test Email Alert
+
+on:
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: 'Slot label shown in email (first_half or full_day)'
+        required: false
+        default: 'full_day'
+
+jobs:
+  test-email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send test email to all team members
+        run: python modules/04_email_alert.py --slot ${{ github.event.inputs.slot }}
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
