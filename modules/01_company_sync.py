@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -66,6 +67,37 @@ def _build_fields(raw: dict, fm: dict) -> dict:
     })
 
 
+def _load_table(tbl: AirtableClient, id_field: str, name_field: str):
+    """
+    Fetch all records once. Populate tbl._cache keyed by id_field (non-blank).
+    Returns (id_count, name_count, name_lookup) where name_lookup maps
+    lowercase company name → record for records that have no Kylas ID yet
+    (e.g. CSV-imported companies). Used to match by name and avoid duplicates.
+    """
+    for attempt in range(4):
+        try:
+            records = tbl.table.all()
+            break
+        except Exception as exc:
+            if attempt < 3:
+                time.sleep(2 ** attempt)
+            else:
+                raise
+
+    tbl._cache  = {}
+    name_lookup = {}
+    for r in records:
+        kid = str(r["fields"].get(id_field, "")).strip()
+        if kid:
+            tbl._cache[kid] = r
+        else:
+            name = str(r["fields"].get(name_field, "")).strip().lower()
+            if name:
+                name_lookup[name] = r
+
+    return len(tbl._cache), len(name_lookup), name_lookup
+
+
 def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -> dict:
     kylas        = KylasClient()
     company_base = os.environ.get("AIRTABLE_COMPANY_BASE_ID") or os.environ["AIRTABLE_BASE_ID"]
@@ -78,24 +110,26 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
         logger = SyncLogger()
 
     log_id = logger.start("Companies")
-    created = updated = failed = 0
+    created = updated = failed = skipped = 0
     per_user = {}
     crm_ok = True
 
     try:
-        list_ok = True
+        list_ok         = True
+        list_name_lookup = {}
         try:
-            list_cached = tbl_list.build_cache("Kylas Company Id")
-            print(f"[Companies] Company List cache: {list_cached} existing")
+            id_ct, nm_ct, list_name_lookup = _load_table(tbl_list, "Kylas Company Id", _fm()["name"])
+            print(f"[Companies] Company List: {id_ct} by ID, {nm_ct} by name (no Kylas ID)")
         except Exception as e:
             list_ok = False
             print(f"[Companies] WARNING: Company List not accessible — {e}")
             print("[Companies] Check that AIRTABLE_COMPANY_BASE_ID secret = app55PsyRKqkf2CAQ")
             print("[Companies] Skipping Company List sync; CRM Companies table will still sync.")
 
+        crm_name_lookup = {}
         try:
-            crm_cached = tbl_crm.build_cache("Kylas Company Id")
-            print(f"[Companies] CRM Companies cache: {crm_cached} existing")
+            id_ct, nm_ct, crm_name_lookup = _load_table(tbl_crm, "Kylas Company Id", _fm_crm()["name"])
+            print(f"[Companies] CRM Companies: {id_ct} by ID, {nm_ct} by name (no Kylas ID)")
         except Exception as e:
             print(f"[Companies] WARNING: CRM Companies table not ready ({e}) — run Setup Airtable Schema first")
             crm_ok = False
@@ -107,21 +141,32 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
 
         for co in companies:
             try:
-                user = _assigned_name(co)
+                user     = _assigned_name(co)
+                kylas_id = str(co["id"])
+                co_name  = (co.get("name") or "").strip().lower()
+
+                # Name-based fallback: if a CSV-imported record (blank Kylas ID)
+                # matches this company's name, link it into the cache so upsert
+                # updates instead of creating a duplicate.
+                if list_ok and kylas_id not in tbl_list._cache and co_name in list_name_lookup:
+                    tbl_list._cache[kylas_id] = list_name_lookup.pop(co_name)
+                if crm_ok and kylas_id not in tbl_crm._cache and co_name in crm_name_lookup:
+                    tbl_crm._cache[kylas_id] = crm_name_lookup.pop(co_name)
+
                 list_action = crm_action = "skipped"
                 if list_ok:
                     list_action, _ = tbl_list.upsert(
-                        "Kylas Company Id", str(co["id"]),
+                        "Kylas Company Id", kylas_id,
                         _build_fields(co, _fm()), co.get("updatedAt", ""),
                         updated_at_field=_fm()["updatedAt"],
                     )
                 if crm_ok:
                     crm_action, _ = tbl_crm.upsert(
-                        "Kylas Company Id", str(co["id"]),
+                        "Kylas Company Id", kylas_id,
                         _build_fields(co, _fm_crm()), co.get("updatedAt", ""),
                         updated_at_field=_fm_crm()["updatedAt"],
                     )
-                # Use Company List action as primary; fall back to CRM action
+
                 action = list_action if list_ok else crm_action
                 if action == "created":
                     created += 1
@@ -129,6 +174,9 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
                 elif action == "updated":
                     updated += 1
                     per_user.setdefault(user, {"created": 0, "updated": 0})["updated"] += 1
+                elif action == "skipped":
+                    skipped += 1
+
             except Exception as e:
                 failed += 1
                 print(f"  [FAILED  ] Company {co.get('id')}: {e}")
@@ -140,13 +188,12 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
             tbl_crm.flush()
 
         logger.finish(log_id, created, updated, failed)
-        print(f"[Companies] Done -> created={created} updated={updated} failed={failed}")
+        print(f"[Companies] Done -> created={created} updated={updated} skipped={skipped} failed={failed}")
 
     except Exception as e:
         logger.fail(log_id, str(e))
         raise
 
-    # Return Kylas ID → Airtable record ID map for contact/deal linking
     id_map = {kid: rec["id"] for kid, rec in tbl_crm._cache.items()} if crm_ok else {}
     print(f"[Companies] CRM id_map: {len(id_map)} entries available for linking")
 
