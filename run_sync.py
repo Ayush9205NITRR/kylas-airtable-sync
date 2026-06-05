@@ -58,13 +58,24 @@ def main():
     logger = SyncLogger()
     print(f"[run_sync] Run ID={logger.run_id}  slot={args.slot}  mode={mode}\n")
 
-    # Build user ID→name map once — used by contact sync for owner resolution
+    # Build user ID→name map: config (always reliable) + API (augments/overrides)
+    import json as _json
     user_map = {}
     try:
-        user_map = KylasClient().get_users()
-        print(f"[run_sync] Loaded {len(user_map)} users for owner lookup\n")
+        _team_path = os.path.join(os.path.dirname(__file__), "config", "team.json")
+        with open(_team_path) as _f:
+            _cfg_users = _json.load(_f).get("kylas_users", {})
+        user_map = {int(uid): name for uid, name in _cfg_users.items()}
+        print(f"[run_sync] Loaded {len(user_map)} users from config/team.json")
     except Exception as e:
-        print(f"[run_sync] WARNING: user lookup failed ({e}) — owners may show as Unassigned\n")
+        print(f"[run_sync] WARNING: could not load config user map ({e})")
+
+    try:
+        api_users = KylasClient().get_users()
+        user_map.update(api_users)
+        print(f"[run_sync] Merged {len(api_users)} users from Kylas API → total {len(user_map)}\n")
+    except Exception as e:
+        print(f"[run_sync] WARNING: Kylas user API failed ({e}) — using config map only\n")
 
     if args.test:
         print("[TEST MODE] Only first 5 records per module will be processed.\n")
