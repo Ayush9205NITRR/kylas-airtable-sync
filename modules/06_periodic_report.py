@@ -78,11 +78,13 @@ def _pct(done: int, target: int) -> str:
 
 def _build_body(name: str, period: str, range_label: str,
                 achieved: dict, bd_targets: dict) -> str:
-    daily   = bd_targets.get("daily", {})
-    mult    = bd_targets.get("weekly_multiplier", 5.5) if period == "weekly" \
-              else bd_targets.get("monthly_multiplier", 22)
-    p_label = "WEEKLY" if period == "weekly" else "MONTHLY"
-    opening = "weekly" if period == "weekly" else "monthly"
+    weekly_tgts  = bd_targets.get("weekly", {})
+    w_mult       = bd_targets.get("weekly_multiplier",  5.5)
+    m_mult       = bd_targets.get("monthly_multiplier", 22)
+    # monthly target = weekly × (monthly_mult / weekly_mult) = weekly × 4
+    month_factor = m_mult / w_mult
+    p_label      = "WEEKLY" if period == "weekly" else "MONTHLY"
+    opening      = "weekly" if period == "weekly" else "monthly"
 
     sep = "=" * 54
     bar = "-" * 54
@@ -102,10 +104,13 @@ def _build_body(name: str, period: str, range_label: str,
     ]
 
     for key in METRICS:
-        lbl   = METRIC_LABEL[key]
-        done  = achieved.get(key, 0)
-        d_tgt = daily.get(key, 0)
-        p_tgt = round(d_tgt * mult) if d_tgt else 0
+        lbl  = METRIC_LABEL[key]
+        done = achieved.get(key, 0)
+        w_tgt = weekly_tgts.get(key, 0)
+        if period == "weekly":
+            p_tgt = w_tgt
+        else:
+            p_tgt = round(w_tgt * month_factor) if w_tgt else 0
         tgt_s = f"/ {p_tgt}" if p_tgt else "—"
         pct_s = _pct(done, p_tgt)
         lines.append(f"  {lbl:<22} {done:>6}  {tgt_s:>8}  {pct_s}")
@@ -114,7 +119,8 @@ def _build_body(name: str, period: str, range_label: str,
     lines.append("")
 
     # Encouragement
-    conn_tgt = round(daily.get("connected", 0) * mult)
+    w_conn = weekly_tgts.get("connected", 0)
+    conn_tgt  = w_conn if period == "weekly" else round(w_conn * month_factor)
     conn_done = achieved.get("connected", 0)
     if conn_tgt > 0:
         pct = conn_done / conn_tgt

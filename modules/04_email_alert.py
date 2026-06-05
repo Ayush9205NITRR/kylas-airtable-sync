@@ -56,9 +56,9 @@ _TARGET_KEY = {
 
 def _load_daily_targets() -> dict:
     """
-    Return {metric_key: daily_target} — shared across all team members.
+    Return {metric_key: daily_target} — derived from weekly targets, shared for all.
 
-    Priority: BD Targets Airtable table (any non-zero entry) → team.json bd_targets.daily
+    Priority: BD Targets Airtable table → team.json bd_targets.weekly ÷ weekly_multiplier
     """
     try:
         from utils.airtable_client import AirtableClient
@@ -77,7 +77,9 @@ def _load_daily_targets() -> dict:
         pass
     try:
         with open(TEAM_PATH) as fh:
-            return json.load(fh).get("bd_targets", {}).get("daily", {})
+            bt   = json.load(fh).get("bd_targets", {})
+        mult = bt.get("weekly_multiplier", 5.5)
+        return {k: round(v / mult) for k, v in bt.get("weekly", {}).items() if v}
     except Exception:
         return {}
 
@@ -118,10 +120,10 @@ def _build_body(name: str, today: str, slot: str, slot_label: str,
 
     def _win_tgt(m):
         d = targets.get(m)
-        return None if d is None else d // 4
+        return None if not d else d // 4
 
     def _fmt(t):
-        return "—" if t is None else f"/ {t}"
+        return "—" if not t else f"/ {t}"
 
     sep = "=" * 50
     bar = "-" * 50
@@ -169,7 +171,7 @@ def _build_body(name: str, today: str, slot: str, slot_label: str,
         ]
         for key in DISPLAY_ORDER:
             dt  = targets.get(key)
-            tgt = "—" if dt is None else f"/ {dt}"
+            tgt = "—" if not dt else f"/ {dt}"
             lines.append(
                 f"  {METRIC_LABEL[key]:<22} {bd.get(key, 0):>5}   {tgt:>12}"
             )

@@ -25,11 +25,11 @@
     "74752": "Rubal Sansanwal"
   },
   "bd_targets": {
-    "daily": {
-      "attempted":  0,
-      "connected":  0,
-      "dcb":        0,
-      "sql":        0
+    "weekly": {
+      "attempted": 300,
+      "connected": 150,
+      "dcb":         0,
+      "sql":         2
     },
     "weekly_multiplier":  5.5,
     "monthly_multiplier": 22
