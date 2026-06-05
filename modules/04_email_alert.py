@@ -175,17 +175,21 @@ def _build_body(name: str, today: str, slot: str, slot_label: str,
     return "\n".join(lines)
 
 
-def _send_smtp(from_addr: str, password: str, to_addr: str, subject: str, body: str):
+def _send_smtp(from_addr: str, password: str, to_addr: str, subject: str, body: str,
+               cc: list = None):
     msg = MIMEMultipart()
     msg["From"]    = from_addr
     msg["To"]      = to_addr
     msg["Subject"] = subject
+    if cc:
+        msg["CC"] = ", ".join(cc)
     msg.attach(MIMEText(body, "plain"))
+    recipients = [to_addr] + (cc or [])
     with smtplib.SMTP("smtp.gmail.com", 587) as server:
         server.ehlo()
         server.starttls()
         server.login(from_addr, password)
-        server.send_message(msg)
+        server.sendmail(from_addr, recipients, msg.as_string())
 
 
 def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None):
@@ -200,7 +204,9 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None):
     slot_label = slot.replace("_", " ").title()
 
     with open(TEAM_PATH) as f:
-        team = json.load(f)["members"]
+        _team_cfg = json.load(f)
+    team        = _team_cfg["members"]
+    cc_list     = _team_cfg.get("cc", [])
 
     all_targets = _read_targets()
 
@@ -228,9 +234,13 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None):
             )
             subject = f"Kylas Sync Report — {today} | {slot_label}"
 
+        # CC everyone on the cc list except the primary recipient themselves
+        effective_cc = [addr for addr in cc_list if addr.lower() != email.lower()]
+
         try:
-            _send_smtp(smtp_user, smtp_pass, email, subject, body)
-            print(f"[Email] Sent to {name} <{email}>")
+            _send_smtp(smtp_user, smtp_pass, email, subject, body, cc=effective_cc)
+            cc_str = f"  (cc: {', '.join(effective_cc)})" if effective_cc else ""
+            print(f"[Email] Sent to {name} <{email}>{cc_str}")
         except Exception as e:
             print(f"[Email] WARNING: could not send to {name} <{email}>: {e}")
 

@@ -1,7 +1,15 @@
 {
   "members": [
-    {"name": "Ayush",   "email": "ayush@enout.in"},
-    {"name": "Bhaumik", "email": "bhaumik@enout.in"}
+    {"name": "Rubal",   "email": "rubal@enout.in"},
+    {"name": "Bhaumik", "email": "bhaumik@enout.in"},
+    {"name": "Shreya",  "email": "shreya.bodwal@enout.in"},
+    {"name": "Mayra",   "email": "mayra@enout.in"},
+    {"name": "Devansh", "email": "devansh.shukla@enout.in"},
+    {"name": "Tanay",   "email": "tanay.kumar@enout.in"}
+  ],
+  "cc": [
+    "ayush@enout.in",
+    "vednant@enout.in"
   ],
   "kylas_users": {
     "74754": "Tanay Kumar",
