@@ -92,11 +92,13 @@ def _write_account_activity(account_activity: dict, company_id_map: dict, today:
 
     for co_id, data in account_activity.items():
         stat_key = f"{today}|{co_id}"
+        owners_str = ", ".join(sorted(data.get("owners", set())))
         fields = {
-            "Stat Key":       stat_key,
-            "Date":           today,
-            "Company Name":   data["company_name"],
-            "Kylas Company Id": co_id,
+            "Stat Key":          stat_key,
+            "Date":              today,
+            "Company Name":      data["company_name"],
+            "Kylas Company Id":  co_id,
+            "BD Owners":         owners_str,
         }
         for k, fname in ACC_FIELD.items():
             fields[fname] = data.get(k, 0)

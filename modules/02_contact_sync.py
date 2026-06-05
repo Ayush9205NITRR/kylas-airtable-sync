@@ -180,10 +180,12 @@ def run(test_mode: bool = False, test_id: int = None,
                     if co_id:
                         acc = account_activity.setdefault(co_id, {
                             "company_name": co_name, "pocs": 0,
+                            "owners": set(),
                             **{k: 0 for k in BD_KEYS},
                         })
                         if not acc["company_name"] and co_name:
                             acc["company_name"] = co_name
+                        acc["owners"].add(owner)
                         acc["pocs"] += 1
                         for key in BD_KEYS:
                             if cats[key]:

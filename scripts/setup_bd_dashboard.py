@@ -201,6 +201,7 @@ def main():
             {"name": "Date",              "type": T},
             {"name": "Company Name",      "type": T},
             {"name": "Kylas Company Id",  "type": T},
+            {"name": "BD Owners",         "type": T},   # comma-separated BD people who touched this company
             {"name": "POCs Tapped",       "type": N, "options": {"precision": 0}},
             {"name": "Attempted POCs",    "type": N, "options": {"precision": 0}},
             {"name": "Connected POCs",    "type": N, "options": {"precision": 0}},
