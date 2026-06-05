@@ -9,69 +9,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.kylas_client import KylasClient
 from utils.airtable_client import AirtableClient
 from utils.logger import SyncLogger
+from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_bd as _classify_bd
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 _FM = None
-
-# ── BD metric stage classifications ──────────────────────────────────────────
-# Attempted = any stage except "Yet to Be Mined"
-# Connected = stages that indicate a real conversation happened
-CONNECTED_STAGES = {
-    "MQL (Marketing Qualified Lead)",
-    "SQL (Sales Qualified Lead)",
-    "Activation",
-    "Invalid Contact",
-    "Connect Later",
-    "Disqualified - Wrong POC",
-    "Not a Decision Maker (NDM)",
-    "Not Interested",
-    "Follow-up (1)",
-    "Follow-up (2)",
-    "Follow-up (3)",
-    "Discovery Call Booked",
-    "Discovery Call Done - Awaiting Client Inputs",
-    "POC - Organisation - Changed",
-    "Followup - CNC",
-    "Reschedule Pending",
-    "Discovery Call No-Show",
-    "Offsite Delayed",
-    "Closing Loops - Low Value",
-}
-DCB_STAGES = {
-    "SQL (Sales Qualified Lead)",
-    "Discovery Call Booked",
-    "Offsite Delayed",
-    "Discovery Call No-Show",
-    "Reschedule Pending",
-    "Closing Loops - Low Value",
-    "Discovery Call Done - Awaiting Client Inputs",
-}
-SQL_STAGES        = {"SQL (Sales Qualified Lead)"}
-MQL_STAGES        = {"MQL (Marketing Qualified Lead)"}
-ACTIVATION_STAGES = {"Activation"}
-ATTEMPTED_EXCLUDE = {"Yet to Be Mined", ""}
-BD_KEYS           = ["attempted", "connected", "dcb", "sql", "mql", "activation"]
-
-
-def _contact_stage(raw: dict) -> str:
-    psd = (raw.get("customFieldValues") or {}).get("cfPipelineStageBd")
-    if isinstance(psd, dict):
-        return psd.get("name", "")
-    if psd is not None:
-        return _PIPELINE_STAGE.get(int(psd), str(psd))
-    return ""
-
-
-def _classify_bd(stage: str) -> dict:
-    return {
-        "attempted":  stage not in ATTEMPTED_EXCLUDE,
-        "connected":  stage in CONNECTED_STAGES,
-        "dcb":        stage in DCB_STAGES,
-        "sql":        stage in SQL_STAGES,
-        "mql":        stage in MQL_STAGES,
-        "activation": stage in ACTIVATION_STAGES,
-    }
-
 
 _PIPELINE_STAGE = {
     2862826: "Yet to Be Mined",
@@ -251,7 +192,7 @@ def run(test_mode: bool = False, test_id: int = None,
         raise
 
     return {"created": created, "updated": updated, "failed": failed,
-            "per_user": per_user, "bd_daily": bd_daily}
+            "per_user": per_user, "bd_daily": bd_daily, "contacts_raw": contacts}
 
 
 if __name__ == "__main__":

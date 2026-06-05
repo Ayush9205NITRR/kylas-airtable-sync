@@ -71,7 +71,10 @@ def main():
     )
 
     print("\n" + "=" * 40 + "\nMODULE 5: BD Stats\n" + "=" * 40)
-    bd_enriched = _load("05_bd_stats.py").run(bd_daily, args.slot, logger)
+    contacts_raw = contact_result.get("contacts_raw", [])
+    bd_enriched  = _load("05_bd_stats.py").run(
+        bd_daily, contacts_raw, company_id_map, args.slot, logger
+    )
     print(f"[run_sync] BD enriched metrics for {len(bd_enriched)} owner(s)\n")
 
     print("\n" + "=" * 40 + "\nMODULE 4: Email Alert\n" + "=" * 40)

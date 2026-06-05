@@ -191,6 +191,49 @@ def main():
     else:
         create_table(CRM_BASE, BD_DAILY_STATS_TABLE)
 
+    # ── Account Activity Log (auto-populated by sync) ─────────────────────────
+    companies_id = tables["Companies"]["id"] if "Companies" in tables else None
+
+    ACCOUNT_ACTIVITY_TABLE = {
+        "name": "Account Activity Log",
+        "fields": [
+            {"name": "Stat Key",          "type": T},   # YYYY-MM-DD|kylas_company_id
+            {"name": "Date",              "type": T},
+            {"name": "Company Name",      "type": T},
+            {"name": "Kylas Company Id",  "type": T},
+            {"name": "POCs Tapped",       "type": N, "options": {"precision": 0}},
+            {"name": "Attempted POCs",    "type": N, "options": {"precision": 0}},
+            {"name": "Connected POCs",    "type": N, "options": {"precision": 0}},
+            {"name": "DCB POCs",          "type": N, "options": {"precision": 0}},
+            {"name": "SQL POCs",          "type": N, "options": {"precision": 0}},
+            {"name": "MQL POCs",          "type": N, "options": {"precision": 0}},
+            {"name": "Activation POCs",   "type": N, "options": {"precision": 0}},
+        ],
+    }
+
+    print("\n[Account Activity Log]")
+    if "Account Activity Log" in tables:
+        print("    ~ Already exists — checking for missing fields")
+        aal_fields = list(ACCOUNT_ACTIVITY_TABLE["fields"])
+        # Add Company linked record if Companies table exists
+        if companies_id and "Company" not in field_names(tables["Account Activity Log"]):
+            aal_fields.append({
+                "name": "Company",
+                "type": "multipleRecordLinks",
+                "options": {"linkedTableId": companies_id},
+            })
+        add_missing(CRM_BASE, tables["Account Activity Log"],
+                    [f for f in aal_fields if f["name"] != "Stat Key"])
+    else:
+        # Create table then add Company linked record
+        result = create_table(CRM_BASE, ACCOUNT_ACTIVITY_TABLE)
+        if result and companies_id:
+            add_field(CRM_BASE, result["id"], {
+                "name": "Company",
+                "type": "multipleRecordLinks",
+                "options": {"linkedTableId": companies_id},
+            })
+
     print("\n=== Done ===")
     print("""
 How to use the BD Dashboard:

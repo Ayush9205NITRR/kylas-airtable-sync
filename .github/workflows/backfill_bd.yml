@@ -1,0 +1,30 @@
+name: Backfill BD Stats (run once)
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: 'Start date for backfill (YYYY-MM-DD)'
+        required: false
+        default: '2026-06-01'
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run backfill
+        run: python scripts/backfill_bd_stats.py --start-date ${{ github.event.inputs.start_date }}
+        env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
