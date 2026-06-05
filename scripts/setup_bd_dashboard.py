@@ -102,12 +102,12 @@ BD_TARGETS_FORMULA_FIELDS = [
     {
         "name": "Weekly Target",
         "type": "formula",
-        "options": {"formula": "{Daily Target}*6"},
+        "options": {"formula": "ROUND({Daily Target}*5.5, 0)"},
     },
     {
         "name": "Monthly Target",
         "type": "formula",
-        "options": {"formula": "{Daily Target}*26"},
+        "options": {"formula": "ROUND({Daily Target}*22, 0)"},
     },
 ]
 

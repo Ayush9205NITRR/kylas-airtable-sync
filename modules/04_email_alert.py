@@ -36,14 +36,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 TEAM_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
 
-DISPLAY_ORDER = ["attempted", "connected", "dcb", "mql", "sql", "activation"]
+DISPLAY_ORDER = ["attempted", "connected", "dcb", "sql"]
 METRIC_LABEL  = {
-    "attempted":  "Attempted",
-    "connected":  "Connected",
-    "dcb":        "Discovery Calls",
-    "mql":        "MQL",
-    "sql":        "SQL",
-    "activation": "Activation",
+    "attempted": "Attempted",
+    "connected": "Connected",
+    "dcb":       "Discovery Calls",
+    "sql":       "SQL",
 }
 # Map BD Targets singleSelect names → internal metric keys
 _TARGET_KEY = {
@@ -56,40 +54,32 @@ _TARGET_KEY = {
 }
 
 
-def _read_targets() -> dict:
-    """Read {owner_lower: {metric_key: daily_target}} from BD Targets table."""
+def _load_daily_targets() -> dict:
+    """
+    Return {metric_key: daily_target} — shared across all team members.
+
+    Priority: BD Targets Airtable table (any non-zero entry) → team.json bd_targets.daily
+    """
     try:
         from utils.airtable_client import AirtableClient
-        tbl     = AirtableClient("BD Targets")
-        records = tbl.table.all()
-        out = {}
+        records = AirtableClient("BD Targets").table.all()
+        merged  = {}
         for rec in records:
-            f      = rec["fields"]
-            owner  = f.get("Owner", "").strip().lower()
-            m_raw  = f.get("Metric", "").strip().lower()
-            m_key  = _TARGET_KEY.get(m_raw, m_raw)
-            daily  = int(f.get("Daily Target", 0) or 0)
-            if owner and m_key:
-                out.setdefault(owner, {})[m_key] = daily
-        return out
+            f     = rec["fields"]
+            m_raw = f.get("Metric", "").strip().lower()
+            m_key = _TARGET_KEY.get(m_raw, m_raw)
+            daily = int(f.get("Daily Target", 0) or 0)
+            if m_key and daily > 0:
+                merged[m_key] = daily
+        if merged:
+            return merged
+    except Exception:
+        pass
+    try:
+        with open(TEAM_PATH) as fh:
+            return json.load(fh).get("bd_targets", {}).get("daily", {})
     except Exception:
         return {}
-
-
-def _member_targets(member_name: str, all_targets: dict) -> dict:
-    """Find targets for a member by fuzzy name match.
-
-    Handles cases where BD Targets Owner is 'Bhaumik Sachdeva' but
-    team.json uses short name 'Bhaumik', and vice versa.
-    """
-    lo = member_name.strip().lower()
-    if lo in all_targets:
-        return all_targets[lo]
-    # Partial match: 'bhaumik' matches 'bhaumik sachdeva'
-    for key, val in all_targets.items():
-        if lo in key or key in lo:
-            return val
-    return {}
 
 
 def _member_bd(member_name: str, bd_enriched: dict) -> dict:
@@ -264,7 +254,7 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None):
     team        = _team_cfg["members"]
     cc_list     = _team_cfg.get("cc", [])
 
-    all_targets = _read_targets()
+    daily_targets = _load_daily_targets()
 
     for member in team:
         name  = member["name"]
@@ -272,7 +262,7 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None):
 
         bd = _member_bd(name, bd_enriched or {})
         if bd:
-            targets = _member_targets(name, all_targets)
+            targets = daily_targets
             body    = _build_body(name, today, slot, slot_label, bd, targets)
             subject = f"Kylas BD Report — {today} | {slot_label}"
         else:
