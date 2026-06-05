@@ -12,6 +12,13 @@ from utils.logger import SyncLogger
 from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_bd as _classify_bd, company_info as _company_info
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
+
+# Set to the Kylas custom field key for "Last Called At" once confirmed.
+# e.g. "cfLastCalledAt" — when set, BD metrics use this date instead of updatedAt,
+# and only contacts where ownedBy == updatedBy are counted.
+# Leave "" to use updatedAt (current fallback behaviour).
+LAST_CALLED_AT_FIELD = ""
+
 _FM = None
 
 _PIPELINE_STAGE = {
@@ -167,8 +174,23 @@ def run(test_mode: bool = False, test_id: int = None,
                     updated += 1
                     per_user.setdefault(owner, {"created": 0, "updated": 0})["updated"] += 1
 
-                # BD metrics + account activity — only for contacts updated today
-                if (ct.get("updatedAt") or "").startswith(today_iso):
+                # BD metrics + account activity
+                # Determine activity date: Last Called AT field (if configured) else updatedAt
+                cf = ct.get("customFieldValues") or {}
+                if LAST_CALLED_AT_FIELD:
+                    activity_date = (cf.get(LAST_CALLED_AT_FIELD) or "")[:10]
+                    is_active_today = bool(activity_date) and activity_date == today_iso
+                    # Only count if owner also did the update (ownedBy == updatedBy)
+                    ob = ct.get("ownedBy") or {}
+                    ub = ct.get("updatedBy") or {}
+                    owned_id   = ob.get("id") if isinstance(ob, dict) else None
+                    updated_id = ub.get("id") if isinstance(ub, dict) else None
+                    if owned_id and updated_id and owned_id != updated_id:
+                        is_active_today = False
+                else:
+                    is_active_today = (ct.get("updatedAt") or "").startswith(today_iso)
+
+                if is_active_today:
                     stage = _contact_stage(ct)
                     cats  = _classify_bd(stage)
                     bd    = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})

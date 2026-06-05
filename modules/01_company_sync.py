@@ -43,9 +43,10 @@ def _assigned_name(raw: dict) -> str:
     return str(a) if a else "Unassigned"
 
 
-def _build_fields(raw: dict, fm: dict) -> dict:
-    industry = raw.get("industry") or {}
-    cf       = raw.get("customFieldValues") or {}
+def _build_fields(raw: dict, fm: dict, user_email_map: dict = None) -> dict:
+    industry   = raw.get("industry") or {}
+    cf         = raw.get("customFieldValues") or {}
+    owner_name = _assigned_name(raw)
 
     psd = cf.get("cfPipelineStageBd")
     if isinstance(psd, dict):
@@ -55,16 +56,21 @@ def _build_fields(raw: dict, fm: dict) -> dict:
     else:
         stage_bd = ""
 
-    return _clean({
+    fields = _clean({
         fm["id"]:              str(raw["id"]),
         fm["name"]:            raw.get("name", ""),
         fm["industry"]:        industry.get("name", "") if isinstance(industry, dict) else str(industry),
-        fm["assignedTo"]:      _assigned_name(raw),
+        fm["assignedTo"]:      owner_name,
         fm["updatedAt"]:       raw.get("updatedAt", ""),
         fm["batch"]:           cf.get("cfBatch") or "",
         fm["pipelineStageBd"]: stage_bd,
         fm["sourceOfData"]:    cf.get("cfSourceOfData") or "",
     })
+    if "ownerEmail" in fm and user_email_map:
+        email = user_email_map.get(owner_name, "")
+        if email:
+            fields[fm["ownerEmail"]] = email
+    return fields
 
 
 def _load_table(tbl: AirtableClient, id_field: str, name_field: str):
@@ -108,6 +114,15 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
 
     if logger is None:
         logger = SyncLogger()
+
+    # Load owner name → email map for Company List
+    user_email_map = {}
+    try:
+        _tp = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
+        with open(_tp) as _f:
+            user_email_map = json.load(_f).get("kylas_user_emails", {})
+    except Exception:
+        pass
 
     log_id = logger.start("Companies")
     created = updated = failed = skipped = 0
@@ -157,7 +172,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
                 if list_ok:
                     list_action, _ = tbl_list.upsert(
                         "Kylas Company Id", kylas_id,
-                        _build_fields(co, _fm()), co.get("updatedAt", ""),
+                        _build_fields(co, _fm(), user_email_map), co.get("updatedAt", ""),
                         updated_at_field=_fm()["updatedAt"],
                     )
                 if crm_ok:

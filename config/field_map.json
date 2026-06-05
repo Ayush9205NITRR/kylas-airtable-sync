@@ -4,6 +4,7 @@
     "name":            "Company Name - Kylas",
     "industry":        "Industry (Kylas)",
     "assignedTo":      "Owner - Kylas",
+    "ownerEmail":      "Owner Email",
     "updatedAt":       "Updated At Kylas",
     "batch":           "Batch",
     "pipelineStageBd": "Pipeline Stage BD",

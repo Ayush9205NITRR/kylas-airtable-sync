@@ -14,7 +14,7 @@ _COMPANY_FIELDS = [
 
 _CONTACT_FIELDS = [
     "id", "name", "firstName", "lastName", "emails", "phoneNumbers",
-    "company", "designation", "ownedBy", "ownerId",
+    "company", "designation", "ownedBy", "ownerId", "updatedBy",
     "linkedin", "city", "state", "country", "source",
     "createdAt", "updatedAt", "customFieldValues",
 ]
