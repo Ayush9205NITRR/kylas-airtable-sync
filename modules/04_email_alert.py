@@ -77,9 +77,8 @@ def _load_daily_targets() -> dict:
         pass
     try:
         with open(TEAM_PATH) as fh:
-            bt   = json.load(fh).get("bd_targets", {})
-        mult = bt.get("weekly_multiplier", 5.5)
-        return {k: round(v / mult) for k, v in bt.get("weekly", {}).items() if v}
+            bt = json.load(fh).get("bd_targets", {})
+        return {k: v for k, v in bt.get("daily", {}).items() if v}
     except Exception:
         return {}
 
