@@ -8,13 +8,17 @@ Tables written:
 import argparse
 import os
 import sys
-from datetime import date
+import time
+from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.airtable_client import AirtableClient
 from utils.logger import SyncLogger
 from utils.bd_metrics import BD_KEYS
+
+# Rows older than this are deleted automatically on each run (keeps tables small)
+RETENTION_DAYS = 90
 
 FIELD = {
     "attempted":  "Attempted",
@@ -37,6 +41,22 @@ ACC_FIELD = {
 }
 
 _ZERO = lambda: {k: 0 for k in BD_KEYS}
+
+
+def _prune_old(tbl: AirtableClient, label: str, retention_days: int = RETENTION_DAYS) -> int:
+    """Delete rows whose Date field is older than retention_days. tbl._cache must be loaded."""
+    cutoff = (date.today() - timedelta(days=retention_days)).isoformat()
+    old_ids = [
+        r["id"] for r in tbl._cache.values()
+        if str(r["fields"].get("Date", "9999-12-31")) < cutoff
+    ]
+    if not old_ids:
+        return 0
+    for i in range(0, len(old_ids), 10):
+        time.sleep(0.2)
+        tbl.table.batch_delete(old_ids[i:i + 10])
+    print(f"[BD Stats] {label}: pruned {len(old_ids)} rows older than {retention_days} days")
+    return len(old_ids)
 
 
 def _write_bd_daily(bd_metrics: dict, slot: str, today: str) -> dict:
@@ -71,6 +91,7 @@ def _write_bd_daily(bd_metrics: dict, slot: str, today: str) -> dict:
               f"  connected={metrics.get('connected',0)}  dcb={metrics.get('dcb',0)}")
 
     tbl.flush()
+    _prune_old(tbl, "BD Daily Stats")
 
     result = {}
     for owner, metrics in bd_metrics.items():
@@ -108,6 +129,7 @@ def _write_account_activity(account_activity: dict, company_id_map: dict, today:
         tbl.upsert("Stat Key", stat_key, fields, updated_at="", updated_at_field="")
 
     tbl.flush()
+    _prune_old(tbl, "Account Activity Log")
     print(f"[BD Stats] Account Activity Log: {len(account_activity)} companies written for {today}")
 
 

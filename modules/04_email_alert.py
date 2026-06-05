@@ -76,6 +76,22 @@ def _read_targets() -> dict:
         return {}
 
 
+def _member_targets(member_name: str, all_targets: dict) -> dict:
+    """Find targets for a member by fuzzy name match.
+
+    Handles cases where BD Targets Owner is 'Bhaumik Sachdeva' but
+    team.json uses short name 'Bhaumik', and vice versa.
+    """
+    lo = member_name.strip().lower()
+    if lo in all_targets:
+        return all_targets[lo]
+    # Partial match: 'bhaumik' matches 'bhaumik sachdeva'
+    for key, val in all_targets.items():
+        if lo in key or key in lo:
+            return val
+    return {}
+
+
 def _member_bd(member_name: str, bd_enriched: dict) -> dict:
     """Find enriched BD stats for a team member by fuzzy name match."""
     lo = member_name.lower()
@@ -256,7 +272,7 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None):
 
         bd = _member_bd(name, bd_enriched or {})
         if bd:
-            targets = all_targets.get(name.lower(), {})
+            targets = _member_targets(name, all_targets)
             body    = _build_body(name, today, slot, slot_label, bd, targets)
             subject = f"Kylas BD Report — {today} | {slot_label}"
         else:
