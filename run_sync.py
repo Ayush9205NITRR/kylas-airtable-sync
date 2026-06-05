@@ -25,7 +25,8 @@ def main():
 
     if args.dry_run:
         print("[DRY RUN] Modules that would run:")
-        for m in ["01_company_sync.py", "02_contact_sync.py", "03_deal_sync.py", "04_email_alert.py"]:
+        for m in ["01_company_sync.py", "02_contact_sync.py", "03_deal_sync.py",
+                  "05_bd_stats.py", "04_email_alert.py"]:
             print(f"  - {m}")
         return
 
@@ -56,18 +57,25 @@ def main():
     print(f"[run_sync] {len(company_id_map)} company IDs available for linking\n")
 
     print("\n" + "=" * 40 + "\nMODULE 2: Contacts\n" + "=" * 40)
-    stats["contacts"] = _load("02_contact_sync.py").run(
+    contact_result  = _load("02_contact_sync.py").run(
         test_mode=args.test, logger=logger,
         user_map=user_map, company_id_map=company_id_map,
     )
+    stats["contacts"] = contact_result
+    bd_daily          = contact_result.get("bd_daily", {})
+    print(f"[run_sync] BD daily metrics for {len(bd_daily)} owner(s)\n")
 
     print("\n" + "=" * 40 + "\nMODULE 3: Deals\n" + "=" * 40)
     stats["deals"] = _load("03_deal_sync.py").run(
         test_mode=args.test, logger=logger, company_id_map=company_id_map,
     )
 
+    print("\n" + "=" * 40 + "\nMODULE 5: BD Stats\n" + "=" * 40)
+    bd_enriched = _load("05_bd_stats.py").run(bd_daily, args.slot, logger)
+    print(f"[run_sync] BD enriched metrics for {len(bd_enriched)} owner(s)\n")
+
     print("\n" + "=" * 40 + "\nMODULE 4: Email Alert\n" + "=" * 40)
-    _load("04_email_alert.py").send_alert(stats, args.slot)
+    _load("04_email_alert.py").send_alert(stats, args.slot, bd_enriched=bd_enriched)
 
     print("\n[run_sync] All modules complete.")
 

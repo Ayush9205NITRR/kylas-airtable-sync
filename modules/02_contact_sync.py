@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -12,6 +12,66 @@ from utils.logger import SyncLogger
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 _FM = None
+
+# ── BD metric stage classifications ──────────────────────────────────────────
+# Attempted = any stage except "Yet to Be Mined"
+# Connected = stages that indicate a real conversation happened
+CONNECTED_STAGES = {
+    "MQL (Marketing Qualified Lead)",
+    "SQL (Sales Qualified Lead)",
+    "Activation",
+    "Invalid Contact",
+    "Connect Later",
+    "Disqualified - Wrong POC",
+    "Not a Decision Maker (NDM)",
+    "Not Interested",
+    "Follow-up (1)",
+    "Follow-up (2)",
+    "Follow-up (3)",
+    "Discovery Call Booked",
+    "Discovery Call Done - Awaiting Client Inputs",
+    "POC - Organisation - Changed",
+    "Followup - CNC",
+    "Reschedule Pending",
+    "Discovery Call No-Show",
+    "Offsite Delayed",
+    "Closing Loops - Low Value",
+}
+DCB_STAGES = {
+    "SQL (Sales Qualified Lead)",
+    "Discovery Call Booked",
+    "Offsite Delayed",
+    "Discovery Call No-Show",
+    "Reschedule Pending",
+    "Closing Loops - Low Value",
+    "Discovery Call Done - Awaiting Client Inputs",
+}
+SQL_STAGES        = {"SQL (Sales Qualified Lead)"}
+MQL_STAGES        = {"MQL (Marketing Qualified Lead)"}
+ACTIVATION_STAGES = {"Activation"}
+ATTEMPTED_EXCLUDE = {"Yet to Be Mined", ""}
+BD_KEYS           = ["attempted", "connected", "dcb", "sql", "mql", "activation"]
+
+
+def _contact_stage(raw: dict) -> str:
+    psd = (raw.get("customFieldValues") or {}).get("cfPipelineStageBd")
+    if isinstance(psd, dict):
+        return psd.get("name", "")
+    if psd is not None:
+        return _PIPELINE_STAGE.get(int(psd), str(psd))
+    return ""
+
+
+def _classify_bd(stage: str) -> dict:
+    return {
+        "attempted":  stage not in ATTEMPTED_EXCLUDE,
+        "connected":  stage in CONNECTED_STAGES,
+        "dcb":        stage in DCB_STAGES,
+        "sql":        stage in SQL_STAGES,
+        "mql":        stage in MQL_STAGES,
+        "activation": stage in ACTIVATION_STAGES,
+    }
+
 
 _PIPELINE_STAGE = {
     2862826: "Yet to Be Mined",
@@ -170,11 +230,28 @@ def run(test_mode: bool = False, test_id: int = None,
         logger.finish(log_id, created, updated, failed)
         print(f"[Contacts] Done -> created={created} updated={updated} pre-cutoff={pre_cutoff} failed={failed}")
 
+        # ── BD daily metrics: count contacts updated today by stage category ─
+        today_iso = date.today().isoformat()
+        bd_daily  = {}
+        for ct in contacts:
+            if not (ct.get("updatedAt") or "").startswith(today_iso):
+                continue
+            owner = _owner_name(ct, user_map)
+            stage = _contact_stage(ct)
+            cats  = _classify_bd(stage)
+            bd    = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})
+            for key in BD_KEYS:
+                if cats[key]:
+                    bd[key] += 1
+        total_bd = sum(v for m in bd_daily.values() for v in m.values())
+        print(f"[Contacts] BD daily: {total_bd} classifications across {len(bd_daily)} owner(s)")
+
     except Exception as e:
         logger.fail(log_id, str(e))
         raise
 
-    return {"created": created, "updated": updated, "failed": failed, "per_user": per_user}
+    return {"created": created, "updated": updated, "failed": failed,
+            "per_user": per_user, "bd_daily": bd_daily}
 
 
 if __name__ == "__main__":

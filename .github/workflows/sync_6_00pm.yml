@@ -1,8 +1,8 @@
-name: Sync - 6:00 PM IST
+name: Sync - 6:30 PM IST
 
 on:
   schedule:
-    - cron: '30 12 * * 1-6'  # 12:30 UTC = 6:00 PM IST, Mon-Sat
+    - cron: '0 13 * * 1-6'  # 13:00 UTC = 6:30 PM IST, Mon-Sat
   workflow_dispatch:
 
 jobs:
@@ -26,5 +26,5 @@ jobs:
           AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
           AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
-          RESEND_API_KEY:           ${{ secrets.RESEND_API_KEY }}
-          RESEND_FROM_EMAIL:        ${{ secrets.RESEND_FROM_EMAIL }}
+          SMTP_USER:                ${{ secrets.SMTP_USER }}
+          SMTP_PASS:                ${{ secrets.SMTP_PASS }}

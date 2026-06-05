@@ -21,7 +21,7 @@ T  = "singleLineText"
 N  = "number"
 ML = "multilineText"
 
-METRICS = ["Attempted", "Connected", "MQL", "Discovery Call", "SQL"]
+METRICS = ["Attempted", "Connected", "MQL", "Discovery Call", "SQL", "Activation"]
 WINDOWS = ["11:00 - 13:00", "15:00 - 18:00"]
 
 
@@ -135,6 +135,29 @@ BD_ACTIVITY_TABLE = {
     ],
 }
 
+# Automatically populated by 05_bd_stats.py on every sync run
+BD_DAILY_STATS_TABLE = {
+    "name": "BD Daily Stats",
+    "fields": [
+        {"name": "Stat Key",           "type": T},   # YYYY-MM-DD|slot|owner
+        {"name": "Date",               "type": T},
+        {"name": "Owner",              "type": T},
+        {"name": "Slot",               "type": T},   # first_half or full_day
+        {"name": "Attempted",          "type": N, "options": {"precision": 0}},
+        {"name": "Connected",          "type": N, "options": {"precision": 0}},
+        {"name": "Discovery Calls",    "type": N, "options": {"precision": 0}},
+        {"name": "SQL",                "type": N, "options": {"precision": 0}},
+        {"name": "MQL",                "type": N, "options": {"precision": 0}},
+        {"name": "Activation",         "type": N, "options": {"precision": 0}},
+        {"name": "W1 Attempted",       "type": N, "options": {"precision": 0}},
+        {"name": "W1 Connected",       "type": N, "options": {"precision": 0}},
+        {"name": "W1 Discovery Calls", "type": N, "options": {"precision": 0}},
+        {"name": "W1 SQL",             "type": N, "options": {"precision": 0}},
+        {"name": "W1 MQL",             "type": N, "options": {"precision": 0}},
+        {"name": "W1 Activation",      "type": N, "options": {"precision": 0}},
+    ],
+}
+
 
 def main():
     print("=== BD Dashboard Schema Setup ===\n")
@@ -158,6 +181,15 @@ def main():
         print("    ~ Already exists")
     else:
         create_table(CRM_BASE, BD_ACTIVITY_TABLE)
+
+    # ── BD Daily Stats (auto-populated by sync) ───────────────────────────────
+    print("\n[BD Daily Stats]")
+    if "BD Daily Stats" in tables:
+        print("    ~ Already exists — checking for missing fields")
+        add_missing(CRM_BASE, tables["BD Daily Stats"],
+                    [f for f in BD_DAILY_STATS_TABLE["fields"] if f["name"] != "Stat Key"])
+    else:
+        create_table(CRM_BASE, BD_DAILY_STATS_TABLE)
 
     print("\n=== Done ===")
     print("""
