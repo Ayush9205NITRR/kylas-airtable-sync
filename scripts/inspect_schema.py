@@ -6,10 +6,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PAT = os.environ["AIRTABLE_PAT"]
-BASES = [
-    ("Company List",             os.environ["AIRTABLE_COMPANY_BASE_ID"]),
-    ("Contacts/Deals/Sync Log",  os.environ["AIRTABLE_BASE_ID"]),
-]
+BASES = []
+company_base = os.environ.get("AIRTABLE_COMPANY_BASE_ID", "")
+if company_base:
+    BASES.append(("Company List", company_base))
+else:
+    print("INFO: AIRTABLE_COMPANY_BASE_ID not set — skipping Company Database base")
+BASES.append(("Contacts/Deals/Sync Log", os.environ["AIRTABLE_BASE_ID"]))
 
 def inspect(label: str, base_id: str):
     print(f"\n{'='*60}")
