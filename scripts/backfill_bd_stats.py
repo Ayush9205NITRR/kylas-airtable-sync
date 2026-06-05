@@ -48,8 +48,10 @@ def _extract_date(updated_at: str) -> str:
 
 def _owner_name(raw: dict, user_map: dict) -> str:
     ob = raw.get("ownedBy")
-    if isinstance(ob, dict) and ob.get("name"):
-        return ob["name"]
+    if isinstance(ob, dict):
+        name = ob.get("name") or f"{ob.get('firstName', '')} {ob.get('lastName', '')}".strip()
+        if name:
+            return name
     oid = raw.get("ownerId")
     if oid and user_map:
         return user_map.get(int(oid)) or user_map.get(str(oid)) or "Unassigned"

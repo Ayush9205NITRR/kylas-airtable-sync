@@ -72,7 +72,9 @@ def main():
     stats = {}
 
     print("=" * 40 + "\nMODULE 1: Companies\n" + "=" * 40)
-    company_result    = _load("01_company_sync.py").run(test_mode=args.test, logger=logger, since=since)
+    # Companies are always fully fetched (no since filter) so the id_map is
+    # complete and every contact/deal can be linked to its parent company.
+    company_result    = _load("01_company_sync.py").run(test_mode=args.test, logger=logger)
     stats["companies"] = company_result
     company_id_map    = company_result.get("id_map", {})
     print(f"[run_sync] {len(company_id_map)} company IDs available for linking\n")
