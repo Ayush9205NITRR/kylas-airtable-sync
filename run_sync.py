@@ -20,6 +20,9 @@ def main():
     parser.add_argument("--test", action="store_true", help="Process only first 5 records per module")
     parser.add_argument("--full-sync", action="store_true",
                         help="Fetch all records (no time window). Default: incremental (last 72h)")
+    parser.add_argument("--since", metavar="ISO_DATE",
+                        help="Fetch records updated on/after this date, e.g. 2026-06-01 or 2026-06-01T00:00:00Z "
+                             "(overrides --full-sync and the default 72h window)")
     args = parser.parse_args()
 
     from dotenv import load_dotenv
@@ -37,13 +40,23 @@ def main():
     from utils.kylas_client import KylasClient
     from datetime import datetime, timezone, timedelta
 
-    since = None
-    if not args.full_sync:
+    if args.since:
+        raw = args.since.strip()
+        if "T" not in raw:
+            raw += "T00:00:00Z"
+        elif not raw.endswith("Z") and "+" not in raw:
+            raw += "Z"
+        since = raw
+        mode  = f"since {since}"
+    elif args.full_sync:
+        since = None
+        mode  = "full-sync"
+    else:
         since = (datetime.now(timezone.utc) - timedelta(hours=72)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        mode  = f"incremental (last 72h, since {since})"
 
     logger = SyncLogger()
-    print(f"[run_sync] Run ID={logger.run_id}  slot={args.slot}  "
-          f"mode={'full-sync' if args.full_sync else f'incremental since {since}'}\n")
+    print(f"[run_sync] Run ID={logger.run_id}  slot={args.slot}  mode={mode}\n")
 
     # Build user ID→name map once — used by contact sync for owner resolution
     user_map = {}

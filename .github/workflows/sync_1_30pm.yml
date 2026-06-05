@@ -6,9 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       full_sync:
-        description: 'Fetch all records (not just last 72h)'
+        description: 'Fetch all records (no time filter)'
         required: false
         default: 'false'
+      since_date:
+        description: 'Fetch records updated on/after this date (YYYY-MM-DD). Overrides full_sync.'
+        required: false
+        default: ''
 
 jobs:
   sync:
@@ -25,7 +29,14 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run sync
-        run: python run_sync.py --slot=first_half ${{ github.event.inputs.full_sync == 'true' && '--full-sync' || '' }}
+        run: |
+          ARGS="--slot=first_half"
+          if [ -n "${{ github.event.inputs.since_date }}" ]; then
+            ARGS="$ARGS --since=${{ github.event.inputs.since_date }}"
+          elif [ "${{ github.event.inputs.full_sync }}" = "true" ]; then
+            ARGS="$ARGS --full-sync"
+          fi
+          python run_sync.py $ARGS
         env:
           KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
