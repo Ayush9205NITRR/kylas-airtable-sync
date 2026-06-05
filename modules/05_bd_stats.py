@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.airtable_client import AirtableClient
 from utils.logger import SyncLogger
-from utils.bd_metrics import BD_KEYS, contact_stage, classify_bd, company_info
+from utils.bd_metrics import BD_KEYS
 
 FIELD = {
     "attempted":  "Attempted",
@@ -80,11 +80,8 @@ def _write_bd_daily(bd_metrics: dict, slot: str, today: str) -> dict:
     return result
 
 
-def _write_account_activity(contacts: list, company_id_map: dict, today: str):
-    """
-    Write one row per (date, company) to Account Activity Log.
-    Counts unique contacts (POCs) at each company updated on `today`.
-    """
+def _write_account_activity(account_activity: dict, company_id_map: dict, today: str):
+    """Write one row per company to Account Activity Log using pre-computed account_activity."""
     try:
         tbl    = AirtableClient("Account Activity Log")
         cached = tbl.build_cache("Stat Key")
@@ -93,28 +90,7 @@ def _write_account_activity(contacts: list, company_id_map: dict, today: str):
         print(f"[BD Stats] WARNING: Account Activity Log not accessible ({e})")
         return
 
-    # Group contacts updated on `today` by company
-    accounts = {}
-    for ct in contacts:
-        if not (ct.get("updatedAt") or "").startswith(today):
-            continue
-        co_id, co_name = company_info(ct)
-        if not co_id:
-            continue
-        stage = contact_stage(ct)
-        cats  = classify_bd(stage)
-
-        acc = accounts.setdefault(co_id, {
-            "company_name": co_name,
-            "pocs":         0,
-            **{k: 0 for k in BD_KEYS},
-        })
-        acc["pocs"] += 1
-        for key in BD_KEYS:
-            if cats[key]:
-                acc[key] += 1
-
-    for co_id, data in accounts.items():
+    for co_id, data in account_activity.items():
         stat_key = f"{today}|{co_id}"
         fields = {
             "Stat Key":       stat_key,
@@ -130,10 +106,10 @@ def _write_account_activity(contacts: list, company_id_map: dict, today: str):
         tbl.upsert("Stat Key", stat_key, fields, updated_at="", updated_at_field="")
 
     tbl.flush()
-    print(f"[BD Stats] Account Activity Log: {len(accounts)} companies written for {today}")
+    print(f"[BD Stats] Account Activity Log: {len(account_activity)} companies written for {today}")
 
 
-def run(bd_metrics: dict, contacts: list, company_id_map: dict,
+def run(bd_metrics: dict, account_activity: dict, company_id_map: dict,
         slot: str, logger: SyncLogger = None) -> dict:
     """
     Write BD Daily Stats + Account Activity Log for today's sync run.
@@ -143,7 +119,7 @@ def run(bd_metrics: dict, contacts: list, company_id_map: dict,
     today = date.today().isoformat()
 
     bd_enriched = _write_bd_daily(bd_metrics, slot, today)
-    _write_account_activity(contacts, company_id_map, today)
+    _write_account_activity(account_activity, company_id_map, today)
 
     print(f"[BD Stats] Done — slot={slot}  date={today}")
     return bd_enriched

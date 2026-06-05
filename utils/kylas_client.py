@@ -1,6 +1,7 @@
 import os
 import time
 import requests
+from datetime import datetime, timezone
 from typing import Dict, List
 
 KYLAS_BASE = "https://api.kylas.io/v1"
@@ -33,7 +34,7 @@ class KylasClient:
             "api-key": os.environ["KYLAS_API_KEY"],
             "Content-Type": "application/json",
         })
-        self._delay = 0.25
+        self._delay = 0.1   # reduced from 0.25 — Kylas allows ~10 req/s
 
     def _get(self, path: str, params: dict = None) -> dict:
         time.sleep(self._delay)
@@ -41,7 +42,24 @@ class KylasClient:
         r.raise_for_status()
         return r.json()
 
-    def _search_all(self, entity: str, fields: list) -> List[dict]:
+    def _search_all(self, entity: str, fields: list, since: str = None) -> List[dict]:
+        """
+        Fetch all records of `entity` from Kylas.
+
+        since (ISO string, e.g. "2026-06-03T12:00:00Z"):
+            Stop fetching once we see records with updatedAt < since.
+            Records are returned sorted updatedAt DESC, so the first record
+            older than the cutoff means all subsequent pages are also older.
+            Use for daily incremental syncs (~72 hours window) — drastically
+            reduces API calls when only a small fraction was updated recently.
+            Pass None for a full sync (initial import / after a gap).
+        """
+        cutoff = None
+        if since:
+            cutoff = datetime.fromisoformat(since.replace("Z", "+00:00"))
+            if cutoff.tzinfo is None:
+                cutoff = cutoff.replace(tzinfo=timezone.utc)
+
         records, page = [], 0
         while True:
             time.sleep(self._delay)
@@ -54,20 +72,43 @@ class KylasClient:
             r.raise_for_status()
             resp    = r.json()
             content = resp.get("content", [])
-            records.extend(content)
+
+            if cutoff:
+                kept, stop = [], False
+                for item in content:
+                    upd = item.get("updatedAt", "")
+                    if upd:
+                        try:
+                            item_dt = datetime.fromisoformat(upd.replace("Z", "+00:00"))
+                            if item_dt.tzinfo is None:
+                                item_dt = item_dt.replace(tzinfo=timezone.utc)
+                            if item_dt < cutoff:
+                                stop = True
+                                break   # all following records on this & later pages are older
+                        except (ValueError, TypeError):
+                            pass
+                    kept.append(item)
+                records.extend(kept)
+                if stop:
+                    print(f"  [{entity}] incremental stop at page {page} — {len(records)} records since cutoff")
+                    break
+            else:
+                records.extend(content)
+
             if page >= resp.get("totalPages", 1) - 1 or not content:
                 break
             page += 1
+
         return records
 
-    def get_companies(self) -> List[dict]:
-        return self._search_all("company", _COMPANY_FIELDS)
+    def get_companies(self, since: str = None) -> List[dict]:
+        return self._search_all("company", _COMPANY_FIELDS, since=since)
 
-    def get_contacts(self) -> List[dict]:
-        return self._search_all("contact", _CONTACT_FIELDS)
+    def get_contacts(self, since: str = None) -> List[dict]:
+        return self._search_all("contact", _CONTACT_FIELDS, since=since)
 
-    def get_deals(self) -> List[dict]:
-        return self._search_all("deal", _DEAL_FIELDS)
+    def get_deals(self, since: str = None) -> List[dict]:
+        return self._search_all("deal", _DEAL_FIELDS, since=since)
 
     def get_company(self, cid: int) -> dict:
         resp = self._get(f"companies/{cid}")

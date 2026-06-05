@@ -66,7 +66,7 @@ def _build_fields(raw: dict, fm: dict) -> dict:
     })
 
 
-def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
+def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -> dict:
     kylas        = KylasClient()
     company_base = os.environ.get("AIRTABLE_COMPANY_BASE_ID") or os.environ["AIRTABLE_BASE_ID"]
     crm_base     = os.environ["AIRTABLE_BASE_ID"]
@@ -100,7 +100,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None) -> dict:
             print(f"[Companies] WARNING: CRM Companies table not ready ({e}) — run Setup Airtable Schema first")
             crm_ok = False
 
-        companies = kylas.get_companies()
+        companies = kylas.get_companies(since=since)
         if test_mode:
             companies = companies[:5]
         print(f"[Companies] Fetched {len(companies)} from Kylas")

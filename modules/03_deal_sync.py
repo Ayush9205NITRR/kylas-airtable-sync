@@ -94,7 +94,7 @@ def _map(raw: dict, company_id_map: dict = None) -> dict:
 
 
 def run(test_mode: bool = False, logger: SyncLogger = None,
-        company_id_map: dict = None) -> dict:
+        company_id_map: dict = None, since: str = None) -> dict:
     kylas    = KylasClient()
     airtable = AirtableClient("Deals")
     if logger is None:
@@ -114,7 +114,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None,
             return {"created": 0, "updated": 0, "failed": 0, "per_user": {}}
         print(f"[Deals] Cache loaded: {cached} existing")
 
-        deals = kylas.get_deals()
+        deals = kylas.get_deals(since=since)
         if test_mode:
             deals = deals[:5]
         print(f"[Deals] Fetched {len(deals)} from Kylas")

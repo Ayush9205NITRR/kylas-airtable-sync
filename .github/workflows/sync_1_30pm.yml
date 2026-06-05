@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 8 * * 1-6'   # 08:00 UTC = 1:30 PM IST, Mon-Sat
   workflow_dispatch:
+    inputs:
+      full_sync:
+        description: 'Fetch all records (not just last 72h)'
+        required: false
+        default: 'false'
 
 jobs:
   sync:
@@ -20,7 +25,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run sync
-        run: python run_sync.py --slot=first_half
+        run: python run_sync.py --slot=first_half ${{ github.event.inputs.full_sync == 'true' && '--full-sync' || '' }}
         env:
           KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}

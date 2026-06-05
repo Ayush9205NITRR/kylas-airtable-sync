@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.kylas_client import KylasClient
 from utils.airtable_client import AirtableClient
 from utils.logger import SyncLogger
-from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_bd as _classify_bd
+from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_bd as _classify_bd, company_info as _company_info
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 _FM = None
@@ -117,7 +117,7 @@ def _map(raw: dict, user_map: dict = None, company_id_map: dict = None) -> dict:
 
 def run(test_mode: bool = False, test_id: int = None,
         logger: SyncLogger = None, user_map: dict = None,
-        company_id_map: dict = None) -> dict:
+        company_id_map: dict = None, since: str = None) -> dict:
     kylas    = KylasClient()
     airtable = AirtableClient("Contacts")
     if logger is None:
@@ -125,7 +125,10 @@ def run(test_mode: bool = False, test_id: int = None,
 
     log_id = logger.start("Contacts")
     created = updated = failed = pre_cutoff = 0
-    per_user = {}
+    per_user       = {}
+    bd_daily       = {}
+    account_activity = {}
+    today_iso      = date.today().isoformat()
 
     try:
         cached = airtable.build_cache("Kylas Contact Id")
@@ -134,7 +137,7 @@ def run(test_mode: bool = False, test_id: int = None,
         if test_mode and test_id:
             contacts = [kylas.get_contact(test_id)]
         else:
-            contacts = kylas.get_contacts()
+            contacts = kylas.get_contacts(since=since)
             if test_mode:
                 contacts = contacts[:5]
         print(f"[Contacts] Fetched {len(contacts)} from Kylas")
@@ -161,6 +164,29 @@ def run(test_mode: bool = False, test_id: int = None,
                 elif action == "updated":
                     updated += 1
                     per_user.setdefault(owner, {"created": 0, "updated": 0})["updated"] += 1
+
+                # BD metrics + account activity — only for contacts updated today
+                if (ct.get("updatedAt") or "").startswith(today_iso):
+                    stage = _contact_stage(ct)
+                    cats  = _classify_bd(stage)
+                    bd    = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})
+                    for key in BD_KEYS:
+                        if cats[key]:
+                            bd[key] += 1
+
+                    co_id, co_name = _company_info(ct)
+                    if co_id:
+                        acc = account_activity.setdefault(co_id, {
+                            "company_name": co_name, "pocs": 0,
+                            **{k: 0 for k in BD_KEYS},
+                        })
+                        if not acc["company_name"] and co_name:
+                            acc["company_name"] = co_name
+                        acc["pocs"] += 1
+                        for key in BD_KEYS:
+                            if cats[key]:
+                                acc[key] += 1
+
             except Exception as e:
                 failed += 1
                 print(f"  [FAILED  ] Contact {ct.get('id')}: {e}")
@@ -171,28 +197,16 @@ def run(test_mode: bool = False, test_id: int = None,
         logger.finish(log_id, created, updated, failed)
         print(f"[Contacts] Done -> created={created} updated={updated} pre-cutoff={pre_cutoff} failed={failed}")
 
-        # ── BD daily metrics: count contacts updated today by stage category ─
-        today_iso = date.today().isoformat()
-        bd_daily  = {}
-        for ct in contacts:
-            if not (ct.get("updatedAt") or "").startswith(today_iso):
-                continue
-            owner = _owner_name(ct, user_map)
-            stage = _contact_stage(ct)
-            cats  = _classify_bd(stage)
-            bd    = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})
-            for key in BD_KEYS:
-                if cats[key]:
-                    bd[key] += 1
         total_bd = sum(v for m in bd_daily.values() for v in m.values())
         print(f"[Contacts] BD daily: {total_bd} classifications across {len(bd_daily)} owner(s)")
+        print(f"[Contacts] Account activity: {len(account_activity)} companies updated today")
 
     except Exception as e:
         logger.fail(log_id, str(e))
         raise
 
     return {"created": created, "updated": updated, "failed": failed,
-            "per_user": per_user, "bd_daily": bd_daily, "contacts_raw": contacts}
+            "per_user": per_user, "bd_daily": bd_daily, "account_activity": account_activity}
 
 
 if __name__ == "__main__":

@@ -18,6 +18,8 @@ def main():
     parser.add_argument("--slot", choices=["first_half", "full_day"], default="full_day")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--test", action="store_true", help="Process only first 5 records per module")
+    parser.add_argument("--full-sync", action="store_true",
+                        help="Fetch all records (no time window). Default: incremental (last 72h)")
     args = parser.parse_args()
 
     from dotenv import load_dotenv
@@ -33,9 +35,15 @@ def main():
     sys.path.insert(0, os.path.dirname(__file__))
     from utils.logger import SyncLogger
     from utils.kylas_client import KylasClient
+    from datetime import datetime, timezone, timedelta
+
+    since = None
+    if not args.full_sync:
+        since = (datetime.now(timezone.utc) - timedelta(hours=72)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     logger = SyncLogger()
-    print(f"[run_sync] Run ID={logger.run_id}  slot={args.slot}\n")
+    print(f"[run_sync] Run ID={logger.run_id}  slot={args.slot}  "
+          f"mode={'full-sync' if args.full_sync else f'incremental since {since}'}\n")
 
     # Build user ID→name map once — used by contact sync for owner resolution
     user_map = {}
@@ -51,7 +59,7 @@ def main():
     stats = {}
 
     print("=" * 40 + "\nMODULE 1: Companies\n" + "=" * 40)
-    company_result    = _load("01_company_sync.py").run(test_mode=args.test, logger=logger)
+    company_result    = _load("01_company_sync.py").run(test_mode=args.test, logger=logger, since=since)
     stats["companies"] = company_result
     company_id_map    = company_result.get("id_map", {})
     print(f"[run_sync] {len(company_id_map)} company IDs available for linking\n")
@@ -59,21 +67,21 @@ def main():
     print("\n" + "=" * 40 + "\nMODULE 2: Contacts\n" + "=" * 40)
     contact_result  = _load("02_contact_sync.py").run(
         test_mode=args.test, logger=logger,
-        user_map=user_map, company_id_map=company_id_map,
+        user_map=user_map, company_id_map=company_id_map, since=since,
     )
-    stats["contacts"] = contact_result
-    bd_daily          = contact_result.get("bd_daily", {})
+    stats["contacts"]  = contact_result
+    bd_daily           = contact_result.get("bd_daily", {})
+    account_activity   = contact_result.get("account_activity", {})
     print(f"[run_sync] BD daily metrics for {len(bd_daily)} owner(s)\n")
 
     print("\n" + "=" * 40 + "\nMODULE 3: Deals\n" + "=" * 40)
     stats["deals"] = _load("03_deal_sync.py").run(
-        test_mode=args.test, logger=logger, company_id_map=company_id_map,
+        test_mode=args.test, logger=logger, company_id_map=company_id_map, since=since,
     )
 
     print("\n" + "=" * 40 + "\nMODULE 5: BD Stats\n" + "=" * 40)
-    contacts_raw = contact_result.get("contacts_raw", [])
     bd_enriched  = _load("05_bd_stats.py").run(
-        bd_daily, contacts_raw, company_id_map, args.slot, logger
+        bd_daily, account_activity, company_id_map, args.slot, logger
     )
     print(f"[run_sync] BD enriched metrics for {len(bd_enriched)} owner(s)\n")
 
