@@ -143,6 +143,7 @@ BD_DAILY_STATS_TABLE = {
         {"name": "Date",               "type": T},
         {"name": "Owner",              "type": T},
         {"name": "Slot",               "type": T},   # first_half or full_day
+        {"name": "Date Parsed", "type": "formula", "options": {"formula": "DATETIME_PARSE({Date})"}},
         {"name": "Attempted",          "type": N, "options": {"precision": 0}},
         {"name": "Connected",          "type": N, "options": {"precision": 0}},
         {"name": "Discovery Calls",    "type": N, "options": {"precision": 0}},
@@ -202,6 +203,7 @@ def main():
             {"name": "Company Name",      "type": T},
             {"name": "Kylas Company Id",  "type": T},
             {"name": "BD Owners",         "type": T},   # comma-separated BD people who touched this company
+            {"name": "Date Parsed", "type": "formula", "options": {"formula": "DATETIME_PARSE({Date})"}},
             {"name": "POCs Tapped",       "type": N, "options": {"precision": 0}},
             {"name": "Attempted POCs",    "type": N, "options": {"precision": 0}},
             {"name": "Connected POCs",    "type": N, "options": {"precision": 0}},

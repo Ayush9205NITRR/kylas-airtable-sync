@@ -1,0 +1,40 @@
+name: Assign Companies from Airtable → Kylas
+
+on:
+  workflow_dispatch:
+    inputs:
+      view_name:
+        description: 'Airtable view name to read from (Company List table)'
+        required: true
+        default: 'BD Assignment'
+      dry_run:
+        description: 'true = print only, no Kylas updates'
+        required: false
+        default: 'false'
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run assignment
+        run: |
+          ARGS="--view=${{ github.event.inputs.view_name }}"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python scripts/assign_from_airtable.py $ARGS
+        env:
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}

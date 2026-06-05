@@ -75,6 +75,7 @@ COMPANY_LIST_NEW = [
     {"name": "Batch",             "type": T},
     {"name": "Pipeline Stage BD", "type": T},
     {"name": "Source of Data",    "type": T},
+    {"name": "Owner Email",       "type": T},
 ]
 
 # ── Companies table (CRM base — for linking) ─────────────────────────────────
@@ -167,6 +168,21 @@ def main():
                 "type": "multipleRecordLinks",
                 "options": {"linkedTableId": companies_id},
             })
+        # Industry lookup — pulls Industry from linked Companies record
+        contacts_fields  = {f["name"]: f for f in crm_tables["Contacts"].get("fields", [])}
+        companies_fields = {f["name"]: f for f in crm_tables.get("Companies", {}).get("fields", [])}
+        co_link_id       = contacts_fields.get("Company", {}).get("id")
+        industry_fid     = companies_fields.get("Industry", {}).get("id")
+        if co_link_id and industry_fid and "Industry" not in contacts_fields:
+            add_field(CRM_BASE, crm_tables["Contacts"]["id"], {
+                "name": "Industry",
+                "type": "multipleLookupValues",
+                "options": {"fieldIdInLinkedTable": industry_fid, "recordLinkFieldId": co_link_id},
+            })
+        elif "Industry" in contacts_fields:
+            print("    ~ Industry (already exists)")
+        else:
+            print("    ~ Industry lookup: re-run after first sync to get field IDs")
     else:
         print("    ! Contacts table not found")
 
