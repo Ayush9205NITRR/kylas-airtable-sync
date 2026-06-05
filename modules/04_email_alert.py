@@ -109,61 +109,101 @@ def _build_body(name: str, today: str, slot: str, slot_label: str,
     w1          = bd.get("w1", {})
     w2          = bd.get("w2", {})
     has_windows = slot == "full_day" and any(w1.values())
-    win_tgt     = lambda m: targets.get(m, 0) // 4
 
-    opening = (
-        "Morning sync done! Here is where you stand at midday:"
-        if slot == "first_half"
-        else "End of day sync complete! Here is your full BD report:"
-    )
-    sep = "=" * 48
-    bar = "-" * 48
+    def _win_tgt(m):
+        d = targets.get(m)
+        return None if d is None else d // 4
 
-    lines = [
-        f"Hi {name}!",
-        "",
-        opening,
-        "",
-        f"  Date  : {today}",
-        f"  Slot  : {slot_label}",
-        "",
-        sep,
-        f"  {'ACTIVITY SUMMARY':^44}",
-        sep,
-    ]
+    def _fmt(t):
+        return "—" if t is None else f"/ {t}"
 
-    if has_windows:
-        lines.append(f"  {'Metric':<22}{'W1 (11-1)':>8}{'W2 (3-6)':>9}{'Total':>7}{'Target':>7}")
-        lines.append(f"  {bar}")
+    sep = "=" * 50
+    bar = "-" * 50
+
+    if slot == "full_day":
+        lines = [
+            f"Hi {name}!",
+            "",
+            f"End of day sync complete. Here is your full BD report for {today}.",
+            "",
+        ]
+
+        if has_windows:
+            lines += [
+                sep,
+                "  FIRST HALF  (11:00 AM – 1:00 PM)",
+                sep,
+                f"  {'Metric':<22} {'Count':>5}   {'Target':>8}",
+                f"  {bar}",
+            ]
+            for key in DISPLAY_ORDER:
+                lines.append(
+                    f"  {METRIC_LABEL[key]:<22} {w1.get(key, 0):>5}   {_fmt(_win_tgt(key)):>8}"
+                )
+            lines += [
+                "",
+                sep,
+                "  AFTERNOON  (3:00 PM – 6:00 PM)",
+                sep,
+                f"  {'Metric':<22} {'Count':>5}   {'Target':>8}",
+                f"  {bar}",
+            ]
+            for key in DISPLAY_ORDER:
+                lines.append(
+                    f"  {METRIC_LABEL[key]:<22} {w2.get(key, 0):>5}   {_fmt(_win_tgt(key)):>8}"
+                )
+            lines.append("")
+
+        lines += [
+            sep,
+            "  FULL DAY TOTAL",
+            sep,
+            f"  {'Metric':<22} {'Count':>5}   {'Daily Target':>12}",
+            f"  {bar}",
+        ]
         for key in DISPLAY_ORDER:
-            lbl   = METRIC_LABEL[key]
-            total = bd.get(key, 0)
-            w1v   = w1.get(key, 0)
-            w2v   = w2.get(key, 0)
-            dt    = targets.get(key, 0)
-            tgt   = f"/{dt}" if dt else ""
-            lines.append(f"  {lbl:<22}{w1v:>8}{w2v:>9}{total:>7}{tgt:>7}")
+            dt  = targets.get(key)
+            tgt = "—" if dt is None else f"/ {dt}"
+            lines.append(
+                f"  {METRIC_LABEL[key]:<22} {bd.get(key, 0):>5}   {tgt:>12}"
+            )
+        lines += [
+            sep,
+            "",
+            _encouragement(bd.get("connected", 0), targets.get("connected") or 0),
+            "",
+            "Another day building the pipeline. Rest well — tomorrow is a fresh start!",
+        ]
+
     else:
-        lines.append(f"  {'Metric':<26}{'Count':>6}{'Win.Target':>12}")
-        lines.append(f"  {bar}")
+        lines = [
+            f"Hi {name}!",
+            "",
+            f"Morning sync done. Here is where you stand at midday on {today}.",
+            "",
+            sep,
+            "  FIRST HALF  (11:00 AM – 1:00 PM)",
+            sep,
+            f"  {'Metric':<22} {'Count':>5}   {'Win.Target':>10}",
+            f"  {bar}",
+        ]
         for key in DISPLAY_ORDER:
-            lbl = METRIC_LABEL[key]
-            cnt = bd.get(key, 0)
-            wt  = win_tgt(key)
-            wts = f"/ {wt}" if wt else ""
-            lines.append(f"  {lbl:<26}{cnt:>6}{wts:>12}")
+            lines.append(
+                f"  {METRIC_LABEL[key]:<22} {bd.get(key, 0):>5}   {_fmt(_win_tgt(key)):>10}"
+            )
+        lines += [
+            sep,
+            "",
+            _encouragement(bd.get("connected", 0), targets.get("connected") or 0),
+            "",
+            "The afternoon window (3:00 – 6:00 PM) is ahead — let's make it count!",
+        ]
 
-    lines += [
-        sep,
-        "",
-        _encouragement(bd.get("connected", 0), targets.get("connected", 0)),
-        "",
-    ]
-
-    if slot == "first_half":
-        lines.append("The afternoon window (3:00 - 6:00 PM) is ahead — let's make it count!")
-    else:
-        lines.append("Another day building the pipeline. Rest well — tomorrow is a fresh start!")
+    if not targets:
+        lines += [
+            "",
+            "(Tip: fill the BD Targets table in Airtable to unlock target comparisons.)",
+        ]
 
     lines += [
         "",
