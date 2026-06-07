@@ -151,6 +151,11 @@ def _load_monthly_fixed() -> dict:
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+def _friendly_date(d: date = None) -> str:
+    """e.g. 'June 8' — used in subject lines."""
+    d = d or date.today()
+    return f"{d.strftime('%B')} {d.day}"
+
 def _fmt_tgt(daily: int) -> str:
     return "—" if not daily else str(daily)
 
@@ -195,7 +200,7 @@ def _build_first_half(name: str, today: str, bd: dict, targets: dict,
     if goal:
         lines += ["", goal]
     lines += ["", "Afternoon window: 3:00 PM – 6:00 PM", "", "— Kylas Sync"]
-    return f"BD | {name} | {today} | 11 AM Window", "\n".join(lines)
+    return f"BD | {name} | {_friendly_date()} | 11 AM Window", "\n".join(lines)
 
 
 def _build_full_day(name: str, today: str, bd: dict, targets: dict,
@@ -229,7 +234,7 @@ def _build_full_day(name: str, today: str, bd: dict, targets: dict,
     if goal:
         lines += ["", goal]
     lines += ["", "— Kylas Sync"]
-    return f"BD | {name} | {today} | EOD", "\n".join(lines)
+    return f"BD | {name} | {_friendly_date()} | EOD", "\n".join(lines)
 
 
 # ── SMTP send ─────────────────────────────────────────────────────────────────

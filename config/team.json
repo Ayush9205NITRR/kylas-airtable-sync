@@ -12,6 +12,10 @@
     "ayush@enout.in",
     "vedant@enout.in"
   ],
+  "hot_pipeline_to": [
+    "ayush@enout.in",
+    "vedant@enout.in"
+  ],
   "bd_targets": {
     "daily": {
       "attempted": 100,
