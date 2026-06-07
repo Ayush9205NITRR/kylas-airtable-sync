@@ -259,6 +259,8 @@ def main():
                 {"Key": "daily_connected",  "Value":  35, "Description": "Daily connected calls per person"},
                 {"Key": "daily_dcb",        "Value":   0, "Description": "Daily discovery calls target (0 = no target)"},
                 {"Key": "daily_sql",        "Value":   0, "Description": "Daily SQL target (0 = no target)"},
+                {"Key": "monthly_fixed_dcb", "Value": 10, "Description": "Monthly Discovery Calls goal"},
+                {"Key": "monthly_fixed_sql", "Value":  6, "Description": "Monthly SQL goal"},
             ]
             for row in _rows:
                 _req.post(
@@ -267,6 +269,47 @@ def main():
                 )
                 time.sleep(0.2)
             print("    + Pre-populated with default targets — edit values in Airtable to change targets")
+
+    # ── BD Members (email address management from Airtable) ───────────────────
+    BD_MEMBERS_TABLE = {
+        "name": "BD Members",
+        "fields": [
+            {"name": "Name",   "type": T},
+            {"name": "Email",  "type": "email"},
+            {
+                "name": "Group",
+                "type": "singleSelect",
+                "options": {"choices": [{"name": "BD"}, {"name": "Revenue"}]},
+            },
+            {
+                "name": "Active",
+                "type": "checkbox",
+                "options": {"icon": "check", "color": "greenBright"},
+            },
+        ],
+    }
+    print("\n[BD Members]")
+    if "BD Members" in tables:
+        print("    ~ Already exists")
+    else:
+        result = create_table(CRM_BASE, BD_MEMBERS_TABLE)
+        if result:
+            import requests as _req2
+            _members = [
+                {"Name": "Rubal",   "Email": "rubal@enout.in",          "Group": "BD", "Active": True},
+                {"Name": "Bhaumik", "Email": "bhaumik@enout.in",        "Group": "BD", "Active": True},
+                {"Name": "Shreya",  "Email": "shreya.bodwal@enout.in",  "Group": "BD", "Active": True},
+                {"Name": "Mayra",   "Email": "mayra@enout.in",          "Group": "BD", "Active": True},
+                {"Name": "Devansh", "Email": "devansh.shukla@enout.in", "Group": "BD", "Active": True},
+                {"Name": "Tanay",   "Email": "tanay.kumar@enout.in",    "Group": "BD", "Active": True},
+            ]
+            for m in _members:
+                _req2.post(
+                    f"https://api.airtable.com/v0/{CRM_BASE}/{result['id']}",
+                    json={"fields": m}, headers=HEADERS, timeout=10,
+                )
+                time.sleep(0.2)
+            print("    + Pre-populated with 6 BD members — add/remove/toggle Active in Airtable")
 
     print("\n=== Done ===")
     print("""

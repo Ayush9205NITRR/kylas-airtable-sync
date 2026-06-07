@@ -4,14 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       slot:
-        description: 'Slot label shown in email (first_half or full_day)'
+        description: 'Slot (first_half or full_day)'
         required: false
-        default: 'full_day'
+        default: 'first_half'
+      demo_only:
+        description: 'Send preview to Ayush + Vedant only (not full team)'
+        required: false
+        default: 'true'
 
 jobs:
   test-email:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -22,8 +26,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Send test email to all team members
-        run: python modules/04_email_alert.py --slot ${{ github.event.inputs.slot }}
+      - name: Send email
+        run: |
+          ARGS="--slot ${{ github.event.inputs.slot }}"
+          if [ "${{ github.event.inputs.demo_only }}" = "true" ]; then
+            ARGS="$ARGS --demo ayush@enout.in vedant@enout.in"
+          fi
+          python modules/04_email_alert.py $ARGS
         env:
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          SMTP_USER:        ${{ secrets.SMTP_USER }}
+          SMTP_PASS:        ${{ secrets.SMTP_PASS }}
