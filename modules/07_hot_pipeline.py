@@ -9,10 +9,12 @@ pipeline stage, grouped by stage:
     MQL
     SQL
 
-Each row:  Company Name  |  Source  |  Industry
+Each row:  Company Name  |  Source  |  Industry  |  Offsite Timeline
 
-Data is read straight from Airtable (Contacts + Companies), so it reflects
-the full synced dataset — a true daily snapshot, not just today's changes.
+Data is read straight from the Companies table — each company is grouped by
+the pipeline stage(s) of its linked contacts (the "Pipeline Stage (from
+Contacts 2)" lookup). Reading from Companies guarantees the COMPANY name is
+shown (a contact name can never leak in).
 
 Recipients: config/team.json  ->  hot_pipeline_to  (falls back to cc).
 """
@@ -42,17 +44,6 @@ _STAGE_LABEL = {
     "sql":                              "SQL",
 }
 
-# Stage spellings to pull from Airtable (server-side filter)
-_FILTER_STAGES = [
-    "Activation",
-    "Discovery Call Booked",
-    "MQL (Marketing Qualified Lead)",
-    "MQL",
-    "SQL (Sales Qualified Lead)",
-    "SQL",
-]
-
-
 def _friendly_date(d: date = None) -> str:
     d = d or date.today()
     return f"{d.strftime('%B')} {d.day}"
@@ -63,65 +54,108 @@ def _tr(s: str, n: int) -> str:
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
-def _load_company_map():
-    """{kylas_company_id: {name, industry, source}} from the Companies table."""
+def _val(x) -> str:
+    """Coerce an Airtable cell (string / number / list / dict) to a clean string."""
+    if x is None:
+        return ""
+    if isinstance(x, list):
+        parts = []
+        for i in x:
+            if isinstance(i, dict):
+                parts.append(str(i.get("name") or i.get("value") or "").strip())
+            else:
+                parts.append(str(i).strip())
+        return ", ".join(p for p in parts if p)
+    if isinstance(x, dict):
+        return str(x.get("name") or x.get("value") or "").strip()
+    return str(x).strip()
+
+
+def _pick_field(all_keys: set, configured: str, *needle_sets) -> str:
+    """
+    Return the best-matching field name actually present in the table.
+    Tries the configured name first, then any key containing ALL needles
+    of any needle_set (case-insensitive).
+    """
+    if configured and configured in all_keys:
+        return configured
+    for needles in needle_sets:
+        for k in all_keys:
+            kl = k.lower()
+            if all(n in kl for n in needles):
+                return k
+    return ""
+
+
+def _collect_hot():
+    """
+    Read the Companies table and group companies by the hot pipeline stage(s)
+    of their linked contacts (via the "Pipeline Stage (from Contacts 2)"
+    lookup). Returns {label: [ {name, source, industry, offsite}, ... ]}.
+
+    Reading from Companies (not Contacts) guarantees we always show the
+    COMPANY name — a contact name can never leak in.
+    """
     from utils.airtable_client import AirtableClient
     with open(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                            "config", "field_map.json")) as fh:
         fm = json.load(fh)["company_crm"]
 
     rows = AirtableClient("Companies").table.all()
-    out  = {}
+
+    all_keys = set()
     for r in rows:
-        f   = r["fields"]
-        kid = str(f.get(fm["id"], "")).strip()
-        if not kid:
-            continue
-        out[kid] = {
-            "name":     f.get(fm["name"], ""),
-            "industry": f.get(fm["industry"], ""),
-            "source":   f.get(fm["sourceOfData"], ""),
-        }
-    return out, fm
+        all_keys.update(r["fields"].keys())
 
+    # Detect the lookup field that carries the linked contacts' pipeline stages.
+    # Must contain "contact" so we don't grab the company's own "Pipeline Stage BD".
+    stage_field   = _pick_field(all_keys, fm.get("contactStages"),
+                                ("pipeline stage", "contact"))
+    source_field  = _pick_field(all_keys, fm.get("sourceOfData"),
+                                ("source",))
+    industry_field = _pick_field(all_keys, fm.get("industry"),
+                                 ("industry",))
+    offsite_field = _pick_field(all_keys, fm.get("offsiteTimeline"),
+                                ("offsite",))
+    name_field    = fm["name"] if fm["name"] in all_keys else \
+                    _pick_field(all_keys, None, ("company name",), ("company",))
 
-def _collect_hot(company_map: dict):
-    """Return {label: [ {name, source, industry}, ... ]} grouped + deduped."""
-    from utils.airtable_client import AirtableClient
-    with open(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                           "config", "field_map.json")) as fh:
-        cfm = json.load(fh)["contact"]
+    print(f"[Hot Pipeline] Fields → stage='{stage_field}' source='{source_field}' "
+          f"industry='{industry_field}' offsite='{offsite_field}' name='{name_field}'")
 
-    clauses = ",".join("{%s}='%s'" % (cfm["pipelineStage"], s) for s in _FILTER_STAGES)
-    formula = f"OR({clauses})"
-
-    try:
-        rows = AirtableClient("Contacts").table.all(formula=formula)
-    except Exception:
-        # If the formula is rejected for any reason, fall back to a full scan
-        rows = AirtableClient("Contacts").table.all()
+    if not stage_field:
+        print("[Hot Pipeline] WARNING: no 'Pipeline Stage (from Contacts ...)' "
+              "lookup field found on Companies — nothing to report")
+        return {lbl: [] for lbl in ORDER}
 
     groups = {lbl: {} for lbl in ORDER}
     for r in rows:
-        f     = r["fields"]
-        stage = str(f.get(cfm["pipelineStage"], "")).strip()
-        label = _STAGE_LABEL.get(stage.lower())
-        if not label:
+        f      = r["fields"]
+        stages = f.get(stage_field)
+        if not stages:
+            continue
+        stages = stages if isinstance(stages, list) else [stages]
+
+        labels = set()
+        for s in stages:
+            lbl = _STAGE_LABEL.get(_val(s).lower())
+            if lbl:
+                labels.add(lbl)
+        if not labels:
             continue
 
-        kid = str(f.get(cfm["companyId"], "")).strip()
-        co  = company_map.get(kid, {})
-        name     = co.get("name") or f.get(cfm["fullName"], "") or "(unlinked contact)"
-        industry = co.get("industry", "")
-        source   = co.get("source") or f.get(cfm["source"], "")
+        name = _val(f.get(name_field))
+        if not name:
+            continue
 
-        key = kid or name.lower()
-        # First write wins; prefer a row that has a resolved company name
-        if key not in groups[label] or (co.get("name") and not groups[label][key]["resolved"]):
-            groups[label][key] = {
-                "name": name, "source": source,
-                "industry": industry, "resolved": bool(co.get("name")),
-            }
+        info = {
+            "name":     name,
+            "source":   _val(f.get(source_field)),
+            "industry": _val(f.get(industry_field)),
+            "offsite":  _val(f.get(offsite_field)),
+        }
+        for lbl in labels:
+            groups[lbl][r["id"]] = info   # dedupe: one company once per stage
 
     return {lbl: sorted(v.values(), key=lambda x: x["name"].lower())
             for lbl, v in groups.items()}
@@ -163,14 +197,16 @@ def _build_body(groups: dict, friendly: str) -> str:
         rows = "".join(
             f'<tr>'
             f'<td {_TD}>{_tr(it["name"], 40)}</td>'
-            f'<td {_TD}>{_tr(it["source"], 24)}</td>'
-            f'<td {_TD}>{_tr(it["industry"], 24)}</td>'
+            f'<td {_TD}>{_tr(it["source"], 22)}</td>'
+            f'<td {_TD}>{_tr(it["industry"], 22)}</td>'
+            f'<td {_TD}>{_tr(it.get("offsite", ""), 22) or "—"}</td>'
             f'</tr>'
             for it in items
         )
         sections += (
             f'<table {_TABLE}><thead><tr>'
-            f'<th {_TH}>Company</th><th {_TH}>Source</th><th {_TH}>Industry</th>'
+            f'<th {_TH}>Company</th><th {_TH}>Source</th>'
+            f'<th {_TH}>Industry</th><th {_TH}>Offsite Timeline</th>'
             f'</tr></thead><tbody>{rows}</tbody></table>'
         )
 
@@ -182,7 +218,8 @@ def _build_body(groups: dict, friendly: str) -> str:
         '<p style="font-size:13px;color:#666;margin:0 0 16px;">'
         'Companies with a contact in: Activation, Discovery Call Booked, MQL, SQL</p>'
         + sections
-        + f'<p style="font-size:13px;color:#555;margin:8px 0 24px;">Total: {total} companies</p>'
+        + f'<p style="font-size:13px;color:#555;margin:8px 0 24px;">'
+          f'Total: {total} company rows across stages</p>'
         '<p style="color:#999;font-size:12px;">— Kylas Sync</p>'
         '</body></html>'
     )
@@ -202,8 +239,7 @@ def run(to_override: list = None):
         return
 
     try:
-        company_map, _ = _load_company_map()
-        groups = _collect_hot(company_map)
+        groups = _collect_hot()
     except Exception as exc:
         print(f"[Hot Pipeline] WARNING: could not read Airtable — {exc}")
         return
@@ -229,7 +265,7 @@ def run(to_override: list = None):
             s.login(smtp_user, smtp_pass)
             s.sendmail(smtp_user, to_list, msg.as_string())
         total = sum(len(v) for v in groups.values())
-        print(f"[Hot Pipeline] Sent → {', '.join(to_list)}  ({total} companies)")
+        print(f"[Hot Pipeline] Sent → {', '.join(to_list)}  ({total} company rows)")
     except Exception as exc:
         print(f"[Hot Pipeline] WARNING: send failed — {exc}")
 
