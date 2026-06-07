@@ -40,10 +40,12 @@
     ],
     "cc_owner": true,
     "terminal_stages": [
+      "Discovery Call",
+      "Event Executed",
+      "Closed - Offsite Delayed",
       "Won",
-      "Closed Lost",
       "Closed Unqualified",
-      "Closed - Offsite Delayed"
+      "Closed Lost"
     ]
   },
   "kylas_users": {

@@ -15,7 +15,9 @@ was added recently the deal is treated as alive. So:
     last_activity = max(Updated At, latest note createdAt)
     rotting       = open deal AND (today - last_activity) >= idle_days
 
-Deals in a terminal stage (Won / Closed*) are never flagged.
+Stages listed in deal_rot.terminal_stages are skipped (e.g. Discovery Call,
+Event Executed, Closed - Offsite Delayed, Won, Closed Unqualified, Closed
+Lost); every other / middle stage is checked for rotting.
 
 Alert table:  Deal Name | Owner | Pipeline Stage | Idle (days) | Last Comment
 Recipients:   team.json deal_rot.recipients  (+ each deal owner as CC)
