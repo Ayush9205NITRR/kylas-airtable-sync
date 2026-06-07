@@ -237,6 +237,37 @@ def main():
                 "options": {"linkedTableId": companies_id},
             })
 
+    # ── BD Config (target management without touching code) ───────────────────
+    BD_CONFIG_TABLE = {
+        "name": "BD Config",
+        "fields": [
+            {"name": "Key",         "type": T},   # e.g. daily_attempted
+            {"name": "Value",       "type": N, "options": {"precision": 0}},
+            {"name": "Description", "type": T},
+        ],
+    }
+    print("\n[BD Config]")
+    if "BD Config" in tables:
+        print("    ~ Already exists")
+    else:
+        result = create_table(CRM_BASE, BD_CONFIG_TABLE)
+        if result:
+            # Pre-populate with default target rows so user just edits numbers
+            import requests as _req
+            _rows = [
+                {"Key": "daily_attempted", "Value": 100, "Description": "Daily attempted calls per person"},
+                {"Key": "daily_connected",  "Value":  35, "Description": "Daily connected calls per person"},
+                {"Key": "daily_dcb",        "Value":   0, "Description": "Daily discovery calls target (0 = no target)"},
+                {"Key": "daily_sql",        "Value":   0, "Description": "Daily SQL target (0 = no target)"},
+            ]
+            for row in _rows:
+                _req.post(
+                    f"https://api.airtable.com/v0/{CRM_BASE}/{result['id']}",
+                    json={"fields": row}, headers=HEADERS, timeout=10,
+                )
+                time.sleep(0.2)
+            print("    + Pre-populated with default targets — edit values in Airtable to change targets")
+
     print("\n=== Done ===")
     print("""
 How to use the BD Dashboard:

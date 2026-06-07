@@ -1,5 +1,5 @@
 {
-  "members": [
+  "bd_team": [
     {"name": "Rubal",   "email": "rubal@enout.in"},
     {"name": "Bhaumik", "email": "bhaumik@enout.in"},
     {"name": "Shreya",  "email": "shreya.bodwal@enout.in"},
@@ -7,10 +7,21 @@
     {"name": "Devansh", "email": "devansh.shukla@enout.in"},
     {"name": "Tanay",   "email": "tanay.kumar@enout.in"}
   ],
+  "revenue_team": [],
   "cc": [
     "ayush@enout.in",
     "vedant@enout.in"
   ],
+  "bd_targets": {
+    "daily": {
+      "attempted": 100,
+      "connected":  35,
+      "dcb":         0,
+      "sql":         0
+    },
+    "weekly_multiplier":  5.5,
+    "monthly_multiplier": 22
+  },
   "kylas_users": {
     "74754": "Tanay Kumar",
     "74755": "Mayra Singh",
@@ -23,16 +34,6 @@
     "74757": "Bhaumik Sachdeva",
     "74753": "Devansh Shukla",
     "74752": "Rubal Sansanwal"
-  },
-  "bd_targets": {
-    "daily": {
-      "attempted": 70,
-      "connected": 35,
-      "dcb":        0,
-      "sql":        0
-    },
-    "weekly_multiplier":  5.5,
-    "monthly_multiplier": 22
   },
   "kylas_user_emails": {
     "Tanay Kumar":     "tanay.kumar@enout.in",
