@@ -89,17 +89,12 @@ def _build_body(name: str, period: str, range_label: str,
     bar = "-" * 54
 
     lines = [
-        f"Hi {name}!",
+        f"Hi {name},",
         "",
-        f"Your {opening} BD report is ready.",
-        "",
-        f"  Period : {range_label}",
-        "",
-        sep,
-        f"  {p_label} SUMMARY",
+        f"BD {opening.title()} Report  ·  {range_label}",
         sep,
         f"  {'Metric':<22} {'Done':>6}  {'Target':>8}  {'%':>5}",
-        f"  {bar}",
+        bar,
     ]
 
     for key in METRICS:
@@ -111,32 +106,7 @@ def _build_body(name: str, period: str, range_label: str,
         pct_s = _pct(done, p_tgt)
         lines.append(f"  {lbl:<22} {done:>6}  {tgt_s:>8}  {pct_s}")
 
-    lines.append(sep)
-    lines.append("")
-
-    # Encouragement
-    conn_tgt  = round(daily.get("connected", 0) * mult)
-    conn_done = achieved.get("connected", 0)
-    if conn_tgt > 0:
-        pct = conn_done / conn_tgt
-        if pct >= 1.0:
-            enc = "Target achieved! Exceptional work this period!"
-        elif pct >= 0.75:
-            enc = "So close to target — strong showing this period!"
-        elif pct >= 0.5:
-            enc = "Halfway there — keep the momentum going!"
-        else:
-            enc = "Every call builds the pipeline — next period is yours!"
-    else:
-        enc = "Keep building — every conversation moves the needle!"
-
-    lines += [
-        enc,
-        "",
-        "Cheers,",
-        "Kylas Sync Bot",
-        "(your data is live in the Airtable sales pipeline)",
-    ]
+    lines += [sep, "", "— Kylas Sync"]
     return "\n".join(lines)
 
 
@@ -153,7 +123,7 @@ def send_report(period: str):
         end   = today - timedelta(days=1)          # Friday
         start = end - timedelta(days=4)            # Monday
         range_label = f"{start.strftime('%d %b')} – {end.strftime('%d %b %Y')}"
-        subject_sfx = f"Week of {start.strftime('%d %b %Y')}"
+        subject_sfx = f"{start.strftime('%d %b')} – {end.strftime('%d %b %Y')}"
     else:
         # Report covers the entire previous month (run on 1st of new month)
         first_this_month = today.replace(day=1)
@@ -183,7 +153,7 @@ def send_report(period: str):
 
         achieved = _find_member_stats(name, period_stats)
         body     = _build_body(name, period, range_label, achieved, bd_targets)
-        subject  = f"Kylas BD {period.title()} Report — {subject_sfx}"
+        subject  = f"BD {period.title()} | {subject_sfx}"
         eff_cc   = [a for a in cc_list if a.lower() != email.lower()]
 
         msg             = MIMEMultipart()
