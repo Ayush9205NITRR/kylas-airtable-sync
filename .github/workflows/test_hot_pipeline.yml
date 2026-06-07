@@ -1,0 +1,36 @@
+name: Test Hot Pipeline Digest
+
+on:
+  workflow_dispatch:
+    inputs:
+      to:
+        description: 'Recipients (space-separated). Blank = team.json hot_pipeline_to'
+        required: false
+        default: ''
+
+jobs:
+  hot-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send Hot Pipeline digest
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.to }}" ]; then
+            ARGS="--to ${{ github.event.inputs.to }}"
+          fi
+          python modules/07_hot_pipeline.py $ARGS
+        env:
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          SMTP_USER:        ${{ secrets.SMTP_USER }}
+          SMTP_PASS:        ${{ secrets.SMTP_PASS }}
