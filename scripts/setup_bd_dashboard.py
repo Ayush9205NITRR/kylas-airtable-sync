@@ -370,7 +370,7 @@ def main():
         {"Template": "Hot Pipeline Digest", "When": "6:30 PM IST daily (EOD sync)",
          "Recipients": "team.json hot_pipeline_to (Ayush, Vedant)",
          "Subject Format": "Hot Pipeline | {Month Day}",
-         "Description": "Companies with a contact in Activation / Discovery Call Booked / MQL / SQL. Columns: Company | Source | Industry."},
+         "Description": "Read from Companies table, grouped by linked-contact stage (Activation / Discovery Call Booked / MQL / SQL). Columns: Company | Source | Industry | Offsite Timeline."},
         {"Template": "Deal Rotting Alert", "When": "9 AM IST daily (Mon-Sat)",
          "Recipients": "team.json deal_rot.recipients (Vipul, Akash, Keshav) + deal owner (cc)",
          "Subject Format": "Deal Rotting Alert | {Month Day} | {N} deal(s)",

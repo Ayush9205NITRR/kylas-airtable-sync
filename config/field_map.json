@@ -18,7 +18,9 @@
     "updatedAt":       "Updated At",
     "batch":           "Batch",
     "pipelineStageBd": "Pipeline Stage BD",
-    "sourceOfData":    "Source of Data"
+    "sourceOfData":    "Source of Data",
+    "contactStages":   "Pipeline Stage (from Contacts 2)",
+    "offsiteTimeline": "Offsite Timeline"
   },
   "contact": {
     "id":            "Kylas Contact Id",
