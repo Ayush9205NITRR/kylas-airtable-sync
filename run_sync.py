@@ -114,6 +114,11 @@ def main():
     print("\n" + "=" * 40 + "\nMODULE 4: Email Alert\n" + "=" * 40)
     _load("04_email_alert.py").send_alert(stats, args.slot, bd_enriched=bd_enriched)
 
+    # Hot Pipeline digest → management, once a day on the EOD (6:30 PM) run
+    if args.slot == "full_day":
+        print("\n" + "=" * 40 + "\nMODULE 7: Hot Pipeline Digest\n" + "=" * 40)
+        _load("07_hot_pipeline.py").run()
+
     print("\n[run_sync] All modules complete.")
 
 

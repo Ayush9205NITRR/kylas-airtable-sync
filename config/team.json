@@ -12,6 +12,10 @@
     "ayush@enout.in",
     "vedant@enout.in"
   ],
+  "hot_pipeline_to": [
+    "ayush@enout.in",
+    "vedant@enout.in"
+  ],
   "bd_targets": {
     "daily": {
       "attempted": 100,
@@ -19,8 +23,30 @@
       "dcb":         0,
       "sql":         0
     },
+    "monthly_fixed": {
+      "dcb": 10,
+      "sql":  6
+    },
     "weekly_multiplier":  5.5,
     "monthly_multiplier": 22
+  },
+  "deal_rot": {
+    "enabled": true,
+    "idle_days": 2,
+    "recipients": [
+      "vipul@enout.in",
+      "akash@enout.in",
+      "keshav@enout.in"
+    ],
+    "cc_owner": true,
+    "terminal_stages": [
+      "Discovery Call",
+      "Event Executed",
+      "Closed - Offsite Delayed",
+      "Won",
+      "Closed Unqualified",
+      "Closed Lost"
+    ]
   },
   "kylas_users": {
     "74754": "Tanay Kumar",

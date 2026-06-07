@@ -70,10 +70,22 @@ def _find_member_stats(name: str, period_stats: dict) -> dict:
     return {k: 0 for k in METRICS}
 
 
+_TH  = ('style="background:#f2f2f2;text-align:left;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_THC = ('style="background:#f2f2f2;text-align:center;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_TD  = 'style="padding:9px 14px;border:1px solid #cccccc;font-size:13px;"'
+_TDC = ('style="text-align:center;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_TDB = ('style="text-align:center;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;font-weight:bold;"')
+_TABLE = 'style="border-collapse:collapse;width:100%;margin:8px 0 16px;"'
+
+
 def _pct(done: int, target: int) -> str:
     if target <= 0:
-        return "  —"
-    return f"{done / target * 100:>4.0f}%"
+        return "—"
+    return f"{done / target * 100:.0f}%"
 
 
 def _build_body(name: str, period: str, range_label: str,
@@ -82,62 +94,45 @@ def _build_body(name: str, period: str, range_label: str,
     w_mult = bd_targets.get("weekly_multiplier",  5.5)
     m_mult = bd_targets.get("monthly_multiplier", 22)
     mult   = w_mult if period == "weekly" else m_mult
-    p_label = "WEEKLY" if period == "weekly" else "MONTHLY"
     opening = "weekly" if period == "weekly" else "monthly"
 
-    sep = "=" * 54
-    bar = "-" * 54
-
-    lines = [
-        f"Hi {name}!",
-        "",
-        f"Your {opening} BD report is ready.",
-        "",
-        f"  Period : {range_label}",
-        "",
-        sep,
-        f"  {p_label} SUMMARY",
-        sep,
-        f"  {'Metric':<22} {'Done':>6}  {'Target':>8}  {'%':>5}",
-        f"  {bar}",
-    ]
-
+    rows = ""
     for key in METRICS:
         lbl   = METRIC_LABEL[key]
         done  = achieved.get(key, 0)
         d_tgt = daily.get(key, 0)
         p_tgt = round(d_tgt * mult) if d_tgt else 0
-        tgt_s = f"/ {p_tgt}" if p_tgt else "—"
+        tgt_s = str(p_tgt) if p_tgt else "—"
         pct_s = _pct(done, p_tgt)
-        lines.append(f"  {lbl:<22} {done:>6}  {tgt_s:>8}  {pct_s}")
+        rows += (
+            f'<tr><td {_TD}>{lbl}</td>'
+            f'<td {_TDB}>{done}</td>'
+            f'<td {_TDC}>{tgt_s}</td>'
+            f'<td {_TDC}>{pct_s}</td></tr>'
+        )
 
-    lines.append(sep)
-    lines.append("")
+    table = (
+        f'<table {_TABLE}><thead><tr>'
+        f'<th {_TH}>Metric</th>'
+        f'<th {_THC}>Done</th>'
+        f'<th {_THC}>Target</th>'
+        f'<th {_THC}>%</th>'
+        f'</tr></thead><tbody>{rows}</tbody></table>'
+    )
 
-    # Encouragement
-    conn_tgt  = round(daily.get("connected", 0) * mult)
-    conn_done = achieved.get("connected", 0)
-    if conn_tgt > 0:
-        pct = conn_done / conn_tgt
-        if pct >= 1.0:
-            enc = "Target achieved! Exceptional work this period!"
-        elif pct >= 0.75:
-            enc = "So close to target — strong showing this period!"
-        elif pct >= 0.5:
-            enc = "Halfway there — keep the momentum going!"
-        else:
-            enc = "Every call builds the pipeline — next period is yours!"
-    else:
-        enc = "Keep building — every conversation moves the needle!"
-
-    lines += [
-        enc,
-        "",
-        "Cheers,",
-        "Kylas Sync Bot",
-        "(your data is live in the Airtable sales pipeline)",
-    ]
-    return "\n".join(lines)
+    body_style = (
+        'style="font-family:Arial,sans-serif;color:#333333;'
+        'max-width:640px;margin:0 auto;padding:24px 20px;"'
+    )
+    return (
+        f'<!DOCTYPE html><html><body {body_style}>'
+        f'<p style="margin:0 0 16px;">Hi {name},</p>'
+        f'<p style="font-weight:bold;font-size:14px;margin:0 0 12px;">'
+        f'BD {opening.title()} Report &nbsp;&middot;&nbsp; {range_label}</p>'
+        + table
+        + '<p style="color:#999;font-size:12px;margin:24px 0 0;">— Kylas Sync</p>'
+        '</body></html>'
+    )
 
 
 def send_report(period: str):
@@ -153,7 +148,7 @@ def send_report(period: str):
         end   = today - timedelta(days=1)          # Friday
         start = end - timedelta(days=4)            # Monday
         range_label = f"{start.strftime('%d %b')} – {end.strftime('%d %b %Y')}"
-        subject_sfx = f"Week of {start.strftime('%d %b %Y')}"
+        subject_sfx = f"{start.strftime('%d %b')} – {end.strftime('%d %b %Y')}"
     else:
         # Report covers the entire previous month (run on 1st of new month)
         first_this_month = today.replace(day=1)
@@ -173,7 +168,7 @@ def send_report(period: str):
         period_stats = {}
 
     cfg       = _load_team()
-    members   = cfg["members"]
+    members   = cfg.get("bd_team", cfg.get("members", []))
     cc_list   = cfg.get("cc", [])
     bd_targets = cfg.get("bd_targets", {})
 
@@ -183,16 +178,16 @@ def send_report(period: str):
 
         achieved = _find_member_stats(name, period_stats)
         body     = _build_body(name, period, range_label, achieved, bd_targets)
-        subject  = f"Kylas BD {period.title()} Report — {subject_sfx}"
+        subject  = f"BD {period.title()} | {subject_sfx}"
         eff_cc   = [a for a in cc_list if a.lower() != email.lower()]
 
-        msg             = MIMEMultipart()
+        msg             = MIMEMultipart("alternative")
         msg["From"]     = smtp_user
         msg["To"]       = email
         msg["Subject"]  = subject
         if eff_cc:
             msg["CC"] = ", ".join(eff_cc)
-        msg.attach(MIMEText(body, "plain"))
+        msg.attach(MIMEText(body, "html", "utf-8"))
 
         try:
             with smtplib.SMTP("smtp.gmail.com", 587) as srv:

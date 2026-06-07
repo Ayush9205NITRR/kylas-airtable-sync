@@ -1,21 +1,19 @@
-name: Test Email Alert
+name: Deal Rotting Alert
 
 on:
+  schedule:
+    - cron: '30 3 * * 1-6'   # 03:30 UTC = 9:00 AM IST, Mon-Sat
   workflow_dispatch:
     inputs:
-      slot:
-        description: 'Slot (first_half or full_day)'
+      to:
+        description: 'Recipients (space-separated). Blank = team.json deal_rot.recipients'
         required: false
-        default: 'first_half'
-      demo_only:
-        description: 'Send preview to Ayush + Vedant only (not full team)'
-        required: false
-        default: 'true'
+        default: ''
 
 jobs:
-  test-email:
+  deal-rot:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -26,14 +24,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Send email
+      - name: Run deal rotting alert
         run: |
-          ARGS="--slot ${{ github.event.inputs.slot }}"
-          if [ "${{ github.event.inputs.demo_only }}" = "true" ]; then
-            ARGS="$ARGS --demo ayush@enout.in vedant@enout.in"
+          ARGS=""
+          if [ -n "${{ github.event.inputs.to }}" ]; then
+            ARGS="--to ${{ github.event.inputs.to }}"
           fi
-          python modules/04_email_alert.py $ARGS
+          python modules/08_deal_rot.py $ARGS
         env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           SMTP_USER:        ${{ secrets.SMTP_USER }}

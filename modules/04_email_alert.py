@@ -5,12 +5,18 @@ Slots:
   first_half  → 1:30 PM IST run  (11 AM – 1 PM window numbers)
   full_day    → 6:30 PM IST run  (W1 + W2 breakdown + daily total)
 
-Groups:
-  bd_team      → gets BD activity emails (this module)
-  revenue_team → gets deal-focused emails (future module)
+Team source (priority):
+  1. Airtable 'BD Members' table (Name / Email / Group / Active)
+  2. config/team.json bd_team
 
-Targets: read from Airtable BD Config table (Key/Value rows) first,
-         then fall back to config/team.json bd_targets.daily.
+Target source (priority):
+  1. Airtable 'BD Config' table  (Key=daily_attempted, Value=100)
+  2. Airtable 'BD Targets' table
+  3. config/team.json bd_targets.daily
+
+Monthly fixed targets (Discovery Calls, SQL) shown in every email:
+  Airtable 'BD Config' monthly_fixed_dcb / monthly_fixed_sql
+  OR config/team.json bd_targets.monthly_fixed
 """
 import argparse
 import json
@@ -41,8 +47,45 @@ _TARGET_KEY = {
     "activation":     "activation",
 }
 
+# ── HTML style constants ──────────────────────────────────────────────────────
+_TH  = ('style="background:#f2f2f2;text-align:left;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_THC = ('style="background:#f2f2f2;text-align:center;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_TD  = 'style="padding:9px 14px;border:1px solid #cccccc;font-size:13px;"'
+_TDC = ('style="text-align:center;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_TDB = ('style="text-align:center;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;font-weight:bold;"')
+_TABLE  = 'style="border-collapse:collapse;width:100%;margin:8px 0 16px;"'
+_TABLE2 = 'style="border-collapse:collapse;margin:4px 0 16px;"'
 
-# ── Target loading ────────────────────────────────────────────────────────────
+
+# ── Loaders ───────────────────────────────────────────────────────────────────
+
+def _load_bd_members() -> list:
+    """
+    Returns [{name, email}] for active BD team members.
+    Reads Airtable 'BD Members' first, falls back to team.json bd_team.
+    """
+    try:
+        from utils.airtable_client import AirtableClient
+        rows = AirtableClient("BD Members").table.all()
+        members = [
+            {"name": r["fields"]["Name"], "email": r["fields"]["Email"]}
+            for r in rows
+            if r["fields"].get("Active", True)
+            and r["fields"].get("Group", "BD") == "BD"
+            and r["fields"].get("Name") and r["fields"].get("Email")
+        ]
+        if members:
+            return members
+    except Exception:
+        pass
+    with open(TEAM_PATH) as fh:
+        cfg = json.load(fh)
+    return cfg.get("bd_team", cfg.get("members", []))
+
 
 def _load_daily_targets() -> dict:
     """
@@ -50,10 +93,9 @@ def _load_daily_targets() -> dict:
 
     Priority:
       1. Airtable 'BD Config' table  (Key=daily_attempted, Value=100)
-      2. Airtable 'BD Targets' table (any non-zero Daily Target row)
+      2. Airtable 'BD Targets' table
       3. config/team.json bd_targets.daily
     """
-    # 1. BD Config table (simplest for non-technical users to edit)
     try:
         from utils.airtable_client import AirtableClient
         rows = AirtableClient("BD Config").table.all()
@@ -69,8 +111,6 @@ def _load_daily_targets() -> dict:
             return out
     except Exception:
         pass
-
-    # 2. BD Targets table
     try:
         from utils.airtable_client import AirtableClient
         rows   = AirtableClient("BD Targets").table.all()
@@ -86,8 +126,6 @@ def _load_daily_targets() -> dict:
             return merged
     except Exception:
         pass
-
-    # 3. team.json fallback
     try:
         with open(TEAM_PATH) as fh:
             bt = json.load(fh).get("bd_targets", {})
@@ -96,7 +134,40 @@ def _load_daily_targets() -> dict:
         return {}
 
 
-# ── Email body builders ───────────────────────────────────────────────────────
+def _load_monthly_fixed() -> dict:
+    """
+    {metric: monthly_target} for metrics with fixed monthly goals (DCB, SQL).
+    These are shown in every daily email as a reminder.
+    """
+    try:
+        from utils.airtable_client import AirtableClient
+        rows = AirtableClient("BD Config").table.all()
+        out  = {}
+        for r in rows:
+            key = r["fields"].get("Key", "").strip()
+            val = r["fields"].get("Value", 0) or 0
+            if key.startswith("monthly_fixed_"):
+                metric = key[len("monthly_fixed_"):]
+                if val:
+                    out[metric] = int(val)
+        if out:
+            return out
+    except Exception:
+        pass
+    try:
+        with open(TEAM_PATH) as fh:
+            bt = json.load(fh).get("bd_targets", {})
+        return {k: v for k, v in bt.get("monthly_fixed", {}).items() if v}
+    except Exception:
+        return {}
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _friendly_date(d: date = None) -> str:
+    """e.g. 'June 8' — used in subject lines."""
+    d = d or date.today()
+    return f"{d.strftime('%B')} {d.day}"
 
 def _fmt_tgt(daily: int) -> str:
     return "—" if not daily else str(daily)
@@ -104,83 +175,118 @@ def _fmt_tgt(daily: int) -> str:
 def _fmt_win(daily: int) -> str:
     return "—" if not daily else str(daily // 4)
 
+def _monthly_goal_html(monthly_fixed: dict) -> str:
+    if not monthly_fixed:
+        return ""
+    rows = ""
+    if monthly_fixed.get("dcb"):
+        rows += (f'<tr><td {_TD}>Discovery Calls</td>'
+                 f'<td {_TDB}>{monthly_fixed["dcb"]}</td></tr>')
+    if monthly_fixed.get("sql"):
+        rows += (f'<tr><td {_TD}>SQL</td>'
+                 f'<td {_TDB}>{monthly_fixed["sql"]}</td></tr>')
+    if not rows:
+        return ""
+    return (
+        '<p style="font-size:13px;margin:20px 0 6px;color:#555;">'
+        'Your target for this month:</p>'
+        f'<table {_TABLE2}><tbody>{rows}</tbody></table>'
+    )
 
-def _build_first_half(name: str, today: str, bd: dict, targets: dict) -> tuple:
-    """Returns (subject, body) for the 1:30 PM window report."""
-    sep = "─" * 52
-    rows = []
-    for key in METRICS:
-        done = bd.get(key, 0)
-        d    = targets.get(key, 0)
-        rows.append(f"  {LABEL[key]:<22} {done:>5}    {_fmt_tgt(d):>6}    {_fmt_win(d):>6}")
-
-    body = "\n".join([
-        f"Hi {name},",
-        "",
-        f"BD Activity  ·  {today}  ·  11:00 AM – 1:00 PM",
-        sep,
-        f"  {'Metric':<22} {'Done':>5}    {'Daily':>6}    {'Window':>6}",
-        sep,
-        *rows,
-        sep,
-        "",
-        "Afternoon window: 3:00 PM – 6:00 PM",
-        "",
-        "— Kylas Sync",
-    ])
-    subject = f"BD | {name} | {today} | 11 AM Window"
-    return subject, body
+def _html_doc(name: str, subtitle: str, content: str) -> str:
+    body_style = (
+        'style="font-family:Arial,sans-serif;color:#333333;'
+        'max-width:640px;margin:0 auto;padding:24px 20px;"'
+    )
+    return (
+        f'<!DOCTYPE html><html><body {body_style}>'
+        f'<p style="margin:0 0 16px;">Hi {name},</p>'
+        f'<p style="font-weight:bold;font-size:14px;margin:0 0 12px;">{subtitle}</p>'
+        + content
+        + '<p style="color:#999;font-size:12px;margin:24px 0 0;">— Kylas Sync</p>'
+        '</body></html>'
+    )
 
 
-def _build_full_day(name: str, today: str, bd: dict, targets: dict) -> tuple:
-    """Returns (subject, body) for the 6:30 PM end-of-day report."""
+# ── Email body builders ───────────────────────────────────────────────────────
+
+def _build_first_half(name: str, today: str, bd: dict, targets: dict,
+                      monthly_fixed: dict = None) -> tuple:
+    rows = "".join(
+        f'<tr><td {_TD}>{LABEL[k]}</td>'
+        f'<td {_TDB}>{bd.get(k, 0)}</td>'
+        f'<td {_TDC}>{_fmt_tgt(targets.get(k, 0))}</td>'
+        f'<td {_TDC}>{_fmt_win(targets.get(k, 0))}</td></tr>'
+        for k in METRICS
+    )
+    table = (
+        f'<table {_TABLE}><thead><tr>'
+        f'<th {_TH}>Metric</th><th {_THC}>Done</th>'
+        f'<th {_THC}>Daily</th><th {_THC}>Window</th>'
+        f'</tr></thead><tbody>{rows}</tbody></table>'
+    )
+    note = ('<p style="font-size:13px;color:#666;margin:0 0 8px;">'
+            'Afternoon window: 3:00 PM – 6:00 PM</p>')
+    content = table + _monthly_goal_html(monthly_fixed or {}) + note
+    subject = f"BD | {name} | {_friendly_date()} | 11 AM Window"
+    subtitle = f"BD Activity &nbsp;&middot;&nbsp; {today} &nbsp;&middot;&nbsp; 11:00 AM – 1:00 PM"
+    return subject, _html_doc(name, subtitle, content)
+
+
+def _build_full_day(name: str, today: str, bd: dict, targets: dict,
+                    monthly_fixed: dict = None) -> tuple:
     w1          = bd.get("w1", {})
     w2          = bd.get("w2", {})
     has_windows = any(w1.get(k, 0) for k in METRICS)
-    sep = "─" * 62
 
     if has_windows:
-        hdr  = f"  {'Metric':<22} {'W1 (11–1)':>9}  {'W2 (3–6)':>8}  {'Total':>6}  {'Daily':>6}"
-        rows = []
-        for key in METRICS:
-            d    = targets.get(key, 0)
-            rows.append(
-                f"  {LABEL[key]:<22} {w1.get(key,0):>9}  {w2.get(key,0):>8}"
-                f"  {bd.get(key,0):>6}  {_fmt_tgt(d):>6}"
-            )
+        hdr = (
+            f'<th {_TH}>Metric</th>'
+            f'<th {_THC}>W1 (11–1)</th>'
+            f'<th {_THC}>W2 (3–6)</th>'
+            f'<th {_THC}>Total</th>'
+            f'<th {_THC}>Daily</th>'
+        )
+        rows = "".join(
+            f'<tr><td {_TD}>{LABEL[k]}</td>'
+            f'<td {_TDC}>{w1.get(k, 0)}</td>'
+            f'<td {_TDC}>{w2.get(k, 0)}</td>'
+            f'<td {_TDB}>{bd.get(k, 0)}</td>'
+            f'<td {_TDC}>{_fmt_tgt(targets.get(k, 0))}</td></tr>'
+            for k in METRICS
+        )
     else:
-        hdr  = f"  {'Metric':<22} {'Done':>5}  {'Daily':>6}  {'Window':>6}"
-        rows = []
-        for key in METRICS:
-            d = targets.get(key, 0)
-            rows.append(f"  {LABEL[key]:<22} {bd.get(key,0):>5}  {_fmt_tgt(d):>6}  {_fmt_win(d):>6}")
+        hdr = (
+            f'<th {_TH}>Metric</th>'
+            f'<th {_THC}>Done</th>'
+            f'<th {_THC}>Daily</th>'
+            f'<th {_THC}>Window</th>'
+        )
+        rows = "".join(
+            f'<tr><td {_TD}>{LABEL[k]}</td>'
+            f'<td {_TDB}>{bd.get(k, 0)}</td>'
+            f'<td {_TDC}>{_fmt_tgt(targets.get(k, 0))}</td>'
+            f'<td {_TDC}>{_fmt_win(targets.get(k, 0))}</td></tr>'
+            for k in METRICS
+        )
 
-    body = "\n".join([
-        f"Hi {name},",
-        "",
-        f"BD Activity  ·  {today}  ·  End of Day",
-        sep,
-        hdr,
-        sep,
-        *rows,
-        sep,
-        "",
-        "— Kylas Sync",
-    ])
-    subject = f"BD | {name} | {today} | EOD"
-    return subject, body
+    table   = f'<table {_TABLE}><thead><tr>{hdr}</tr></thead><tbody>{rows}</tbody></table>'
+    content = table + _monthly_goal_html(monthly_fixed or {})
+    subject  = f"BD | {name} | {_friendly_date()} | EOD"
+    subtitle = f"BD Activity &nbsp;&middot;&nbsp; {today} &nbsp;&middot;&nbsp; End of Day"
+    return subject, _html_doc(name, subtitle, content)
 
 
 # ── SMTP send ─────────────────────────────────────────────────────────────────
 
 def _send(smtp_user: str, smtp_pass: str, to: str, subject: str, body: str, cc: list):
-    msg            = MIMEMultipart()
+    msg            = MIMEMultipart("alternative")
     msg["From"]    = smtp_user
     msg["To"]      = to
     msg["Subject"] = subject
     if cc:
         msg["CC"] = ", ".join(cc)
-    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(body, "html", "utf-8"))
     with smtplib.SMTP("smtp.gmail.com", 587) as s:
         s.ehlo(); s.starttls()
         s.login(smtp_user, smtp_pass)
@@ -197,22 +303,45 @@ def _member_bd(name: str, bd_enriched: dict) -> dict:
     return {}
 
 
-def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None):
+def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
+               demo_recipients: list = None):
+    """
+    Send BD emails to the BD team.
+
+    demo_recipients: if set, send one sample email to these addresses instead
+                     of the full team (used for testing the template).
+    """
     smtp_user = os.environ.get("SMTP_USER", "")
     smtp_pass = os.environ.get("SMTP_PASS", "")
     if not smtp_user or not smtp_pass:
         print("[Email] SMTP_USER / SMTP_PASS not set — skipping")
         return
 
-    today   = date.today().strftime("%d %b %Y")
-    targets = _load_daily_targets()
+    today         = date.today().strftime("%d %b %Y")
+    targets       = _load_daily_targets()
+    monthly_fixed = _load_monthly_fixed()
 
     with open(TEAM_PATH) as fh:
         cfg = json.load(fh)
-
     cc_list = cfg.get("cc", [])
-    # BD team gets BD activity emails
-    bd_team = cfg.get("bd_team", cfg.get("members", []))
+
+    # Demo mode — send one sample to the provided addresses, no CC
+    if demo_recipients:
+        sample_bd = next(iter((bd_enriched or {}).values()), {})
+        if slot == "first_half":
+            subject, body = _build_first_half("Team", today, sample_bd, targets, monthly_fixed)
+        else:
+            subject, body = _build_full_day("Team", today, sample_bd, targets, monthly_fixed)
+        for addr in demo_recipients:
+            try:
+                _send(smtp_user, smtp_pass, addr, subject, body, [])
+                print(f"[Email] Demo sent → {addr}")
+            except Exception as exc:
+                print(f"[Email] WARNING demo {addr}: {exc}")
+        return
+
+    # Normal mode — send to each BD member
+    bd_team = _load_bd_members()
 
     for member in bd_team:
         name  = member["name"]
@@ -224,9 +353,9 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None):
             continue
 
         if slot == "first_half":
-            subject, body = _build_first_half(name, today, bd, targets)
+            subject, body = _build_first_half(name, today, bd, targets, monthly_fixed)
         else:
-            subject, body = _build_full_day(name, today, bd, targets)
+            subject, body = _build_full_day(name, today, bd, targets, monthly_fixed)
 
         eff_cc = [a for a in cc_list if a.lower() != email.lower()]
         try:
@@ -250,6 +379,8 @@ def _fallback_stats(member_name: str, stats: dict, module: str) -> dict:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--slot", default="first_half")
+    parser.add_argument("--demo", nargs="+", metavar="EMAIL",
+                        help="Send a sample email to these addresses (no team blast)")
     args = parser.parse_args()
     from dotenv import load_dotenv; load_dotenv()
 
@@ -265,4 +396,4 @@ if __name__ == "__main__":
             "w2": {"attempted": 27, "connected": 10, "dcb": 1, "sql": 0, "mql": 0, "activation": 0},
         },
     }
-    send_alert({}, args.slot, bd_enriched=test_bd)
+    send_alert({}, args.slot, bd_enriched=test_bd, demo_recipients=args.demo)

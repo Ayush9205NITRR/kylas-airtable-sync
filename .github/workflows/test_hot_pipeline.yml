@@ -1,19 +1,15 @@
-name: Test Email Alert
+name: Test Hot Pipeline Digest
 
 on:
   workflow_dispatch:
     inputs:
-      slot:
-        description: 'Slot (first_half or full_day)'
+      to:
+        description: 'Recipients (space-separated). Blank = team.json hot_pipeline_to'
         required: false
-        default: 'first_half'
-      demo_only:
-        description: 'Send preview to Ayush + Vedant only (not full team)'
-        required: false
-        default: 'true'
+        default: ''
 
 jobs:
-  test-email:
+  hot-pipeline:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -26,13 +22,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Send email
+      - name: Send Hot Pipeline digest
         run: |
-          ARGS="--slot ${{ github.event.inputs.slot }}"
-          if [ "${{ github.event.inputs.demo_only }}" = "true" ]; then
-            ARGS="$ARGS --demo ayush@enout.in vedant@enout.in"
+          ARGS=""
+          if [ -n "${{ github.event.inputs.to }}" ]; then
+            ARGS="--to ${{ github.event.inputs.to }}"
           fi
-          python modules/04_email_alert.py $ARGS
+          python modules/07_hot_pipeline.py $ARGS
         env:
           AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
