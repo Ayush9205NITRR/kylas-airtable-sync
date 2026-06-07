@@ -117,8 +117,8 @@ def _collect_hot():
                                  ("industry",))
     offsite_field = _pick_field(all_keys, fm.get("offsiteTimeline"),
                                 ("offsite",))
-    name_field    = fm["name"] if fm["name"] in all_keys else \
-                    _pick_field(all_keys, None, ("company name",), ("company",))
+    # Name: prefer "Company Name"; never fall back to an Id/link field
+    name_field    = _pick_field(all_keys, fm["name"], ("company name",), ("name",))
 
     print(f"[Hot Pipeline] Fields → stage='{stage_field}' source='{source_field}' "
           f"industry='{industry_field}' offsite='{offsite_field}' name='{name_field}'")
@@ -243,6 +243,14 @@ def run(to_override: list = None):
     except Exception as exc:
         print(f"[Hot Pipeline] WARNING: could not read Airtable — {exc}")
         return
+
+    # Diagnostic: print the company names being reported, per stage.
+    # If these are company names, the email is correct; if they look like
+    # people, the Companies table's "Company Name" field holds person names.
+    for lbl in ORDER:
+        items  = groups.get(lbl, [])
+        sample = " | ".join(i["name"] for i in items[:3])
+        print(f"[Hot Pipeline] {lbl}: {len(items)} companies   e.g. {sample}")
 
     friendly = _friendly_date()
     body     = _build_body(groups, friendly)
