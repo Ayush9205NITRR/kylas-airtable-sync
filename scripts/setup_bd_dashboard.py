@@ -69,6 +69,40 @@ def create_table(base_id, table_def):
     return None
 
 
+def get_records(base_id, table_id):
+    recs, offset = [], None
+    while True:
+        params = {"offset": offset} if offset else {}
+        r = requests.get(f"https://api.airtable.com/v0/{base_id}/{table_id}",
+                         headers=HEADERS, params=params, timeout=30)
+        if r.status_code != 200:
+            break
+        data = r.json()
+        recs.extend(data.get("records", []))
+        offset = data.get("offset")
+        if not offset:
+            break
+    return recs
+
+
+def ensure_rows(base_id, table_id, rows, key_field):
+    """Add only rows whose key_field value is missing. Never overwrites user edits."""
+    existing = {str(rec["fields"].get(key_field, "")).strip().lower()
+                for rec in get_records(base_id, table_id)}
+    for row in rows:
+        kv = str(row.get(key_field, "")).strip().lower()
+        if kv in existing:
+            print(f"    ~ {row.get(key_field)} (row exists)")
+            continue
+        rr = requests.post(f"https://api.airtable.com/v0/{base_id}/{table_id}",
+                           json={"fields": row}, headers=HEADERS, timeout=10)
+        if rr.status_code in (200, 201):
+            print(f"    + {row.get(key_field)} (row added)")
+        else:
+            print(f"    ! {row.get(key_field)} FAILED {rr.status_code}: {rr.text[:120]}")
+        time.sleep(0.2)
+
+
 BD_TARGETS_TABLE = {
     "name": "BD Targets",
     "fields": [
@@ -246,29 +280,23 @@ def main():
             {"name": "Description", "type": T},
         ],
     }
+    BD_CONFIG_ROWS = [
+        {"Key": "daily_attempted",   "Value": 100, "Description": "Daily attempted calls per person"},
+        {"Key": "daily_connected",   "Value":  35, "Description": "Daily connected calls per person"},
+        {"Key": "daily_dcb",         "Value":   0, "Description": "Daily discovery calls target (0 = no daily target)"},
+        {"Key": "daily_sql",         "Value":   0, "Description": "Daily SQL target (0 = no daily target)"},
+        {"Key": "monthly_fixed_dcb", "Value":  10, "Description": "Monthly Discovery Calls goal"},
+        {"Key": "monthly_fixed_sql", "Value":   6, "Description": "Monthly SQL goal"},
+    ]
     print("\n[BD Config]")
     if "BD Config" in tables:
-        print("    ~ Already exists")
+        cfg_id = tables["BD Config"]["id"]
+        print("    ~ Already exists — ensuring default rows present")
     else:
         result = create_table(CRM_BASE, BD_CONFIG_TABLE)
-        if result:
-            # Pre-populate with default target rows so user just edits numbers
-            import requests as _req
-            _rows = [
-                {"Key": "daily_attempted", "Value": 100, "Description": "Daily attempted calls per person"},
-                {"Key": "daily_connected",  "Value":  35, "Description": "Daily connected calls per person"},
-                {"Key": "daily_dcb",        "Value":   0, "Description": "Daily discovery calls target (0 = no target)"},
-                {"Key": "daily_sql",        "Value":   0, "Description": "Daily SQL target (0 = no target)"},
-                {"Key": "monthly_fixed_dcb", "Value": 10, "Description": "Monthly Discovery Calls goal"},
-                {"Key": "monthly_fixed_sql", "Value":  6, "Description": "Monthly SQL goal"},
-            ]
-            for row in _rows:
-                _req.post(
-                    f"https://api.airtable.com/v0/{CRM_BASE}/{result['id']}",
-                    json={"fields": row}, headers=HEADERS, timeout=10,
-                )
-                time.sleep(0.2)
-            print("    + Pre-populated with default targets — edit values in Airtable to change targets")
+        cfg_id = result["id"] if result else None
+    if cfg_id:
+        ensure_rows(CRM_BASE, cfg_id, BD_CONFIG_ROWS, "Key")
 
     # ── BD Members (email address management from Airtable) ───────────────────
     BD_MEMBERS_TABLE = {
@@ -288,28 +316,23 @@ def main():
             },
         ],
     }
+    BD_MEMBERS_ROWS = [
+        {"Name": "Rubal",   "Email": "rubal@enout.in",          "Group": "BD", "Active": True},
+        {"Name": "Bhaumik", "Email": "bhaumik@enout.in",        "Group": "BD", "Active": True},
+        {"Name": "Shreya",  "Email": "shreya.bodwal@enout.in",  "Group": "BD", "Active": True},
+        {"Name": "Mayra",   "Email": "mayra@enout.in",          "Group": "BD", "Active": True},
+        {"Name": "Devansh", "Email": "devansh.shukla@enout.in", "Group": "BD", "Active": True},
+        {"Name": "Tanay",   "Email": "tanay.kumar@enout.in",    "Group": "BD", "Active": True},
+    ]
     print("\n[BD Members]")
     if "BD Members" in tables:
-        print("    ~ Already exists")
+        mem_id = tables["BD Members"]["id"]
+        print("    ~ Already exists — ensuring member rows present")
     else:
         result = create_table(CRM_BASE, BD_MEMBERS_TABLE)
-        if result:
-            import requests as _req2
-            _members = [
-                {"Name": "Rubal",   "Email": "rubal@enout.in",          "Group": "BD", "Active": True},
-                {"Name": "Bhaumik", "Email": "bhaumik@enout.in",        "Group": "BD", "Active": True},
-                {"Name": "Shreya",  "Email": "shreya.bodwal@enout.in",  "Group": "BD", "Active": True},
-                {"Name": "Mayra",   "Email": "mayra@enout.in",          "Group": "BD", "Active": True},
-                {"Name": "Devansh", "Email": "devansh.shukla@enout.in", "Group": "BD", "Active": True},
-                {"Name": "Tanay",   "Email": "tanay.kumar@enout.in",    "Group": "BD", "Active": True},
-            ]
-            for m in _members:
-                _req2.post(
-                    f"https://api.airtable.com/v0/{CRM_BASE}/{result['id']}",
-                    json={"fields": m}, headers=HEADERS, timeout=10,
-                )
-                time.sleep(0.2)
-            print("    + Pre-populated with 6 BD members — add/remove/toggle Active in Airtable")
+        mem_id = result["id"] if result else None
+    if mem_id:
+        ensure_rows(CRM_BASE, mem_id, BD_MEMBERS_ROWS, "Name")
 
     print("\n=== Done ===")
     print("""
