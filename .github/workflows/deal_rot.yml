@@ -1,0 +1,39 @@
+name: Deal Rotting Alert
+
+on:
+  schedule:
+    - cron: '30 3 * * 1-6'   # 03:30 UTC = 9:00 AM IST, Mon-Sat
+  workflow_dispatch:
+    inputs:
+      to:
+        description: 'Recipients (space-separated). Blank = team.json deal_rot.recipients'
+        required: false
+        default: ''
+
+jobs:
+  deal-rot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run deal rotting alert
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.to }}" ]; then
+            ARGS="--to ${{ github.event.inputs.to }}"
+          fi
+          python modules/08_deal_rot.py $ARGS
+        env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          SMTP_USER:        ${{ secrets.SMTP_USER }}
+          SMTP_PASS:        ${{ secrets.SMTP_PASS }}

@@ -334,6 +334,61 @@ def main():
     if mem_id:
         ensure_rows(CRM_BASE, mem_id, BD_MEMBERS_ROWS, "Name")
 
+    # ── Email Templates (catalog of every automated email) ────────────────────
+    EMAIL_TEMPLATES_TABLE = {
+        "name": "Email Templates",
+        "fields": [
+            {"name": "Template",        "type": T},
+            {"name": "When",            "type": T},
+            {"name": "Recipients",      "type": T},
+            {"name": "Subject Format",  "type": T},
+            {"name": "Description",     "type": ML},
+            {
+                "name": "Active",
+                "type": "checkbox",
+                "options": {"icon": "check", "color": "greenBright"},
+            },
+        ],
+    }
+    EMAIL_TEMPLATES_ROWS = [
+        {"Template": "BD — 11 AM Window", "When": "1:30 PM IST (Mon-Sat)",
+         "Recipients": "Each BD member (cc Ayush, Vedant)",
+         "Subject Format": "BD | {Name} | {Month Day} | 11 AM Window",
+         "Description": "Morning window numbers (11 AM-1 PM): Attempted / Connected / Discovery Calls / SQL vs Daily target + per-window target. Monthly DCB/SQL goal reminder."},
+        {"Template": "BD — EOD", "When": "6:30 PM IST (Mon-Sat)",
+         "Recipients": "Each BD member (cc Ayush, Vedant)",
+         "Subject Format": "BD | {Name} | {Month Day} | EOD",
+         "Description": "End-of-day: W1 (11-1) + W2 (3-6) + Total vs Daily target. Monthly DCB/SQL goal reminder."},
+        {"Template": "BD — Weekly Report", "When": "Saturday 9 AM IST",
+         "Recipients": "Each BD member (cc Ayush, Vedant)",
+         "Subject Format": "BD Weekly | {dd Mon - dd Mon YYYY}",
+         "Description": "Mon-Fri totals vs weekly target (daily x 5.5) with % achieved."},
+        {"Template": "BD — Monthly Report", "When": "1st of month 9 AM IST",
+         "Recipients": "Each BD member (cc Ayush, Vedant)",
+         "Subject Format": "BD Monthly | {Month YYYY}",
+         "Description": "Previous month totals vs monthly target (daily x 22) with % achieved."},
+        {"Template": "Hot Pipeline Digest", "When": "6:30 PM IST daily (EOD sync)",
+         "Recipients": "team.json hot_pipeline_to (Ayush, Vedant)",
+         "Subject Format": "Hot Pipeline | {Month Day}",
+         "Description": "Companies with a contact in Activation / Discovery Call Booked / MQL / SQL. Columns: Company | Source | Industry."},
+        {"Template": "Deal Rotting Alert", "When": "9 AM IST daily (Mon-Sat)",
+         "Recipients": "team.json deal_rot.recipients (Vipul, Akash, Keshav) + deal owner (cc)",
+         "Subject Format": "Deal Rotting Alert | {Month Day} | {N} deal(s)",
+         "Description": "Open deals with no stage change AND no new comment for 2+ days. Columns: Deal Name | Owner | Pipeline Stage | Idle (days) | Last Comment."},
+    ]
+    for row in EMAIL_TEMPLATES_ROWS:
+        row["Active"] = True
+
+    print("\n[Email Templates]")
+    if "Email Templates" in tables:
+        et_id = tables["Email Templates"]["id"]
+        print("    ~ Already exists — ensuring template rows present")
+    else:
+        result = create_table(CRM_BASE, EMAIL_TEMPLATES_TABLE)
+        et_id = result["id"] if result else None
+    if et_id:
+        ensure_rows(CRM_BASE, et_id, EMAIL_TEMPLATES_ROWS, "Template")
+
     print("\n=== Done ===")
     print("""
 How to use the BD Dashboard:

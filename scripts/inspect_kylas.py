@@ -69,3 +69,35 @@ show("Company (all fields)", "company", fields=None)
 time.sleep(0.5)
 
 show("Deal (all fields)", "deal", fields=None)
+time.sleep(0.5)
+
+
+# ── Probe the notes endpoints for the most-recently-updated deal ───────────────
+print(f"\n{'='*60}\nDEAL NOTES — endpoint probe\n{'='*60}")
+deals = search("deal", fields=["id", "name", "updatedAt"], n=1)
+if not deals:
+    print("  (no deals to probe)")
+else:
+    did = deals[0]["id"]
+    print(f"  Probing notes for deal {did} ({deals[0].get('name','')})")
+    for method, path, payload in [
+        ("get",  f"deals/{did}/notes", None),
+        ("get",  "notes", {"entityType": "deal", "entityId": did}),
+        ("post", "search/note",
+         {"jsonRule": {"rules": [{"id": "entityId", "field": "entityId",
+                                  "operator": "equal", "value": str(did)}]}}),
+    ]:
+        try:
+            if method == "get":
+                r = requests.get(f"{BASE}/{path}", params=payload or {},
+                                 headers=HEADERS, timeout=30)
+            else:
+                r = requests.post(f"{BASE}/{path}",
+                                  params={"page": 0, "size": 5, "sort": "createdAt,desc"},
+                                  json=payload, headers=HEADERS, timeout=30)
+            print(f"\n  [{method.upper()} /{path}] -> {r.status_code}")
+            if r.status_code == 200:
+                print("    " + json.dumps(r.json(), default=str)[:600])
+        except Exception as e:
+            print(f"  [{method.upper()} /{path}] ERROR: {e}")
+        time.sleep(0.4)

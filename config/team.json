@@ -30,6 +30,22 @@
     "weekly_multiplier":  5.5,
     "monthly_multiplier": 22
   },
+  "deal_rot": {
+    "enabled": true,
+    "idle_days": 2,
+    "recipients": [
+      "vipul@enout.in",
+      "akash@enout.in",
+      "keshav@enout.in"
+    ],
+    "cc_owner": true,
+    "terminal_stages": [
+      "Won",
+      "Closed Lost",
+      "Closed Unqualified",
+      "Closed - Offsite Delayed"
+    ]
+  },
   "kylas_users": {
     "74754": "Tanay Kumar",
     "74755": "Mayra Singh",

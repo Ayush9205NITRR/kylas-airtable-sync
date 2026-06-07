@@ -1,8 +1,17 @@
 import os
+import re
 import time
 import requests
 from datetime import datetime, timezone
 from typing import Dict, List
+
+_TAG = re.compile(r"<[^>]+>")
+
+
+def _strip_html(text: str) -> str:
+    if not text:
+        return ""
+    return _TAG.sub(" ", str(text)).replace("&nbsp;", " ").strip()
 
 KYLAS_BASE = "https://api.kylas.io/v1"
 PAGE_SIZE  = 200
@@ -121,6 +130,53 @@ class KylasClient:
     def get_deal(self, did: int) -> dict:
         resp = self._get(f"deals/{did}")
         return resp.get("data", resp)
+
+    def get_deal_notes(self, deal_id) -> List[dict]:
+        """
+        Best-effort fetch of notes/comments on a deal, newest first.
+
+        Kylas exposes notes under a few different shapes depending on the
+        tenant; we try each and return [] if none work (the rotting alert
+        then falls back to the deal's own updatedAt clock).
+
+        Returns: [{"text": str, "createdAt": str}, ...]
+        """
+        attempts = [
+            ("get",  f"deals/{deal_id}/notes", None),
+            ("get",  "notes", {"entityType": "deal", "entityId": deal_id}),
+            ("post", "search/note",
+             {"jsonRule": {"rules": [{"id": "entityId", "field": "entityId",
+                                      "operator": "equal", "value": str(deal_id)}]}}),
+        ]
+        for method, path, payload in attempts:
+            try:
+                time.sleep(self._delay)
+                if method == "get":
+                    r = self.session.get(f"{KYLAS_BASE}/{path}",
+                                         params=payload or {}, timeout=30)
+                else:
+                    r = self.session.post(
+                        f"{KYLAS_BASE}/{path}",
+                        params={"page": 0, "size": 20, "sort": "createdAt,desc"},
+                        json=payload, timeout=30)
+                r.raise_for_status()
+                data  = r.json()
+                items = (data.get("content") or data.get("data")
+                         or (data if isinstance(data, list) else []))
+                notes = []
+                for it in items:
+                    if not isinstance(it, dict):
+                        continue
+                    text = (it.get("note") or it.get("description")
+                            or it.get("body") or it.get("content") or "")
+                    created = it.get("createdAt") or it.get("updatedAt") or ""
+                    if created:
+                        notes.append({"text": _strip_html(text), "createdAt": created})
+                if notes:
+                    return sorted(notes, key=lambda n: n["createdAt"], reverse=True)
+            except Exception:
+                continue
+        return []
 
     def get_users(self) -> Dict[int, str]:
         """Return {user_id: name} for contact owner resolution."""
