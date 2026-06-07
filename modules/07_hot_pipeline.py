@@ -64,29 +64,39 @@ def _tr(s: str, n: int) -> str:
 
 
 def _load_company_map():
-    """{kylas_company_id: {name, industry, source}} from the Companies table."""
+    """
+    Returns two dicts from the Companies table:
+      by_kid:  {kylas_company_id  -> {name, industry, source}}
+      by_atid: {airtable_record_id -> {name, industry, source}}
+
+    Having both means we can resolve a contact's company even when
+    its Kylas Company Id text field is blank, as long as the linked
+    record field ("Company") is set — which the sync always fills.
+    """
     from utils.airtable_client import AirtableClient
     with open(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                            "config", "field_map.json")) as fh:
         fm = json.load(fh)["company_crm"]
 
-    rows = AirtableClient("Companies").table.all()
-    out  = {}
+    rows    = AirtableClient("Companies").table.all()
+    by_kid  = {}
+    by_atid = {}
     for r in rows:
-        f   = r["fields"]
-        kid = str(f.get(fm["id"], "")).strip()
-        if not kid:
-            continue
-        out[kid] = {
+        f    = r["fields"]
+        info = {
             "name":     f.get(fm["name"], ""),
             "industry": f.get(fm["industry"], ""),
-            "source":   f.get(fm["sourceOfData"], ""),
+            "source":   f.get(fm.get("sourceOfData", "Source of Data"), ""),
         }
-    return out, fm
+        kid = str(f.get(fm["id"], "")).strip()
+        if kid:
+            by_kid[kid] = info
+        by_atid[r["id"]] = info   # always index by Airtable record ID
+    return by_kid, by_atid, fm
 
 
-def _collect_hot(company_map: dict):
-    """Return {label: [ {name, source, industry}, ... ]} grouped + deduped."""
+def _collect_hot(by_kid: dict, by_atid: dict):
+    """Return {label: [ {name, source, industry}, ... ]} grouped + deduped by company."""
     from utils.airtable_client import AirtableClient
     with open(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                            "config", "field_map.json")) as fh:
@@ -98,7 +108,6 @@ def _collect_hot(company_map: dict):
     try:
         rows = AirtableClient("Contacts").table.all(formula=formula)
     except Exception:
-        # If the formula is rejected for any reason, fall back to a full scan
         rows = AirtableClient("Contacts").table.all()
 
     groups = {lbl: {} for lbl in ORDER}
@@ -109,18 +118,31 @@ def _collect_hot(company_map: dict):
         if not label:
             continue
 
+        # Resolve company via Kylas Company Id first (fast path)
         kid = str(f.get(cfm["companyId"], "")).strip()
-        co  = company_map.get(kid, {})
-        name     = co.get("name") or f.get(cfm["fullName"], "") or "(unlinked contact)"
-        industry = co.get("industry", "")
-        source   = co.get("source") or f.get(cfm["source"], "")
+        co  = by_kid.get(kid, {})
 
-        key = kid or name.lower()
-        # First write wins; prefer a row that has a resolved company name
-        if key not in groups[label] or (co.get("name") and not groups[label][key]["resolved"]):
+        # Fallback: use the Airtable linked record field ("Company")
+        if not co.get("name"):
+            linked = f.get(cfm["companyLink"], [])   # list of Airtable record IDs
+            if linked and isinstance(linked, list):
+                co = by_atid.get(linked[0], {})
+
+        # If still no company, skip the row — we only want company-level rows
+        if not co.get("name"):
+            continue
+
+        name     = co["name"]
+        industry = co.get("industry", "")
+        source   = co.get("source", "") or f.get(cfm["source"], "")
+
+        # Dedupe per company per stage; use Airtable linked ID or kid as key
+        linked = f.get(cfm["companyLink"], [])
+        key    = (linked[0] if linked else None) or kid or name.lower()
+
+        if key not in groups[label]:
             groups[label][key] = {
-                "name": name, "source": source,
-                "industry": industry, "resolved": bool(co.get("name")),
+                "name": name, "source": source, "industry": industry,
             }
 
     return {lbl: sorted(v.values(), key=lambda x: x["name"].lower())
@@ -202,8 +224,8 @@ def run(to_override: list = None):
         return
 
     try:
-        company_map, _ = _load_company_map()
-        groups = _collect_hot(company_map)
+        by_kid, by_atid, _ = _load_company_map()
+        groups = _collect_hot(by_kid, by_atid)
     except Exception as exc:
         print(f"[Hot Pipeline] WARNING: could not read Airtable — {exc}")
         return
