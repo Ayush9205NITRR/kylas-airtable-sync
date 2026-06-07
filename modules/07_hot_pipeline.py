@@ -127,39 +127,65 @@ def _collect_hot(company_map: dict):
             for lbl, v in groups.items()}
 
 
-def _build_body(groups: dict, friendly: str) -> str:
-    sep_h = "═" * 64
-    sep_l = "─" * 64
-    total = sum(len(v) for v in groups.values())
+_TH  = ('style="background:#f2f2f2;text-align:left;padding:8px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_TD  = 'style="padding:8px 14px;border:1px solid #cccccc;font-size:13px;"'
+_TABLE = 'style="border-collapse:collapse;width:100%;margin:6px 0 20px;"'
+_STAGE_HDR = ('style="font-size:14px;font-weight:bold;margin:20px 0 4px;'
+              'color:#333333;"')
 
-    lines = [
-        "Hi Ayush & Vedant,",
-        "",
-        f"Hot Pipeline snapshot  ·  {friendly}",
-        "Companies with a contact in: Activation, Discovery Call Booked, MQL, SQL",
-        sep_h,
-    ]
+
+def _build_body(groups: dict, friendly: str) -> str:
+    total = sum(len(v) for v in groups.values())
+    body_style = (
+        'style="font-family:Arial,sans-serif;color:#333333;'
+        'max-width:660px;margin:0 auto;padding:24px 20px;"'
+    )
 
     if total == 0:
-        lines += ["", "No companies in hot stages right now.", "", "— Kylas Sync"]
-        return "\n".join(lines)
+        return (
+            f'<!DOCTYPE html><html><body {body_style}>'
+            '<p>Hi Ayush &amp; Vedant,</p>'
+            f'<p style="font-weight:bold;font-size:14px;">Hot Pipeline Snapshot &nbsp;&middot;&nbsp; {friendly}</p>'
+            '<p style="color:#666;">No companies in hot stages right now.</p>'
+            '<p style="color:#999;font-size:12px;margin-top:24px;">— Kylas Sync</p>'
+            '</body></html>'
+        )
 
+    sections = ""
     for label in ORDER:
         items = groups.get(label, [])
-        lines.append("")
-        lines.append(f"{label.upper()}  ({len(items)})")
+        count = len(items)
+        sections += f'<p {_STAGE_HDR}>{label} ({count})</p>'
         if not items:
-            lines.append("  —")
+            sections += '<p style="color:#888;font-size:13px;margin:0 0 16px;">—</p>'
             continue
-        lines.append(f"  {'Company':<30} {'Source':<16} {'Industry'}")
-        lines.append("  " + sep_l[:60])
-        for it in items:
-            lines.append(
-                f"  {_tr(it['name'], 30):<30} {_tr(it['source'], 16):<16} {_tr(it['industry'], 16)}"
-            )
+        rows = "".join(
+            f'<tr>'
+            f'<td {_TD}>{_tr(it["name"], 40)}</td>'
+            f'<td {_TD}>{_tr(it["source"], 24)}</td>'
+            f'<td {_TD}>{_tr(it["industry"], 24)}</td>'
+            f'</tr>'
+            for it in items
+        )
+        sections += (
+            f'<table {_TABLE}><thead><tr>'
+            f'<th {_TH}>Company</th><th {_TH}>Source</th><th {_TH}>Industry</th>'
+            f'</tr></thead><tbody>{rows}</tbody></table>'
+        )
 
-    lines += ["", sep_h, f"Total: {total} companies", "", "— Kylas Sync"]
-    return "\n".join(lines)
+    return (
+        f'<!DOCTYPE html><html><body {body_style}>'
+        '<p>Hi Ayush &amp; Vedant,</p>'
+        f'<p style="font-weight:bold;font-size:14px;margin:0 0 4px;">'
+        f'Hot Pipeline Snapshot &nbsp;&middot;&nbsp; {friendly}</p>'
+        '<p style="font-size:13px;color:#666;margin:0 0 16px;">'
+        'Companies with a contact in: Activation, Discovery Call Booked, MQL, SQL</p>'
+        + sections
+        + f'<p style="font-size:13px;color:#555;margin:8px 0 24px;">Total: {total} companies</p>'
+        '<p style="color:#999;font-size:12px;">— Kylas Sync</p>'
+        '</body></html>'
+    )
 
 
 def _recipients() -> list:
@@ -191,11 +217,11 @@ def run(to_override: list = None):
         print("[Hot Pipeline] No recipients configured — skipping")
         return
 
-    msg            = MIMEMultipart()
+    msg            = MIMEMultipart("alternative")
     msg["From"]    = smtp_user
     msg["To"]      = ", ".join(to_list)
     msg["Subject"] = subject
-    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(body, "html", "utf-8"))
 
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as s:

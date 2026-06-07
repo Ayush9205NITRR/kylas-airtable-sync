@@ -47,6 +47,19 @@ _TARGET_KEY = {
     "activation":     "activation",
 }
 
+# ── HTML style constants ──────────────────────────────────────────────────────
+_TH  = ('style="background:#f2f2f2;text-align:left;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_THC = ('style="background:#f2f2f2;text-align:center;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_TD  = 'style="padding:9px 14px;border:1px solid #cccccc;font-size:13px;"'
+_TDC = ('style="text-align:center;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;"')
+_TDB = ('style="text-align:center;padding:9px 14px;'
+        'border:1px solid #cccccc;font-size:13px;font-weight:bold;"')
+_TABLE  = 'style="border-collapse:collapse;width:100%;margin:8px 0 16px;"'
+_TABLE2 = 'style="border-collapse:collapse;margin:4px 0 16px;"'
+
 
 # ── Loaders ───────────────────────────────────────────────────────────────────
 
@@ -162,45 +175,62 @@ def _fmt_tgt(daily: int) -> str:
 def _fmt_win(daily: int) -> str:
     return "—" if not daily else str(daily // 4)
 
-def _monthly_goal_line(monthly_fixed: dict) -> str:
+def _monthly_goal_html(monthly_fixed: dict) -> str:
     if not monthly_fixed:
         return ""
-    parts = []
+    rows = ""
     if monthly_fixed.get("dcb"):
-        parts.append(f"Discovery Calls   {monthly_fixed['dcb']}")
+        rows += (f'<tr><td {_TD}>Discovery Calls</td>'
+                 f'<td {_TDB}>{monthly_fixed["dcb"]}</td></tr>')
     if monthly_fixed.get("sql"):
-        parts.append(f"SQL   {monthly_fixed['sql']}")
-    if not parts:
+        rows += (f'<tr><td {_TD}>SQL</td>'
+                 f'<td {_TDB}>{monthly_fixed["sql"]}</td></tr>')
+    if not rows:
         return ""
-    return "Your target for this month is to book\n" + "\n".join(f"  {p}" for p in parts)
+    return (
+        '<p style="font-size:13px;margin:20px 0 6px;color:#555;">'
+        'Your target for this month:</p>'
+        f'<table {_TABLE2}><tbody>{rows}</tbody></table>'
+    )
+
+def _html_doc(name: str, subtitle: str, content: str) -> str:
+    body_style = (
+        'style="font-family:Arial,sans-serif;color:#333333;'
+        'max-width:640px;margin:0 auto;padding:24px 20px;"'
+    )
+    return (
+        f'<!DOCTYPE html><html><body {body_style}>'
+        f'<p style="margin:0 0 16px;">Hi {name},</p>'
+        f'<p style="font-weight:bold;font-size:14px;margin:0 0 12px;">{subtitle}</p>'
+        + content
+        + '<p style="color:#999;font-size:12px;margin:24px 0 0;">— Kylas Sync</p>'
+        '</body></html>'
+    )
 
 
 # ── Email body builders ───────────────────────────────────────────────────────
 
 def _build_first_half(name: str, today: str, bd: dict, targets: dict,
                       monthly_fixed: dict = None) -> tuple:
-    sep  = "─" * 52
-    rows = []
-    for key in METRICS:
-        done = bd.get(key, 0)
-        d    = targets.get(key, 0)
-        rows.append(f"  {LABEL[key]:<22} {done:>5}    {_fmt_tgt(d):>6}    {_fmt_win(d):>6}")
-
-    goal = _monthly_goal_line(monthly_fixed or {})
-    lines = [
-        f"Hi {name},",
-        "",
-        f"BD Activity  ·  {today}  ·  11:00 AM – 1:00 PM",
-        sep,
-        f"  {'Metric':<22} {'Done':>5}    {'Daily':>6}    {'Window':>6}",
-        sep,
-        *rows,
-        sep,
-    ]
-    if goal:
-        lines += ["", goal]
-    lines += ["", "Afternoon window: 3:00 PM – 6:00 PM", "", "— Kylas Sync"]
-    return f"BD | {name} | {_friendly_date()} | 11 AM Window", "\n".join(lines)
+    rows = "".join(
+        f'<tr><td {_TD}>{LABEL[k]}</td>'
+        f'<td {_TDB}>{bd.get(k, 0)}</td>'
+        f'<td {_TDC}>{_fmt_tgt(targets.get(k, 0))}</td>'
+        f'<td {_TDC}>{_fmt_win(targets.get(k, 0))}</td></tr>'
+        for k in METRICS
+    )
+    table = (
+        f'<table {_TABLE}><thead><tr>'
+        f'<th {_TH}>Metric</th><th {_THC}>Done</th>'
+        f'<th {_THC}>Daily</th><th {_THC}>Window</th>'
+        f'</tr></thead><tbody>{rows}</tbody></table>'
+    )
+    note = ('<p style="font-size:13px;color:#666;margin:0 0 8px;">'
+            'Afternoon window: 3:00 PM – 6:00 PM</p>')
+    content = table + _monthly_goal_html(monthly_fixed or {}) + note
+    subject = f"BD | {name} | {_friendly_date()} | 11 AM Window"
+    subtitle = f"BD Activity &nbsp;&middot;&nbsp; {today} &nbsp;&middot;&nbsp; 11:00 AM – 1:00 PM"
+    return subject, _html_doc(name, subtitle, content)
 
 
 def _build_full_day(name: str, today: str, bd: dict, targets: dict,
@@ -208,45 +238,55 @@ def _build_full_day(name: str, today: str, bd: dict, targets: dict,
     w1          = bd.get("w1", {})
     w2          = bd.get("w2", {})
     has_windows = any(w1.get(k, 0) for k in METRICS)
-    sep  = "─" * 62
 
     if has_windows:
-        hdr  = f"  {'Metric':<22} {'W1 (11–1)':>9}  {'W2 (3–6)':>8}  {'Total':>6}  {'Daily':>6}"
-        rows = [
-            f"  {LABEL[k]:<22} {w1.get(k,0):>9}  {w2.get(k,0):>8}"
-            f"  {bd.get(k,0):>6}  {_fmt_tgt(targets.get(k,0)):>6}"
+        hdr = (
+            f'<th {_TH}>Metric</th>'
+            f'<th {_THC}>W1 (11–1)</th>'
+            f'<th {_THC}>W2 (3–6)</th>'
+            f'<th {_THC}>Total</th>'
+            f'<th {_THC}>Daily</th>'
+        )
+        rows = "".join(
+            f'<tr><td {_TD}>{LABEL[k]}</td>'
+            f'<td {_TDC}>{w1.get(k, 0)}</td>'
+            f'<td {_TDC}>{w2.get(k, 0)}</td>'
+            f'<td {_TDB}>{bd.get(k, 0)}</td>'
+            f'<td {_TDC}>{_fmt_tgt(targets.get(k, 0))}</td></tr>'
             for k in METRICS
-        ]
+        )
     else:
-        hdr  = f"  {'Metric':<22} {'Done':>5}  {'Daily':>6}  {'Window':>6}"
-        rows = [
-            f"  {LABEL[k]:<22} {bd.get(k,0):>5}  {_fmt_tgt(targets.get(k,0)):>6}  {_fmt_win(targets.get(k,0)):>6}"
+        hdr = (
+            f'<th {_TH}>Metric</th>'
+            f'<th {_THC}>Done</th>'
+            f'<th {_THC}>Daily</th>'
+            f'<th {_THC}>Window</th>'
+        )
+        rows = "".join(
+            f'<tr><td {_TD}>{LABEL[k]}</td>'
+            f'<td {_TDB}>{bd.get(k, 0)}</td>'
+            f'<td {_TDC}>{_fmt_tgt(targets.get(k, 0))}</td>'
+            f'<td {_TDC}>{_fmt_win(targets.get(k, 0))}</td></tr>'
             for k in METRICS
-        ]
+        )
 
-    goal  = _monthly_goal_line(monthly_fixed or {})
-    lines = [
-        f"Hi {name},",
-        "",
-        f"BD Activity  ·  {today}  ·  End of Day",
-        sep, hdr, sep, *rows, sep,
-    ]
-    if goal:
-        lines += ["", goal]
-    lines += ["", "— Kylas Sync"]
-    return f"BD | {name} | {_friendly_date()} | EOD", "\n".join(lines)
+    table   = f'<table {_TABLE}><thead><tr>{hdr}</tr></thead><tbody>{rows}</tbody></table>'
+    content = table + _monthly_goal_html(monthly_fixed or {})
+    subject  = f"BD | {name} | {_friendly_date()} | EOD"
+    subtitle = f"BD Activity &nbsp;&middot;&nbsp; {today} &nbsp;&middot;&nbsp; End of Day"
+    return subject, _html_doc(name, subtitle, content)
 
 
 # ── SMTP send ─────────────────────────────────────────────────────────────────
 
 def _send(smtp_user: str, smtp_pass: str, to: str, subject: str, body: str, cc: list):
-    msg            = MIMEMultipart()
+    msg            = MIMEMultipart("alternative")
     msg["From"]    = smtp_user
     msg["To"]      = to
     msg["Subject"] = subject
     if cc:
         msg["CC"] = ", ".join(cc)
-    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(body, "html", "utf-8"))
     with smtplib.SMTP("smtp.gmail.com", 587) as s:
         s.ehlo(); s.starttls()
         s.login(smtp_user, smtp_pass)
