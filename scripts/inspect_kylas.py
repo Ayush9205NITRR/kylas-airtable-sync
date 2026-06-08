@@ -82,23 +82,33 @@ else:
     print(f"  Probing notes for deal {did} ({deals[0].get('name','')})")
 
     attempts = [
-        ("get",  f"deals/{did}/notes",      None),
-        ("get",  f"deals/{did}/activities", None),
-        ("get",  f"deals/{did}/comments",   None),
-        ("get",  f"deals/{did}/timeline",   None),
-        ("get",  "notes",      {"entityType": "DEAL", "entityId": did}),
-        ("get",  "notes",      {"entityType": "deal", "entityId": did}),
-        ("get",  "activities", {"entityType": "DEAL", "entityId": did}),
-        ("get",  "activities", {"entityType": "deal", "entityId": did}),
+        # Try GET /notes with no params at all — just to see what comes back
+        ("get",  "notes",      {}),
+        # Try different casing / param names for the entity filter
+        ("get",  "notes",      {"entityType": "DEAL",    "entityId": str(did)}),
+        ("get",  "notes",      {"entityType": "deal",    "entityId": str(did)}),
+        ("get",  "notes",      {"entityType": "Deal",    "entityId": str(did)}),
+        ("get",  "notes",      {"relatedToType": "deal", "relatedToId": str(did)}),
+        ("get",  "notes",      {"type": "deal",          "id": str(did)}),
+        ("get",  "notes",      {"dealId": str(did)}),
+        # POST search/note with correct Kylas jsonRule wrapper (condition + fields)
         ("post", "search/note",
-         {"jsonRule": {"rules": [{"id": "entityId", "field": "entityId",
-                                  "operator": "equal", "value": str(did)}]}}),
-        ("post", "search/activity",
-         {"jsonRule": {"rules": [{"id": "entityId", "field": "entityId",
-                                  "operator": "equal", "value": str(did)}]}}),
+         {"fields": [],
+          "jsonRule": {"condition": "AND", "rules": [
+              {"id": "entityId", "field": "entityId",
+               "operator": "equal", "value": str(did)}]}}),
         ("post", "search/note",
-         {"jsonRule": {"rules": [{"id": "dealId", "field": "dealId",
-                                  "operator": "equal", "value": str(did)}]}}),
+         {"fields": [],
+          "jsonRule": {"condition": "AND", "rules": [
+              {"id": "relatedEntityId", "field": "relatedEntityId",
+               "operator": "equal", "value": str(did)}]}}),
+        ("post", "search/note",
+         {"fields": [],
+          "jsonRule": {"condition": "AND", "rules": [
+              {"id": "dealId", "field": "dealId",
+               "operator": "equal", "value": str(did)}]}}),
+        # Try fetching the deal directly with full fields to see if notes are embedded
+        ("get",  f"deals/{did}", None),
     ]
     for method, path, payload in attempts:
         try:
