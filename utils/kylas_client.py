@@ -131,52 +131,55 @@ class KylasClient:
         resp = self._get(f"deals/{did}")
         return resp.get("data", resp)
 
-    def get_deal_notes(self, deal_id) -> List[dict]:
+    def get_all_notes(self, max_pages: int = 20, page_size: int = 100) -> List[dict]:
         """
-        Best-effort fetch of notes/comments on a deal, newest first.
+        Fetch all notes for the tenant via POST /notes/search, newest first.
 
-        Kylas exposes notes under a few different shapes depending on the
-        tenant; we try each and return [] if none work (the rotting alert
-        then falls back to the deal's own updatedAt clock).
+        This is the only working notes endpoint on this tenant (GET /notes,
+        /notes/relation, and /search/note all fail). Each note carries a
+        `relations` array tying it to an entity — notably notes are attached to
+        a COMPANY or CONTACT (or DEAL), so a deal's notes are the notes on the
+        deal itself, its company, and its associated contacts. The request body
+        filter is ignored (it returns all notes), so callers index by relation
+        and match ids themselves.
 
-        Returns: [{"text": str, "createdAt": str}, ...]
+        Returns (in createdAt-desc order):
+            [{"text": str, "relations": [(ENTITY_TYPE, "id"), ...],
+              "owner_id": int|None}, ...]
         """
-        attempts = [
-            ("get",  f"deals/{deal_id}/notes", None),
-            ("get",  "notes", {"entityType": "deal", "entityId": deal_id}),
-            ("post", "search/note",
-             {"jsonRule": {"rules": [{"id": "entityId", "field": "entityId",
-                                      "operator": "equal", "value": str(deal_id)}]}}),
-        ]
-        for method, path, payload in attempts:
+        out = []
+        for page in range(max_pages):
+            time.sleep(self._delay)
             try:
-                time.sleep(self._delay)
-                if method == "get":
-                    r = self.session.get(f"{KYLAS_BASE}/{path}",
-                                         params=payload or {}, timeout=30)
-                else:
-                    r = self.session.post(
-                        f"{KYLAS_BASE}/{path}",
-                        params={"page": 0, "size": 20, "sort": "createdAt,desc"},
-                        json=payload, timeout=30)
+                r = self.session.post(
+                    f"{KYLAS_BASE}/notes/search",
+                    params={"page": page, "size": page_size, "sort": "createdAt,desc"},
+                    json={}, timeout=60,
+                )
                 r.raise_for_status()
-                data  = r.json()
-                items = (data.get("content") or data.get("data")
-                         or (data if isinstance(data, list) else []))
-                notes = []
-                for it in items:
-                    if not isinstance(it, dict):
-                        continue
-                    text = (it.get("note") or it.get("description")
-                            or it.get("body") or it.get("content") or "")
-                    created = it.get("createdAt") or it.get("updatedAt") or ""
-                    if created:
-                        notes.append({"text": _strip_html(text), "createdAt": created})
-                if notes:
-                    return sorted(notes, key=lambda n: n["createdAt"], reverse=True)
+                resp = r.json()
             except Exception:
-                continue
-        return []
+                break
+            content = resp.get("content", []) if isinstance(resp, dict) else []
+            if not content:
+                break
+            for it in content:
+                if not isinstance(it, dict):
+                    continue
+                rels = []
+                for rel in (it.get("relations") or []):
+                    et  = str(rel.get("entityType") or "").upper()
+                    eid = rel.get("entityId")
+                    if et and eid is not None:
+                        rels.append((et, str(eid)))
+                out.append({
+                    "text":      _strip_html(it.get("description") or ""),
+                    "relations": rels,
+                    "owner_id":  it.get("ownerId"),
+                })
+            if page >= resp.get("totalPages", 1) - 1:
+                break
+        return out
 
     def get_user_email(self, user_id) -> str:
         """

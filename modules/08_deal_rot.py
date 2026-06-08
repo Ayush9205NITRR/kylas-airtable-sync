@@ -88,6 +88,7 @@ def _read_deals(kylas) -> list:
     """
     _FIELDS = [
         "id", "name", "pipelineStage", "ownedBy", "ownerId",
+        "company", "associatedContacts",
         "createdAt", "updatedAt", "latestActivityCreatedAt", "customFieldValues",
     ]
     raw_deals = kylas._search_all("deal", fields=_FIELDS)
@@ -128,9 +129,9 @@ def _read_deals(kylas) -> list:
 
         latest_activity = r.get("latestActivityCreatedAt") or ""
 
-        # Notes API returns "Entity Definition does not exist" for this tenant —
-        # notes are not queryable. Use latestActivityCreatedAt as the best
-        # available proxy for "something happened on this deal."
+        # Real note text is attached after the fact via _attach_notes() (Kylas
+        # POST /notes/search). Until then, fall back to an embedded custom-field
+        # note, else the last-activity date as a proxy for "something happened."
         if last_cf_note:
             last_comment = last_cf_note
         elif latest_activity:
@@ -138,6 +139,12 @@ def _read_deals(kylas) -> list:
             last_comment = f"Activity: {la_dt.strftime('%b')} {la_dt.day}" if la_dt else "—"
         else:
             last_comment = "—"
+
+        company = r.get("company") or {}
+        company_id = (str(company.get("id")) if isinstance(company, dict)
+                      and company.get("id") is not None else "")
+        contact_ids = [str(c.get("id")) for c in (r.get("associatedContacts") or [])
+                       if isinstance(c, dict) and c.get("id") is not None]
 
         out.append({
             "id":              str(r.get("id", "")).strip(),
@@ -147,6 +154,8 @@ def _read_deals(kylas) -> list:
             "stage":           stage,
             "updated":         r.get("updatedAt", ""),
             "latest_activity": latest_activity,
+            "company_id":      company_id,
+            "contact_ids":     contact_ids,
             "last_comment":    last_comment,
         })
     return out
@@ -170,6 +179,49 @@ def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
         rotten.append({**d, "idle": idle})
     rotten.sort(key=lambda x: x["idle"], reverse=True)
     return rotten
+
+
+def _attach_notes(rotten: list, kylas) -> None:
+    """
+    Fill each rotting deal's `last_comment` with its newest real Kylas note.
+
+    Notes come from POST /notes/search (all tenant notes, newest first) and are
+    tied to entities via a `relations` array. A deal's note is the newest note
+    related to the DEAL itself, its COMPANY, or one of its associated CONTACTs
+    (in that priority) — mirroring what the Kylas deal Notes panel shows. Deals
+    with no matching note keep their last-activity-date fallback.
+    """
+    if not rotten:
+        return
+    try:
+        notes = kylas.get_all_notes()
+    except Exception as exc:
+        print(f"[Deal Rot] WARNING: could not fetch notes — {exc}")
+        return
+
+    # Newest-first: the first note text seen for an (entityType, id) key wins.
+    key_to_text = {}
+    for n in notes:
+        if not n.get("text"):
+            continue
+        for key in n.get("relations", []):
+            key_to_text.setdefault(key, n["text"])
+
+    matched = 0
+    for d in rotten:
+        cand = (key_to_text.get(("DEAL", d.get("id")))
+                or key_to_text.get(("COMPANY", d.get("company_id"))))
+        if not cand:
+            for cid in d.get("contact_ids", []):
+                cand = key_to_text.get(("CONTACT", cid))
+                if cand:
+                    break
+        if cand:
+            d["last_comment"] = cand
+            matched += 1
+
+    print(f"[Deal Rot] Notes: {len(notes)} fetched, "
+          f"matched to {matched}/{len(rotten)} rotting deals")
 
 
 def _owner_emails(rotten: list, cfg: dict, kylas=None) -> list:
@@ -303,6 +355,8 @@ def run(to_override: list = None, dry_run: bool = False):
 
     rotten = _find_rotten(deals, idle_days, terminal)
     print(f"[Deal Rot] {len(rotten)} rotting (idle >= {idle_days}d)")
+
+    _attach_notes(rotten, kylas)
 
     to_list = to_override or dr.get("recipients", []) or cfg.get("cc", [])
     if not to_list:
