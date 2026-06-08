@@ -81,31 +81,64 @@ def _is_terminal(stage: str, terminal: list) -> bool:
     return s.startswith("closed") or s == "won"
 
 
-def _read_deals() -> list:
-    """All deals from the Airtable Deals table."""
-    from utils.airtable_client import AirtableClient
-    with open(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                           "config", "field_map.json")) as fh:
-        fm = json.load(fh)["deal"]
-    rows = AirtableClient("Deals").table.all()
-    out  = []
-    for r in rows:
-        f = r["fields"]
+def _read_deals(kylas) -> list:
+    """
+    Read all deals directly from Kylas (full fields) so we can inspect
+    customFieldValues for any embedded note/remark data.
+    """
+    _FIELDS = [
+        "id", "name", "pipelineStage", "ownedBy", "ownerId",
+        "createdAt", "updatedAt", "customFieldValues",
+    ]
+    raw_deals = kylas._search_all("deal", fields=_FIELDS)
+
+    # Log available custom field keys from the first deal — helps identify
+    # if Kylas stores notes/remarks in a custom field.
+    if raw_deals:
+        cf_sample = raw_deals[0].get("customFieldValues") or {}
+        if cf_sample:
+            print(f"[Deal Rot] Deal custom field keys: {list(cf_sample.keys())}")
+
+    out = []
+    for r in raw_deals:
+        cf    = r.get("customFieldValues") or {}
+        owner = r.get("ownedBy") or {}
+        if isinstance(owner, dict):
+            owner_name = (owner.get("name") or
+                          f"{owner.get('firstName', '')} {owner.get('lastName', '')}".strip()
+                          or "Unassigned")
+        else:
+            owner_name = str(owner) if owner else "Unassigned"
+
+        stage_raw = r.get("pipelineStage") or {}
+        stage = stage_raw.get("name", "") if isinstance(stage_raw, dict) else str(stage_raw)
+
+        # Look for an embedded last-note in any custom field whose key contains
+        # "note", "remark", or "comment" (case-insensitive).
+        last_cf_note = ""
+        for k, v in cf.items():
+            kl = k.lower()
+            if any(x in kl for x in ("note", "remark", "comment")):
+                val = v.get("name", "") if isinstance(v, dict) else str(v or "")
+                if val.strip():
+                    last_cf_note = val.strip()
+                    break
+
         out.append({
-            "id":     str(f.get(fm["id"], "")).strip(),
-            "name":   f.get(fm["name"], ""),
-            "owner":  f.get(fm["assignedTo"], ""),
-            "stage":  f.get(fm["pipelineStage"], ""),
-            "updated": f.get(fm["updatedAt"], ""),
+            "id":           str(r.get("id", "")).strip(),
+            "name":         r.get("name", ""),
+            "owner":        owner_name,
+            "stage":        stage,
+            "updated":      r.get("updatedAt", ""),
+            "last_comment": last_cf_note,
         })
     return out
 
 
-def _find_rotten(deals: list, idle_days: int, terminal: list, kylas=None) -> list:
-    """Return rotten deals enriched with idle_days + last comment, newest-idle first."""
+def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
+    """Return rotten deals sorted by idle days descending."""
     now    = datetime.now(timezone.utc)
     rotten = []
-
     for d in deals:
         if _is_terminal(d["stage"], terminal):
             continue
@@ -114,26 +147,8 @@ def _find_rotten(deals: list, idle_days: int, terminal: list, kylas=None) -> lis
             continue
         idle = (now - upd).days
         if idle < idle_days:
-            continue   # moved recently — not a candidate
-
-        # Candidate by updatedAt — confirm there's no recent note either.
-        last_comment, note_dt = "", None
-        if d["id"] and kylas:
-            try:
-                notes = kylas.get_deal_notes(d["id"])
-                if notes:
-                    last_comment = notes[0]["text"]
-                    note_dt = _parse_dt(notes[0]["createdAt"])
-            except Exception:
-                pass
-
-        last_activity = max([dt for dt in (upd, note_dt) if dt], default=upd)
-        idle = (now - last_activity).days
-        if idle < idle_days:
-            continue   # recent note — deal is alive
-
-        rotten.append({**d, "idle": idle, "last_comment": last_comment})
-
+            continue
+        rotten.append({**d, "idle": idle})
     rotten.sort(key=lambda x: x["idle"], reverse=True)
     return rotten
 
@@ -241,13 +256,13 @@ def run(to_override: list = None):
     kylas = KylasClient()
 
     try:
-        deals = _read_deals()
-        print(f"[Deal Rot] {len(deals)} deals read from Airtable")
+        deals = _read_deals(kylas)
+        print(f"[Deal Rot] {len(deals)} deals read from Kylas")
     except Exception as exc:
-        print(f"[Deal Rot] WARNING: could not read Deals table — {exc}")
+        print(f"[Deal Rot] WARNING: could not read deals — {exc}")
         return
 
-    rotten = _find_rotten(deals, idle_days, terminal, kylas=kylas)
+    rotten = _find_rotten(deals, idle_days, terminal)
     print(f"[Deal Rot] {len(rotten)} rotting (idle >= {idle_days}d)")
 
     to_list = to_override or dr.get("recipients", []) or cfg.get("cc", [])
