@@ -275,10 +275,10 @@ def _build_body(rotten: list, friendly: str, idle_days: int) -> str:
     )
 
 
-def run(to_override: list = None):
+def run(to_override: list = None, dry_run: bool = False):
     smtp_user = os.environ.get("SMTP_USER", "")
     smtp_pass = os.environ.get("SMTP_PASS", "")
-    if not smtp_user or not smtp_pass:
+    if (not smtp_user or not smtp_pass) and not dry_run:
         print("[Deal Rot] SMTP_USER / SMTP_PASS not set — skipping")
         return
 
@@ -313,6 +313,12 @@ def run(to_override: list = None):
     if not to_override and dr.get("cc_owner", True):
         cc_list = [e for e in _owner_emails(rotten, cfg, kylas=kylas) if e not in to_list]
 
+    if dry_run:
+        print(f"[Deal Rot] DRY RUN — no email sent")
+        print(f"[Deal Rot]   To: {', '.join(to_list)}")
+        print(f"[Deal Rot]   CC ({len(cc_list)} owners): {', '.join(cc_list) or '(none)'}")
+        return
+
     friendly = _friendly_date()
     body     = _build_body(rotten, friendly, idle_days)
     subject  = f"Deal Rotting Alert | {friendly} | {len(rotten)} deal(s)"
@@ -340,6 +346,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--to", nargs="+", metavar="EMAIL",
                         help="Override recipients (default: team.json deal_rot.recipients)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Resolve recipients + owners and print them, but do not send the email")
     args = parser.parse_args()
     from dotenv import load_dotenv; load_dotenv()
-    run(to_override=args.to)
+    run(to_override=args.to, dry_run=args.dry_run)
