@@ -119,10 +119,12 @@ else:
                 r = requests.post(f"{BASE}/{path}",
                                   params={"page": 0, "size": 5, "sort": "createdAt,desc"},
                                   json=payload, headers=HEADERS, timeout=30)
-            body_preview = json.dumps(r.json(), default=str)[:400] if r.ok else r.text[:200]
             print(f"\n  [{method.upper()} /{path}] params={payload} -> {r.status_code}")
-            if r.status_code == 200:
-                print("    " + body_preview)
+            try:
+                body_preview = json.dumps(r.json(), default=str)[:500]
+            except Exception:
+                body_preview = r.text[:300]
+            print("    " + body_preview)   # always print — 400 body tells us what's wrong
         except Exception as e:
             print(f"  [{method.upper()} /{path}] ERROR: {e}")
         time.sleep(0.3)
