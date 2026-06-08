@@ -198,3 +198,31 @@ class KylasClient:
             except Exception:
                 continue
         return {}
+
+    def get_user_emails(self) -> Dict[str, str]:
+        """Return {full_name: email} for all Kylas team members."""
+        for path in ["tenant/team-members", "users"]:
+            try:
+                resp    = self._get(path)
+                members = resp.get("content") or resp.get("data") or []
+                if not isinstance(members, list) or not members:
+                    continue
+                result = {}
+                for m in members:
+                    name = (m.get("name") or
+                            f"{m.get('firstName', '')} {m.get('lastName', '')}".strip())
+                    # Kylas may expose email as a string or nested list
+                    email = m.get("email") or m.get("emailId") or ""
+                    if not email:
+                        emails_field = m.get("emails") or []
+                        if isinstance(emails_field, list) and emails_field:
+                            first = emails_field[0]
+                            email = (first.get("value") or first.get("email")
+                                     or first if isinstance(first, str) else "")
+                    if name and email:
+                        result[name] = str(email).strip().lower()
+                if result:
+                    return result
+            except Exception:
+                continue
+        return {}

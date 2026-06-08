@@ -101,11 +101,9 @@ def _read_deals() -> list:
     return out
 
 
-def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
+def _find_rotten(deals: list, idle_days: int, terminal: list, kylas=None) -> list:
     """Return rotten deals enriched with idle_days + last comment, newest-idle first."""
-    from utils.kylas_client import KylasClient
     now    = datetime.now(timezone.utc)
-    kylas  = None
     rotten = []
 
     for d in deals:
@@ -120,9 +118,8 @@ def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
 
         # Candidate by updatedAt — confirm there's no recent note either.
         last_comment, note_dt = "", None
-        if d["id"]:
+        if d["id"] and kylas:
             try:
-                kylas = kylas or KylasClient()
                 notes = kylas.get_deal_notes(d["id"])
                 if notes:
                     last_comment = notes[0]["text"]
@@ -141,8 +138,26 @@ def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
     return rotten
 
 
-def _owner_emails(rotten: list, cfg: dict) -> list:
-    name_to_email = cfg.get("kylas_user_emails", {})
+def _owner_emails(rotten: list, cfg: dict, kylas=None) -> list:
+    """
+    Resolve deal owner emails. Uses Kylas live data as the primary source
+    (covers everyone automatically), with team.json kylas_user_emails as
+    an override/fallback for entries that need a manual correction.
+    """
+    # Start with team.json overrides
+    name_to_email = dict(cfg.get("kylas_user_emails", {}))
+
+    # Enrich with live data from Kylas (auto-fills missing owners)
+    if kylas:
+        try:
+            live = kylas.get_user_emails()
+            for name, email in live.items():
+                if name not in name_to_email:   # team.json takes priority
+                    name_to_email[name] = email
+            print(f"[Deal Rot] Kylas user emails fetched: {len(live)} users")
+        except Exception as exc:
+            print(f"[Deal Rot] WARNING: could not fetch Kylas user emails — {exc}")
+
     lookup = {k.lower(): v for k, v in name_to_email.items()}
     emails = []
     for d in rotten:
@@ -150,7 +165,7 @@ def _owner_emails(rotten: list, cfg: dict) -> list:
         if not owner:
             continue
         addr = lookup.get(owner.lower())
-        if not addr:   # partial match (e.g. "Bhaumik" vs "Bhaumik Sachdeva")
+        if not addr:   # partial match (e.g. "Vipul" vs "Vipul Bansal")
             for nm, em in lookup.items():
                 if owner.lower() in nm or nm in owner.lower():
                     addr = em
@@ -222,6 +237,9 @@ def run(to_override: list = None):
     idle_days = int(dr.get("idle_days", 2))
     terminal  = dr.get("terminal_stages", [])
 
+    from utils.kylas_client import KylasClient
+    kylas = KylasClient()
+
     try:
         deals = _read_deals()
         print(f"[Deal Rot] {len(deals)} deals read from Airtable")
@@ -229,7 +247,7 @@ def run(to_override: list = None):
         print(f"[Deal Rot] WARNING: could not read Deals table — {exc}")
         return
 
-    rotten = _find_rotten(deals, idle_days, terminal)
+    rotten = _find_rotten(deals, idle_days, terminal, kylas=kylas)
     print(f"[Deal Rot] {len(rotten)} rotting (idle >= {idle_days}d)")
 
     to_list = to_override or dr.get("recipients", []) or cfg.get("cc", [])
@@ -239,7 +257,7 @@ def run(to_override: list = None):
 
     cc_list = []
     if not to_override and dr.get("cc_owner", True):
-        cc_list = [e for e in _owner_emails(rotten, cfg) if e not in to_list]
+        cc_list = [e for e in _owner_emails(rotten, cfg, kylas=kylas) if e not in to_list]
 
     friendly = _friendly_date()
     body     = _build_body(rotten, friendly, idle_days)

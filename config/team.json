@@ -34,7 +34,8 @@
     "enabled": true,
     "idle_days": 2,
     "recipients": [
-      "vipul@enout.in",
+      "ayush@enout.in",
+      "vipul.bansal@enout.in",
       "akash@enout.in",
       "keshav@enout.in"
     ],
@@ -69,7 +70,7 @@
     "Rashid Imam":     "rashid@enout.in",
     "Saahil Bhardwaj": "saahil@enout.in",
     "Charu Rathi":     "charu@enout.in",
-    "Vipul Bansal":    "vipul@enout.in",
+    "Vipul Bansal":    "vipul.bansal@enout.in",
     "Bhaumik Sachdeva":"bhaumik@enout.in",
     "Devansh Shukla":  "devansh.shukla@enout.in",
     "Rubal Sansanwal": "rubal@enout.in"
