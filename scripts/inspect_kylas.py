@@ -72,59 +72,83 @@ show("Deal (all fields)", "deal", fields=None)
 time.sleep(0.5)
 
 
-# ── Probe the notes endpoints for the most-recently-updated deal ───────────────
-print(f"\n{'='*60}\nDEAL NOTES — endpoint probe\n{'='*60}")
-deals = search("deal", fields=["id", "name", "updatedAt"], n=1)
+# ── Probe the NOTES read endpoint ──────────────────────────────────────────────
+# From the official Kylas Postman collection, notes are CREATED via:
+#     POST /v1/notes/relation
+#     {"sourceEntity": {"description": "..."},
+#      "targetEntityId": <id>, "targetEntityType": "DEAL"}
+# The collection documents only create+delete (no list), so we empirically probe
+# the realistic READ shapes using the correct param names ("targetEntityType" as
+# the uppercase string "DEAL") and scan several deals to find one with notes.
+print(f"\n{'='*60}\nDEAL NOTES — endpoint probe (v3, /notes/relation shapes)\n{'='*60}")
+deals = search("deal", fields=["id", "name", "updatedAt"], n=25)
 if not deals:
     print("  (no deals to probe)")
 else:
-    did = deals[0]["id"]
-    print(f"  Probing notes for deal {did} ({deals[0].get('name','')})")
+    def candidates(did):
+        return [
+            ("get",  "notes/relation",
+             {"targetEntityType": "DEAL", "targetEntityId": str(did)}),
+            ("get",  "notes/relation",
+             {"entityType": "DEAL", "entityId": str(did)}),
+            ("get",  f"notes/relation/DEAL/{did}", None),
+            ("get",  "notes",
+             {"targetEntityType": "DEAL", "targetEntityId": str(did)}),
+            ("get",  f"deals/{did}/notes/relation", None),
+            ("post", "notes/relation/search",
+             {"fields": [],
+              "jsonRule": {"condition": "AND", "rules": [
+                  {"id": "targetEntityId", "field": "targetEntityId",
+                   "operator": "equal", "value": str(did)}]}}),
+        ]
 
-    attempts = [
-        # Try GET /notes with no params at all — just to see what comes back
-        ("get",  "notes",      {}),
-        # Try different casing / param names for the entity filter
-        ("get",  "notes",      {"entityType": "DEAL",    "entityId": str(did)}),
-        ("get",  "notes",      {"entityType": "deal",    "entityId": str(did)}),
-        ("get",  "notes",      {"entityType": "Deal",    "entityId": str(did)}),
-        ("get",  "notes",      {"relatedToType": "deal", "relatedToId": str(did)}),
-        ("get",  "notes",      {"type": "deal",          "id": str(did)}),
-        ("get",  "notes",      {"dealId": str(did)}),
-        # POST search/note with correct Kylas jsonRule wrapper (condition + fields)
-        ("post", "search/note",
-         {"fields": [],
-          "jsonRule": {"condition": "AND", "rules": [
-              {"id": "entityId", "field": "entityId",
-               "operator": "equal", "value": str(did)}]}}),
-        ("post", "search/note",
-         {"fields": [],
-          "jsonRule": {"condition": "AND", "rules": [
-              {"id": "relatedEntityId", "field": "relatedEntityId",
-               "operator": "equal", "value": str(did)}]}}),
-        ("post", "search/note",
-         {"fields": [],
-          "jsonRule": {"condition": "AND", "rules": [
-              {"id": "dealId", "field": "dealId",
-               "operator": "equal", "value": str(did)}]}}),
-        # Try fetching the deal directly with full fields to see if notes are embedded
-        ("get",  f"deals/{did}", None),
-    ]
-    for method, path, payload in attempts:
+    # Step 1 — on the first deal, print status + body for every shape so we can
+    # see which endpoint exists (200) vs 400/404.
+    did0 = deals[0]["id"]
+    print(f"\n  STEP 1 — endpoint shapes on deal {did0} ({deals[0].get('name','')})")
+    for method, path, payload in candidates(did0):
         try:
             if method == "get":
                 r = requests.get(f"{BASE}/{path}", params=payload or {},
                                  headers=HEADERS, timeout=30)
             else:
                 r = requests.post(f"{BASE}/{path}",
-                                  params={"page": 0, "size": 5, "sort": "createdAt,desc"},
+                                  params={"page": 0, "size": 10, "sort": "createdAt,desc"},
                                   json=payload, headers=HEADERS, timeout=30)
             print(f"\n  [{method.upper()} /{path}] params={payload} -> {r.status_code}")
             try:
-                body_preview = json.dumps(r.json(), default=str)[:500]
+                body_preview = json.dumps(r.json(), default=str)[:600]
             except Exception:
-                body_preview = r.text[:300]
-            print("    " + body_preview)   # always print — 400 body tells us what's wrong
+                body_preview = r.text[:400]
+            print("    " + (body_preview or "(empty body)"))
         except Exception as e:
             print(f"  [{method.upper()} /{path}] ERROR: {e}")
         time.sleep(0.3)
+
+    # Step 2 — using the GET /notes/relation?targetEntityType=DEAL shape, scan up
+    # to 25 deals and print the FIRST one that returns non-empty notes so we can
+    # confirm the response/content shape (text + createdAt fields).
+    print(f"\n  STEP 2 — scanning {len(deals)} deals for one WITH notes "
+          f"(GET /notes/relation?targetEntityType=DEAL)")
+    found = False
+    for d in deals:
+        did = d["id"]
+        try:
+            r = requests.get(f"{BASE}/notes/relation",
+                             params={"targetEntityType": "DEAL", "targetEntityId": str(did)},
+                             headers=HEADERS, timeout=30)
+            if r.status_code != 200:
+                continue
+            data = r.json()
+            items = data.get("content") if isinstance(data, dict) else data
+            if items:
+                print(f"\n  ✓ deal {did} ({d.get('name','')}) has notes:")
+                print("    " + json.dumps(data, default=str)[:900])
+                found = True
+                break
+        except Exception as e:
+            print(f"  deal {did} ERROR: {e}")
+        time.sleep(0.2)
+    if not found:
+        print("    (no deal among the 25 returned notes on this endpoint — "
+              "either the shape is wrong or notes are not exposed via public API)")

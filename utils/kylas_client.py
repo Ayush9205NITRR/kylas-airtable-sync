@@ -178,6 +178,25 @@ class KylasClient:
                 continue
         return []
 
+    def get_user_email(self, user_id) -> str:
+        """
+        Fetch a single user's email via GET /users/{id}.
+
+        This is the authoritative per-user lookup (the /users/{id} response
+        carries a top-level "email" field) and covers EVERY user, unlike the
+        team-members list which only returns the first page. Returns "" on
+        failure so callers can fall back to other sources.
+        """
+        if not user_id:
+            return ""
+        try:
+            resp = self._get(f"users/{user_id}")
+            data = resp.get("data", resp) if isinstance(resp, dict) else {}
+            email = data.get("email") or data.get("updatedEmail") or ""
+            return str(email).strip().lower() if email else ""
+        except Exception:
+            return ""
+
     def get_users(self) -> Dict[int, str]:
         """Return {user_id: name} for contact owner resolution."""
         for path in ["tenant/team-members", "users"]:

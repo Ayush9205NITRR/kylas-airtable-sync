@@ -107,8 +107,10 @@ def _read_deals(kylas) -> list:
             owner_name = (owner.get("name") or
                           f"{owner.get('firstName', '')} {owner.get('lastName', '')}".strip()
                           or "Unassigned")
+            owner_id = owner.get("id") or r.get("ownerId")
         else:
             owner_name = str(owner) if owner else "Unassigned"
+            owner_id = r.get("ownerId")
 
         stage_raw = r.get("pipelineStage") or {}
         stage = stage_raw.get("name", "") if isinstance(stage_raw, dict) else str(stage_raw)
@@ -141,6 +143,7 @@ def _read_deals(kylas) -> list:
             "id":              str(r.get("id", "")).strip(),
             "name":            r.get("name", ""),
             "owner":           owner_name,
+            "owner_id":        owner_id,
             "stage":           stage,
             "updated":         r.get("updatedAt", ""),
             "latest_activity": latest_activity,
@@ -171,38 +174,58 @@ def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
 
 def _owner_emails(rotten: list, cfg: dict, kylas=None) -> list:
     """
-    Resolve deal owner emails. Uses Kylas live data as the primary source
-    (covers everyone automatically), with team.json kylas_user_emails as
-    an override/fallback for entries that need a manual correction.
+    Resolve EVERY rotting-deal owner to an email address.
+
+    Resolution order per owner:
+      1. team.json kylas_user_emails by name — manual overrides / corrections
+         (e.g. Vipul Bansal -> vipul.bansal@enout.in).
+      2. Kylas GET /users/{ownerId} — authoritative, covers every user in the
+         tenant (deals carry a numeric ownerId, so this never misses an owner
+         the way the paginated team-members list did).
+      3. Fuzzy name match against the team.json overrides as a last resort.
+
+    Returns a de-duplicated, order-preserving list of lowercased emails.
     """
-    # Start with team.json overrides
-    name_to_email = dict(cfg.get("kylas_user_emails", {}))
+    overrides = {k.lower(): v.strip().lower()
+                 for k, v in cfg.get("kylas_user_emails", {}).items()}
 
-    # Enrich with live data from Kylas (auto-fills missing owners)
-    if kylas:
-        try:
-            live = kylas.get_user_emails()
-            for name, email in live.items():
-                if name not in name_to_email:   # team.json takes priority
-                    name_to_email[name] = email
-            print(f"[Deal Rot] Kylas user emails fetched: {len(live)} users")
-        except Exception as exc:
-            print(f"[Deal Rot] WARNING: could not fetch Kylas user emails — {exc}")
+    emails, by_id, unresolved = [], {}, []
 
-    lookup = {k.lower(): v for k, v in name_to_email.items()}
-    emails = []
+    def _add(addr):
+        addr = (addr or "").strip().lower()
+        if addr and addr not in emails:
+            emails.append(addr)
+
     for d in rotten:
         owner = (d.get("owner") or "").strip()
-        if not owner:
-            continue
-        addr = lookup.get(owner.lower())
-        if not addr:   # partial match (e.g. "Vipul" vs "Vipul Bansal")
-            for nm, em in lookup.items():
+        oid   = d.get("owner_id")
+
+        # 1. manual override by exact name
+        addr = overrides.get(owner.lower()) if owner else ""
+
+        # 2. authoritative lookup by user id (cached per id)
+        if not addr and oid and kylas:
+            if oid not in by_id:
+                by_id[oid] = kylas.get_user_email(oid)
+            addr = by_id[oid]
+
+        # 3. fuzzy name fallback (e.g. "Vipul" vs "Vipul Bansal")
+        if not addr and owner:
+            for nm, em in overrides.items():
                 if owner.lower() in nm or nm in owner.lower():
                     addr = em
                     break
-        if addr and addr not in emails:
-            emails.append(addr)
+
+        if addr:
+            _add(addr)
+        elif owner and owner.lower() != "unassigned":
+            unresolved.append(owner)
+
+    print(f"[Deal Rot] Owner emails resolved: {len(emails)} "
+          f"(via {len(by_id)} Kylas user lookups)")
+    if unresolved:
+        print(f"[Deal Rot] WARNING: could not resolve email for: "
+              f"{', '.join(sorted(set(unresolved)))}")
     return emails
 
 
