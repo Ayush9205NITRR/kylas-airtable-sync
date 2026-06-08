@@ -72,83 +72,74 @@ show("Deal (all fields)", "deal", fields=None)
 time.sleep(0.5)
 
 
-# ── Probe the NOTES read endpoint ──────────────────────────────────────────────
-# From the official Kylas Postman collection, notes are CREATED via:
-#     POST /v1/notes/relation
-#     {"sourceEntity": {"description": "..."},
-#      "targetEntityId": <id>, "targetEntityType": "DEAL"}
-# The collection documents only create+delete (no list), so we empirically probe
-# the realistic READ shapes using the correct param names ("targetEntityType" as
-# the uppercase string "DEAL") and scan several deals to find one with notes.
-print(f"\n{'='*60}\nDEAL NOTES — endpoint probe (v3, /notes/relation shapes)\n{'='*60}")
-deals = search("deal", fields=["id", "name", "updatedAt"], n=25)
+# ── Probe the NOTES read endpoint (v4) ─────────────────────────────────────────
+# Kylas has TWO search patterns:
+#   /search/{entity}   — lead/deal/contact/company   (tried: /search/note -> "Entity
+#                        Definition does not exist", so notes aren't here)
+#   /{entity}/search   — meetings, messages, pipelines (POST + pagination)
+# Meetings relate to deals via relatedTo:[{id, entity:"deal"}]; notes are created
+# via POST /notes/relation {targetEntityType:"DEAL", targetEntityId}. So the most
+# likely LIST endpoint is POST /notes/search (mirroring /meetings/search). We probe
+# that family with FULL response-body capture (repr) so the real 400 error shows.
+print(f"\n{'='*60}\nDEAL NOTES — endpoint probe (v4, /notes/search family)\n{'='*60}")
+deals = search("deal", fields=["id", "name", "updatedAt"], n=5)
 if not deals:
     print("  (no deals to probe)")
 else:
-    def candidates(did):
-        return [
-            ("get",  "notes/relation",
-             {"targetEntityType": "DEAL", "targetEntityId": str(did)}),
-            ("get",  "notes/relation",
-             {"entityType": "DEAL", "entityId": str(did)}),
-            ("get",  f"notes/relation/DEAL/{did}", None),
-            ("get",  "notes",
-             {"targetEntityType": "DEAL", "targetEntityId": str(did)}),
-            ("get",  f"deals/{did}/notes/relation", None),
-            ("post", "notes/relation/search",
-             {"fields": [],
-              "jsonRule": {"condition": "AND", "rules": [
-                  {"id": "targetEntityId", "field": "targetEntityId",
-                   "operator": "equal", "value": str(did)}]}}),
-        ]
-
-    # Step 1 — on the first deal, print status + body for every shape so we can
-    # see which endpoint exists (200) vs 400/404.
     did0 = deals[0]["id"]
-    print(f"\n  STEP 1 — endpoint shapes on deal {did0} ({deals[0].get('name','')})")
-    for method, path, payload in candidates(did0):
+    PAGE = {"page": 0, "size": 20, "sort": "createdAt,desc"}
+
+    def dump(method, path, params=None, body=None):
         try:
             if method == "get":
-                r = requests.get(f"{BASE}/{path}", params=payload or {},
+                r = requests.get(f"{BASE}/{path}", params=params or {},
                                  headers=HEADERS, timeout=30)
             else:
-                r = requests.post(f"{BASE}/{path}",
-                                  params={"page": 0, "size": 10, "sort": "createdAt,desc"},
-                                  json=payload, headers=HEADERS, timeout=30)
-            print(f"\n  [{method.upper()} /{path}] params={payload} -> {r.status_code}")
-            try:
-                body_preview = json.dumps(r.json(), default=str)[:600]
-            except Exception:
-                body_preview = r.text[:400]
-            print("    " + (body_preview or "(empty body)"))
+                r = requests.post(f"{BASE}/{path}", params=params or {},
+                                  json=body, headers=HEADERS, timeout=30)
+            b = f" body={json.dumps(body)}" if body is not None else ""
+            print(f"\n  [{method.upper()} /{path}] params={params}{b} -> {r.status_code}")
+            print("    " + (repr(r.text[:600]) if r.text else "(empty body)"))
+            return r
         except Exception as e:
             print(f"  [{method.upper()} /{path}] ERROR: {e}")
-        time.sleep(0.3)
+            return None
 
-    # Step 2 — using the GET /notes/relation?targetEntityType=DEAL shape, scan up
-    # to 25 deals and print the FIRST one that returns non-empty notes so we can
-    # confirm the response/content shape (text + createdAt fields).
-    print(f"\n  STEP 2 — scanning {len(deals)} deals for one WITH notes "
-          f"(GET /notes/relation?targetEntityType=DEAL)")
-    found = False
+    print(f"\n  Probing with deal {did0} ({deals[0].get('name','')})")
+
+    # ── Pattern: POST /notes/search (mirror /meetings/search) ───────────────────
+    dump("post", "notes/search", PAGE, {})
+    dump("post", "notes/search", PAGE, {"relatedTo": [{"id": did0, "entity": "deal"}]})
+    dump("post", "notes/search", PAGE,
+         {"jsonRule": {"condition": "AND", "rules": [
+             {"id": "entityId", "field": "entityId",
+              "operator": "equal", "value": str(did0)}]}})
+    dump("get",  "notes/search", PAGE)
+
+    # ── Pattern: GET /notes list, full error capture ────────────────────────────
+    dump("get",  "notes", PAGE)
+    dump("get",  "notes/relation", {"entityId": str(did0), "entityType": "DEAL"})
+    dump("get",  "notes/relation", {"id": str(did0), "type": "deal"})
+
+    # ── If POST /notes/search returned content, scan deals for one WITH notes ───
+    print(f"\n  SCAN — POST /notes/search per deal, looking for non-empty notes")
     for d in deals:
-        did = d["id"]
+        r = None
         try:
-            r = requests.get(f"{BASE}/notes/relation",
-                             params={"targetEntityType": "DEAL", "targetEntityId": str(did)},
-                             headers=HEADERS, timeout=30)
-            if r.status_code != 200:
-                continue
-            data = r.json()
-            items = data.get("content") if isinstance(data, dict) else data
-            if items:
-                print(f"\n  ✓ deal {did} ({d.get('name','')}) has notes:")
-                print("    " + json.dumps(data, default=str)[:900])
-                found = True
-                break
+            r = requests.post(f"{BASE}/notes/search", params=PAGE,
+                              json={"relatedTo": [{"id": d["id"], "entity": "deal"}]},
+                              headers=HEADERS, timeout=30)
         except Exception as e:
-            print(f"  deal {did} ERROR: {e}")
+            print(f"  deal {d['id']} ERROR: {e}")
+            continue
+        if r is not None and r.status_code == 200:
+            try:
+                data  = r.json()
+                items = data.get("content") if isinstance(data, dict) else data
+            except Exception:
+                items = None
+            if items:
+                print(f"\n  ✓ deal {d['id']} ({d.get('name','')}) notes:")
+                print("    " + json.dumps(data, default=str)[:1000])
+                break
         time.sleep(0.2)
-    if not found:
-        print("    (no deal among the 25 returned notes on this endpoint — "
-              "either the shape is wrong or notes are not exposed via public API)")
