@@ -1,8 +1,6 @@
 name: Sync - 6:30 PM IST
 
 on:
-  schedule:
-    - cron: '0 13 * * 1-6'  # 13:00 UTC = 6:30 PM IST, Mon-Sat
   workflow_dispatch:
     inputs:
       full_sync:

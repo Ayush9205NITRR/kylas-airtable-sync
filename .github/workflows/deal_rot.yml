@@ -1,8 +1,6 @@
 name: Deal Rotting Alert
 
 on:
-  schedule:
-    - cron: '30 3 * * 1-6'   # 03:30 UTC = 9:00 AM IST, Mon-Sat
   workflow_dispatch:
     inputs:
       to:
