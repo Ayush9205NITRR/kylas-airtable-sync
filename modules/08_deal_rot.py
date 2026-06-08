@@ -88,7 +88,7 @@ def _read_deals(kylas) -> list:
     """
     _FIELDS = [
         "id", "name", "pipelineStage", "ownedBy", "ownerId",
-        "createdAt", "updatedAt", "customFieldValues",
+        "createdAt", "updatedAt", "latestActivityCreatedAt", "customFieldValues",
     ]
     raw_deals = kylas._search_all("deal", fields=_FIELDS)
 
@@ -124,13 +124,27 @@ def _read_deals(kylas) -> list:
                     last_cf_note = val.strip()
                     break
 
+        latest_activity = r.get("latestActivityCreatedAt") or ""
+
+        # Notes API returns "Entity Definition does not exist" for this tenant —
+        # notes are not queryable. Use latestActivityCreatedAt as the best
+        # available proxy for "something happened on this deal."
+        if last_cf_note:
+            last_comment = last_cf_note
+        elif latest_activity:
+            la_dt = _parse_dt(latest_activity)
+            last_comment = f"Activity: {la_dt.strftime('%b')} {la_dt.day}" if la_dt else "—"
+        else:
+            last_comment = "—"
+
         out.append({
-            "id":           str(r.get("id", "")).strip(),
-            "name":         r.get("name", ""),
-            "owner":        owner_name,
-            "stage":        stage,
-            "updated":      r.get("updatedAt", ""),
-            "last_comment": last_cf_note,
+            "id":              str(r.get("id", "")).strip(),
+            "name":            r.get("name", ""),
+            "owner":           owner_name,
+            "stage":           stage,
+            "updated":         r.get("updatedAt", ""),
+            "latest_activity": latest_activity,
+            "last_comment":    last_comment,
         })
     return out
 
@@ -143,9 +157,11 @@ def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
         if _is_terminal(d["stage"], terminal):
             continue
         upd = _parse_dt(d["updated"])
-        if upd is None:
+        lat = _parse_dt(d.get("latest_activity", ""))
+        last_ts = max((x for x in [upd, lat] if x is not None), default=None)
+        if last_ts is None:
             continue
-        idle = (now - upd).days
+        idle = (now - last_ts).days
         if idle < idle_days:
             continue
         rotten.append({**d, "idle": idle})
