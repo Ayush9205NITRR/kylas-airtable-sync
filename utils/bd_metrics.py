@@ -31,7 +31,6 @@ CONNECTED_STAGES = {
     "MQL (Marketing Qualified Lead)",
     "SQL (Sales Qualified Lead)",
     "Activation",
-    "Invalid Contact",
     "Connect Later",
     "Disqualified - Wrong POC",
     "Not a Decision Maker (NDM)",
@@ -42,9 +41,7 @@ CONNECTED_STAGES = {
     "Discovery Call Booked",
     "Discovery Call Done - Awaiting Client Inputs",
     "POC - Organisation - Changed",
-    "Followup - CNC",
     "Reschedule Pending",
-    "Discovery Call No-Show",
     "Offsite Delayed",
     "Closing Loops - Low Value",
 }
