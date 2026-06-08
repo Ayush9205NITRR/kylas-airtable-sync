@@ -80,13 +80,27 @@ if not deals:
 else:
     did = deals[0]["id"]
     print(f"  Probing notes for deal {did} ({deals[0].get('name','')})")
-    for method, path, payload in [
-        ("get",  f"deals/{did}/notes", None),
-        ("get",  "notes", {"entityType": "deal", "entityId": did}),
+
+    attempts = [
+        ("get",  f"deals/{did}/notes",      None),
+        ("get",  f"deals/{did}/activities", None),
+        ("get",  f"deals/{did}/comments",   None),
+        ("get",  f"deals/{did}/timeline",   None),
+        ("get",  "notes",      {"entityType": "DEAL", "entityId": did}),
+        ("get",  "notes",      {"entityType": "deal", "entityId": did}),
+        ("get",  "activities", {"entityType": "DEAL", "entityId": did}),
+        ("get",  "activities", {"entityType": "deal", "entityId": did}),
         ("post", "search/note",
          {"jsonRule": {"rules": [{"id": "entityId", "field": "entityId",
                                   "operator": "equal", "value": str(did)}]}}),
-    ]:
+        ("post", "search/activity",
+         {"jsonRule": {"rules": [{"id": "entityId", "field": "entityId",
+                                  "operator": "equal", "value": str(did)}]}}),
+        ("post", "search/note",
+         {"jsonRule": {"rules": [{"id": "dealId", "field": "dealId",
+                                  "operator": "equal", "value": str(did)}]}}),
+    ]
+    for method, path, payload in attempts:
         try:
             if method == "get":
                 r = requests.get(f"{BASE}/{path}", params=payload or {},
@@ -95,9 +109,10 @@ else:
                 r = requests.post(f"{BASE}/{path}",
                                   params={"page": 0, "size": 5, "sort": "createdAt,desc"},
                                   json=payload, headers=HEADERS, timeout=30)
-            print(f"\n  [{method.upper()} /{path}] -> {r.status_code}")
+            body_preview = json.dumps(r.json(), default=str)[:400] if r.ok else r.text[:200]
+            print(f"\n  [{method.upper()} /{path}] params={payload} -> {r.status_code}")
             if r.status_code == 200:
-                print("    " + json.dumps(r.json(), default=str)[:600])
+                print("    " + body_preview)
         except Exception as e:
             print(f"  [{method.upper()} /{path}] ERROR: {e}")
-        time.sleep(0.4)
+        time.sleep(0.3)
