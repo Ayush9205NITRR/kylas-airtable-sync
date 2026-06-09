@@ -178,7 +178,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
                 if crm_ok:
                     crm_action, _ = tbl_crm.upsert(
                         "Kylas Company Id", kylas_id,
-                        _build_fields(co, _fm_crm()), co.get("updatedAt", ""),
+                        _build_fields(co, _fm_crm(), user_email_map), co.get("updatedAt", ""),
                         updated_at_field=_fm_crm()["updatedAt"],
                     )
 

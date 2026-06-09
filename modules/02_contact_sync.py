@@ -113,6 +113,19 @@ def _map(raw: dict, user_map: dict = None, company_id_map: dict = None) -> dict:
         fm["updatedAt"]:     raw.get("updatedAt") or "",
     })
 
+    # Parse cfLastCalledAt: "Jun 08, 2026 at 06:44 PM" → "2026-06-08"
+    raw_lc = (cf.get("cfLastCalledAt") or "").strip()
+    if raw_lc:
+        if raw_lc[0].isdigit():
+            lc_date = raw_lc[:10]
+        else:
+            try:
+                lc_date = datetime.strptime(raw_lc.split(" at ")[0], "%b %d, %Y").strftime("%Y-%m-%d")
+            except ValueError:
+                lc_date = ""
+        if lc_date and fm.get("lastCalledAt"):
+            fields[fm["lastCalledAt"]] = lc_date
+
     # Link to Companies table if Airtable record ID is available
     if company_id_map and company_id:
         airtable_id = company_id_map.get(company_id)
