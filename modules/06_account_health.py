@@ -206,12 +206,18 @@ def _tr(s, n=35):
     return s if len(s) <= n else s[:n - 1] + "…"
 
 
+def _scalar(val, default: str) -> str:
+    if isinstance(val, list):
+        val = val[0] if val else None
+    return str(val).strip() if val else default
+
+
 def _owner_of(co_id: str, tbl_cache: dict) -> str:
     rec = tbl_cache.get(co_id)
     if not rec:
         return "—"
     f = rec.get("fields", {})
-    return (f.get("Owner") or f.get("Owner - Kylas") or "—").strip()
+    return _scalar(f.get("Owner") or f.get("Owner - Kylas"), "—")
 
 
 def _name_of(co_id: str, tbl_cache: dict) -> str:
@@ -219,7 +225,7 @@ def _name_of(co_id: str, tbl_cache: dict) -> str:
     if not rec:
         return co_id
     f = rec.get("fields", {})
-    return (f.get("Company Name") or f.get("Company Name - Kylas") or co_id).strip()
+    return _scalar(f.get("Company Name") or f.get("Company Name - Kylas"), co_id)
 
 
 def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
