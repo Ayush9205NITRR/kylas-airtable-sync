@@ -70,28 +70,67 @@ def create_table(base_id, table_def):
         return None
 
 
+N  = "number"
+CB = "checkbox"
+NP = {"precision": 0}
+
 # ── Company List (master database) ───────────────────────────────────────────
 COMPANY_LIST_NEW = [
-    {"name": "Batch",             "type": T},
-    {"name": "Pipeline Stage BD", "type": T},
-    {"name": "Source of Data",    "type": T},
-    {"name": "Owner Email",       "type": T},
+    {"name": "Batch",                         "type": T},
+    {"name": "Pipeline Stage BD",             "type": T},
+    {"name": "Source of Data",                "type": T},
+    {"name": "Owner Email",                   "type": T},
+    # Account health fields
+    {"name": "Total POCs",                    "type": N, "options": NP},
+    {"name": "YtBM POCs",                     "type": N, "options": NP},
+    {"name": "Active POCs",                   "type": N, "options": NP},
+    {"name": "Connected POCs",                "type": N, "options": NP},
+    {"name": "Terminal POCs",                 "type": N, "options": NP},
+    {"name": "Called Since Apr 19",           "type": N, "options": NP},
+    {"name": "Last Called At (Contacts)",     "type": T},
+    {"name": "Account Status",                "type": T},
+    {"name": "Needs Re-assign",               "type": CB},
 ]
 
 # ── Companies table (CRM base — for linking) ─────────────────────────────────
 COMPANIES_TABLE = {
     "name": "Companies",
     "fields": [
-        {"name": "Company Name",     "type": T},
-        {"name": "Kylas Company Id", "type": T},
-        {"name": "Industry",         "type": T},
-        {"name": "Owner",            "type": T},
-        {"name": "Pipeline Stage BD","type": T},
-        {"name": "Batch",            "type": T},
-        {"name": "Source of Data",   "type": T},
-        {"name": "Updated At",       "type": T},
+        {"name": "Company Name",              "type": T},
+        {"name": "Kylas Company Id",          "type": T},
+        {"name": "Industry",                  "type": T},
+        {"name": "Owner",                     "type": T},
+        {"name": "Owner Email",               "type": T},
+        {"name": "Pipeline Stage BD",         "type": T},
+        {"name": "Batch",                     "type": T},
+        {"name": "Source of Data",            "type": T},
+        {"name": "Updated At",                "type": T},
+        # Account health fields
+        {"name": "Total POCs",                "type": N, "options": NP},
+        {"name": "YtBM POCs",                 "type": N, "options": NP},
+        {"name": "Active POCs",               "type": N, "options": NP},
+        {"name": "Connected POCs",            "type": N, "options": NP},
+        {"name": "Terminal POCs",             "type": N, "options": NP},
+        {"name": "Called Since Apr 19",       "type": N, "options": NP},
+        {"name": "Last Called At (Contacts)", "type": T},
+        {"name": "Account Status",            "type": T},
+        {"name": "Needs Re-assign",           "type": CB},
     ],
 }
+
+# New fields to add to an EXISTING Companies CRM table
+COMPANIES_CRM_NEW = [
+    {"name": "Owner Email",                   "type": T},
+    {"name": "Total POCs",                    "type": N, "options": NP},
+    {"name": "YtBM POCs",                     "type": N, "options": NP},
+    {"name": "Active POCs",                   "type": N, "options": NP},
+    {"name": "Connected POCs",                "type": N, "options": NP},
+    {"name": "Terminal POCs",                 "type": N, "options": NP},
+    {"name": "Called Since Apr 19",           "type": N, "options": NP},
+    {"name": "Last Called At (Contacts)",     "type": T},
+    {"name": "Account Status",                "type": T},
+    {"name": "Needs Re-assign",               "type": CB},
+]
 
 # ── Contacts: new columns ─────────────────────────────────────────────────────
 CONTACT_NEW = [
@@ -103,6 +142,7 @@ CONTACT_NEW = [
     {"name": "Country",         "type": T},
     {"name": "Source",          "type": T},
     {"name": "Pipeline Stage",  "type": T},
+    {"name": "Last Called At",  "type": T},
     {"name": "Remarks",         "type": ML},
     {"name": "Created At",      "type": T},
     {"name": "Updated At",      "type": T},
@@ -152,8 +192,7 @@ def main():
     if "Companies" in crm_tables:
         companies_id = crm_tables["Companies"]["id"]
         print("    ~ Already exists")
-        add_missing(CRM_BASE, crm_tables["Companies"],
-                    [f for f in COMPANIES_TABLE["fields"] if f["name"] != "Company Name"])
+        add_missing(CRM_BASE, crm_tables["Companies"], COMPANIES_CRM_NEW)
     else:
         result = create_table(CRM_BASE, COMPANIES_TABLE)
         companies_id = result.get("id") if result else None

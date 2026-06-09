@@ -13,11 +13,9 @@ from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 
-# Set to the Kylas custom field key for "Last Called At" once confirmed.
-# e.g. "cfLastCalledAt" — when set, BD metrics use this date instead of updatedAt,
-# and only contacts where ownedBy == updatedBy are counted.
-# Leave "" to use updatedAt (current fallback behaviour).
-LAST_CALLED_AT_FIELD = ""
+# Kylas custom field key for "Last Called At".
+# Format in API: "Jun 08, 2026 at 06:44 PM"  (named-month, set by workflow).
+LAST_CALLED_AT_FIELD = "cfLastCalledAt"
 
 _FM = None
 
@@ -114,6 +112,19 @@ def _map(raw: dict, user_map: dict = None, company_id_map: dict = None) -> dict:
         fm["createdAt"]:     raw.get("createdAt") or "",
         fm["updatedAt"]:     raw.get("updatedAt") or "",
     })
+
+    # Parse cfLastCalledAt: "Jun 08, 2026 at 06:44 PM" → "2026-06-08"
+    raw_lc = (cf.get("cfLastCalledAt") or "").strip()
+    if raw_lc:
+        if raw_lc[0].isdigit():
+            lc_date = raw_lc[:10]
+        else:
+            try:
+                lc_date = datetime.strptime(raw_lc.split(" at ")[0], "%b %d, %Y").strftime("%Y-%m-%d")
+            except ValueError:
+                lc_date = ""
+        if lc_date and fm.get("lastCalledAt"):
+            fields[fm["lastCalledAt"]] = lc_date
 
     # Link to Companies table if Airtable record ID is available
     if company_id_map and company_id:
