@@ -13,11 +13,9 @@ from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 
-# Set to the Kylas custom field key for "Last Called At" once confirmed.
-# e.g. "cfLastCalledAt" — when set, BD metrics use this date instead of updatedAt,
-# and only contacts where ownedBy == updatedBy are counted.
-# Leave "" to use updatedAt (current fallback behaviour).
-LAST_CALLED_AT_FIELD = ""
+# Kylas custom field key for "Last Called At".
+# Format in API: "Jun 08, 2026 at 06:44 PM"  (named-month, set by workflow).
+LAST_CALLED_AT_FIELD = "cfLastCalledAt"
 
 _FM = None
 
@@ -178,15 +176,19 @@ def run(test_mode: bool = False, test_id: int = None,
                 # Determine activity date: Last Called AT field (if configured) else updatedAt
                 cf = ct.get("customFieldValues") or {}
                 if LAST_CALLED_AT_FIELD:
-                    activity_date = (cf.get(LAST_CALLED_AT_FIELD) or "")[:10]
+                    raw_lc = (cf.get(LAST_CALLED_AT_FIELD) or "").strip()
+                    activity_date = ""
+                    if raw_lc:
+                        if raw_lc[0].isdigit():
+                            activity_date = raw_lc[:10]  # ISO: "2026-06-08..."
+                        else:
+                            try:  # "Jun 08, 2026 at 06:44 PM"
+                                activity_date = datetime.strptime(
+                                    raw_lc.split(" at ")[0], "%b %d, %Y"
+                                ).strftime("%Y-%m-%d")
+                            except ValueError:
+                                pass
                     is_active_today = bool(activity_date) and activity_date == today_iso
-                    # Only count if owner also did the update (ownedBy == updatedBy)
-                    ob = ct.get("ownedBy") or {}
-                    ub = ct.get("updatedBy") or {}
-                    owned_id   = ob.get("id") if isinstance(ob, dict) else None
-                    updated_id = ub.get("id") if isinstance(ub, dict) else None
-                    if owned_id and updated_id and owned_id != updated_id:
-                        is_active_today = False
                 else:
                     is_active_today = (ct.get("updatedAt") or "").startswith(today_iso)
 
