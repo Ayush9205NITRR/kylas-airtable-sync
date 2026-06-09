@@ -88,7 +88,8 @@ def _read_deals(kylas) -> list:
     """
     _FIELDS = [
         "id", "name", "pipelineStage", "ownedBy", "ownerId",
-        "createdAt", "updatedAt", "customFieldValues",
+        "company", "associatedContacts",
+        "createdAt", "updatedAt", "latestActivityCreatedAt", "customFieldValues",
     ]
     raw_deals = kylas._search_all("deal", fields=_FIELDS)
 
@@ -107,8 +108,10 @@ def _read_deals(kylas) -> list:
             owner_name = (owner.get("name") or
                           f"{owner.get('firstName', '')} {owner.get('lastName', '')}".strip()
                           or "Unassigned")
+            owner_id = owner.get("id") or r.get("ownerId")
         else:
             owner_name = str(owner) if owner else "Unassigned"
+            owner_id = r.get("ownerId")
 
         stage_raw = r.get("pipelineStage") or {}
         stage = stage_raw.get("name", "") if isinstance(stage_raw, dict) else str(stage_raw)
@@ -124,13 +127,36 @@ def _read_deals(kylas) -> list:
                     last_cf_note = val.strip()
                     break
 
+        latest_activity = r.get("latestActivityCreatedAt") or ""
+
+        # Real note text is attached after the fact via _attach_notes() (Kylas
+        # POST /notes/search). Until then, fall back to an embedded custom-field
+        # note, else the last-activity date as a proxy for "something happened."
+        if last_cf_note:
+            last_comment = last_cf_note
+        elif latest_activity:
+            la_dt = _parse_dt(latest_activity)
+            last_comment = f"Activity: {la_dt.strftime('%b')} {la_dt.day}" if la_dt else "—"
+        else:
+            last_comment = "—"
+
+        company = r.get("company") or {}
+        company_id = (str(company.get("id")) if isinstance(company, dict)
+                      and company.get("id") is not None else "")
+        contact_ids = [str(c.get("id")) for c in (r.get("associatedContacts") or [])
+                       if isinstance(c, dict) and c.get("id") is not None]
+
         out.append({
-            "id":           str(r.get("id", "")).strip(),
-            "name":         r.get("name", ""),
-            "owner":        owner_name,
-            "stage":        stage,
-            "updated":      r.get("updatedAt", ""),
-            "last_comment": last_cf_note,
+            "id":              str(r.get("id", "")).strip(),
+            "name":            r.get("name", ""),
+            "owner":           owner_name,
+            "owner_id":        owner_id,
+            "stage":           stage,
+            "updated":         r.get("updatedAt", ""),
+            "latest_activity": latest_activity,
+            "company_id":      company_id,
+            "contact_ids":     contact_ids,
+            "last_comment":    last_comment,
         })
     return out
 
@@ -143,9 +169,11 @@ def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
         if _is_terminal(d["stage"], terminal):
             continue
         upd = _parse_dt(d["updated"])
-        if upd is None:
+        lat = _parse_dt(d.get("latest_activity", ""))
+        last_ts = max((x for x in [upd, lat] if x is not None), default=None)
+        if last_ts is None:
             continue
-        idle = (now - upd).days
+        idle = (now - last_ts).days
         if idle < idle_days:
             continue
         rotten.append({**d, "idle": idle})
@@ -153,40 +181,103 @@ def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
     return rotten
 
 
+def _attach_notes(rotten: list, kylas) -> None:
+    """
+    Fill each rotting deal's `last_comment` with its newest real Kylas note.
+
+    Notes come from POST /notes/search (all tenant notes, newest first) and are
+    tied to entities via a `relations` array. A deal's note is the newest note
+    related to the DEAL itself, its COMPANY, or one of its associated CONTACTs
+    (in that priority) — mirroring what the Kylas deal Notes panel shows. Deals
+    with no matching note keep their last-activity-date fallback.
+    """
+    if not rotten:
+        return
+    try:
+        notes = kylas.get_all_notes()
+    except Exception as exc:
+        print(f"[Deal Rot] WARNING: could not fetch notes — {exc}")
+        return
+
+    # Newest-first: the first note text seen for an (entityType, id) key wins.
+    key_to_text = {}
+    for n in notes:
+        if not n.get("text"):
+            continue
+        for key in n.get("relations", []):
+            key_to_text.setdefault(key, n["text"])
+
+    matched = 0
+    for d in rotten:
+        cand = (key_to_text.get(("DEAL", d.get("id")))
+                or key_to_text.get(("COMPANY", d.get("company_id"))))
+        if not cand:
+            for cid in d.get("contact_ids", []):
+                cand = key_to_text.get(("CONTACT", cid))
+                if cand:
+                    break
+        if cand:
+            d["last_comment"] = cand
+            matched += 1
+
+    print(f"[Deal Rot] Notes: {len(notes)} fetched, "
+          f"matched to {matched}/{len(rotten)} rotting deals")
+
+
 def _owner_emails(rotten: list, cfg: dict, kylas=None) -> list:
     """
-    Resolve deal owner emails. Uses Kylas live data as the primary source
-    (covers everyone automatically), with team.json kylas_user_emails as
-    an override/fallback for entries that need a manual correction.
+    Resolve EVERY rotting-deal owner to an email address.
+
+    Resolution order per owner:
+      1. team.json kylas_user_emails by name — manual overrides / corrections
+         (e.g. Vipul Bansal -> vipul.bansal@enout.in).
+      2. Kylas GET /users/{ownerId} — authoritative, covers every user in the
+         tenant (deals carry a numeric ownerId, so this never misses an owner
+         the way the paginated team-members list did).
+      3. Fuzzy name match against the team.json overrides as a last resort.
+
+    Returns a de-duplicated, order-preserving list of lowercased emails.
     """
-    # Start with team.json overrides
-    name_to_email = dict(cfg.get("kylas_user_emails", {}))
+    overrides = {k.lower(): v.strip().lower()
+                 for k, v in cfg.get("kylas_user_emails", {}).items()}
 
-    # Enrich with live data from Kylas (auto-fills missing owners)
-    if kylas:
-        try:
-            live = kylas.get_user_emails()
-            for name, email in live.items():
-                if name not in name_to_email:   # team.json takes priority
-                    name_to_email[name] = email
-            print(f"[Deal Rot] Kylas user emails fetched: {len(live)} users")
-        except Exception as exc:
-            print(f"[Deal Rot] WARNING: could not fetch Kylas user emails — {exc}")
+    emails, by_id, unresolved = [], {}, []
 
-    lookup = {k.lower(): v for k, v in name_to_email.items()}
-    emails = []
+    def _add(addr):
+        addr = (addr or "").strip().lower()
+        if addr and addr not in emails:
+            emails.append(addr)
+
     for d in rotten:
         owner = (d.get("owner") or "").strip()
-        if not owner:
-            continue
-        addr = lookup.get(owner.lower())
-        if not addr:   # partial match (e.g. "Vipul" vs "Vipul Bansal")
-            for nm, em in lookup.items():
+        oid   = d.get("owner_id")
+
+        # 1. manual override by exact name
+        addr = overrides.get(owner.lower()) if owner else ""
+
+        # 2. authoritative lookup by user id (cached per id)
+        if not addr and oid and kylas:
+            if oid not in by_id:
+                by_id[oid] = kylas.get_user_email(oid)
+            addr = by_id[oid]
+
+        # 3. fuzzy name fallback (e.g. "Vipul" vs "Vipul Bansal")
+        if not addr and owner:
+            for nm, em in overrides.items():
                 if owner.lower() in nm or nm in owner.lower():
                     addr = em
                     break
-        if addr and addr not in emails:
-            emails.append(addr)
+
+        if addr:
+            _add(addr)
+        elif owner and owner.lower() != "unassigned":
+            unresolved.append(owner)
+
+    print(f"[Deal Rot] Owner emails resolved: {len(emails)} "
+          f"(via {len(by_id)} Kylas user lookups)")
+    if unresolved:
+        print(f"[Deal Rot] WARNING: could not resolve email for: "
+              f"{', '.join(sorted(set(unresolved)))}")
     return emails
 
 
@@ -236,10 +327,10 @@ def _build_body(rotten: list, friendly: str, idle_days: int) -> str:
     )
 
 
-def run(to_override: list = None):
+def run(to_override: list = None, dry_run: bool = False):
     smtp_user = os.environ.get("SMTP_USER", "")
     smtp_pass = os.environ.get("SMTP_PASS", "")
-    if not smtp_user or not smtp_pass:
+    if (not smtp_user or not smtp_pass) and not dry_run:
         print("[Deal Rot] SMTP_USER / SMTP_PASS not set — skipping")
         return
 
@@ -265,6 +356,8 @@ def run(to_override: list = None):
     rotten = _find_rotten(deals, idle_days, terminal)
     print(f"[Deal Rot] {len(rotten)} rotting (idle >= {idle_days}d)")
 
+    _attach_notes(rotten, kylas)
+
     to_list = to_override or dr.get("recipients", []) or cfg.get("cc", [])
     if not to_list:
         print("[Deal Rot] No recipients configured — skipping")
@@ -273,6 +366,12 @@ def run(to_override: list = None):
     cc_list = []
     if not to_override and dr.get("cc_owner", True):
         cc_list = [e for e in _owner_emails(rotten, cfg, kylas=kylas) if e not in to_list]
+
+    if dry_run:
+        print(f"[Deal Rot] DRY RUN — no email sent")
+        print(f"[Deal Rot]   To: {', '.join(to_list)}")
+        print(f"[Deal Rot]   CC ({len(cc_list)} owners): {', '.join(cc_list) or '(none)'}")
+        return
 
     friendly = _friendly_date()
     body     = _build_body(rotten, friendly, idle_days)
@@ -301,6 +400,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--to", nargs="+", metavar="EMAIL",
                         help="Override recipients (default: team.json deal_rot.recipients)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Resolve recipients + owners and print them, but do not send the email")
     args = parser.parse_args()
     from dotenv import load_dotenv; load_dotenv()
-    run(to_override=args.to)
+    run(to_override=args.to, dry_run=args.dry_run)

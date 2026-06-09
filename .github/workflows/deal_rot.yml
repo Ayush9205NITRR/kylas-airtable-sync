@@ -7,6 +7,10 @@ on:
         description: 'Recipients (space-separated). Blank = team.json deal_rot.recipients'
         required: false
         default: ''
+      dry_run:
+        description: 'Resolve recipients + owners and print them, but do not send the email'
+        required: false
+        default: 'false'
 
 jobs:
   deal-rot:
@@ -27,6 +31,9 @@ jobs:
           ARGS=""
           if [ -n "${{ github.event.inputs.to }}" ]; then
             ARGS="--to ${{ github.event.inputs.to }}"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
           fi
           python modules/08_deal_rot.py $ARGS
         env:
