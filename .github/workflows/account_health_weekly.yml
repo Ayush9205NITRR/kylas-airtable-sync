@@ -1,0 +1,41 @@
+name: Account Health — Weekly Digest
+
+on:
+  schedule:
+    # Every Monday 08:00 IST = 02:30 UTC
+    - cron: '30 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      no_email:
+        description: 'Update Airtable only, skip email'
+        required: false
+        default: 'false'
+
+jobs:
+  account-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run account health
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.no_email }}" = "true" ]; then
+            ARGS="--no-email"
+          fi
+          python modules/06_account_health.py $ARGS
+        env:
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+          SMTP_USER:                ${{ secrets.SMTP_USER }}
+          SMTP_PASS:                ${{ secrets.SMTP_PASS }}

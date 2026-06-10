@@ -120,7 +120,7 @@ def main():
         _load("07_hot_pipeline.py").run()
 
         print("\n" + "=" * 40 + "\nMODULE 6: Account Health\n" + "=" * 40)
-        _load("06_account_health.py").run(kylas=KylasClient())
+        _load("06_account_health.py").run(kylas=KylasClient(), send_email=False)
 
     print("\n[run_sync] All modules complete.")
 

@@ -1,25 +1,43 @@
 """
-Account Health — per-company POC health stats + re-assignment alerts.
+Account Health — per-company POC health stats + weekly re-assignment alerts.
 
-For each Kylas company, reads ALL associated contacts and computes:
+Airtable column mapping (what gets written where):
+─────────────────────────────────────────────────────────────────────────────
+  Column                 Source                 Use
+  ──────────────────────────────────────────────────────────────────────────
+  Total POCs             count of contacts      All contacts linked to company
+  YtBM POCs              stage blank/YtBM       Never been called — untouched
+  Active POCs            CNC / Follow-up        Being worked, not yet connected
+  MQL POCs               MQL / Activation       Connected — needs push to DCB
+  Hot POCs               SQL / DCB / Offsite    Live pipeline (hot!)
+  Connected POCs         MQL+Activation+SQL+DCB Warm+hot combined (summary)
+  Terminal POCs          NOI+Invalid+NDM+etc.   Dead ends — no more calls
+  NOI Count              "Not Interested" only  Key exhaustion signal (≥2 = gone)
+  Called Since Apr 19    cfLastCalledAt ≥ Apr19 How many contacts tapped since cutoff
+  Last Called At         max(cfLastCalledAt)     Last time any POC in this company was called
+  Account Status         computed (see below)   Health label for filtering
+  Needs Re-assign        YtBM>0 AND called=0    Has untouched POCs, nobody called since Apr 19
 
-  Total POCs         — all contacts linked to this company
-  YtBM POCs          — Yet to Be Mined (stage blank / YtBM — never called)
-  Active POCs        — CNC / Follow-up (being worked)
-  Connected POCs     — MQL / SQL / DCB / Activation (warm leads)
-  Terminal POCs      — Not Interested / Invalid Contact / NDM (no more calls)
-  Last Called At     — latest cfLastCalledAt across all contacts (ISO date)
-  Called Since Apr 19 — contacts with cfLastCalledAt >= 2026-04-19
-  Account Status     — Fresh / Active / Near Exhausted / Exhausted
-  Needs Re-assign    — True when YtBM POCs exist but nobody called since Apr 19
+Account Status logic:
+─────────────────────────────────────────────────────────────────────────────
+  Exhausted          — NOI count ≥ 2 OR all contacts are terminal
+  Near Exhausted     — NOI count = 1 OR ≥ 70% contacts are terminal
+  Hot Pipeline       — has SQL / Discovery Call / Offsite contacts
+  MQL - Action Needed— has MQL / Activation contacts (no Hot yet)
+  Active             — has CNC / Follow-up contacts being worked
+  Fresh              — no contact has ever been called (cfLastCalledAt empty)
 
-Writes to BOTH Airtable tables:
-  Company List   (AIRTABLE_COMPANY_BASE_ID)
-  Companies CRM  (AIRTABLE_BASE_ID)
+Re-assignment logic (Needs Re-assign = true when):
+  • Account has YtBM POCs (untouched contacts exist)  AND
+  • Called Since Apr 19 = 0  (nobody has called this account since Apr 19)
+  Use the Airtable filter: [YtBM POCs] > 0 AND [Called Since Apr 19] = 0
+  → these are safe to reassign (haven't been tapped by current owner)
 
-Runs on full_day slot only; can also be run standalone.
-Sends an email alert (to cc list) summarising accounts that need attention.
+Email schedule:
+  • Daily sync (run_sync.py full_day): updates Airtable silently (send_email=False)
+  • Weekly workflow (account_health_weekly.yml): sends the digest email
 """
+import argparse
 import json
 import os
 import smtplib
@@ -57,10 +75,15 @@ _ACTIVE_STAGES = {
     "Reschedule Pending",
 }
 
-_HOT_STAGES = {
+# Connected — needs push from MQL/Activation → Discovery Call
+_MQL_ACTION_STAGES = {
     "MQL (Marketing Qualified Lead)",
-    "SQL (Sales Qualified Lead)",
     "Activation",
+}
+
+# Hot pipeline — live SQL / Discovery Call / advanced stages
+_HOT_STAGES = {
+    "SQL (Sales Qualified Lead)",
     "Discovery Call Booked",
     "Offsite Delayed",
     "Discovery Call Done - Awaiting Client Inputs",
@@ -84,7 +107,7 @@ def _parse_lc(raw: str) -> str:
 
 def compute_health(contacts: list) -> dict:
     """
-    contacts: raw Kylas contact dicts (full fields including customFieldValues).
+    contacts: raw Kylas contact dicts.
     Returns {kylas_company_id (str): health_dict}.
     """
     by_co = {}
@@ -101,7 +124,9 @@ def compute_health(contacts: list) -> dict:
         lc    = _parse_lc(cf.get("cfLastCalledAt", ""))
 
         e = by_co.setdefault(co_id, {
-            "total": 0, "ytbm": 0, "active": 0, "connected": 0, "terminal": 0,
+            "total": 0, "ytbm": 0, "active": 0,
+            "mql": 0, "hot": 0,
+            "terminal": 0, "noi": 0,
             "called": 0, "called_apr19": 0, "last_called": "",
         })
         e["total"] += 1
@@ -110,11 +135,15 @@ def compute_health(contacts: list) -> dict:
             e["ytbm"] += 1
         elif stage in _TERMINAL_STAGES:
             e["terminal"] += 1
+            if stage == "Not Interested":
+                e["noi"] += 1
         elif stage in _ACTIVE_STAGES:
             e["active"] += 1
+        elif stage in _MQL_ACTION_STAGES:
+            e["mql"] += 1
         elif stage in _HOT_STAGES:
-            e["connected"] += 1
-        # else: unknown / unmapped stage → counted in total but no bucket
+            e["hot"] += 1
+        # else: unmapped stage → counted in total only
 
         if lc:
             e["called"] += 1
@@ -124,17 +153,28 @@ def compute_health(contacts: list) -> dict:
                 e["last_called"] = lc
 
     for e in by_co.values():
-        t = e["total"]
-        if t == 0 or e["called"] == 0:
-            e["status"] = "Fresh"
-        elif e["terminal"] >= t:
-            e["status"] = "Exhausted"
-        elif e["terminal"] / t >= 0.7:
-            e["status"] = "Near Exhausted"
-        else:
-            e["status"] = "Active"
+        t    = e["total"]
+        term = e["terminal"]
+        noi  = e["noi"]
 
-        # Needs re-assign: has untouched POCs (YtBM) but nobody called since Apr 19
+        # Status — priority order matters
+        if noi >= 2 or (t > 0 and term >= t):
+            e["status"] = "Exhausted"
+        elif noi == 1 or (t > 0 and term / t >= 0.7):
+            e["status"] = "Near Exhausted"
+        elif e["hot"] > 0:
+            e["status"] = "Hot Pipeline"
+        elif e["mql"] > 0:
+            e["status"] = "MQL - Action Needed"
+        elif e["active"] > 0 or e["called"] > 0:
+            e["status"] = "Active"
+        else:
+            e["status"] = "Fresh"
+
+        # connected = mql + hot  (summary "warm/hot" count for existing column)
+        e["connected"] = e["mql"] + e["hot"]
+
+        # Re-assign: has untouched POCs but no call since Apr 19
         e["needs_reassign"] = bool(e["ytbm"] > 0 and e["called_apr19"] == 0)
 
     return by_co
@@ -149,31 +189,28 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict) -> tuple:
         print(f"[Account Health] WARNING: could not build cache — {exc}")
         return 0, 0
 
+    _FIELD_MAP = [
+        ("totalPocs",        "total"),
+        ("ytbmPocs",         "ytbm"),
+        ("activePocs",       "active"),
+        ("mqlPocs",          "mql"),
+        ("hotPocs",          "hot"),
+        ("connectedPocs",    "connected"),
+        ("terminalPocs",     "terminal"),
+        ("noiCount",         "noi"),
+        ("calledSinceApr19", "called_apr19"),
+        ("accountStatus",    "status"),
+    ]
+
     for co_id, e in health.items():
         if co_id not in tbl._cache:
             skipped += 1
             continue
 
         fields = {}
-        for key, at_field in [
-            ("totalPocs",            fm.get("totalPocs")),
-            ("ytbmPocs",             fm.get("ytbmPocs")),
-            ("activePocs",           fm.get("activePocs")),
-            ("connectedPocs",        fm.get("connectedPocs")),
-            ("terminalPocs",         fm.get("terminalPocs")),
-            ("calledSinceApr19",     fm.get("calledSinceApr19")),
-            ("accountStatus",        fm.get("accountStatus")),
-        ]:
+        for fm_key, stat_key in _FIELD_MAP:
+            at_field = fm.get(fm_key)
             if at_field:
-                stat_key = {
-                    "totalPocs":         "total",
-                    "ytbmPocs":          "ytbm",
-                    "activePocs":        "active",
-                    "connectedPocs":     "connected",
-                    "terminalPocs":      "terminal",
-                    "calledSinceApr19":  "called_apr19",
-                    "accountStatus":     "status",
-                }.get(key, key)
                 fields[at_field] = e[stat_key]
 
         if fm.get("lastCalledAtContacts") and e["last_called"]:
@@ -198,7 +235,21 @@ _TDR   = 'style="padding:7px 12px;border:1px solid #ccc;font-size:12px;text-alig
 _TABLE = 'style="border-collapse:collapse;width:100%;margin:6px 0 18px;"'
 _SEC   = 'style="font-size:14px;font-weight:bold;margin:22px 0 4px;color:#333;"'
 _BODY  = ('style="font-family:Arial,sans-serif;color:#333;'
-          'max-width:720px;margin:0 auto;padding:24px 20px;"')
+          'max-width:760px;margin:0 auto;padding:24px 20px;"')
+_BADGE = {
+    "Exhausted":          "background:#d32f2f;color:#fff;",
+    "Near Exhausted":     "background:#f57c00;color:#fff;",
+    "Hot Pipeline":       "background:#1976d2;color:#fff;",
+    "MQL - Action Needed":"background:#7b1fa2;color:#fff;",
+    "Active":             "background:#388e3c;color:#fff;",
+    "Fresh":              "background:#888;color:#fff;",
+}
+
+
+def _badge(status: str) -> str:
+    style = _BADGE.get(status, "background:#888;color:#fff;")
+    return (f'<span style="font-size:10px;padding:2px 6px;border-radius:3px;'
+            f'{style}">{status}</span>')
 
 
 def _tr(s, n=35):
@@ -228,123 +279,188 @@ def _name_of(co_id: str, tbl_cache: dict) -> str:
     return _scalar(f.get("Company Name") or f.get("Company Name - Kylas"), co_id)
 
 
+def _mk_table(header_html: str, rows: str) -> str:
+    return (f'<table {_TABLE}><thead><tr>{header_html}</tr></thead>'
+            f'<tbody>{rows}</tbody></table>')
+
+
 def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
-    needs_re  = sorted(
-        [co for co, e in health.items() if e["needs_reassign"]],
+    # ── collect by status ──────────────────────────────────────────────────────
+    needs_re   = sorted(
+        [c for c, e in health.items() if e["needs_reassign"]],
         key=lambda c: health[c]["total"], reverse=True
     )[:20]
-    exhausted = sorted(
-        [co for co, e in health.items() if e["status"] == "Exhausted"],
-        key=lambda c: health[c]["total"], reverse=True
+    exhausted  = sorted(
+        [c for c, e in health.items() if e["status"] == "Exhausted"],
+        key=lambda c: health[c]["noi"], reverse=True
     )[:15]
-    near_ex   = sorted(
-        [co for co, e in health.items() if e["status"] == "Near Exhausted"],
-        key=lambda c: health[c]["terminal"] / max(health[c]["total"], 1), reverse=True
+    near_ex    = sorted(
+        [c for c, e in health.items() if e["status"] == "Near Exhausted"],
+        key=lambda c: health[c]["noi"], reverse=True
+    )[:15]
+    mql_action = sorted(
+        [c for c, e in health.items() if e["status"] == "MQL - Action Needed"],
+        key=lambda c: health[c]["mql"], reverse=True
     )[:15]
 
-    total_re = sum(1 for e in health.values() if e["needs_reassign"])
-    total_ex = sum(1 for e in health.values() if e["status"] == "Exhausted")
-    total_ne = sum(1 for e in health.values() if e["status"] == "Near Exhausted")
+    total_re  = sum(1 for e in health.values() if e["needs_reassign"])
+    total_ex  = sum(1 for e in health.values() if e["status"] == "Exhausted")
+    total_ne  = sum(1 for e in health.values() if e["status"] == "Near Exhausted")
+    total_mql = sum(1 for e in health.values() if e["status"] == "MQL - Action Needed")
+    total_hot = sum(1 for e in health.values() if e["status"] == "Hot Pipeline")
+    total_act = sum(1 for e in health.values() if e["status"] == "Active")
+    total_fr  = sum(1 for e in health.values() if e["status"] == "Fresh")
 
-    def section_table(ids, cols_fn):
-        rows = "".join(cols_fn(co) for co in ids)
-        return rows
+    # ── summary pills ──────────────────────────────────────────────────────────
+    summary = (
+        '<table style="border-collapse:collapse;margin:12px 0 20px;">'
+        '<tr>'
+        + "".join(
+            f'<td style="padding:6px 10px;text-align:center;">'
+            f'{_badge(st)}<br>'
+            f'<span style="font-size:18px;font-weight:bold;">{cnt}</span>'
+            f'</td>'
+            for st, cnt in [
+                ("Exhausted", total_ex),
+                ("Near Exhausted", total_ne),
+                ("Hot Pipeline", total_hot),
+                ("MQL - Action Needed", total_mql),
+                ("Active", total_act),
+                ("Fresh", total_fr),
+            ]
+        )
+        + '</tr></table>'
+    )
 
-    # Re-assign table
-    re_rows = section_table(needs_re, lambda co: (
-        f'<tr>'
-        f'<td {_TD}>{_tr(_name_of(co, tbl_cache), 38)}</td>'
-        f'<td {_TD}>{_tr(_owner_of(co, tbl_cache), 20)}</td>'
-        f'<td {_TDR}>{health[co]["total"]}</td>'
-        f'<td {_TDR}>{health[co]["ytbm"]}</td>'
-        f'<td {_TDR}>{health[co]["active"]}</td>'
-        f'<td {_TD}>{health[co]["last_called"] or "—"}</td>'
-        f'</tr>'
-    ))
+    sections = summary
 
-    # Exhausted table
-    ex_rows = section_table(exhausted, lambda co: (
-        f'<tr>'
-        f'<td {_TD}>{_tr(_name_of(co, tbl_cache), 38)}</td>'
-        f'<td {_TD}>{_tr(_owner_of(co, tbl_cache), 20)}</td>'
-        f'<td {_TDR}>{health[co]["total"]}</td>'
-        f'<td {_TDR}>{health[co]["terminal"]}</td>'
-        f'<td {_TD}>{health[co]["last_called"] or "—"}</td>'
-        f'</tr>'
-    ))
-
-    # Near-exhausted table
-    ne_rows = section_table(near_ex, lambda co: (
-        f'<tr>'
-        f'<td {_TD}>{_tr(_name_of(co, tbl_cache), 38)}</td>'
-        f'<td {_TD}>{_tr(_owner_of(co, tbl_cache), 20)}</td>'
-        f'<td {_TDR}>{health[co]["total"]}</td>'
-        f'<td {_TDR}>{health[co]["terminal"]}</td>'
-        f'<td {_TDR}>{health[co]["ytbm"]}</td>'
-        f'<td {_TD}>{health[co]["last_called"] or "—"}</td>'
-        f'</tr>'
-    ))
-
-    def mk_table(header_html, rows):
-        return (f'<table {_TABLE}><thead><tr>{header_html}</tr></thead>'
-                f'<tbody>{rows}</tbody></table>')
-
-    re_hdr = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
-              f'<th {_TH}>Total</th><th {_TH}>YtBM</th>'
-              f'<th {_TH}>Active</th><th {_TH}>Last Call</th>')
-    ex_hdr = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
-              f'<th {_TH}>Total</th><th {_TH}>Terminal</th>'
-              f'<th {_TH}>Last Call</th>')
-    ne_hdr = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
-              f'<th {_TH}>Total</th><th {_TH}>Terminal</th>'
-              f'<th {_TH}>YtBM</th><th {_TH}>Last Call</th>')
-
-    sections = ""
-
+    # ── Needs Re-assign ────────────────────────────────────────────────────────
     if needs_re:
-        note = f" (showing top {len(needs_re)} of {total_re})" if total_re > len(needs_re) else ""
+        note = f" (top {len(needs_re)} of {total_re})" if total_re > len(needs_re) else ""
+        hdr  = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
+                f'<th {_TH}>Status</th>'
+                f'<th {_TH}>Total</th><th {_TH}>YtBM</th>'
+                f'<th {_TH}>Active</th><th {_TH}>Last Call</th>')
+        rows = "".join(
+            f'<tr>'
+            f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
+            f'<td {_TD}>{_tr(_owner_of(c, tbl_cache), 20)}</td>'
+            f'<td {_TD}>{_badge(health[c]["status"])}</td>'
+            f'<td {_TDR}>{health[c]["total"]}</td>'
+            f'<td {_TDR}>{health[c]["ytbm"]}</td>'
+            f'<td {_TDR}>{health[c]["active"]}</td>'
+            f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
+            f'</tr>'
+            for c in needs_re
+        )
         sections += (
-            f'<p {_SEC}>Needs Re-assign ({total_re} accounts{note})</p>'
+            f'<p {_SEC}>🔄 Needs Re-assign ({total_re} accounts{note})</p>'
             f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
-            f'Has YtBM POCs but no call since April 19</p>'
-            + mk_table(re_hdr, re_rows)
+            f'Has YtBM POCs but no call since April 19 — safe to reassign</p>'
+            + _mk_table(hdr, rows)
         )
 
+    # ── Exhausted ─────────────────────────────────────────────────────────────
     if exhausted:
-        note = f" (showing top {len(exhausted)} of {total_ex})" if total_ex > len(exhausted) else ""
+        note = f" (top {len(exhausted)} of {total_ex})" if total_ex > len(exhausted) else ""
+        hdr  = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
+                f'<th {_TH}>Total</th><th {_TH}>NOI</th>'
+                f'<th {_TH}>Terminal</th><th {_TH}>Last Call</th>')
+        rows = "".join(
+            f'<tr>'
+            f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
+            f'<td {_TD}>{_tr(_owner_of(c, tbl_cache), 20)}</td>'
+            f'<td {_TDR}>{health[c]["total"]}</td>'
+            f'<td {_TDR} style="color:#d32f2f;font-weight:bold;">{health[c]["noi"]}</td>'
+            f'<td {_TDR}>{health[c]["terminal"]}</td>'
+            f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
+            f'</tr>'
+            for c in exhausted
+        )
         sections += (
-            f'<p {_SEC}>Exhausted ({total_ex} accounts{note})</p>'
+            f'<p {_SEC}>🔴 Exhausted ({total_ex} accounts{note})</p>'
             f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
-            f'All POCs in terminal stages — needs fresh POC injection</p>'
-            + mk_table(ex_hdr, ex_rows)
+            f'≥2 Not Interested or all POCs terminal — needs fresh POC injection</p>'
+            + _mk_table(hdr, rows)
         )
 
+    # ── Near Exhausted ────────────────────────────────────────────────────────
     if near_ex:
-        note = f" (showing top {len(near_ex)} of {total_ne})" if total_ne > len(near_ex) else ""
+        note = f" (top {len(near_ex)} of {total_ne})" if total_ne > len(near_ex) else ""
+        hdr  = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
+                f'<th {_TH}>Total</th><th {_TH}>NOI</th>'
+                f'<th {_TH}>Terminal</th><th {_TH}>YtBM</th><th {_TH}>Last Call</th>')
+        rows = "".join(
+            f'<tr>'
+            f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
+            f'<td {_TD}>{_tr(_owner_of(c, tbl_cache), 20)}</td>'
+            f'<td {_TDR}>{health[c]["total"]}</td>'
+            f'<td {_TDR} style="color:#f57c00;font-weight:bold;">{health[c]["noi"]}</td>'
+            f'<td {_TDR}>{health[c]["terminal"]}</td>'
+            f'<td {_TDR}>{health[c]["ytbm"]}</td>'
+            f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
+            f'</tr>'
+            for c in near_ex
+        )
         sections += (
-            f'<p {_SEC}>Near Exhausted ({total_ne} accounts{note})</p>'
+            f'<p {_SEC}>🟠 Near Exhausted ({total_ne} accounts{note})</p>'
             f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
-            f'70%+ POCs in terminal stages</p>'
-            + mk_table(ne_hdr, ne_rows)
+            f'1 NOI or ≥70% terminal — monitor closely</p>'
+            + _mk_table(hdr, rows)
         )
 
-    if not sections:
-        sections = '<p style="color:#555;">All accounts look healthy — no action needed.</p>'
+    # ── MQL – Action Needed ───────────────────────────────────────────────────
+    if mql_action:
+        note = f" (top {len(mql_action)} of {total_mql})" if total_mql > len(mql_action) else ""
+        hdr  = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
+                f'<th {_TH}>MQL</th><th {_TH}>Hot</th>'
+                f'<th {_TH}>Active</th><th {_TH}>Last Call</th>')
+        rows = "".join(
+            f'<tr>'
+            f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
+            f'<td {_TD}>{_tr(_owner_of(c, tbl_cache), 20)}</td>'
+            f'<td {_TDR} style="color:#7b1fa2;font-weight:bold;">{health[c]["mql"]}</td>'
+            f'<td {_TDR}>{health[c]["hot"]}</td>'
+            f'<td {_TDR}>{health[c]["active"]}</td>'
+            f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
+            f'</tr>'
+            for c in mql_action
+        )
+        sections += (
+            f'<p {_SEC}>🟣 MQL – Push to Discovery Call ({total_mql} accounts{note})</p>'
+            f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
+            f'Has MQL / Activation POCs — needs follow-up to book Discovery Call</p>'
+            + _mk_table(hdr, rows)
+        )
+
+    if not (needs_re or exhausted or near_ex or mql_action):
+        sections += '<p style="color:#555;">All accounts look healthy — no action needed.</p>'
+
+    today = date.today()
+    week_label = f"Week of {today.strftime('%b %d, %Y')}"
 
     return (
         f'<!DOCTYPE html><html><body {_BODY}>'
         '<p>Hi team,</p>'
-        f'<p style="font-weight:bold;font-size:14px;margin:0 0 4px;">'
-        f'Account Health Snapshot &nbsp;&middot;&nbsp; {friendly}</p>'
-        f'<p style="font-size:13px;color:#666;margin:0 0 16px;">'
-        f'Accounts that need attention based on POC pipeline status.</p>'
+        f'<p style="font-weight:bold;font-size:15px;margin:0 0 2px;">'
+        f'Account Health — Weekly Digest &nbsp;&middot;&nbsp; {week_label}</p>'
+        f'<p style="font-size:12px;color:#666;margin:0 0 4px;">'
+        f'Re-assign = <b>Airtable filter: [YtBM POCs] &gt; 0 AND [Called Since Apr 19] = 0</b></p>'
+        f'<p style="font-size:12px;color:#999;margin:0 0 16px;">'
+        f'Exhausted = NOI ≥ 2 &nbsp;|&nbsp; '
+        f'Near Exhausted = 1 NOI or ≥70% terminal &nbsp;|&nbsp; '
+        f'MQL = connected, needs push to DCB</p>'
         + sections
-        + '<p style="color:#999;font-size:12px;margin-top:24px;">— Kylas Sync</p>'
+        + '<p style="color:#999;font-size:11px;margin-top:24px;">— Kylas Sync</p>'
         '</body></html>'
     )
 
 
-def run(kylas=None) -> dict:
+def run(kylas=None, send_email: bool = True) -> dict:
+    """
+    send_email=False: only update Airtable (used by daily run_sync.py).
+    send_email=True:  update Airtable + send weekly digest email.
+    """
     smtp_user = os.environ.get("SMTP_USER", "")
     smtp_pass = os.environ.get("SMTP_PASS", "")
 
@@ -360,7 +476,6 @@ def run(kylas=None) -> dict:
     if kylas is None:
         kylas = KylasClient()
 
-    # Full contact fetch (no since filter) for accurate account-wide stats
     print("[Account Health] Fetching all contacts from Kylas...")
     contacts = kylas._search_all(
         "contact",
@@ -369,20 +484,18 @@ def run(kylas=None) -> dict:
     print(f"[Account Health] {len(contacts)} contacts fetched")
 
     health = compute_health(contacts)
-    exhausted = sum(1 for e in health.values() if e["status"] == "Exhausted")
-    near_ex   = sum(1 for e in health.values() if e["status"] == "Near Exhausted")
-    needs_re  = sum(1 for e in health.values() if e["needs_reassign"])
-    fresh     = sum(1 for e in health.values() if e["status"] == "Fresh")
-    active    = sum(1 for e in health.values() if e["status"] == "Active")
-    print(f"[Account Health] {len(health)} companies  |  "
-          f"Fresh={fresh}  Active={active}  "
-          f"Near Exhausted={near_ex}  Exhausted={exhausted}  "
-          f"Needs Re-assign={needs_re}")
+
+    counts = {s: sum(1 for e in health.values() if e["status"] == s)
+              for s in ("Fresh", "Active", "MQL - Action Needed",
+                        "Hot Pipeline", "Near Exhausted", "Exhausted")}
+    needs_re = sum(1 for e in health.values() if e["needs_reassign"])
+    print(f"[Account Health] {len(health)} companies  |  " +
+          "  ".join(f"{s.split()[0]}={v}" for s, v in counts.items()) +
+          f"  Needs-Re-assign={needs_re}")
 
     company_base = os.environ.get("AIRTABLE_COMPANY_BASE_ID") or os.environ["AIRTABLE_BASE_ID"]
     crm_base     = os.environ["AIRTABLE_BASE_ID"]
 
-    # Write to Company List (company database)
     tbl_list_cache = {}
     try:
         tbl_list = AirtableClient("Company List", base_id=company_base)
@@ -392,7 +505,6 @@ def run(kylas=None) -> dict:
     except Exception as exc:
         print(f"[Account Health] WARNING: Company List write failed — {exc}")
 
-    # Write to Companies CRM
     tbl_crm_cache = {}
     try:
         tbl_crm = AirtableClient("Companies", base_id=crm_base)
@@ -402,7 +514,10 @@ def run(kylas=None) -> dict:
     except Exception as exc:
         print(f"[Account Health] WARNING: Companies CRM write failed — {exc}")
 
-    # Send alert email
+    if not send_email:
+        print("[Account Health] Airtable updated (email skipped — use weekly workflow to send)")
+        return health
+
     if not smtp_user or not smtp_pass:
         print("[Account Health] SMTP not configured — skipping email")
         return health
@@ -410,10 +525,11 @@ def run(kylas=None) -> dict:
         print("[Account Health] No recipients in team.json cc — skipping email")
         return health
 
-    friendly   = f"{date.today().strftime('%B')} {date.today().day}"
+    today      = date.today()
+    week_label = f"Week of {today.strftime('%b %d')}"
     tbl_cache  = tbl_crm_cache or tbl_list_cache
-    body       = _build_email(health, tbl_cache, friendly)
-    subject    = f"Account Health | {friendly}"
+    body       = _build_email(health, tbl_cache, week_label)
+    subject    = f"Account Health Weekly | {week_label}"
 
     msg            = MIMEMultipart("alternative")
     msg["From"]    = smtp_user
@@ -426,7 +542,7 @@ def run(kylas=None) -> dict:
             s.ehlo(); s.starttls()
             s.login(smtp_user, smtp_pass)
             s.sendmail(smtp_user, recipients, msg.as_string())
-        print(f"[Account Health] Alert sent → {', '.join(recipients)}")
+        print(f"[Account Health] Weekly digest sent → {', '.join(recipients)}")
     except Exception as exc:
         print(f"[Account Health] WARNING: email send failed — {exc}")
 
@@ -434,6 +550,10 @@ def run(kylas=None) -> dict:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--no-email", action="store_true",
+                        help="Update Airtable only, skip email")
+    args = parser.parse_args()
     from dotenv import load_dotenv
     load_dotenv()
-    run()
+    run(send_email=not args.no_email)
