@@ -66,8 +66,15 @@ def _build_fields(raw: dict, fm: dict, user_email_map: dict = None) -> dict:
         fm["pipelineStageBd"]: stage_bd,
         fm["sourceOfData"]:    cf.get("cfSourceOfData") or "",
     })
-    if "ownerEmail" in fm and user_email_map:
-        email = user_email_map.get(owner_name, "")
+    if "ownerEmail" in fm:
+        # 1. Try ownedBy.email if Kylas includes it in the payload
+        ob = raw.get("ownedBy") or {}
+        email = ""
+        if isinstance(ob, dict):
+            email = (ob.get("email") or ob.get("emailId") or "").strip().lower()
+        # 2. Fall back to name-based map (team.json + Kylas API)
+        if not email and user_email_map:
+            email = user_email_map.get(owner_name, "")
         if email:
             fields[fm["ownerEmail"]] = email
     return fields
@@ -115,7 +122,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
     if logger is None:
         logger = SyncLogger()
 
-    # Load owner name → email map for Company List
+    # Build owner name → email map: team.json base + live Kylas API (overrides)
     user_email_map = {}
     try:
         _tp = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
@@ -123,6 +130,12 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
             user_email_map = json.load(_f).get("kylas_user_emails", {})
     except Exception:
         pass
+    try:
+        api_emails = kylas.get_user_emails()
+        user_email_map.update(api_emails)   # API is authoritative
+        print(f"[Companies] User email map: {len(user_email_map)} entries")
+    except Exception as e:
+        print(f"[Companies] WARNING: Kylas user email fetch failed ({e}) — using team.json only")
 
     log_id = logger.start("Companies")
     created = updated = failed = skipped = 0
