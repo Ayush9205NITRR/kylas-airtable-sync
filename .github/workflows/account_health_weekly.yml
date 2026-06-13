@@ -1,24 +1,20 @@
-name: Sync - 1:30 PM IST
+name: Account Health — Weekly Digest
 
 on:
   schedule:
-    # 1:30 PM IST = 08:00 UTC, Mon–Fri
-    - cron: '0 8 * * 1-5'
+    # Every Monday 8:00 AM IST = 02:30 UTC
+    - cron: '30 2 * * 1'
   workflow_dispatch:
     inputs:
-      full_sync:
-        description: 'Fetch all records (no time filter)'
+      no_email:
+        description: 'Update Airtable only, skip email'
         required: false
         default: 'false'
-      since_date:
-        description: 'Fetch records updated on/after this date (YYYY-MM-DD). Overrides full_sync.'
-        required: false
-        default: ''
 
 jobs:
-  sync:
+  account-health:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -29,15 +25,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run sync
+      - name: Run account health
         run: |
-          ARGS="--slot=first_half"
-          if [ -n "${{ github.event.inputs.since_date }}" ]; then
-            ARGS="$ARGS --since=${{ github.event.inputs.since_date }}"
-          elif [ "${{ github.event.inputs.full_sync }}" = "true" ]; then
-            ARGS="$ARGS --full-sync"
+          ARGS=""
+          if [ "${{ github.event.inputs.no_email }}" = "true" ]; then
+            ARGS="--no-email"
           fi
-          python run_sync.py $ARGS
+          python modules/06_account_health.py $ARGS
         env:
           KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
