@@ -13,10 +13,6 @@ from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 
-# Kylas custom field key for "Last Called At".
-# Format in API: "Jun 08, 2026 at 06:44 PM"  (named-month, set by workflow).
-LAST_CALLED_AT_FIELD = "cfLastCalledAt"
-
 _FM = None
 
 _PIPELINE_STAGE = {
@@ -171,9 +167,16 @@ def run(test_mode: bool = False, test_id: int = None,
                         pre_cutoff += 1
                         continue
 
-                owner  = _owner_name(ct, user_map)
+                owner    = _owner_name(ct, user_map)
+                kylas_id = str(ct["id"])
+
+                # Capture old stage before upsert for transition detection
+                _existing = airtable._cache.get(kylas_id)
+                old_stage = str(_existing["fields"].get(_fm()["pipelineStage"]) or "").strip() if _existing else ""
+                new_stage = _contact_stage(ct)
+
                 action, _ = airtable.upsert(
-                    "Kylas Contact Id", str(ct["id"]),
+                    "Kylas Contact Id", kylas_id,
                     _map(ct, user_map=user_map, company_id_map=company_id_map),
                     ct.get("updatedAt", ""),
                     updated_at_field=_fm()["updatedAt"],
@@ -185,30 +188,13 @@ def run(test_mode: bool = False, test_id: int = None,
                     updated += 1
                     per_user.setdefault(owner, {"created": 0, "updated": 0})["updated"] += 1
 
-                # BD metrics + account activity
-                # Determine activity date: Last Called AT field (if configured) else updatedAt
-                cf = ct.get("customFieldValues") or {}
-                if LAST_CALLED_AT_FIELD:
-                    raw_lc = (cf.get(LAST_CALLED_AT_FIELD) or "").strip()
-                    activity_date = ""
-                    if raw_lc:
-                        if raw_lc[0].isdigit():
-                            activity_date = raw_lc[:10]  # ISO: "2026-06-08..."
-                        else:
-                            try:  # "Jun 08, 2026 at 06:44 PM"
-                                activity_date = datetime.strptime(
-                                    raw_lc.split(" at ")[0], "%b %d, %Y"
-                                ).strftime("%Y-%m-%d")
-                            except ValueError:
-                                pass
-                    is_active_today = bool(activity_date) and activity_date == today_iso
-                else:
-                    is_active_today = (ct.get("updatedAt") or "").startswith(today_iso)
+                # BD metrics: count contacts MOVED TO a new stage today (stage-transition)
+                updated_today = (ct.get("updatedAt") or "").startswith(today_iso)
+                stage_moved   = bool(new_stage) and (new_stage != old_stage) and updated_today
 
-                if is_active_today:
-                    stage = _contact_stage(ct)
-                    cats  = _classify_bd(stage)
-                    bd    = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})
+                if stage_moved:
+                    cats = _classify_bd(new_stage)
+                    bd   = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})
                     for key in BD_KEYS:
                         if cats[key]:
                             bd[key] += 1
@@ -239,8 +225,8 @@ def run(test_mode: bool = False, test_id: int = None,
         print(f"[Contacts] Done -> created={created} updated={updated} pre-cutoff={pre_cutoff} failed={failed}")
 
         total_bd = sum(v for m in bd_daily.values() for v in m.values())
-        print(f"[Contacts] BD daily: {total_bd} classifications across {len(bd_daily)} owner(s)")
-        print(f"[Contacts] Account activity: {len(account_activity)} companies updated today")
+        print(f"[Contacts] BD daily: {total_bd} stage transitions across {len(bd_daily)} owner(s)")
+        print(f"[Contacts] Account activity: {len(account_activity)} companies with stage moves today")
 
     except Exception as e:
         logger.fail(log_id, str(e))

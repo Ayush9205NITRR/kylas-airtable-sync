@@ -75,6 +75,13 @@ _ACTIVE_STAGES = {
     "Reschedule Pending",
 }
 
+# Subset of _ACTIVE_STAGES — contacts specifically in "Could Not Connect"
+_CNC_STAGES = {
+    "CNC (Could Not Connect) - 1",
+    "CNC (Could Not Connect) - 2",
+    "Followup - CNC",
+}
+
 # Connected — needs push from MQL/Activation → Discovery Call
 _MQL_ACTION_STAGES = {
     "MQL (Marketing Qualified Lead)",
@@ -125,6 +132,7 @@ def compute_health(contacts: list) -> dict:
 
         e = by_co.setdefault(co_id, {
             "total": 0, "ytbm": 0, "active": 0,
+            "cnc": 0,
             "mql": 0, "hot": 0,
             "terminal": 0, "noi": 0,
             "called": 0, "called_apr19": 0, "last_called": "",
@@ -139,6 +147,8 @@ def compute_health(contacts: list) -> dict:
                 e["noi"] += 1
         elif stage in _ACTIVE_STAGES:
             e["active"] += 1
+            if stage in _CNC_STAGES:
+                e["cnc"] += 1
         elif stage in _MQL_ACTION_STAGES:
             e["mql"] += 1
         elif stage in _HOT_STAGES:
@@ -173,6 +183,14 @@ def compute_health(contacts: list) -> dict:
 
         # connected = mql + hot  (summary "warm/hot" count for existing column)
         e["connected"] = e["mql"] + e["hot"]
+
+        # An account is "properly exhausted" when it has pipeline value
+        # OR tried 3+ CNC contacts OR has 3+ NOI rejections
+        e["is_exhausted"] = bool(
+            e["mql"] > 0 or e["hot"] > 0 or
+            e["cnc"] >= 3 or e["noi"] >= 3
+        )
+        e["needs_exhaust"] = not e["is_exhausted"]
 
         # Re-assign: has untouched POCs but no call since Apr 19
         e["needs_reassign"] = bool(e["ytbm"] > 0 and e["called_apr19"] == 0)
@@ -456,6 +474,120 @@ def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
     )
 
 
+def _build_poc_email(first_name: str, accounts: list,
+                     health: dict, tbl_cache: dict, week_label: str) -> str:
+    """HTML email for one POC listing their unexhausted accounts."""
+    _priority = {"Fresh": 0, "Active": 1, "Near Exhausted": 2,
+                 "Exhausted": 3, "Hot Pipeline": 4, "MQL - Action Needed": 5}
+    accounts = sorted(accounts, key=lambda c: (
+        _priority.get(health[c]["status"], 9), -health[c]["ytbm"]
+    ))
+
+    hdr = (f'<th {_TH}>Company</th>'
+           f'<th {_TH}>Status</th>'
+           f'<th {_TH}>Total</th>'
+           f'<th {_TH}>YtBM</th>'
+           f'<th {_TH}>CNC</th>'
+           f'<th {_TH}>NOI</th>'
+           f'<th {_TH}>MQL/SQL</th>'
+           f'<th {_TH}>Last Call</th>')
+
+    def _td_n(val, color=""):
+        style = f'text-align:right;padding:7px 12px;border:1px solid #ccc;font-size:12px;{color}'
+        return f'<td style="{style}">{val}</td>'
+
+    rows = "".join(
+        '<tr>'
+        f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
+        f'<td {_TD}>{_badge(health[c]["status"])}</td>'
+        + _td_n(health[c]["total"])
+        + _td_n(health[c]["ytbm"], "color:#888;")
+        + _td_n(health[c]["cnc"])
+        + _td_n(health[c]["noi"],  "color:#d32f2f;" if health[c]["noi"] else "")
+        + _td_n(health[c]["mql"] + health[c]["hot"],
+                "color:#7b1fa2;" if (health[c]["mql"] + health[c]["hot"]) else "")
+        + f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
+        '</tr>'
+        for c in accounts
+    )
+
+    n = len(accounts)
+    return (
+        f'<!DOCTYPE html><html><body {_BODY}>'
+        f'<p>Hi {first_name},</p>'
+        f'<p style="font-weight:bold;font-size:15px;margin:0 0 4px;">'
+        f'Exhaust Your Accounts &nbsp;&middot;&nbsp; {week_label}</p>'
+        f'<p style="font-size:12px;color:#555;margin:0 0 2px;">'
+        f'You have <b>{n} account{"s" if n != 1 else ""}</b> that '
+        f'haven\'t been exhausted yet — please work on them this week.</p>'
+        f'<p style="font-size:12px;color:#888;margin:0 0 16px;">'
+        f'An account is exhausted when it has: MQL / SQL / DCB contacts, '
+        f'<b>OR</b> 3+ CNC attempts, <b>OR</b> 3+ NOI rejections.</p>'
+        + _mk_table(hdr, rows)
+        + '<p style="color:#999;font-size:11px;margin-top:24px;">— Kylas Sync</p>'
+        '</body></html>'
+    )
+
+
+def _send_poc_emails(health: dict, tbl_cache: dict, cfg: dict,
+                     smtp_user: str, smtp_pass: str) -> None:
+    """Group unexhausted accounts by owner and send each POC their personal email."""
+    if not smtp_user or not smtp_pass:
+        print("[Account Health] SMTP not configured — skipping POC emails")
+        return
+
+    today       = date.today()
+    week_label  = f"Week of {today.strftime('%b %d, %Y')}"
+    user_emails = cfg.get("kylas_user_emails", {})
+    cc_list     = cfg.get("cc", [])
+
+    by_owner: dict = {}
+    for co_id, e in health.items():
+        if not e.get("needs_exhaust"):
+            continue
+        owner = _owner_of(co_id, tbl_cache)
+        if owner and owner != "—":
+            by_owner.setdefault(owner, []).append(co_id)
+
+    if not by_owner:
+        print("[Account Health] No unexhausted accounts found — skipping POC emails")
+        return
+
+    for owner, accounts in sorted(by_owner.items()):
+        email = user_emails.get(owner)
+        if not email:
+            for k, v in user_emails.items():
+                if owner.lower() in k.lower() or k.lower() in owner.lower():
+                    email = v
+                    break
+
+        if not email:
+            print(f"[Account Health] No email for owner '{owner}' — skipping")
+            continue
+
+        first   = owner.split()[0]
+        body    = _build_poc_email(first, accounts, health, tbl_cache, week_label)
+        subject = f"Please Exhaust These Accounts — {week_label}"
+        eff_cc  = [a for a in cc_list if a.lower() != email.lower()]
+
+        msg            = MIMEMultipart("alternative")
+        msg["From"]    = smtp_user
+        msg["To"]      = email
+        msg["Subject"] = subject
+        if eff_cc:
+            msg["CC"] = ", ".join(eff_cc)
+        msg.attach(MIMEText(body, "html", "utf-8"))
+
+        try:
+            with smtplib.SMTP("smtp.gmail.com", 587) as s:
+                s.ehlo(); s.starttls()
+                s.login(smtp_user, smtp_pass)
+                s.sendmail(smtp_user, [email] + eff_cc, msg.as_string())
+            print(f"[Account Health] POC email → {owner} <{email}> ({len(accounts)} accounts)")
+        except Exception as exc:
+            print(f"[Account Health] WARNING: POC email failed for {owner} — {exc}")
+
+
 def run(kylas=None, send_email: bool = True) -> dict:
     """
     send_email=False: only update Airtable (used by daily run_sync.py).
@@ -545,6 +677,11 @@ def run(kylas=None, send_email: bool = True) -> dict:
         print(f"[Account Health] Weekly digest sent → {', '.join(recipients)}")
     except Exception as exc:
         print(f"[Account Health] WARNING: email send failed — {exc}")
+
+    # Per-POC exhaust emails
+    needs_exhaust_ct = sum(1 for e in health.values() if e.get("needs_exhaust"))
+    print(f"[Account Health] {needs_exhaust_ct} accounts need exhaust → sending per-POC emails...")
+    _send_poc_emails(health, tbl_cache, cfg, smtp_user, smtp_pass)
 
     return health
 
