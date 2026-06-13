@@ -2,7 +2,7 @@ name: Account Health — Weekly Digest
 
 on:
   schedule:
-    # Every Monday 08:00 IST = 02:30 UTC
+    # Every Monday 8:00 AM IST = 02:30 UTC
     - cron: '30 2 * * 1'
   workflow_dispatch:
     inputs:

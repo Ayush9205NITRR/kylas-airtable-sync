@@ -1,6 +1,9 @@
 name: BD Weekly Report
 
 on:
+  schedule:
+    # Saturday 9:00 AM IST = 03:30 UTC (covers Mon–Fri of that week)
+    - cron: '30 3 * * 6'
   workflow_dispatch:
 
 jobs:
