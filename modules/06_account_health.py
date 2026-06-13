@@ -112,11 +112,27 @@ def _parse_lc(raw: str) -> str:
         return ""
 
 
-def compute_health(contacts: list) -> dict:
+def _contact_owner_email(ct: dict, user_email_map: dict) -> str:
+    """Extract owner email from a raw Kylas contact dict."""
+    ob = ct.get("ownedBy") or {}
+    if not isinstance(ob, dict):
+        return ""
+    email = ob.get("email", "")
+    if email:
+        return email
+    name = (ob.get("name") or
+            f"{ob.get('firstName', '')} {ob.get('lastName', '')}".strip())
+    return user_email_map.get(name, "") if name and user_email_map else ""
+
+
+def compute_health(contacts: list, user_email_map: dict = None) -> dict:
     """
     contacts: raw Kylas contact dicts.
+    user_email_map: {owner_name: email} — used to populate claimed_by.
     Returns {kylas_company_id (str): health_dict}.
     """
+    if user_email_map is None:
+        user_email_map = {}
     by_co = {}
     for ct in contacts:
         co    = ct.get("company")
@@ -136,6 +152,8 @@ def compute_health(contacts: list) -> dict:
             "mql": 0, "hot": 0,
             "terminal": 0, "noi": 0,
             "called": 0, "called_apr19": 0, "last_called": "",
+            "claimed_by": "",       # email of rep who called most recently since Apr 19
+            "_claimed_date": "",    # internal: date of that call for comparison
         })
         e["total"] += 1
 
@@ -159,6 +177,9 @@ def compute_health(contacts: list) -> dict:
             e["called"] += 1
             if lc >= REASSIGN_CUTOFF:
                 e["called_apr19"] += 1
+                if lc > e["_claimed_date"]:
+                    e["_claimed_date"] = lc
+                    e["claimed_by"] = _contact_owner_email(ct, user_email_map)
             if lc > e["last_called"]:
                 e["last_called"] = lc
 
@@ -235,6 +256,8 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict) -> tuple:
             fields[fm["lastCalledAtContacts"]] = e["last_called"]
         if fm.get("needsReassign"):
             fields[fm["needsReassign"]] = e["needs_reassign"]
+        if fm.get("claimedBy"):
+            fields[fm["claimedBy"]] = e.get("claimed_by", "")
 
         rid = tbl._cache[co_id]["id"]
         tbl._updates.append((co_id, rid, fields))
@@ -608,6 +631,14 @@ def run(kylas=None, send_email: bool = True) -> dict:
     if kylas is None:
         kylas = KylasClient()
 
+    # Build owner name → email map for "Claimed By" field
+    user_email_map = cfg.get("kylas_user_emails", {})
+    try:
+        api_emails = kylas.get_user_emails()
+        user_email_map.update(api_emails)
+    except Exception as _e:
+        print(f"[Account Health] WARNING: user email fetch failed ({_e}) — using team.json")
+
     print("[Account Health] Fetching all contacts from Kylas...")
     contacts = kylas._search_all(
         "contact",
@@ -615,7 +646,7 @@ def run(kylas=None, send_email: bool = True) -> dict:
     )
     print(f"[Account Health] {len(contacts)} contacts fetched")
 
-    health = compute_health(contacts)
+    health = compute_health(contacts, user_email_map=user_email_map)
 
     counts = {s: sum(1 for e in health.values() if e["status"] == s)
               for s in ("Fresh", "Active", "MQL - Action Needed",

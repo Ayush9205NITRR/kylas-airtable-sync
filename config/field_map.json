@@ -20,7 +20,8 @@
     "lastCalledAtContacts":  "Last Called At (Contacts)",
     "calledSinceApr19":      "Called Since Apr 19",
     "accountStatus":         "Account Status",
-    "needsReassign":         "Needs Re-assign"
+    "needsReassign":         "Needs Re-assign",
+    "claimedBy":             "Claimed By"
   },
   "company_crm": {
     "id":                    "Kylas Company Id",
@@ -45,7 +46,8 @@
     "lastCalledAtContacts":  "Last Called At (Contacts)",
     "calledSinceApr19":      "Called Since Apr 19",
     "accountStatus":         "Account Status",
-    "needsReassign":         "Needs Re-assign"
+    "needsReassign":         "Needs Re-assign",
+    "claimedBy":             "Claimed By"
   },
   "contact": {
     "id":            "Kylas Contact Id",
