@@ -4,7 +4,7 @@ Cold Call Analysis — daily pipeline.
   1. Fetch today's new audio files from Drive (per BD sub-folder)
   2. Skip unsupported formats / duplicates / clips < 10s
   3. Transcribe (Whisper via HF) -> analyze (Gemini) -> store (Airtable)
-  4. Send one coaching email per BD (Resend)
+  4. Send one coaching email per BD (SMTP)
 
 Run:
     python -m cold_call.pipeline                 (or: python cold_call/pipeline.py)

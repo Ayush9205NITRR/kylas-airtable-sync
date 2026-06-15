@@ -1,5 +1,5 @@
 """
-Daily coaching email (one per BD) via Resend.
+Daily coaching email (one per BD) via SMTP (Gmail), matching the Kylas sync.
 
 Content (per the brief):
   - BD name + date
@@ -9,7 +9,7 @@ Content (per the brief):
   - Score breakdown bars (Hook / Objection / Pitch / Discovery)
 
 BD email is resolved from config/team.json (bd_team) by name. If a BD has no
-email, or RESEND_API_KEY is unset, the send is skipped with a log line.
+email, or SMTP_USER/SMTP_PASS are unset, the send is skipped with a log line.
 """
 import json
 import os
@@ -130,6 +130,26 @@ def build_email_html(bd_name: str, calls_today: list) -> str:
     )
 
 
+def _send_smtp(to: str, subject: str, html: str, cc: list = None) -> None:
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    cc = cc or []
+    msg = MIMEMultipart("alternative")
+    msg["From"] = config.EMAIL_FROM
+    msg["To"] = to
+    msg["Subject"] = subject
+    if cc:
+        msg["Cc"] = ", ".join(cc)
+    msg.attach(MIMEText(html, "html", "utf-8"))
+    with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT) as s:
+        s.ehlo()
+        s.starttls()
+        s.login(config.SMTP_USER, config.SMTP_PASS)
+        s.sendmail(config.SMTP_USER, [to] + cc, msg.as_string())
+
+
 def send_coaching_email(bd_name: str, bd_email: str, calls_today: list) -> bool:
     if not calls_today:
         return False
@@ -137,22 +157,14 @@ def send_coaching_email(bd_name: str, bd_email: str, calls_today: list) -> bool:
     if not bd_email:
         print(f"[email] No email for {bd_name} — skipping")
         return False
-    if not config.RESEND_API_KEY:
-        print("[email] RESEND_API_KEY not set — skipping send")
+    if not config.SMTP_USER or not config.SMTP_PASS:
+        print("[email] SMTP_USER / SMTP_PASS not set — skipping send")
         return False
-
-    import resend
-    resend.api_key = config.RESEND_API_KEY
 
     avg_total = _avg(calls_today, "total_score")
     subject = (f"Your call coaching — {date.today().strftime('%d %b')} "
                f"({len(calls_today)} calls, avg {int(avg_total)}/100)")
-    resend.Emails.send({
-        "from": config.RESEND_FROM_EMAIL,
-        "to": bd_email,
-        "subject": subject,
-        "html": build_email_html(bd_name, calls_today),
-    })
+    _send_smtp(bd_email, subject, build_email_html(bd_name, calls_today))
     print(f"[email] Sent coaching email → {bd_name} <{bd_email}>")
     return True
 
@@ -186,4 +198,10 @@ if __name__ == "__main__":
         fh.write(html)
     print(f"Sample written to {args.out}")
     if args.to:
-        send_coaching_email("Rubal", args.to, sample)
+        # Send the sample straight to --to (bypasses team.json lookup).
+        if not config.SMTP_USER or not config.SMTP_PASS:
+            print("[email] SMTP_USER / SMTP_PASS not set — cannot send sample")
+        else:
+            subject = "Your call coaching — sample (2 calls, avg 66/100)"
+            _send_smtp(args.to, subject, html)
+            print(f"[email] Sample sent → {args.to}")

@@ -37,13 +37,19 @@ AIRTABLE_BASE_ID = (
 )
 TABLE_NAME = os.environ.get("COLD_CALL_TABLE_NAME", "Calls")
 
-# ── Email (Resend) ─────────────────────────────────────────────────────────────────
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "coaching@enout.in")
+# ── Email (SMTP) ───────────────────────────────────────────────────────────────────
+# Reuses the same Gmail SMTP credentials as the Kylas sync (modules/04_email_alert.py).
+SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_PASS = os.environ.get("SMTP_PASS", "")
+# Optional From override; defaults to the SMTP user (Gmail requires this anyway).
+EMAIL_FROM = os.environ.get("COLD_CALL_FROM_EMAIL") or SMTP_USER
 
 # ── Google Drive ───────────────────────────────────────────────────────────────────
-# Id of the top-level `calls/` folder (each child folder = one BD).
-DRIVE_FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID", "")
+# Id of the top-level `calls/` folder (each child folder = one BD). Defaults to the
+# Enout calls folder; override with GOOGLE_DRIVE_FOLDER_ID if it ever moves.
+DRIVE_FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID") or "1tDvWUO-LM37aVIghIjyihVD1f8wXfxM8"
 # Either a path to a service-account JSON key file, or the raw JSON string
 # (handy for CI, where the whole key lives in a single secret).
 GOOGLE_SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")

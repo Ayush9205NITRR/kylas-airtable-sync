@@ -3,7 +3,7 @@
 A daily pipeline that turns BD sales-call recordings into coaching feedback.
 
 ```
-Google Drive  →  Whisper (HF)  →  Gemini 1.5 Flash  →  Airtable  →  Resend email
+Google Drive  →  Whisper (HF)  →  Gemini 1.5 Flash  →  Airtable  →  SMTP email
   (audio)         transcript        4-param score        Calls         per BD
 ```
 
@@ -36,7 +36,7 @@ Accepted formats: `.mp4 .m4a .mp3 .wav .ogg .aac`. Files modified on/after
 | `prompt.py` | the Gemini coaching system prompt |
 | `analyze.py` | Gemini call → scorecard JSON (robust parsing) |
 | `airtable_store.py` | duplicate check + insert into `Calls` |
-| `email_coach.py` | per-BD coaching email via Resend |
+| `email_coach.py` | per-BD coaching email via SMTP (Gmail) |
 | `pipeline.py` | orchestrates the whole daily run |
 
 ## Setup
@@ -54,13 +54,17 @@ python scripts/setup_cold_call_airtable.py
 | Var | Notes |
 |-----|-------|
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | path to the key file **or** the raw JSON |
-| `GOOGLE_DRIVE_FOLDER_ID` | id of the top-level `calls/` folder |
+| `GOOGLE_DRIVE_FOLDER_ID` | optional — defaults to the Enout `calls/` folder in `config.py` |
 | `HF_API_TOKEN` | Hugging Face token (Whisper) |
 | `GEMINI_API_KEY` | Gemini API key |
 | `AIRTABLE_PAT` | Airtable token (shared with the Kylas sync) |
 | `COLD_CALL_AIRTABLE_BASE_ID` | **dedicated** base for the `Calls` table |
-| `RESEND_API_KEY` | Resend API key |
-| `RESEND_FROM_EMAIL` | verified sender, e.g. `coaching@enout.in` |
+| `SMTP_USER` | Gmail address used to send coaching emails |
+| `SMTP_PASS` | Gmail **App Password** (2FA must be on) |
+
+Emails go out over Gmail SMTP (`smtp.gmail.com:587`), the same mechanism the
+Kylas sync uses — so if `SMTP_USER`/`SMTP_PASS` are already set for that, the
+cold-call coach reuses them. Optional `COLD_CALL_FROM_EMAIL` overrides the From.
 
 > `COLD_CALL_AIRTABLE_BASE_ID` is separate from the Kylas sync's
 > `AIRTABLE_BASE_ID` so the two systems never share a base. If it's unset the
