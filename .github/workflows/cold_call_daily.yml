@@ -1,0 +1,60 @@
+name: Cold Call Analysis - Daily
+
+on:
+  schedule:
+    # 8:30 PM IST = 15:00 UTC, Mon-Sat. Emails go out as files finish processing.
+    - cron: '0 15 * * 1-6'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Target day YYYY-MM-DD (default: today IST)'
+        required: false
+        default: ''
+      limit:
+        description: 'Process at most N files (blank = all)'
+        required: false
+        default: ''
+      no_email:
+        description: 'Skip coaching emails (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  cold-call:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ffmpeg (for large-file chunking)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        run: pip install -r cold_call/requirements.txt
+
+      - name: Run cold-call pipeline
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            ARGS="$ARGS --date ${{ github.event.inputs.date }}"
+          fi
+          if [ -n "${{ github.event.inputs.limit }}" ]; then
+            ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
+          fi
+          if [ "${{ github.event.inputs.no_email }}" = "true" ]; then
+            ARGS="$ARGS --no-email"
+          fi
+          python -m cold_call.pipeline $ARGS
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON:  ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_DRIVE_FOLDER_ID:       ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          HF_API_TOKEN:                 ${{ secrets.HF_API_TOKEN }}
+          GEMINI_API_KEY:               ${{ secrets.GEMINI_API_KEY }}
+          AIRTABLE_PAT:                 ${{ secrets.AIRTABLE_PAT }}
+          COLD_CALL_AIRTABLE_BASE_ID:   ${{ secrets.COLD_CALL_AIRTABLE_BASE_ID }}
+          RESEND_API_KEY:               ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL:            ${{ secrets.RESEND_FROM_EMAIL }}

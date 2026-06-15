@@ -2,6 +2,13 @@
 
 Automated sync from Kylas CRM to Airtable, running twice daily via GitHub Actions.
 
+> **Also in this repo:** the **Cold Call Analysis System** (`cold_call/`) — a
+> separate daily pipeline that transcribes BD call recordings from Google Drive,
+> scores them with Gemini, stores results in Airtable, and emails each BD a
+> coaching summary. See [`cold_call/README.md`](cold_call/README.md). It runs
+> independently of the Kylas sync (own deps in `cold_call/requirements.txt`, own
+> Airtable base via `COLD_CALL_AIRTABLE_BASE_ID`).
+
 ## Setup
 
 ### 1. Install

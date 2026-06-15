@@ -1,0 +1,10 @@
+# Cold Call Analysis System — kept separate from the root requirements.txt so
+# the Kylas sync's dependency set stays untouched.
+requests==2.31.0
+python-dotenv==1.0.1
+google-api-python-client==2.179.0
+google-auth==2.40.3
+google-generativeai==0.8.5
+mutagen==1.47.0
+resend==2.13.0
+pydub==0.25.1
