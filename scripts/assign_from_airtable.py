@@ -94,28 +94,6 @@ def run(view_name: str, dry_run: bool = False):
     if not records:
         return
 
-    # Build a {company_id: [contacts]} map from a single bulk contact fetch.
-    # The per-company filtered search (search/contact with a company.id rule)
-    # returns 500 from Kylas, so we pull all contacts once via the same
-    # endpoint the daily sync uses (jsonRule: null) and group them locally.
-    target_ids = {_to_id_str(r["fields"].get("Kylas Company Id", ""))
-                  for r in records
-                  if str(r["fields"].get("Kylas Company Id", "")).strip()}
-    contacts_by_company: dict = {}
-    try:
-        all_contacts = client.get_contacts()
-        for ct in all_contacts:
-            co = ct.get("company")
-            raw_cid = co.get("id") if isinstance(co, dict) else co
-            cid = _to_id_str(raw_cid) if raw_cid is not None else ""
-            if cid and cid in target_ids:
-                contacts_by_company.setdefault(cid, []).append(ct)
-        total_linked = sum(len(v) for v in contacts_by_company.values())
-        print(f"Fetched {len(all_contacts)} contacts; "
-              f"{total_linked} linked to {len(contacts_by_company)} of {len(target_ids)} target companies\n")
-    except Exception as e:
-        print(f"[WARN] Could not bulk-fetch contacts: {e} — contacts will be skipped\n")
-
     assigned_co = assigned_ct = skipped = failed = 0
 
     for rec in records:
@@ -155,7 +133,7 @@ def run(view_name: str, dry_run: bool = False):
                 failed += 1
                 continue
 
-        contacts = contacts_by_company.get(co_id_str, [])
+        contacts = client.get_contacts_by_company(co_id)
         print(f"    → {len(contacts)} contacts")
         for ct in contacts:
             ct_id = ct.get("id")
@@ -168,6 +146,14 @@ def run(view_name: str, dry_run: bool = False):
                     assigned_ct += 1
                 else:
                     failed += 1
+
+    # If no company-filter shape worked, surface the real Kylas field names so
+    # the next run can target contacts correctly instead of guessing.
+    if assigned_co and not assigned_ct and getattr(client, "_contact_filter", None) is None:
+        fields = client.list_contact_filter_fields()
+        if fields:
+            print(f"\n[DIAG] No contacts matched any filter shape. "
+                  f"Kylas contact fields containing 'company': {fields}")
 
     print(f"\n{'[DRY RUN] ' if dry_run else ''}Done")
     print(f"Companies: {assigned_co}  Contacts: {assigned_ct}  Skipped: {skipped}  Failed: {failed}")

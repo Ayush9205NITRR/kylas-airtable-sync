@@ -362,40 +362,114 @@ class KylasClient:
             print(f"[Kylas] ERROR updating contact {contact_id} owner: {exc}")
             return False
 
+    # Candidate jsonRule shapes for filtering contacts by their company.
+    # Kylas has no documented company filter for /search/contact, so we try
+    # several field/value shapes and keep whichever actually returns the
+    # company's contacts. Every result is validated locally (see below), so a
+    # filter that is silently ignored can never reassign the wrong contacts.
+    _CONTACT_COMPANY_FILTERS = [
+        lambda cid: {"id": "company.id", "field": "company.id", "type": "double",  "operator": "equal", "value": cid},
+        lambda cid: {"id": "company.id", "field": "company.id", "type": "integer", "operator": "equal", "value": cid},
+        lambda cid: {"id": "company",    "field": "company",    "type": "double",  "operator": "in",    "value": [cid]},
+        lambda cid: {"id": "company.id", "field": "company.id", "type": "double",  "operator": "in",    "value": [cid]},
+        lambda cid: {"id": "company",    "field": "company",    "type": "double",  "operator": "equal", "value": cid},
+        lambda cid: {"id": "companyId",  "field": "companyId",  "type": "integer", "operator": "equal", "value": cid},
+    ]
+
+    def list_contact_filter_fields(self) -> list:
+        """
+        Diagnostic: return the searchable field names Kylas exposes for
+        contacts (from /entities/contact/fields), used to discover the correct
+        company filter when the candidate shapes all fail.
+        """
+        names = []
+        try:
+            resp = self._get("entities/contact/fields", {
+                "entityType": "contact", "custom-only": "false",
+                "sort": "createdAt,asc", "page": 0, "size": 200,
+            })
+            for fld in (resp.get("content") or resp.get("data") or []):
+                nm = fld.get("name") or fld.get("fieldName") or fld.get("id")
+                if nm and ("compan" in str(nm).lower()):
+                    names.append(str(nm))
+        except Exception:
+            pass
+        return names
+
+    @staticmethod
+    def _contact_company_id(ct: dict) -> str:
+        """Plain int-string of a contact's linked company id, or ''."""
+        co = ct.get("company")
+        raw = co.get("id") if isinstance(co, dict) else co
+        try:
+            return str(int(float(str(raw))))
+        except (ValueError, TypeError):
+            return ""
+
     def get_contacts_by_company(self, company_id: int) -> List[dict]:
         """
-        Fetch all contacts linked to a specific company ID.
-        Best-effort: returns [] on API error instead of raising, so a single
-        failed lookup never aborts a bulk reassignment run.
+        Return all contacts linked to company_id, validated locally.
+
+        Tries candidate filter shapes (caching the one that works on this
+        client) and keeps only contacts whose own company id matches — so it
+        is both cap-free (targeted query, not the global 10k-capped scan) and
+        safe against a filter Kylas might ignore.
+        Best-effort: returns [] on error instead of raising.
         """
+        cid = int(company_id)
+        cid_str = str(cid)
         fields = ["id", "name", "company"]
-        filter_rule = {
-            "condition": "AND",
-            "valid": True,
-            "rules": [{
-                "id": "company.id", "field": "company.id",
-                "type": "integer", "operator": "equal",
-                "value": int(company_id),
-            }],
-        }
-        records, page = [], 0
-        while True:
-            time.sleep(self._delay)
-            try:
-                r = self.session.post(
-                    f"{KYLAS_BASE}/search/contact",
-                    params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
-                    json={"fields": fields, "jsonRule": filter_rule},
-                    timeout=60,
-                )
-                r.raise_for_status()
-            except Exception as exc:
-                print(f"  [WARN] contact search for company {company_id} failed: {exc}")
-                break
-            resp    = r.json()
-            content = resp.get("content", [])
-            records.extend(content)
-            if page >= resp.get("totalPages", 1) - 1 or not content:
-                break
-            page += 1
-        return records
+        # No single company has anywhere near this many contacts; a response
+        # larger than this means Kylas ignored our filter and returned the
+        # whole contact set, so that filter shape is not usable.
+        IGNORED_THRESHOLD = 2000
+
+        def _run(make_rule) -> tuple:
+            """
+            Returns (validated_records, ok, targeted).
+              ok       — got HTTP 200 responses (False on error)
+              targeted — filter looks real (small result set), not ignored
+            """
+            records, page = [], 0
+            while True:
+                time.sleep(self._delay)
+                try:
+                    r = self.session.post(
+                        f"{KYLAS_BASE}/search/contact",
+                        params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
+                        json={"fields": fields,
+                              "jsonRule": {"condition": "AND", "valid": True,
+                                           "rules": [make_rule(cid)]}},
+                        timeout=60,
+                    )
+                    r.raise_for_status()
+                except Exception:
+                    return records, False, False
+                resp    = r.json()
+                content = resp.get("content", [])
+                total   = resp.get("totalElements")
+                if total is None:
+                    total = resp.get("totalPages", 1) * PAGE_SIZE
+                if total > IGNORED_THRESHOLD:
+                    # Filter ignored — don't scan the entire (capped) contact set.
+                    return records, True, False
+                records.extend(c for c in content if self._contact_company_id(c) == cid_str)
+                if page >= resp.get("totalPages", 1) - 1 or not content:
+                    break
+                page += 1
+            return records, True, True
+
+        # Use the already-discovered working filter first, if any.
+        if getattr(self, "_contact_filter", None) is not None:
+            records, _, _ = _run(self._contact_filter)
+            return records
+
+        # Discovery: lock in the first shape that returns a real, targeted result.
+        for make_rule in self._CONTACT_COMPANY_FILTERS:
+            records, ok, targeted = _run(make_rule)
+            if ok and targeted and records:
+                self._contact_filter = make_rule
+                return records
+        # None worked — company has no contacts, or no shape is supported.
+        # Don't cache; a later company may reveal the working shape.
+        return []
