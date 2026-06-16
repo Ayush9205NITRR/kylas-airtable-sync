@@ -249,7 +249,6 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict) -> tuple:
         ("terminalPocs",     "terminal"),
         ("noiCount",         "noi"),
         ("calledSinceApr19", "called_apr19"),
-        ("accountStatus",    "status"),
     ]
 
     for co_id, e in health.items():
@@ -291,12 +290,21 @@ _SEC   = 'style="font-size:14px;font-weight:bold;margin:22px 0 4px;color:#333;"'
 _BODY  = ('style="font-family:Arial,sans-serif;color:#333;'
           'max-width:760px;margin:0 auto;padding:24px 20px;"')
 _BADGE = {
-    "Exhausted":          "background:#d32f2f;color:#fff;",
-    "Near Exhausted":     "background:#f57c00;color:#fff;",
-    "Hot Pipeline":       "background:#1976d2;color:#fff;",
-    "MQL - Action Needed":"background:#7b1fa2;color:#fff;",
-    "Active":             "background:#388e3c;color:#fff;",
-    "Fresh":              "background:#888;color:#fff;",
+    # Internal account status (kept for backward compat / internal use)
+    "Exhausted":                    "background:#d32f2f;color:#fff;",
+    "Near Exhausted":               "background:#f57c00;color:#fff;",
+    "Hot Pipeline":                 "background:#1976d2;color:#fff;",
+    "MQL - Action Needed":          "background:#7b1fa2;color:#fff;",
+    "Active":                       "background:#388e3c;color:#fff;",
+    "Fresh":                        "background:#888;color:#fff;",
+    # Status of Reachout values
+    "Stale":                        "background:#9e9e9e;color:#fff;",
+    "Tapped – Exhausted":           "background:#d32f2f;color:#fff;",
+    "Tapped – Near Exhausted":      "background:#f57c00;color:#fff;",
+    "Tapped – Hot Pipeline":        "background:#1976d2;color:#fff;",
+    "Tapped – MQL - Action Needed": "background:#7b1fa2;color:#fff;",
+    "Tapped – Active":              "background:#388e3c;color:#fff;",
+    "Tapped – Fresh":               "background:#aaa;color:#fff;",
 }
 
 
@@ -339,158 +347,172 @@ def _mk_table(header_html: str, rows: str) -> str:
 
 
 def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
-    # ── collect by status ──────────────────────────────────────────────────────
-    needs_re   = sorted(
-        [c for c, e in health.items() if e["needs_reassign"]],
-        key=lambda c: health[c]["total"], reverse=True
-    )[:20]
-    exhausted  = sorted(
-        [c for c, e in health.items() if e["status"] == "Exhausted"],
-        key=lambda c: health[c]["noi"], reverse=True
-    )[:15]
-    near_ex    = sorted(
-        [c for c, e in health.items() if e["status"] == "Near Exhausted"],
-        key=lambda c: health[c]["noi"], reverse=True
-    )[:15]
-    mql_action = sorted(
-        [c for c, e in health.items() if e["status"] == "MQL - Action Needed"],
-        key=lambda c: health[c]["mql"], reverse=True
-    )[:15]
+    """Management weekly digest — sections keyed on Status of Reachout."""
+    sor_groups: dict = {}
+    for co_id, e in health.items():
+        sor = e.get("status_of_reachout", "Stale")
+        sor_groups.setdefault(sor, []).append(co_id)
 
-    total_re  = sum(1 for e in health.values() if e["needs_reassign"])
-    total_ex  = sum(1 for e in health.values() if e["status"] == "Exhausted")
-    total_ne  = sum(1 for e in health.values() if e["status"] == "Near Exhausted")
-    total_mql = sum(1 for e in health.values() if e["status"] == "MQL - Action Needed")
-    total_hot = sum(1 for e in health.values() if e["status"] == "Hot Pipeline")
-    total_act = sum(1 for e in health.values() if e["status"] == "Active")
-    total_fr  = sum(1 for e in health.values() if e["status"] == "Fresh")
+    total_stale  = len(sor_groups.get("Stale", []))
+    total_t_act  = len(sor_groups.get("Tapped – Active", []))
+    total_t_mql  = len(sor_groups.get("Tapped – MQL - Action Needed", []))
+    total_t_hot  = len(sor_groups.get("Tapped – Hot Pipeline", []))
+    total_t_near = len(sor_groups.get("Tapped – Near Exhausted", []))
+    total_t_ex   = len(sor_groups.get("Tapped – Exhausted", []))
 
-    # ── summary pills ──────────────────────────────────────────────────────────
     summary = (
-        '<table style="border-collapse:collapse;margin:12px 0 20px;">'
-        '<tr>'
+        '<table style="border-collapse:collapse;margin:12px 0 20px;"><tr>'
         + "".join(
             f'<td style="padding:6px 10px;text-align:center;">'
             f'{_badge(st)}<br>'
             f'<span style="font-size:18px;font-weight:bold;">{cnt}</span>'
             f'</td>'
             for st, cnt in [
-                ("Exhausted", total_ex),
-                ("Near Exhausted", total_ne),
-                ("Hot Pipeline", total_hot),
-                ("MQL - Action Needed", total_mql),
-                ("Active", total_act),
-                ("Fresh", total_fr),
+                ("Stale",                        total_stale),
+                ("Tapped – Active",              total_t_act),
+                ("Tapped – MQL - Action Needed", total_t_mql),
+                ("Tapped – Hot Pipeline",        total_t_hot),
+                ("Tapped – Near Exhausted",      total_t_near),
+                ("Tapped – Exhausted",           total_t_ex),
             ]
         )
         + '</tr></table>'
     )
-
     sections = summary
 
-    # ── Needs Re-assign ────────────────────────────────────────────────────────
-    if needs_re:
-        note = f" (top {len(needs_re)} of {total_re})" if total_re > len(needs_re) else ""
-        hdr  = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
-                f'<th {_TH}>Status</th>'
-                f'<th {_TH}>Total</th><th {_TH}>YtBM</th>'
-                f'<th {_TH}>Active</th><th {_TH}>Last Call</th>')
+    # ── Stale ─────────────────────────────────────────────────────────────────
+    stale_cos = sorted(sor_groups.get("Stale", []),
+                       key=lambda c: health[c]["total"], reverse=True)[:25]
+    if stale_cos:
+        note = f" (top {len(stale_cos)} of {total_stale})" if total_stale > len(stale_cos) else ""
+        hdr = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
+               f'<th {_TH}>Total</th><th {_TH}>YtBM</th>'
+               f'<th {_TH}>Active</th><th {_TH}>Last Call</th>')
         rows = "".join(
             f'<tr>'
             f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
             f'<td {_TD}>{_tr(_owner_of(c, tbl_cache), 20)}</td>'
-            f'<td {_TD}>{_badge(health[c]["status"])}</td>'
             f'<td {_TDR}>{health[c]["total"]}</td>'
             f'<td {_TDR}>{health[c]["ytbm"]}</td>'
             f'<td {_TDR}>{health[c]["active"]}</td>'
             f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
             f'</tr>'
-            for c in needs_re
+            for c in stale_cos
         )
         sections += (
-            f'<p {_SEC}>🔄 Needs Re-assign ({total_re} accounts{note})</p>'
+            f'<p {_SEC}>⚪ Stale ({total_stale} accounts{note})</p>'
             f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
-            f'Has YtBM POCs but no call since April 19 — safe to reassign</p>'
+            f'No call since April 19 — reassign or reactivate</p>'
             + _mk_table(hdr, rows)
         )
 
-    # ── Exhausted ─────────────────────────────────────────────────────────────
-    if exhausted:
-        note = f" (top {len(exhausted)} of {total_ex})" if total_ex > len(exhausted) else ""
-        hdr  = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
-                f'<th {_TH}>Total</th><th {_TH}>NOI</th>'
-                f'<th {_TH}>Terminal</th><th {_TH}>Last Call</th>')
+    # ── Tapped – Exhausted ────────────────────────────────────────────────────
+    t_ex_cos = sorted(sor_groups.get("Tapped – Exhausted", []),
+                      key=lambda c: health[c]["noi"], reverse=True)[:15]
+    if t_ex_cos:
+        note = f" (top {len(t_ex_cos)} of {total_t_ex})" if total_t_ex > len(t_ex_cos) else ""
+        hdr = (f'<th {_TH}>Company</th><th {_TH}>Claimed By</th>'
+               f'<th {_TH}>Total</th><th {_TH}>NOI</th>'
+               f'<th {_TH}>Terminal</th><th {_TH}>Last Call</th>')
         rows = "".join(
             f'<tr>'
             f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
-            f'<td {_TD}>{_tr(_owner_of(c, tbl_cache), 20)}</td>'
+            f'<td {_TD}>{_tr(health[c].get("claimed_by", "—"), 28)}</td>'
             f'<td {_TDR}>{health[c]["total"]}</td>'
             f'<td {_TDR} style="color:#d32f2f;font-weight:bold;">{health[c]["noi"]}</td>'
             f'<td {_TDR}>{health[c]["terminal"]}</td>'
             f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
             f'</tr>'
-            for c in exhausted
+            for c in t_ex_cos
         )
         sections += (
-            f'<p {_SEC}>🔴 Exhausted ({total_ex} accounts{note})</p>'
+            f'<p {_SEC}>🔴 Tapped – Exhausted ({total_t_ex} accounts{note})</p>'
             f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
-            f'≥2 Not Interested or all POCs terminal — needs fresh POC injection</p>'
+            f'Called since Apr 19 but fully exhausted — needs fresh POC injection</p>'
             + _mk_table(hdr, rows)
         )
 
-    # ── Near Exhausted ────────────────────────────────────────────────────────
-    if near_ex:
-        note = f" (top {len(near_ex)} of {total_ne})" if total_ne > len(near_ex) else ""
-        hdr  = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
-                f'<th {_TH}>Total</th><th {_TH}>NOI</th>'
-                f'<th {_TH}>Terminal</th><th {_TH}>YtBM</th><th {_TH}>Last Call</th>')
+    # ── Tapped – Near Exhausted ───────────────────────────────────────────────
+    t_near_cos = sorted(sor_groups.get("Tapped – Near Exhausted", []),
+                        key=lambda c: health[c]["noi"], reverse=True)[:15]
+    if t_near_cos:
+        note = f" (top {len(t_near_cos)} of {total_t_near})" if total_t_near > len(t_near_cos) else ""
+        hdr = (f'<th {_TH}>Company</th><th {_TH}>Claimed By</th>'
+               f'<th {_TH}>Total</th><th {_TH}>NOI</th>'
+               f'<th {_TH}>Terminal</th><th {_TH}>YtBM</th><th {_TH}>Last Call</th>')
         rows = "".join(
             f'<tr>'
             f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
-            f'<td {_TD}>{_tr(_owner_of(c, tbl_cache), 20)}</td>'
+            f'<td {_TD}>{_tr(health[c].get("claimed_by", "—"), 28)}</td>'
             f'<td {_TDR}>{health[c]["total"]}</td>'
             f'<td {_TDR} style="color:#f57c00;font-weight:bold;">{health[c]["noi"]}</td>'
             f'<td {_TDR}>{health[c]["terminal"]}</td>'
             f'<td {_TDR}>{health[c]["ytbm"]}</td>'
             f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
             f'</tr>'
-            for c in near_ex
+            for c in t_near_cos
         )
         sections += (
-            f'<p {_SEC}>🟠 Near Exhausted ({total_ne} accounts{note})</p>'
+            f'<p {_SEC}>🟠 Tapped – Near Exhausted ({total_t_near} accounts{note})</p>'
             f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
             f'1 NOI or ≥70% terminal — monitor closely</p>'
             + _mk_table(hdr, rows)
         )
 
-    # ── MQL – Action Needed ───────────────────────────────────────────────────
-    if mql_action:
-        note = f" (top {len(mql_action)} of {total_mql})" if total_mql > len(mql_action) else ""
-        hdr  = (f'<th {_TH}>Company</th><th {_TH}>Owner</th>'
-                f'<th {_TH}>MQL</th><th {_TH}>Hot</th>'
-                f'<th {_TH}>Active</th><th {_TH}>Last Call</th>')
+    # ── Tapped – MQL Action Needed ────────────────────────────────────────────
+    t_mql_cos = sorted(sor_groups.get("Tapped – MQL - Action Needed", []),
+                       key=lambda c: health[c]["mql"], reverse=True)[:15]
+    if t_mql_cos:
+        note = f" (top {len(t_mql_cos)} of {total_t_mql})" if total_t_mql > len(t_mql_cos) else ""
+        hdr = (f'<th {_TH}>Company</th><th {_TH}>Claimed By</th>'
+               f'<th {_TH}>MQL</th><th {_TH}>Hot</th>'
+               f'<th {_TH}>Active</th><th {_TH}>Last Call</th>')
         rows = "".join(
             f'<tr>'
             f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
-            f'<td {_TD}>{_tr(_owner_of(c, tbl_cache), 20)}</td>'
+            f'<td {_TD}>{_tr(health[c].get("claimed_by", "—"), 28)}</td>'
             f'<td {_TDR} style="color:#7b1fa2;font-weight:bold;">{health[c]["mql"]}</td>'
             f'<td {_TDR}>{health[c]["hot"]}</td>'
             f'<td {_TDR}>{health[c]["active"]}</td>'
             f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
             f'</tr>'
-            for c in mql_action
+            for c in t_mql_cos
         )
         sections += (
-            f'<p {_SEC}>🟣 MQL – Push to Discovery Call ({total_mql} accounts{note})</p>'
+            f'<p {_SEC}>🟣 Tapped – MQL Action Needed ({total_t_mql} accounts{note})</p>'
             f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
-            f'Has MQL / Activation POCs — needs follow-up to book Discovery Call</p>'
+            f'Has MQL/Activation POCs — needs push to Discovery Call</p>'
             + _mk_table(hdr, rows)
         )
 
-    if not (needs_re or exhausted or near_ex or mql_action):
+    # ── Tapped – Hot Pipeline ─────────────────────────────────────────────────
+    t_hot_cos = sorted(sor_groups.get("Tapped – Hot Pipeline", []),
+                       key=lambda c: health[c]["hot"], reverse=True)[:10]
+    if t_hot_cos:
+        note = f" (top {len(t_hot_cos)} of {total_t_hot})" if total_t_hot > len(t_hot_cos) else ""
+        hdr = (f'<th {_TH}>Company</th><th {_TH}>Claimed By</th>'
+               f'<th {_TH}>Hot</th><th {_TH}>MQL</th><th {_TH}>Last Call</th>')
+        rows = "".join(
+            f'<tr>'
+            f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
+            f'<td {_TD}>{_tr(health[c].get("claimed_by", "—"), 28)}</td>'
+            f'<td {_TDR} style="color:#1976d2;font-weight:bold;">{health[c]["hot"]}</td>'
+            f'<td {_TDR}>{health[c]["mql"]}</td>'
+            f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
+            f'</tr>'
+            for c in t_hot_cos
+        )
+        sections += (
+            f'<p {_SEC}>🔵 Tapped – Hot Pipeline ({total_t_hot} accounts{note})</p>'
+            f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
+            f'Live opportunities — SQL / Discovery Call / Offsite</p>'
+            + _mk_table(hdr, rows)
+        )
+
+    if not (stale_cos or t_ex_cos or t_near_cos or t_mql_cos or t_hot_cos):
         sections += '<p style="color:#555;">All accounts look healthy — no action needed.</p>'
 
-    today = date.today()
+    today      = date.today()
     week_label = f"Week of {today.strftime('%b %d, %Y')}"
 
     return (
@@ -499,28 +521,21 @@ def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
         f'<p style="font-weight:bold;font-size:15px;margin:0 0 2px;">'
         f'Account Health — Weekly Digest &nbsp;&middot;&nbsp; {week_label}</p>'
         f'<p style="font-size:12px;color:#666;margin:0 0 4px;">'
-        f'Re-assign = <b>Airtable filter: [YtBM POCs] &gt; 0 AND [Called Since Apr 19] = 0</b></p>'
-        f'<p style="font-size:12px;color:#999;margin:0 0 16px;">'
-        f'Exhausted = NOI ≥ 2 &nbsp;|&nbsp; '
-        f'Near Exhausted = 1 NOI or ≥70% terminal &nbsp;|&nbsp; '
-        f'MQL = connected, needs push to DCB</p>'
+        f'Stale = no call since Apr 19 &nbsp;|&nbsp; '
+        f'Tapped = called since Apr 19 &nbsp;|&nbsp; '
+        f'Exhausted = NOI≥2 or all terminal</p>'
         + sections
         + '<p style="color:#999;font-size:11px;margin-top:24px;">— Kylas Sync</p>'
         '</body></html>'
     )
 
 
-def _build_poc_email(first_name: str, accounts: list,
+def _build_poc_email(first_name: str,
+                     stale_accounts: list, tapped_accounts: list,
                      health: dict, tbl_cache: dict, week_label: str) -> str:
-    """HTML email for one POC listing their unexhausted accounts."""
-    _priority = {"Fresh": 0, "Active": 1, "Near Exhausted": 2,
-                 "Exhausted": 3, "Hot Pipeline": 4, "MQL - Action Needed": 5}
-    accounts = sorted(accounts, key=lambda c: (
-        _priority.get(health[c]["status"], 9), -health[c]["ytbm"]
-    ))
-
+    """HTML email for one rep: Section 1 = Stale, Section 2 = Tapped-Unexhausted."""
     hdr = (f'<th {_TH}>Company</th>'
-           f'<th {_TH}>Status</th>'
+           f'<th {_TH}>Status of Reachout</th>'
            f'<th {_TH}>Total</th>'
            f'<th {_TH}>YtBM</th>'
            f'<th {_TH}>CNC</th>'
@@ -532,34 +547,68 @@ def _build_poc_email(first_name: str, accounts: list,
         style = f'text-align:right;padding:7px 12px;border:1px solid #ccc;font-size:12px;{color}'
         return f'<td style="{style}">{val}</td>'
 
-    rows = "".join(
-        '<tr>'
-        f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
-        f'<td {_TD}>{_badge(health[c]["status"])}</td>'
-        + _td_n(health[c]["total"])
-        + _td_n(health[c]["ytbm"], "color:#888;")
-        + _td_n(health[c]["cnc"])
-        + _td_n(health[c]["noi"],  "color:#d32f2f;" if health[c]["noi"] else "")
-        + _td_n(health[c]["mql"] + health[c]["hot"],
-                "color:#7b1fa2;" if (health[c]["mql"] + health[c]["hot"]) else "")
-        + f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
-        '</tr>'
-        for c in accounts
-    )
+    def _rows_for(accounts):
+        return "".join(
+            '<tr>'
+            f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
+            f'<td {_TD}>{_badge(health[c].get("status_of_reachout", "Stale"))}</td>'
+            + _td_n(health[c]["total"])
+            + _td_n(health[c]["ytbm"], "color:#888;")
+            + _td_n(health[c]["cnc"])
+            + _td_n(health[c]["noi"], "color:#d32f2f;" if health[c]["noi"] else "")
+            + _td_n(health[c]["mql"] + health[c]["hot"],
+                    "color:#7b1fa2;" if (health[c]["mql"] + health[c]["hot"]) else "")
+            + f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
+            '</tr>'
+            for c in accounts
+        )
 
-    n = len(accounts)
+    _pri = {"Fresh": 0, "Active": 1, "Near Exhausted": 2,
+            "Exhausted": 3, "Hot Pipeline": 4, "MQL - Action Needed": 5}
+
+    sections = ""
+
+    if stale_accounts:
+        stale_sorted = sorted(stale_accounts,
+                              key=lambda c: (_pri.get(health[c]["status"], 9),
+                                             -health[c]["total"]))
+        sections += (
+            f'<p {_SEC}>⚪ Stale Accounts ({len(stale_sorted)}) — Reach out</p>'
+            f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
+            f'Nobody has called these accounts since April 19. '
+            f'Please reach out this week or release them for reassignment.</p>'
+            + _mk_table(hdr, _rows_for(stale_sorted))
+        )
+
+    if tapped_accounts:
+        tapped_sorted = sorted(tapped_accounts,
+                               key=lambda c: (_pri.get(health[c]["status"], 9),
+                                              -health[c]["ytbm"]))
+        sections += (
+            f'<p {_SEC}>🔄 Keep Working ({len(tapped_sorted)}) — Push to exhaustion</p>'
+            f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
+            f'You\'ve called these since April 19 but they\'re not yet exhausted. '
+            f'Exhausted = MQL/SQL/DCB contact, <b>OR</b> 3+ CNC, <b>OR</b> 3+ NOI.</p>'
+            + _mk_table(hdr, _rows_for(tapped_sorted))
+        )
+
+    if not sections:
+        sections = '<p style="color:#555;">No pending accounts this week — great work!</p>'
+
+    n_s = len(stale_accounts)
+    n_t = len(tapped_accounts)
+    summary_line = " &nbsp;|&nbsp; ".join(filter(None, [
+        f'<b>{n_s}</b> stale account{"s" if n_s != 1 else ""}' if n_s else "",
+        f'<b>{n_t}</b> to exhaust' if n_t else "",
+    ]))
+
     return (
         f'<!DOCTYPE html><html><body {_BODY}>'
         f'<p>Hi {first_name},</p>'
         f'<p style="font-weight:bold;font-size:15px;margin:0 0 4px;">'
-        f'Exhaust Your Accounts &nbsp;&middot;&nbsp; {week_label}</p>'
-        f'<p style="font-size:12px;color:#555;margin:0 0 2px;">'
-        f'You have <b>{n} account{"s" if n != 1 else ""}</b> that '
-        f'haven\'t been exhausted yet — please work on them this week.</p>'
-        f'<p style="font-size:12px;color:#888;margin:0 0 16px;">'
-        f'An account is exhausted when it has: MQL / SQL / DCB contacts, '
-        f'<b>OR</b> 3+ CNC attempts, <b>OR</b> 3+ NOI rejections.</p>'
-        + _mk_table(hdr, rows)
+        f'Your Accounts This Week &nbsp;&middot;&nbsp; {week_label}</p>'
+        f'<p style="font-size:12px;color:#555;margin:0 0 16px;">{summary_line}</p>'
+        + sections
         + '<p style="color:#999;font-size:11px;margin-top:24px;">— Kylas Sync</p>'
         '</body></html>'
     )
@@ -567,7 +616,11 @@ def _build_poc_email(first_name: str, accounts: list,
 
 def _send_poc_emails(health: dict, tbl_cache: dict, cfg: dict,
                      smtp_user: str, smtp_pass: str) -> None:
-    """Group unexhausted accounts by owner and send each POC their personal email."""
+    """
+    One email per rep with two sections:
+      • Stale accounts  — Status of Reachout = "Stale" → current Airtable owner
+      • Tapped but unexhausted — called since Apr 19, not yet exhausted → claimed_by
+    """
     if not smtp_user or not smtp_pass:
         print("[Account Health] SMTP not configured — skipping POC emails")
         return
@@ -577,34 +630,58 @@ def _send_poc_emails(health: dict, tbl_cache: dict, cfg: dict,
     user_emails = cfg.get("kylas_user_emails", {})
     cc_list     = cfg.get("cc", [])
 
-    by_owner: dict = {}
-    for co_id, e in health.items():
-        if not e.get("needs_exhaust"):
-            continue
-        owner = _owner_of(co_id, tbl_cache)
-        if owner and owner != "—":
-            by_owner.setdefault(owner, []).append(co_id)
+    # Build per-email buckets
+    stale_by_email:  dict = {}
+    tapped_by_email: dict = {}
 
-    if not by_owner:
-        print("[Account Health] No unexhausted accounts found — skipping POC emails")
+    # Reverse map: email → name (for resolving claimed_by email → owner name for display)
+    email_to_name = {v.lower(): k for k, v in user_emails.items()}
+
+    for co_id, e in health.items():
+        sor = e.get("status_of_reachout", "")
+
+        # Section 1: Stale — send to current Airtable owner
+        if sor == "Stale":
+            owner = _owner_of(co_id, tbl_cache)
+            if owner and owner != "—":
+                em = user_emails.get(owner, "")
+                if not em:
+                    em = next((v for k, v in user_emails.items()
+                               if owner.lower() in k.lower() or k.lower() in owner.lower()), "")
+                if em:
+                    stale_by_email.setdefault(em.lower(), []).append(co_id)
+
+        # Section 2: Tapped but not exhausted — send to whoever called last (claimed_by)
+        if e.get("needs_exhaust") and sor.startswith("Tapped"):
+            claimed = (e.get("claimed_by") or "").strip().lower()
+            if claimed:
+                tapped_by_email.setdefault(claimed, []).append(co_id)
+            else:
+                # Fall back to Airtable owner
+                owner = _owner_of(co_id, tbl_cache)
+                if owner and owner != "—":
+                    em = user_emails.get(owner, "")
+                    if em:
+                        tapped_by_email.setdefault(em.lower(), []).append(co_id)
+
+    all_emails = set(stale_by_email) | set(tapped_by_email)
+    if not all_emails:
+        print("[Account Health] No accounts to report — skipping POC emails")
         return
 
-    for owner, accounts in sorted(by_owner.items()):
-        email = user_emails.get(owner)
-        if not email:
-            for k, v in user_emails.items():
-                if owner.lower() in k.lower() or k.lower() in owner.lower():
-                    email = v
-                    break
-
-        if not email:
-            print(f"[Account Health] No email for owner '{owner}' — skipping")
+    for email in sorted(all_emails):
+        stale_cos  = stale_by_email.get(email, [])
+        tapped_cos = tapped_by_email.get(email, [])
+        if not stale_cos and not tapped_cos:
             continue
 
-        first   = owner.split()[0]
-        body    = _build_poc_email(first, accounts, health, tbl_cache, week_label)
-        subject = f"Please Exhaust These Accounts — {week_label}"
-        eff_cc  = [a for a in cc_list if a.lower() != email.lower()]
+        # Resolve display name from email
+        name  = email_to_name.get(email, email)
+        first = name.split()[0] if " " in name else name.split("@")[0].capitalize()
+
+        body    = _build_poc_email(first, stale_cos, tapped_cos, health, tbl_cache, week_label)
+        subject = f"Your Accounts This Week — {week_label}"
+        eff_cc  = [a for a in cc_list if a.lower() != email]
 
         msg            = MIMEMultipart("alternative")
         msg["From"]    = smtp_user
@@ -619,9 +696,10 @@ def _send_poc_emails(health: dict, tbl_cache: dict, cfg: dict,
                 s.ehlo(); s.starttls()
                 s.login(smtp_user, smtp_pass)
                 s.sendmail(smtp_user, [email] + eff_cc, msg.as_string())
-            print(f"[Account Health] POC email → {owner} <{email}> ({len(accounts)} accounts)")
+            print(f"[Account Health] POC email → {name} <{email}> "
+                  f"({len(stale_cos)} stale + {len(tapped_cos)} tapped-unexhausted)")
         except Exception as exc:
-            print(f"[Account Health] WARNING: POC email failed for {owner} — {exc}")
+            print(f"[Account Health] WARNING: POC email failed for {email} — {exc}")
 
 
 def run(kylas=None, send_email: bool = True) -> dict:
@@ -723,8 +801,11 @@ def run(kylas=None, send_email: bool = True) -> dict:
         print(f"[Account Health] WARNING: email send failed — {exc}")
 
     # Per-POC exhaust emails
-    needs_exhaust_ct = sum(1 for e in health.values() if e.get("needs_exhaust"))
-    print(f"[Account Health] {needs_exhaust_ct} accounts need exhaust → sending per-POC emails...")
+    stale_ct   = sum(1 for e in health.values() if e.get("status_of_reachout") == "Stale")
+    tapped_ct  = sum(1 for e in health.values()
+                     if e.get("needs_exhaust") and
+                     (e.get("status_of_reachout") or "").startswith("Tapped"))
+    print(f"[Account Health] {stale_ct} stale + {tapped_ct} tapped-unexhausted → sending per-POC emails...")
     _send_poc_emails(health, tbl_cache, cfg, smtp_user, smtp_pass)
 
     return health
