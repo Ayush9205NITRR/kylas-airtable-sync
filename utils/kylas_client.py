@@ -339,28 +339,28 @@ class KylasClient:
     def update_company_owner(self, company_id: int, user_id: int) -> bool:
         """Reassign a company to a different Kylas user. Returns True on success."""
         try:
-            self._patch(f"companies/{company_id}", {"ownedBy": {"id": user_id}})
+            # Kylas PUT /companies/{id} requires the full object body.
+            # GET first, update ownedBy, PUT back.
+            body = self._get(f"companies/{company_id}")
+            body["ownedBy"] = {"id": user_id}
+            self._put(f"companies/{company_id}", body)
             return True
-        except Exception:
-            try:
-                self._put(f"companies/{company_id}", {"ownedBy": {"id": user_id}})
-                return True
-            except Exception as exc:
-                print(f"[Kylas] ERROR updating company {company_id} owner: {exc}")
-                return False
+        except Exception as exc:
+            print(f"[Kylas] ERROR updating company {company_id} owner: {exc}")
+            return False
 
     def update_contact_owner(self, contact_id: int, user_id: int) -> bool:
         """Reassign a contact to a different Kylas user. Returns True on success."""
         try:
-            self._patch(f"contacts/{contact_id}", {"ownedBy": {"id": user_id}})
+            # Kylas PUT /contacts/{id} requires the full object body.
+            # GET first, update ownedBy, PUT back.
+            body = self._get(f"contacts/{contact_id}")
+            body["ownedBy"] = {"id": user_id}
+            self._put(f"contacts/{contact_id}", body)
             return True
-        except Exception:
-            try:
-                self._put(f"contacts/{contact_id}", {"ownedBy": {"id": user_id}})
-                return True
-            except Exception as exc:
-                print(f"[Kylas] ERROR updating contact {contact_id} owner: {exc}")
-                return False
+        except Exception as exc:
+            print(f"[Kylas] ERROR updating contact {contact_id} owner: {exc}")
+            return False
 
     def get_contacts_by_company(self, company_id: int) -> List[dict]:
         """Fetch all contacts linked to a specific company ID."""
