@@ -139,10 +139,17 @@ def run(view_name: str, dry_run: bool = False):
             ct_id = ct.get("id")
             if not ct_id:
                 continue
+            # Skip contacts already owned by the target user (speed)
+            if ct.get("ownerId") == user_id or (
+                isinstance(ct.get("ownedBy"), dict) and ct["ownedBy"].get("id") == user_id
+            ):
+                assigned_ct += 1
+                continue
             if dry_run:
                 assigned_ct += 1
             else:
-                if client.update_contact_owner(ct_id, user_id):
+                # Pass full contact data so update_contact_owner skips the GET
+                if client.update_contact_owner(ct_id, user_id, contact_data=ct):
                     assigned_ct += 1
                 else:
                     failed += 1

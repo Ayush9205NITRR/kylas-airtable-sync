@@ -349,13 +349,23 @@ class KylasClient:
             print(f"[Kylas] ERROR updating company {company_id} owner: {exc}")
             return False
 
-    def update_contact_owner(self, contact_id: int, user_id: int) -> bool:
-        """Reassign a contact to a different Kylas user. Returns True on success."""
+    def update_contact_owner(self, contact_id: int, user_id: int,
+                             contact_data: dict = None) -> bool:
+        """
+        Reassign a contact to a different Kylas user. Returns True on success.
+        contact_data: pass the already-fetched contact object to skip the GET.
+        """
         try:
-            # Kylas PUT /contacts/{id} requires the full object body.
-            # GET first, update ownedBy, PUT back.
-            body = self._get(f"contacts/{contact_id}")
+            if contact_data:
+                body = dict(contact_data)
+            else:
+                resp = self._get(f"contacts/{contact_id}")
+                body = resp.get("data", resp)  # unwrap if GET returns {"data": {...}}
             body["ownedBy"] = {"id": user_id}
+            # Remove read-only fields that cause Kylas to reject/ignore the PUT
+            for ro in ("id", "createdAt", "updatedAt", "updatedBy",
+                       "ownerId", "recordActions"):
+                body.pop(ro, None)
             self._put(f"contacts/{contact_id}", body)
             return True
         except Exception as exc:
