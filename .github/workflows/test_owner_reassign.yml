@@ -1,0 +1,43 @@
+name: Test — Owner Reassign (verify reflection)
+
+on:
+  workflow_dispatch:
+    inputs:
+      company_id:
+        description: 'Kylas Company Id to test (e.g. a company you know has contacts)'
+        required: true
+      owner_email:
+        description: 'Target owner email (optional; blank = auto-pick a different user)'
+        required: false
+        default: ''
+      revert:
+        description: 'Restore original owner after the test (true/false)'
+        required: false
+        default: 'true'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run owner-reassign self-test
+        run: |
+          ARGS="--company=${{ github.event.inputs.company_id }}"
+          if [ -n "${{ github.event.inputs.owner_email }}" ]; then
+            ARGS="$ARGS --owner=${{ github.event.inputs.owner_email }}"
+          fi
+          if [ "${{ github.event.inputs.revert }}" = "true" ]; then
+            ARGS="$ARGS --revert"
+          fi
+          python scripts/test_owner_reassign.py $ARGS
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
