@@ -37,9 +37,14 @@ def _escape(value: str) -> str:
 
 
 def check_duplicate(bd_name: str, filename: str) -> bool:
-    """True if a record with this bd_name + audio_filename already exists."""
+    """True if this bd_name + audio_filename was already processed.
+
+    Rows with status='error' are NOT counted, so a file that failed (e.g. a
+    transient transcription error) gets retried on the next run.
+    """
     formula = (f'AND({{bd_name}}="{_escape(bd_name)}",'
-               f'{{audio_filename}}="{_escape(filename)}")')
+               f'{{audio_filename}}="{_escape(filename)}",'
+               f'{{status}}!="error")')
     params = {"filterByFormula": formula, "maxRecords": 1}
     for attempt in range(4):
         r = requests.get(_base_url(), headers=_headers(), params=params, timeout=30)
