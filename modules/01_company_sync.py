@@ -146,7 +146,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
         list_ok         = True
         list_name_lookup = {}
         try:
-            id_ct, nm_ct, list_name_lookup = _load_table(tbl_list, "Kylas Company Id", _fm()["name"])
+            id_ct, nm_ct, list_name_lookup = _load_table(tbl_list, _fm()["id"], _fm()["name"])
             print(f"[Companies] Company List: {id_ct} by ID, {nm_ct} by name (no Kylas ID)")
         except Exception as e:
             list_ok = False
@@ -156,7 +156,7 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
 
         crm_name_lookup = {}
         try:
-            id_ct, nm_ct, crm_name_lookup = _load_table(tbl_crm, "Kylas Company Id", _fm_crm()["name"])
+            id_ct, nm_ct, crm_name_lookup = _load_table(tbl_crm, _fm_crm()["id"], _fm_crm()["name"])
             print(f"[Companies] CRM Companies: {id_ct} by ID, {nm_ct} by name (no Kylas ID)")
         except Exception as e:
             print(f"[Companies] WARNING: CRM Companies table not ready ({e}) — run Setup Airtable Schema first")
@@ -184,13 +184,13 @@ def run(test_mode: bool = False, logger: SyncLogger = None, since: str = None) -
                 list_action = crm_action = "skipped"
                 if list_ok:
                     list_action, _ = tbl_list.upsert(
-                        "Kylas Company Id", kylas_id,
+                        _fm()["id"], kylas_id,
                         _build_fields(co, _fm(), user_email_map), co.get("updatedAt", ""),
                         updated_at_field=_fm()["updatedAt"],
                     )
                 if crm_ok:
                     crm_action, _ = tbl_crm.upsert(
-                        "Kylas Company Id", kylas_id,
+                        _fm_crm()["id"], kylas_id,
                         _build_fields(co, _fm_crm(), user_email_map), co.get("updatedAt", ""),
                         updated_at_field=_fm_crm()["updatedAt"],
                     )

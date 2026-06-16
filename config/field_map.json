@@ -25,7 +25,7 @@
     "statusOfReachout":      "Status of Reachout"
   },
   "company_crm": {
-    "id":                    "Kylas Company Id",
+    "id":                    "Kylas Company ID",
     "name":                  "Company Name",
     "industry":              "Industry",
     "assignedTo":            "Owner",

@@ -102,7 +102,7 @@ COMPANIES_TABLE = {
     "name": "Companies",
     "fields": [
         {"name": "Company Name",              "type": T},
-        {"name": "Kylas Company Id",          "type": T},
+        {"name": "Kylas Company ID",          "type": T},
         {"name": "Industry",                  "type": T},
         {"name": "Owner",                     "type": T},
         {"name": "Owner Email",               "type": T},

@@ -42,6 +42,7 @@ import json
 import os
 import smtplib
 import sys
+import time
 from datetime import date, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -230,14 +231,55 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
     return by_co
 
 
-def _write_table(tbl: AirtableClient, health: dict, fm: dict) -> tuple:
-    """Write health stats to one Airtable table. Returns (updated, skipped)."""
+def _norm_name(val) -> str:
+    """Lowercase, trimmed company name for matching. Handles list values."""
+    if isinstance(val, list):
+        val = val[0] if val else ""
+    return str(val or "").strip().lower()
+
+
+def _write_table(tbl: AirtableClient, health: dict, fm: dict,
+                 id_to_name: dict = None) -> tuple:
+    """
+    Write health stats to one Airtable table. Returns (updated, skipped).
+
+    Matches each company by its Kylas id (fm["id"] — the field name differs
+    per base). When the id isn't found and id_to_name is supplied, falls back
+    to matching by company name (fm["name"]) and backfills the id field so the
+    next run matches directly.
+    """
     updated = skipped = 0
-    try:
-        tbl.build_cache("Kylas Company Id")
-    except Exception as exc:
-        print(f"[Account Health] WARNING: could not build cache — {exc}")
-        return 0, 0
+    id_field   = fm["id"]
+    name_field = fm.get("name")
+
+    # One fetch → build id-cache + name-index together (with simple retry).
+    records = None
+    for attempt in range(4):
+        try:
+            records = tbl.table.all()
+            break
+        except Exception as exc:
+            if attempt < 3:
+                time.sleep(2 ** attempt)
+            else:
+                print(f"[Account Health] WARNING: could not read {id_field!r} — {exc}")
+                return 0, 0
+
+    tbl._cache = {}
+    name_index, name_dupes = {}, set()
+    for r in records:
+        kid = str(r["fields"].get(id_field, "")).strip()
+        if kid:
+            tbl._cache[kid] = r
+        if name_field and id_to_name:
+            nm = _norm_name(r["fields"].get(name_field, ""))
+            if nm:
+                if nm in name_index:
+                    name_dupes.add(nm)
+                else:
+                    name_index[nm] = r
+    for d in name_dupes:          # drop ambiguous names — don't guess
+        name_index.pop(d, None)
 
     _FIELD_MAP = [
         ("totalPocs",        "total"),
@@ -251,8 +293,16 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict) -> tuple:
         ("calledSinceApr19", "called_apr19"),
     ]
 
+    matched_by_name = 0
     for co_id, e in health.items():
-        if co_id not in tbl._cache:
+        rec = tbl._cache.get(co_id)
+        by_name = False
+        if rec is None and id_to_name:
+            nm = _norm_name(id_to_name.get(co_id, ""))
+            if nm:
+                rec = name_index.get(nm)
+                by_name = rec is not None
+        if rec is None:
             skipped += 1
             continue
 
@@ -270,12 +320,16 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict) -> tuple:
             fields[fm["claimedBy"]] = e.get("claimed_by", "")
         if fm.get("statusOfReachout"):
             fields[fm["statusOfReachout"]] = e.get("status_of_reachout", "Stale")
+        if by_name:                       # backfill id so next run matches directly
+            fields[id_field] = co_id
+            matched_by_name += 1
 
-        rid = tbl._cache[co_id]["id"]
-        tbl._updates.append((co_id, rid, fields))
+        tbl._updates.append((co_id, rec["id"], fields))
         updated += 1
 
     tbl.flush()
+    if matched_by_name:
+        print(f"[Account Health]   ({matched_by_name} matched by name, id backfilled)")
     return updated, skipped
 
 
@@ -759,12 +813,21 @@ def run(kylas=None, send_email: bool = True) -> dict:
     except Exception as exc:
         print(f"[Account Health] WARNING: Company List write failed — {exc}")
 
+    # co_id → company name (from Company List, which has every company by id).
+    # Lets the CRM write match by name when its records lack a Kylas id.
+    id_to_name = {}
+    name_key = fm_list.get("name")
+    for cid, rec in tbl_list_cache.items():
+        nm = rec.get("fields", {}).get(name_key, "")
+        if nm:
+            id_to_name[cid] = nm
+
     tbl_crm_cache = {}
     try:
         tbl_crm = AirtableClient("Companies", base_id=crm_base)
-        upd, skp = _write_table(tbl_crm, health, fm_crm)
+        upd, skp = _write_table(tbl_crm, health, fm_crm, id_to_name=id_to_name)
         tbl_crm_cache = tbl_crm._cache
-        print(f"[Account Health] Companies CRM → {upd} updated, {skp} no Kylas ID")
+        print(f"[Account Health] Companies CRM → {upd} updated, {skp} unmatched")
     except Exception as exc:
         print(f"[Account Health] WARNING: Companies CRM write failed — {exc}")
 
