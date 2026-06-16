@@ -24,9 +24,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pyairtable import Api as AirtableApi
 from utils.kylas_client import KylasClient
 
-KYLAS_BASE = "https://api.kylas.io/v1"
-PAGE_SIZE  = 200
-
 
 def _load_user_maps(config_path: str):
     """Returns (email_to_id, name_to_id) from config/team.json, keys lowercased."""
@@ -59,38 +56,6 @@ def _resolve_user_id(raw: str, email_to_id: dict, name_to_id: dict):
 
 
 
-def _contacts_for_company(client: KylasClient, company_id: int) -> list:
-    records, page = [], 0
-    while True:
-        time.sleep(0.1)
-        try:
-            r = client.session.post(
-                f"{KYLAS_BASE}/search/contact",
-                params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
-                json={
-                    "fields": ["id"],
-                    "jsonRule": {
-                        "condition": "AND",
-                        "rules": [{
-                            "id": "companyId", "field": "companyId",
-                            "type": "integer", "operator": "equal",
-                            "value": company_id,
-                        }],
-                    },
-                },
-                timeout=60,
-            )
-            r.raise_for_status()
-            resp    = r.json()
-            content = resp.get("content", [])
-            records.extend(content)
-            if page >= resp.get("totalPages", 1) - 1 or not content:
-                break
-            page += 1
-        except Exception as e:
-            print(f"  [WARN] contact search failed: {e}")
-            break
-    return records
 
 
 def run(view_name: str, dry_run: bool = False):
@@ -160,7 +125,7 @@ def run(view_name: str, dry_run: bool = False):
                 failed += 1
                 continue
 
-        contacts = _contacts_for_company(client, co_id)
+        contacts = client.get_contacts_by_company(co_id)
         print(f"    → {len(contacts)} contacts")
         for ct in contacts:
             ct_id = ct.get("id")
