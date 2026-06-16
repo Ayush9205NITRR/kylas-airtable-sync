@@ -12,21 +12,14 @@ from datetime import datetime, timedelta, timezone
 IST = timezone(timedelta(hours=5, minutes=30))
 
 # ── Audio handling ───────────────────────────────────────────────────────────────
-# Includes WhatsApp/voice-note formats (.mpeg/.mpga/.opus) — HF Whisper decodes
-# all of these via ffmpeg server-side.
+# Includes WhatsApp/voice-note formats (.mpeg/.mpga/.opus). Gemini transcribes the
+# audio directly; awkward formats fall back to a WAV re-encode (pydub/ffmpeg).
 SUPPORTED_FORMATS = {".mp4", ".m4a", ".mp3", ".wav", ".ogg", ".aac",
                      ".mpeg", ".mpga", ".opus", ".flac", ".webm"}
 MIN_DURATION_SECONDS = 10
-# The HF inference API is unhappy with very large request bodies; whisper-small
-# is comfortable under ~25 MB. Bigger files are split into chunks first.
-MAX_HF_BYTES = 25 * 1024 * 1024
-CHUNK_SECONDS = 60
 
 # ── External services ─────────────────────────────────────────────────────────────
-HF_WHISPER_MODEL = os.environ.get("HF_WHISPER_MODEL", "openai/whisper-small")
-# Inference provider used via huggingface_hub. "hf-inference" = HF's own serverless
-# (free tier); set HF_PROVIDER=auto to let the hub pick any available provider.
-HF_PROVIDER = os.environ.get("HF_PROVIDER", "hf-inference")
+# Gemini handles BOTH transcription (audio) and analysis (text).
 # Gemini 1.5 models are being retired and aren't available on newer API keys, so
 # default to a current free-tier flash model. Override with GEMINI_MODEL — run
 # `python cold_call/analyze.py --list-models` to see what your key exposes.

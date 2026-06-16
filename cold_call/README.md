@@ -3,8 +3,8 @@
 A daily pipeline that turns BD sales-call recordings into coaching feedback.
 
 ```
-Google Drive  →  Whisper (HF)  →  Gemini 1.5 Flash  →  Airtable  →  SMTP email
-  (audio)         transcript        4-param score        Calls         per BD
+Google Drive  →  Gemini (audio→text)  →  Gemini (4-param score)  →  Airtable  →  SMTP email
+  (audio)             transcript               scorecard              Calls        per BD
 ```
 
 Each BD drops audio into their own Drive sub-folder. Once a day the pipeline
@@ -33,7 +33,7 @@ run day are picked up.
 |------|---------|
 | `config.py` | env-driven settings + IST/date helpers |
 | `drive.py` | list + download new Drive files (service account) |
-| `transcribe.py` | Whisper via HF Inference API (503 retry, chunking) |
+| `transcribe.py` | transcribe audio with Gemini (WAV fallback via ffmpeg) |
 | `prompt.py` | the Gemini coaching system prompt |
 | `analyze.py` | Gemini call → scorecard JSON (robust parsing) |
 | `airtable_store.py` | duplicate check + insert into `Calls` |
@@ -43,7 +43,7 @@ run day are picked up.
 ## Setup
 
 ```bash
-pip install -r cold_call/requirements.txt    # ffmpeg also needed for >25 MB files
+pip install -r cold_call/requirements.txt    # ffmpeg needed only for the WAV fallback
 cp .env.example .env                          # fill in the COLD CALL keys
 
 # One-time: create the Airtable `Calls` table in the cold-call base
@@ -56,8 +56,7 @@ python scripts/setup_cold_call_airtable.py
 |-----|-------|
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | path to the key file **or** the raw JSON |
 | `GOOGLE_DRIVE_FOLDER_ID` | optional — defaults to the Enout `calls/` folder in `config.py` |
-| `HF_API_TOKEN` | Hugging Face token (Whisper) |
-| `GEMINI_API_KEY` | Gemini API key |
+| `GEMINI_API_KEY` | Gemini API key (used for both transcription and analysis) |
 | `AIRTABLE_PAT` | Airtable token (shared with the Kylas sync) |
 | `COLD_CALL_AIRTABLE_BASE_ID` | **dedicated** base for the `Calls` table |
 | `SMTP_USER` | Gmail address used to send coaching emails |
@@ -99,9 +98,9 @@ python tests/test_cold_call.py                # offline unit tests (no keys)
 |-----------|--------|
 | Unsupported format | logged in Airtable as `status=error` |
 | Duration < 10s | logged as `status=too_short` |
-| Already processed | skipped silently (dup check on bd_name + filename) |
-| Whisper 503 (cold start) | wait 20s, retry once |
-| File > 25 MB | split into 60s chunks (needs ffmpeg) |
+| Already processed | skipped silently (dup check on bd_name + filename; `error` rows are retried) |
+| Transcription fails (direct) | auto-retry after re-encoding to 16 kHz mono WAV |
+| Transcription/analysis errors | raw error logged in Airtable, `status=error` (retried next run) |
 | Gemini returns non-JSON | raw logged, `status=error` |
 | Airtable insert fails | warning printed, pipeline continues |
 | No calls for a BD | no email sent |

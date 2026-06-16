@@ -1,14 +1,13 @@
 """
-Transcription via the Hugging Face Inference API (Whisper small), using the
-official huggingface_hub InferenceClient — it targets HF's current router
-endpoint and sets auth + content-type correctly (so we don't hand-roll the
-HTTP call against a moving API).
+Transcription via Gemini (multimodal). Hugging Face's serverless tier stopped
+serving Whisper, so we transcribe the audio directly with the same Gemini model
+used for analysis — one provider, one key, no extra service.
 
-- Hinglish: the multilingual Whisper model auto-detects Hindi + English.
-- Model cold-start -> wait once, retry.
-- Files larger than the HF body limit are split into CHUNK_SECONDS segments with
-  pydub (needs ffmpeg) and transcribed piece by piece.
+Flow: upload the audio to the Gemini File API -> ask the model to transcribe ->
+delete the uploaded file. If the source format is awkward, fall back to a
+16 kHz mono WAV (via pydub/ffmpeg), which Gemini always accepts.
 """
+import mimetypes
 import os
 import sys
 import time
@@ -17,85 +16,77 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cold_call import config
 
-_CLIENT = None
+# Source extension -> a MIME type Gemini accepts. .mpeg etc. otherwise resolve to
+# video/* via the stdlib, which we don't want for audio.
+_AUDIO_MIME = {
+    ".mp3": "audio/mpeg", ".mpeg": "audio/mpeg", ".mpga": "audio/mpeg",
+    ".wav": "audio/wav", ".aac": "audio/aac", ".ogg": "audio/ogg",
+    ".opus": "audio/ogg", ".flac": "audio/flac", ".m4a": "audio/mp4",
+    ".mp4": "video/mp4", ".webm": "video/webm", ".aiff": "audio/aiff",
+}
+
+TRANSCRIBE_PROMPT = (
+    "Transcribe this sales call audio verbatim. Keep the original language as "
+    "spoken — it is Hinglish (a mix of Hindi and English). Return ONLY the "
+    "transcript text: no timestamps, no commentary, no markdown."
+)
 
 
-def _client():
-    global _CLIENT
-    if _CLIENT is None:
-        from huggingface_hub import InferenceClient
-        token = os.environ.get("HF_API_TOKEN", "")
-        if not token:
-            raise RuntimeError("HF_API_TOKEN not set")
-        _CLIENT = InferenceClient(
-            model=config.HF_WHISPER_MODEL,
-            provider=config.HF_PROVIDER,
-            token=token,
-        )
-    return _CLIENT
+def _genai():
+    import google.generativeai as genai
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY not set")
+    genai.configure(api_key=api_key)
+    return genai
 
 
-def _to_text(out) -> str:
-    """Normalise the various ASR return shapes to a plain string."""
-    if isinstance(out, str):
-        return out
-    text = getattr(out, "text", None)
-    if text is not None:
-        return text
-    if isinstance(out, dict):
-        return out.get("text", "")
-    return str(out)
+def _mime_for(path: str) -> str:
+    ext = os.path.splitext(path)[1].lower()
+    return _AUDIO_MIME.get(ext) or mimetypes.guess_type(path)[0] or "audio/mpeg"
 
 
-def _asr(audio) -> str:
-    """Run ASR on bytes (or a path), retrying once on a model cold-start."""
-    out = None
-    for attempt in range(2):
-        try:
-            out = _client().automatic_speech_recognition(audio)
-            break
-        except Exception as exc:
-            msg = str(exc).lower()
-            if attempt == 0 and ("503" in msg or "loading" in msg):
-                print("  [transcribe] model loading — waiting 20s then retrying")
-                time.sleep(20)
-                continue
-            raise
-    return _to_text(out)
-
-
-def _transcribe_chunked(filepath: str) -> str:
-    """Split large audio into CHUNK_SECONDS segments and transcribe each."""
+def _transcribe_via_gemini(genai, filepath: str, mime_type: str) -> str:
+    f = genai.upload_file(path=filepath, mime_type=mime_type)
     try:
-        from pydub import AudioSegment
-    except ImportError as exc:
-        raise RuntimeError(
-            "file exceeds HF size limit and pydub is not installed for chunking"
-        ) from exc
-
-    audio = AudioSegment.from_file(filepath)
-    step = config.CHUNK_SECONDS * 1000
-    parts = []
-    for i, start in enumerate(range(0, len(audio), step)):
-        chunk = audio[start:start + step]
-        buf = chunk.export(format="wav")  # wav avoids needing an mp3 encoder
+        for _ in range(30):  # wait until the file is processed (usually seconds)
+            if getattr(f.state, "name", "ACTIVE") != "PROCESSING":
+                break
+            time.sleep(2)
+            f = genai.get_file(f.name)
+        if getattr(f.state, "name", "") == "FAILED":
+            raise RuntimeError("Gemini failed to process the audio file")
+        model = genai.GenerativeModel(config.GEMINI_MODEL)
+        resp = model.generate_content([TRANSCRIBE_PROMPT, f])
+        return (getattr(resp, "text", "") or "").strip()
+    finally:
         try:
-            data = buf.read()
-        finally:
-            buf.close()
-        print(f"  [transcribe] chunk {i + 1} ({len(data) / 1e6:.1f} MB)...")
-        parts.append(_asr(data))
-        time.sleep(1)
-    return " ".join(p.strip() for p in parts if p).strip()
+            genai.delete_file(f.name)
+        except Exception:
+            pass
+
+
+def _to_wav_16k_mono(filepath: str) -> str:
+    """Re-encode to 16 kHz mono WAV (speech-friendly, always Gemini-accepted)."""
+    from pydub import AudioSegment
+    audio = AudioSegment.from_file(filepath).set_frame_rate(16000).set_channels(1)
+    out = filepath + ".16k.wav"
+    audio.export(out, format="wav")
+    return out
 
 
 def transcribe(filepath: str) -> str:
-    size = os.path.getsize(filepath)
-    if size > config.MAX_HF_BYTES:
-        print(f"  [transcribe] {size / 1e6:.1f} MB > limit — chunking")
-        return _transcribe_chunked(filepath)
-    with open(filepath, "rb") as f:
-        return _asr(f.read()).strip()
+    genai = _genai()
+    try:
+        return _transcribe_via_gemini(genai, filepath, _mime_for(filepath))
+    except Exception as exc:
+        print(f"  [transcribe] direct upload failed ({exc}); converting to WAV and retrying")
+        wav = _to_wav_16k_mono(filepath)
+        try:
+            return _transcribe_via_gemini(genai, wav, "audio/wav")
+        finally:
+            if os.path.exists(wav):
+                os.remove(wav)
 
 
 if __name__ == "__main__":

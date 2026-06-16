@@ -3,7 +3,7 @@ Cold Call Analysis — daily pipeline.
 
   1. Fetch today's new audio files from Drive (per BD sub-folder)
   2. Skip unsupported formats / duplicates / clips < 10s
-  3. Transcribe (Whisper via HF) -> analyze (Gemini) -> store (Airtable)
+  3. Transcribe + analyze with Gemini -> store (Airtable)
   4. Send one coaching email per BD (SMTP)
 
 Run:
@@ -145,7 +145,7 @@ def run_pipeline(target_day=None, limit=None, send_email=True,
             print(f"  Transcribing ({duration:.0f}s)...")
             transcript = transcribe.transcribe(tmp_path)
             if not transcript.strip():
-                raise RuntimeError("empty transcript from Whisper")
+                raise RuntimeError("empty transcript from Gemini")
 
             # Analyze
             print("  Analyzing...")
