@@ -45,7 +45,12 @@ def _load_user_maps(config_path: str):
     return email_to_id, name_to_id
 
 
-def _resolve_user_id(raw: str, email_to_id: dict, name_to_id: dict):
+def _to_id_str(val) -> str:
+    """Normalise any numeric/string company id to a plain integer string."""
+    try:
+        return str(int(float(str(val).strip())))
+    except (ValueError, TypeError):
+        return str(val).strip()
     """raw may be an email or a full name; returns a Kylas user id or None."""
     raw = (raw or "").strip()
     if not raw:
@@ -90,19 +95,21 @@ def run(view_name: str, dry_run: bool = False):
     # The per-company filtered search (search/contact with a company.id rule)
     # returns 500 from Kylas, so we pull all contacts once via the same
     # endpoint the daily sync uses (jsonRule: null) and group them locally.
-    target_ids = {str(r["fields"].get("Kylas Company Id", "")).strip()
-                  for r in records if str(r["fields"].get("Kylas Company Id", "")).strip()}
+    target_ids = {_to_id_str(r["fields"].get("Kylas Company Id", ""))
+                  for r in records
+                  if str(r["fields"].get("Kylas Company Id", "")).strip()}
     contacts_by_company: dict = {}
     try:
         all_contacts = client.get_contacts()
         for ct in all_contacts:
             co = ct.get("company")
-            cid = (str(co.get("id")) if isinstance(co, dict)
-                   else str(co) if isinstance(co, (int, float)) else "")
+            raw_cid = co.get("id") if isinstance(co, dict) else co
+            cid = _to_id_str(raw_cid) if raw_cid is not None else ""
             if cid and cid in target_ids:
                 contacts_by_company.setdefault(cid, []).append(ct)
+        total_linked = sum(len(v) for v in contacts_by_company.values())
         print(f"Fetched {len(all_contacts)} contacts; "
-              f"{sum(len(v) for v in contacts_by_company.values())} linked to target companies\n")
+              f"{total_linked} linked to {len(contacts_by_company)} of {len(target_ids)} target companies\n")
     except Exception as e:
         print(f"[WARN] Could not bulk-fetch contacts: {e} — contacts will be skipped\n")
 
@@ -110,7 +117,7 @@ def run(view_name: str, dry_run: bool = False):
 
     for rec in records:
         f          = rec["fields"]
-        co_id_str  = str(f.get("Kylas Company Id", "")).strip()
+        co_id_str  = _to_id_str(f.get("Kylas Company Id", ""))
         # Owner source: 'Owner - Kylas' (email or name), falling back to 'Owner Email'.
         owner_raw  = (f.get("Owner - Kylas") or "").strip() or (f.get("Owner Email") or "").strip()
         co_name    = f.get("Company Name - Kylas") or f.get("Company Name") or co_id_str
