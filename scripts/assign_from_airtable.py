@@ -2,15 +2,16 @@
 Airtable → Kylas owner assignment.
 
 Reads a named view from Company List (AIRTABLE_COMPANY_BASE_ID).
-For each record that has both a Kylas Company Id and an Owner Email:
-  1. Resolves email → Kylas user ID via config/team.json
+For each record that has a Kylas Company Id and an owner in the
+'Owner - Kylas' field (an email OR a name; falls back to 'Owner Email'):
+  1. Resolves owner → Kylas user ID via config/team.json
   2. Updates the company owner in Kylas via PATCH
   3. Fetches all contacts of that company from Kylas
   4. Updates each contact's owner to the same user
 
 Usage:
-    python scripts/assign_from_airtable.py --view "BD Assignment"
     python scripts/assign_from_airtable.py --view "BD Assignment" --dry-run
+    python scripts/assign_from_airtable.py --view "BD Assignment"
 """
 import argparse
 import json
@@ -27,18 +28,34 @@ KYLAS_BASE = "https://api.kylas.io/v1"
 PAGE_SIZE  = 200
 
 
-def _load_email_to_id(config_path: str) -> dict:
-    """Returns {lowercase_email: kylas_user_id} from config/team.json."""
+def _load_user_maps(config_path: str):
+    """Returns (email_to_id, name_to_id) from config/team.json, keys lowercased."""
     with open(config_path) as f:
         cfg = json.load(f)
     users       = cfg.get("kylas_users", {})        # "74757" → "Bhaumik Sachdeva"
     user_emails = cfg.get("kylas_user_emails", {})  # "Bhaumik Sachdeva" → "bhaumik@enout.in"
-    email_to_id = {}
+    email_to_id, name_to_id = {}, {}
     for uid_str, name in users.items():
+        try:
+            uid = int(uid_str)
+        except (TypeError, ValueError):
+            continue
+        if name:
+            name_to_id[name.strip().lower()] = uid
         email = user_emails.get(name, "")
         if email:
-            email_to_id[email.lower()] = int(uid_str)
-    return email_to_id
+            email_to_id[email.strip().lower()] = uid
+    return email_to_id, name_to_id
+
+
+def _resolve_user_id(raw: str, email_to_id: dict, name_to_id: dict):
+    """raw may be an email or a full name; returns a Kylas user id or None."""
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    if "@" in raw:
+        return email_to_id.get(raw.lower())
+    return name_to_id.get(raw.lower())
 
 
 def _patch(client: KylasClient, path: str, data: dict) -> bool:
@@ -93,8 +110,8 @@ def run(view_name: str, dry_run: bool = False):
 
     cfg_path    = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                "config", "team.json")
-    email_to_id = _load_email_to_id(cfg_path)
-    print(f"Loaded {len(email_to_id)} email→ID mappings\n")
+    email_to_id, name_to_id = _load_user_maps(cfg_path)
+    print(f"Loaded {len(email_to_id)} email→ID and {len(name_to_id)} name→ID mappings\n")
 
     print(f"Reading view '{view_name}' from Company List...")
     records = table.all(view=view_name)
@@ -108,21 +125,22 @@ def run(view_name: str, dry_run: bool = False):
     for rec in records:
         f          = rec["fields"]
         co_id_str  = str(f.get("Kylas Company Id", "")).strip()
-        owner_email = (f.get("Owner Email") or "").strip().lower()
-        co_name     = f.get("Company Name - Kylas") or f.get("Company Name") or co_id_str
+        # Owner source: 'Owner - Kylas' (email or name), falling back to 'Owner Email'.
+        owner_raw  = (f.get("Owner - Kylas") or "").strip() or (f.get("Owner Email") or "").strip()
+        co_name    = f.get("Company Name - Kylas") or f.get("Company Name") or co_id_str
 
         if not co_id_str:
             print(f"  [SKIP] '{co_name}' — no Kylas Company Id")
             skipped += 1
             continue
-        user_id = email_to_id.get(owner_email)
+        user_id = _resolve_user_id(owner_raw, email_to_id, name_to_id)
         if not user_id:
-            print(f"  [SKIP] '{co_name}' — unknown owner email '{owner_email}'")
+            print(f"  [SKIP] '{co_name}' — owner '{owner_raw}' not found in team.json")
             skipped += 1
             continue
 
         co_id = int(co_id_str)
-        print(f"  '{co_name}' → user {user_id} ({owner_email})")
+        print(f"  '{co_name}' → user {user_id} ({owner_raw})")
 
         if dry_run:
             print(f"    [DRY] PATCH companies/{co_id}")
