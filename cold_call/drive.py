@@ -83,12 +83,23 @@ def fetch_new_files(target_day=None) -> list:
 
     # RFC 3339, UTC ('Z') — Drive compares modifiedTime against this instant.
     cutoff = config.ist_day_start_utc(target_day).strftime("%Y-%m-%dT%H:%M:%SZ")
+    folders = _bd_folders(config.DRIVE_FOLDER_ID)
+    if folders:
+        print(f"[drive] {len(folders)} BD subfolder(s) under calls/: "
+              + ", ".join(n for n, _ in folders))
+    else:
+        print(f"[drive] 0 subfolders visible under folder id {config.DRIVE_FOLDER_ID} — "
+              "check that calls/ is SHARED with the service account's client_email "
+              "and that the folder id is correct.")
+
     results = []
-    for bd_name, folder_id in _bd_folders(config.DRIVE_FOLDER_ID):
+    for bd_name, folder_id in folders:
         q = f"'{folder_id}' in parents and trashed=false and modifiedTime >= '{cutoff}'"
+        matched = 0
         for f in _list(q):
             if not config.is_supported(f["name"]):
                 continue
+            matched += 1
             results.append({
                 "bd_name": bd_name,
                 "filename": f["name"],
@@ -96,6 +107,7 @@ def fetch_new_files(target_day=None) -> list:
                 "mime_type": f.get("mimeType", ""),
                 "size": int(f.get("size", 0) or 0),
             })
+        print(f"[drive]   {bd_name}: {matched} audio file(s) modified since {cutoff}")
     return results
 
 
