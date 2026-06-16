@@ -58,16 +58,6 @@ def _resolve_user_id(raw: str, email_to_id: dict, name_to_id: dict):
     return name_to_id.get(raw.lower())
 
 
-def _patch(client: KylasClient, path: str, data: dict) -> bool:
-    time.sleep(0.15)
-    try:
-        r = client.session.patch(f"{KYLAS_BASE}/{path}", json=data, timeout=30)
-        r.raise_for_status()
-        return True
-    except Exception as e:
-        print(f"  [WARN] PATCH {path} failed: {e}")
-        return False
-
 
 def _contacts_for_company(client: KylasClient, company_id: int) -> list:
     records, page = [], 0
@@ -161,10 +151,10 @@ def run(view_name: str, dry_run: bool = False):
         print(f"  '{co_name}' → user {user_id} ({owner_raw})")
 
         if dry_run:
-            print(f"    [DRY] PATCH companies/{co_id}")
+            print(f"    [DRY] PUT companies/{co_id}")
             assigned_co += 1
         else:
-            if _patch(client, f"companies/{co_id}", {"ownedById": user_id}):
+            if client.update_company_owner(co_id, user_id):
                 assigned_co += 1
             else:
                 failed += 1
@@ -179,7 +169,7 @@ def run(view_name: str, dry_run: bool = False):
             if dry_run:
                 assigned_ct += 1
             else:
-                if _patch(client, f"contacts/{ct_id}", {"ownedById": user_id}):
+                if client.update_contact_owner(ct_id, user_id):
                     assigned_ct += 1
                 else:
                     failed += 1
