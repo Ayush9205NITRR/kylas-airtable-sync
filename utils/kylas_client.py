@@ -337,11 +337,35 @@ class KylasClient:
         return r.json() if r.content else {}
 
     def update_company_owner(self, company_id: int, user_id: int) -> bool:
-        """Reassign a company to a different Kylas user. Returns True on success."""
+        """
+        Reassign a company to a different Kylas user. Returns True on success.
+
+        Uses the dedicated reassignment endpoint (mirrors PUT /leads/{id}/owner):
+            PUT /companies/{id}/owner  {"ownerId": <id>}
+        Falls back to a full-object PUT with ownedBy if that is unavailable.
+        """
         try:
-            # Kylas PUT /companies/{id} requires the full object body.
-            # GET first, update ownedBy, PUT back.
+            time.sleep(self._delay)
+            r = self.session.put(
+                f"{KYLAS_BASE}/companies/{company_id}/owner",
+                json={"ownerId": user_id}, timeout=30,
+            )
+            if r.ok:
+                if not getattr(self, "_company_owner_logged", False):
+                    print(f"  [INFO] company owner via PUT /companies/{{id}}/owner (ownerId)")
+                    self._company_owner_logged = True
+                return True
+            if not getattr(self, "_company_owner_logged", False):
+                print(f"  [INFO] /companies/{company_id}/owner -> HTTP {r.status_code}; "
+                      f"falling back to full PUT")
+                self._company_owner_logged = True
+        except Exception:
+            pass
+
+        # Fallback: GET full object, set ownedBy, PUT back.
+        try:
             body = self._get(f"companies/{company_id}")
+            body = body.get("data", body)
             body["ownedBy"] = {"id": user_id}
             self._put(f"companies/{company_id}", body)
             return True
@@ -353,18 +377,45 @@ class KylasClient:
                              contact_data: dict = None) -> bool:
         """
         Reassign a contact to a different Kylas user. Returns True on success.
-        contact_data: pass the already-fetched contact object to skip the GET.
+
+        Kylas ignores `ownedBy` in the plain PUT /contacts/{id} body (the
+        Update Contact schema has no owner field). Owner changes go through the
+        dedicated reassignment endpoint, mirroring PUT /leads/{id}/owner:
+            PUT /contacts/{id}/owner  {"ownerId": <id>}
+        Falls back to a full-object PUT only if that endpoint is unavailable.
         """
+        # Preferred: dedicated owner-reassignment endpoint (fast, tiny body).
         try:
-            if contact_data:
+            time.sleep(self._delay)
+            r = self.session.put(
+                f"{KYLAS_BASE}/contacts/{contact_id}/owner",
+                json={"ownerId": user_id}, timeout=30,
+            )
+            if r.ok:
+                if not getattr(self, "_contact_owner_logged", False):
+                    print(f"  [INFO] contact owner via PUT /contacts/{{id}}/owner (ownerId)")
+                    self._contact_owner_logged = True
+                return True
+            if not getattr(self, "_contact_owner_logged", False):
+                print(f"  [INFO] /contacts/{contact_id}/owner -> HTTP {r.status_code}; "
+                      f"falling back to full PUT")
+                self._contact_owner_logged = True
+        except Exception:
+            pass
+
+        # Fallback: full-object PUT with ownedBy (works for some Kylas tenants).
+        try:
+            if contact_data and len(contact_data) > 4:
                 body = dict(contact_data)
             else:
                 resp = self._get(f"contacts/{contact_id}")
-                body = resp.get("data", resp)  # unwrap if GET returns {"data": {...}}
+                body = resp.get("data", resp)
             body["ownedBy"] = {"id": user_id}
-            # Remove read-only fields that cause Kylas to reject/ignore the PUT
+            co = body.get("company")          # contact PUT wants company as an int id
+            if isinstance(co, dict):
+                body["company"] = co.get("id")
             for ro in ("id", "createdAt", "updatedAt", "updatedBy",
-                       "ownerId", "recordActions"):
+                       "createdBy", "ownerId", "recordActions"):
                 body.pop(ro, None)
             self._put(f"contacts/{contact_id}", body)
             return True
