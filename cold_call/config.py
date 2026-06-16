@@ -22,7 +22,10 @@ CHUNK_SECONDS = 60
 # ── External services ─────────────────────────────────────────────────────────────
 HF_WHISPER_MODEL = os.environ.get("HF_WHISPER_MODEL", "openai/whisper-small")
 HF_API_URL = f"https://api-inference.huggingface.co/models/{HF_WHISPER_MODEL}"
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+# Gemini 1.5 models are being retired and aren't available on newer API keys, so
+# default to a current free-tier flash model. Override with GEMINI_MODEL — run
+# `python cold_call/analyze.py --list-models` to see what your key exposes.
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 # Gemini free tier = 15 req/min; a 4s gap between calls keeps us safely under.
 GEMINI_DELAY_SECONDS = float(os.environ.get("GEMINI_DELAY_SECONDS", "4"))
 

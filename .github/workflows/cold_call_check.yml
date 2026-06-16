@@ -1,0 +1,23 @@
+name: Cold Call - Check Gemini Models
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r cold_call/requirements.txt
+
+      - name: List Gemini models available to this API key
+        run: python cold_call/analyze.py --list-models
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

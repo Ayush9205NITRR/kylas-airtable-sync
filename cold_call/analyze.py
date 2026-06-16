@@ -59,14 +59,39 @@ def analyze_call(transcript: str, bd_name: str, call_date: str) -> dict:
     raise ValueError(f"Gemini did not return valid JSON.\n--- raw response ---\n{raw}")
 
 
+def list_models() -> list:
+    """Model ids this API key can call generateContent on (newest-friendly check)."""
+    import google.generativeai as genai
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY not set")
+    genai.configure(api_key=api_key)
+    return [
+        m.name for m in genai.list_models()
+        if "generateContent" in getattr(m, "supported_generation_methods", [])
+    ]
+
+
 if __name__ == "__main__":
     import argparse
     from dotenv import load_dotenv
     load_dotenv()
     parser = argparse.ArgumentParser()
-    parser.add_argument("transcript_file", help="path to a .txt transcript")
+    parser.add_argument("transcript_file", nargs="?", help="path to a .txt transcript")
     parser.add_argument("--bd", default="Test")
+    parser.add_argument("--list-models", action="store_true",
+                        help="list the Gemini models your API key can use, then exit")
     args = parser.parse_args()
-    with open(args.transcript_file) as fh:
-        text = fh.read()
-    print(json.dumps(analyze_call(text, args.bd, config.today_ist().isoformat()), indent=2))
+
+    if args.list_models:
+        names = list_models()
+        print(f"Models available to your key ({len(names)}):")
+        for name in names:
+            star = "  <- default" if name.endswith(config.GEMINI_MODEL) else ""
+            print(f"  {name}{star}")
+    elif args.transcript_file:
+        with open(args.transcript_file) as fh:
+            text = fh.read()
+        print(json.dumps(analyze_call(text, args.bd, config.today_ist().isoformat()), indent=2))
+    else:
+        parser.error("provide a transcript_file, or use --list-models")
