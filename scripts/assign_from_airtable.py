@@ -4,9 +4,9 @@ Airtable → Kylas owner assignment.
 Reads a named view from Company List (AIRTABLE_COMPANY_BASE_ID).
 For each record that has a Kylas Company Id and an owner in the
 'Owner - Kylas' field (an email OR a name; falls back to 'Owner Email'):
-  1. Resolves owner → Kylas user ID via config/team.json
-  2. Updates the company owner in Kylas via PATCH
-  3. Fetches all contacts of that company from Kylas
+  1. Resolves owner → Kylas user ID (team.json + live Kylas user list)
+  2. Updates the company owner in Kylas (GET full object, set ownedBy, PUT back)
+  3. Looks up that company's contacts (from one bulk contact fetch)
   4. Updates each contact's owner to the same user
 
 Usage:
@@ -86,6 +86,26 @@ def run(view_name: str, dry_run: bool = False):
     if not records:
         return
 
+    # Build a {company_id: [contacts]} map from a single bulk contact fetch.
+    # The per-company filtered search (search/contact with a company.id rule)
+    # returns 500 from Kylas, so we pull all contacts once via the same
+    # endpoint the daily sync uses (jsonRule: null) and group them locally.
+    target_ids = {str(r["fields"].get("Kylas Company Id", "")).strip()
+                  for r in records if str(r["fields"].get("Kylas Company Id", "")).strip()}
+    contacts_by_company: dict = {}
+    try:
+        all_contacts = client.get_contacts()
+        for ct in all_contacts:
+            co = ct.get("company")
+            cid = (str(co.get("id")) if isinstance(co, dict)
+                   else str(co) if isinstance(co, (int, float)) else "")
+            if cid and cid in target_ids:
+                contacts_by_company.setdefault(cid, []).append(ct)
+        print(f"Fetched {len(all_contacts)} contacts; "
+              f"{sum(len(v) for v in contacts_by_company.values())} linked to target companies\n")
+    except Exception as e:
+        print(f"[WARN] Could not bulk-fetch contacts: {e} — contacts will be skipped\n")
+
     assigned_co = assigned_ct = skipped = failed = 0
 
     for rec in records:
@@ -125,7 +145,7 @@ def run(view_name: str, dry_run: bool = False):
                 failed += 1
                 continue
 
-        contacts = client.get_contacts_by_company(co_id)
+        contacts = contacts_by_company.get(co_id_str, [])
         print(f"    → {len(contacts)} contacts")
         for ct in contacts:
             ct_id = ct.get("id")

@@ -363,10 +363,15 @@ class KylasClient:
             return False
 
     def get_contacts_by_company(self, company_id: int) -> List[dict]:
-        """Fetch all contacts linked to a specific company ID."""
-        fields = ["id", "name", "ownedBy", "company"]
+        """
+        Fetch all contacts linked to a specific company ID.
+        Best-effort: returns [] on API error instead of raising, so a single
+        failed lookup never aborts a bulk reassignment run.
+        """
+        fields = ["id", "name", "company"]
         filter_rule = {
             "condition": "AND",
+            "valid": True,
             "rules": [{
                 "id": "company.id", "field": "company.id",
                 "type": "integer", "operator": "equal",
@@ -376,13 +381,17 @@ class KylasClient:
         records, page = [], 0
         while True:
             time.sleep(self._delay)
-            r = self.session.post(
-                f"{KYLAS_BASE}/search/contact",
-                params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
-                json={"fields": fields, "jsonRule": filter_rule},
-                timeout=60,
-            )
-            r.raise_for_status()
+            try:
+                r = self.session.post(
+                    f"{KYLAS_BASE}/search/contact",
+                    params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
+                    json={"fields": fields, "jsonRule": filter_rule},
+                    timeout=60,
+                )
+                r.raise_for_status()
+            except Exception as exc:
+                print(f"  [WARN] contact search for company {company_id} failed: {exc}")
+                break
             resp    = r.json()
             content = resp.get("content", [])
             records.extend(content)
