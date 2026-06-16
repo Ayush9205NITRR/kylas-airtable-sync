@@ -51,6 +51,9 @@ def _to_id_str(val) -> str:
         return str(int(float(str(val).strip())))
     except (ValueError, TypeError):
         return str(val).strip()
+
+
+def _resolve_user_id(raw: str, email_to_id: dict, name_to_id: dict):
     """raw may be an email or a full name; returns a Kylas user id or None."""
     raw = (raw or "").strip()
     if not raw:
