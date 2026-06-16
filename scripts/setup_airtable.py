@@ -158,6 +158,7 @@ CONTACT_NEW = [
     {"name": "Source",          "type": T},
     {"name": "Pipeline Stage",  "type": T},
     {"name": "Last Called At",  "type": T},
+    {"name": "Next Call Date",  "type": T},
     {"name": "Remarks",         "type": ML},
     {"name": "Created At",      "type": T},
     {"name": "Updated At",      "type": T},

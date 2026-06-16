@@ -67,6 +67,7 @@
     "source":        "Source",
     "pipelineStage": "Pipeline Stage",
     "lastCalledAt":  "Last Called At",
+    "nextCallDate":  "Next Call Date",
     "remarks":       "Remarks",
     "createdAt":     "Created At",
     "updatedAt":     "Updated At"
