@@ -1,0 +1,44 @@
+name: Assign Companies from Airtable → Kylas
+
+on:
+  workflow_dispatch:
+    inputs:
+      view:
+        description: 'Airtable view name to read (e.g. "To Assign")'
+        required: true
+        default: ''
+      base:
+        description: 'Which Airtable base: crm (CRM Companies) or list (Company List)'
+        required: false
+        default: 'crm'
+      dry_run:
+        description: 'Dry run — show what would happen without updating Kylas'
+        required: false
+        default: 'false'
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Assign owners
+        run: |
+          ARGS="--view=${{ github.event.inputs.view }} --base=${{ github.event.inputs.base }}"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python modules/07_assign_owner.py $ARGS
+        env:
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}

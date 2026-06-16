@@ -3,7 +3,7 @@ import re
 import time
 import requests
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 _TAG = re.compile(r"<[^>]+>")
 
@@ -248,3 +248,98 @@ class KylasClient:
             except Exception:
                 continue
         return {}
+
+    def get_users_by_email(self) -> Dict[str, int]:
+        """Return {email: user_id} for all Kylas team members."""
+        for path in ["tenant/team-members", "users"]:
+            try:
+                resp    = self._get(path)
+                members = resp.get("content") or resp.get("data") or []
+                if not isinstance(members, list) or not members:
+                    continue
+                result = {}
+                for m in members:
+                    uid = m.get("id")
+                    if not uid:
+                        continue
+                    email = m.get("email") or m.get("emailId") or ""
+                    if not email:
+                        emails_field = m.get("emails") or []
+                        if isinstance(emails_field, list) and emails_field:
+                            first = emails_field[0]
+                            email = (first.get("value") or first.get("email")
+                                     or first if isinstance(first, str) else "")
+                    if email:
+                        result[str(email).strip().lower()] = int(uid)
+                if result:
+                    return result
+            except Exception:
+                continue
+        return {}
+
+    def _put(self, path: str, body: dict) -> dict:
+        time.sleep(self._delay)
+        r = self.session.put(f"{KYLAS_BASE}/{path}", json=body, timeout=30)
+        r.raise_for_status()
+        return r.json() if r.content else {}
+
+    def _patch(self, path: str, body: dict) -> dict:
+        time.sleep(self._delay)
+        r = self.session.patch(f"{KYLAS_BASE}/{path}", json=body, timeout=30)
+        r.raise_for_status()
+        return r.json() if r.content else {}
+
+    def update_company_owner(self, company_id: int, user_id: int) -> bool:
+        """Reassign a company to a different Kylas user. Returns True on success."""
+        try:
+            self._patch(f"companies/{company_id}", {"ownedBy": {"id": user_id}})
+            return True
+        except Exception:
+            try:
+                self._put(f"companies/{company_id}", {"ownedBy": {"id": user_id}})
+                return True
+            except Exception as exc:
+                print(f"[Kylas] ERROR updating company {company_id} owner: {exc}")
+                return False
+
+    def update_contact_owner(self, contact_id: int, user_id: int) -> bool:
+        """Reassign a contact to a different Kylas user. Returns True on success."""
+        try:
+            self._patch(f"contacts/{contact_id}", {"ownedBy": {"id": user_id}})
+            return True
+        except Exception:
+            try:
+                self._put(f"contacts/{contact_id}", {"ownedBy": {"id": user_id}})
+                return True
+            except Exception as exc:
+                print(f"[Kylas] ERROR updating contact {contact_id} owner: {exc}")
+                return False
+
+    def get_contacts_by_company(self, company_id: int) -> List[dict]:
+        """Fetch all contacts linked to a specific company ID."""
+        fields = ["id", "name", "ownedBy", "company"]
+        filter_rule = {
+            "condition": "AND",
+            "rules": [{
+                "id": "company.id", "field": "company.id",
+                "type": "integer", "operator": "equal",
+                "value": int(company_id),
+            }],
+        }
+        records, page = [], 0
+        while True:
+            time.sleep(self._delay)
+            r = self.session.post(
+                f"{KYLAS_BASE}/search/contact",
+                params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
+                json={"fields": fields, "jsonRule": filter_rule},
+                timeout=60,
+            )
+            r.raise_for_status()
+            resp    = r.json()
+            content = resp.get("content", [])
+            records.extend(content)
+            if page >= resp.get("totalPages", 1) - 1 or not content:
+                break
+            page += 1
+        return records
