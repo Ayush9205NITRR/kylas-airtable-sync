@@ -424,6 +424,36 @@ class KylasClient:
         # whole contact set, so that filter shape is not usable.
         IGNORED_THRESHOLD = 2000
 
+        def _list_endpoint() -> tuple:
+            """
+            Try GET /contacts?companyId=<id> — a direct list filter that is not
+            subject to the 10k /search cap. Returns (validated_records, ok, targeted).
+            """
+            records, page = [], 0
+            while True:
+                time.sleep(self._delay)
+                try:
+                    r = self.session.get(
+                        f"{KYLAS_BASE}/contacts",
+                        params={"companyId": cid, "page": page, "size": PAGE_SIZE},
+                        timeout=60,
+                    )
+                    r.raise_for_status()
+                    resp = r.json() if r.content else {}
+                except Exception:
+                    return records, False, False
+                content = resp.get("content", [])
+                total   = resp.get("totalElements")
+                if total is None:
+                    total = resp.get("totalPages", 1) * PAGE_SIZE
+                if total > IGNORED_THRESHOLD:
+                    return records, True, False  # filter ignored — reject
+                records.extend(c for c in content if self._contact_company_id(c) == cid_str)
+                if resp.get("last", True) or page >= resp.get("totalPages", 1) - 1 or not content:
+                    break
+                page += 1
+            return records, True, True
+
         def _run(make_rule) -> tuple:
             """
             Returns (validated_records, ok, targeted).
@@ -459,17 +489,27 @@ class KylasClient:
                 page += 1
             return records, True, True
 
-        # Use the already-discovered working filter first, if any.
-        if getattr(self, "_contact_filter", None) is not None:
-            records, _, _ = _run(self._contact_filter)
+        # Fast path: a method already proven to work on this client.
+        method = getattr(self, "_contact_method", None)
+        if method == "list":
+            records, _, _ = _list_endpoint()
+            return records
+        if callable(method):
+            records, _, _ = _run(method)
             return records
 
-        # Discovery: lock in the first shape that returns a real, targeted result.
+        # Discovery — prefer the GET list endpoint (no 10k cap), then fall back
+        # to POST /search filter shapes. Lock in whichever first returns a real,
+        # targeted result.
+        records, ok, targeted = _list_endpoint()
+        if ok and targeted and records:
+            self._contact_method = "list"
+            return records
         for make_rule in self._CONTACT_COMPANY_FILTERS:
             records, ok, targeted = _run(make_rule)
             if ok and targeted and records:
-                self._contact_filter = make_rule
+                self._contact_method = make_rule
                 return records
-        # None worked — company has no contacts, or no shape is supported.
-        # Don't cache; a later company may reveal the working shape.
+        # None worked — company has no contacts, or no method is supported.
+        # Don't cache; a later company may reveal the working method.
         return []

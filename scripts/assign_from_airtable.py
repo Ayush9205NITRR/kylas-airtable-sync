@@ -149,7 +149,7 @@ def run(view_name: str, dry_run: bool = False):
 
     # If no company-filter shape worked, surface the real Kylas field names so
     # the next run can target contacts correctly instead of guessing.
-    if assigned_co and not assigned_ct and getattr(client, "_contact_filter", None) is None:
+    if assigned_co and not assigned_ct and getattr(client, "_contact_method", None) is None:
         fields = client.list_contact_filter_fields()
         if fields:
             print(f"\n[DIAG] No contacts matched any filter shape. "
