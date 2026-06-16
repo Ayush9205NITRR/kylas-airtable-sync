@@ -95,9 +95,10 @@ def fetch_new_files(target_day=None) -> list:
     results = []
     for bd_name, folder_id in folders:
         q = f"'{folder_id}' in parents and trashed=false and modifiedTime >= '{cutoff}'"
-        matched = 0
+        matched, skipped = 0, []
         for f in _list(q):
             if not config.is_supported(f["name"]):
+                skipped.append(f["name"])
                 continue
             matched += 1
             results.append({
@@ -107,7 +108,11 @@ def fetch_new_files(target_day=None) -> list:
                 "mime_type": f.get("mimeType", ""),
                 "size": int(f.get("size", 0) or 0),
             })
-        print(f"[drive]   {bd_name}: {matched} audio file(s) modified since {cutoff}")
+        msg = f"[drive]   {bd_name}: {matched} audio file(s) since {cutoff}"
+        if skipped:
+            msg += (f"; {len(skipped)} skipped (unsupported format): "
+                    + ", ".join(skipped[:5]) + (" ..." if len(skipped) > 5 else ""))
+        print(msg)
     return results
 
 
