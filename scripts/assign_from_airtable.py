@@ -111,7 +111,19 @@ def run(view_name: str, dry_run: bool = False):
     cfg_path    = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                "config", "team.json")
     email_to_id, name_to_id = _load_user_maps(cfg_path)
-    print(f"Loaded {len(email_to_id)} email→ID and {len(name_to_id)} name→ID mappings\n")
+
+    # Augment with live Kylas user list so users not in team.json (e.g. gurnoor@enout.in)
+    # are still resolved correctly.
+    client = KylasClient()
+    try:
+        live_map = client.get_users_by_email()  # {email_lower: uid}
+        before = len(email_to_id)
+        for email, uid in live_map.items():
+            email_to_id.setdefault(email, uid)  # team.json takes priority
+        print(f"Loaded {before} email→ID from team.json + {len(email_to_id) - before} extra from Kylas API")
+    except Exception as e:
+        print(f"[WARN] Could not fetch live Kylas users: {e}")
+    print(f"Total: {len(email_to_id)} email→ID and {len(name_to_id)} name→ID mappings\n")
 
     print(f"Reading view '{view_name}' from Company List...")
     records = table.all(view=view_name)
@@ -119,7 +131,6 @@ def run(view_name: str, dry_run: bool = False):
     if not records:
         return
 
-    client = KylasClient()
     assigned_co = assigned_ct = skipped = failed = 0
 
     for rec in records:
@@ -135,9 +146,16 @@ def run(view_name: str, dry_run: bool = False):
             continue
         user_id = _resolve_user_id(owner_raw, email_to_id, name_to_id)
         if not user_id:
-            print(f"  [SKIP] '{co_name}' — owner '{owner_raw}' not found in team.json")
-            skipped += 1
-            continue
+            # Last-chance lookup directly from Kylas (handles brand-new users)
+            if "@" in owner_raw:
+                user_id = client.find_user_id_by_email(owner_raw)
+                if user_id:
+                    email_to_id[owner_raw.lower()] = user_id
+                    print(f"  [INFO] '{owner_raw}' found via Kylas direct search → uid:{user_id}")
+            if not user_id:
+                print(f"  [SKIP] '{co_name}' — owner '{owner_raw}' not found in Kylas")
+                skipped += 1
+                continue
 
         co_id = int(co_id_str)
         print(f"  '{co_name}' → user {user_id} ({owner_raw})")
