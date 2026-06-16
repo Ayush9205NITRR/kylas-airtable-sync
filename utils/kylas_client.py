@@ -250,32 +250,79 @@ class KylasClient:
         return {}
 
     def get_users_by_email(self) -> Dict[str, int]:
-        """Return {email: user_id} for all Kylas team members."""
+        """Return {email: user_id} for ALL Kylas team members (all pages)."""
+        result: Dict[str, int] = {}
+
+        def _extract(members):
+            for m in members:
+                uid = m.get("id")
+                if not uid:
+                    continue
+                email = m.get("email") or m.get("emailId") or ""
+                if not email:
+                    emails_field = m.get("emails") or []
+                    if isinstance(emails_field, list) and emails_field:
+                        first = emails_field[0]
+                        email = (first.get("value") or first.get("email")
+                                 or first if isinstance(first, str) else "")
+                if email:
+                    result[str(email).strip().lower()] = int(uid)
+
         for path in ["tenant/team-members", "users"]:
             try:
-                resp    = self._get(path)
-                members = resp.get("content") or resp.get("data") or []
-                if not isinstance(members, list) or not members:
-                    continue
-                result = {}
-                for m in members:
-                    uid = m.get("id")
-                    if not uid:
-                        continue
-                    email = m.get("email") or m.get("emailId") or ""
-                    if not email:
-                        emails_field = m.get("emails") or []
-                        if isinstance(emails_field, list) and emails_field:
-                            first = emails_field[0]
-                            email = (first.get("value") or first.get("email")
-                                     or first if isinstance(first, str) else "")
-                    if email:
-                        result[str(email).strip().lower()] = int(uid)
+                page = 0
+                while True:
+                    time.sleep(self._delay)
+                    r = self.session.get(
+                        f"{KYLAS_BASE}/{path}",
+                        params={"page": page, "size": 100},
+                        timeout=30,
+                    )
+                    r.raise_for_status()
+                    resp = r.json()
+                    members = resp.get("content") or resp.get("data") or []
+                    if not isinstance(members, list):
+                        break
+                    _extract(members)
+                    total_pages = resp.get("totalPages", 1)
+                    if page >= total_pages - 1 or not members:
+                        break
+                    page += 1
                 if result:
                     return result
             except Exception:
                 continue
-        return {}
+        return result
+
+    def find_user_id_by_email(self, email: str) -> Optional[int]:
+        """
+        Direct lookup of a single Kylas user by email.
+        Tries POST /search/user first, then falls back to full user list.
+        """
+        email = email.strip().lower()
+        # Try filtered search
+        try:
+            time.sleep(self._delay)
+            r = self.session.post(
+                f"{KYLAS_BASE}/search/user",
+                params={"page": 0, "size": 10},
+                json={"fields": ["id", "email"], "jsonRule": {
+                    "condition": "AND",
+                    "rules": [{"field": "email", "operator": "equal", "value": email}],
+                }},
+                timeout=30,
+            )
+            if r.ok:
+                content = r.json().get("content", [])
+                for m in content:
+                    uid = m.get("id")
+                    if uid:
+                        return int(uid)
+        except Exception:
+            pass
+        # Fall back to full list
+        all_map = self.get_users_by_email()
+        return all_map.get(email)
 
     def _put(self, path: str, body: dict) -> dict:
         time.sleep(self._delay)
