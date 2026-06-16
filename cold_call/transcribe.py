@@ -1,8 +1,11 @@
 """
-Transcription via the Hugging Face Inference API (Whisper small).
+Transcription via the Hugging Face Inference API (Whisper small), using the
+official huggingface_hub InferenceClient — it targets HF's current router
+endpoint and sets auth + content-type correctly (so we don't hand-roll the
+HTTP call against a moving API).
 
-- Hinglish handled by passing language="hi".
-- 503 (model cold-start) -> wait 20s once, retry.
+- Hinglish: the multilingual Whisper model auto-detects Hindi + English.
+- Model cold-start -> wait once, retry.
 - Files larger than the HF body limit are split into CHUNK_SECONDS segments with
   pydub (needs ffmpeg) and transcribed piece by piece.
 """
@@ -10,46 +13,55 @@ import os
 import sys
 import time
 
-import requests
-
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cold_call import config
 
-
-def _headers() -> dict:
-    token = os.environ.get("HF_API_TOKEN", "")
-    if not token:
-        raise RuntimeError("HF_API_TOKEN not set")
-    return {"Authorization": f"Bearer {token}"}
+_CLIENT = None
 
 
-def _post_bytes(data: bytes) -> str:
-    """POST raw audio bytes to HF, retrying once on a 503 cold-start."""
-    resp = None
-    for attempt in range(2):
-        resp = requests.post(
-            config.HF_API_URL,
-            headers=_headers(),
-            data=data,
-            params={"language": "hi"},
-            timeout=300,
+def _client():
+    global _CLIENT
+    if _CLIENT is None:
+        from huggingface_hub import InferenceClient
+        token = os.environ.get("HF_API_TOKEN", "")
+        if not token:
+            raise RuntimeError("HF_API_TOKEN not set")
+        _CLIENT = InferenceClient(
+            model=config.HF_WHISPER_MODEL,
+            provider=config.HF_PROVIDER,
+            token=token,
         )
-        if resp.status_code == 503 and attempt == 0:
-            print("  [transcribe] model loading (503) — waiting 20s then retrying")
-            time.sleep(20)
-            continue
-        resp.raise_for_status()
-        break
+    return _CLIENT
 
-    payload = resp.json()
-    if isinstance(payload, dict):
-        if "error" in payload:
-            raise RuntimeError(f"HF error: {payload['error']}")
-        return payload.get("text", "")
-    if isinstance(payload, list) and payload:
-        return payload[0].get("text", "")
-    return ""
+
+def _to_text(out) -> str:
+    """Normalise the various ASR return shapes to a plain string."""
+    if isinstance(out, str):
+        return out
+    text = getattr(out, "text", None)
+    if text is not None:
+        return text
+    if isinstance(out, dict):
+        return out.get("text", "")
+    return str(out)
+
+
+def _asr(audio) -> str:
+    """Run ASR on bytes (or a path), retrying once on a model cold-start."""
+    out = None
+    for attempt in range(2):
+        try:
+            out = _client().automatic_speech_recognition(audio)
+            break
+        except Exception as exc:
+            msg = str(exc).lower()
+            if attempt == 0 and ("503" in msg or "loading" in msg):
+                print("  [transcribe] model loading — waiting 20s then retrying")
+                time.sleep(20)
+                continue
+            raise
+    return _to_text(out)
 
 
 def _transcribe_chunked(filepath: str) -> str:
@@ -72,7 +84,7 @@ def _transcribe_chunked(filepath: str) -> str:
         finally:
             buf.close()
         print(f"  [transcribe] chunk {i + 1} ({len(data) / 1e6:.1f} MB)...")
-        parts.append(_post_bytes(data))
+        parts.append(_asr(data))
         time.sleep(1)
     return " ".join(p.strip() for p in parts if p).strip()
 
@@ -83,7 +95,7 @@ def transcribe(filepath: str) -> str:
         print(f"  [transcribe] {size / 1e6:.1f} MB > limit — chunking")
         return _transcribe_chunked(filepath)
     with open(filepath, "rb") as f:
-        return _post_bytes(f.read()).strip()
+        return _asr(f.read()).strip()
 
 
 if __name__ == "__main__":

@@ -24,12 +24,9 @@ CHUNK_SECONDS = 60
 
 # ── External services ─────────────────────────────────────────────────────────────
 HF_WHISPER_MODEL = os.environ.get("HF_WHISPER_MODEL", "openai/whisper-small")
-# HF retired api-inference.huggingface.co; serverless inference is now served via
-# the router (hf-inference provider). Override the whole URL with HF_API_URL if needed.
-HF_API_URL = os.environ.get(
-    "HF_API_URL",
-    f"https://router.huggingface.co/hf-inference/models/{HF_WHISPER_MODEL}",
-)
+# Inference provider used via huggingface_hub. "hf-inference" = HF's own serverless
+# (free tier); set HF_PROVIDER=auto to let the hub pick any available provider.
+HF_PROVIDER = os.environ.get("HF_PROVIDER", "hf-inference")
 # Gemini 1.5 models are being retired and aren't available on newer API keys, so
 # default to a current free-tier flash model. Override with GEMINI_MODEL — run
 # `python cold_call/analyze.py --list-models` to see what your key exposes.
