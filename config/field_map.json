@@ -21,7 +21,8 @@
     "calledSinceApr19":      "Called Since Apr 19",
     "accountStatus":         "Account Status",
     "needsReassign":         "Needs Re-assign",
-    "claimedBy":             "Claimed By"
+    "claimedBy":             "Claimed By",
+    "statusOfReachout":      "Status of Reachout"
   },
   "company_crm": {
     "id":                    "Kylas Company Id",
@@ -47,7 +48,8 @@
     "calledSinceApr19":      "Called Since Apr 19",
     "accountStatus":         "Account Status",
     "needsReassign":         "Needs Re-assign",
-    "claimedBy":             "Claimed By"
+    "claimedBy":             "Claimed By",
+    "statusOfReachout":      "Status of Reachout"
   },
   "contact": {
     "id":            "Kylas Contact Id",

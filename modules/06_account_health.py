@@ -213,6 +213,17 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         )
         e["needs_exhaust"] = not e["is_exhausted"]
 
+        # Status of Reachout — single column summarising tapped/stale + pipeline status
+        # "Stale"                = nobody called this account since Apr 19
+        # "Tapped – <status>"   = at least one contact called since Apr 19;
+        #                         <status> is the existing account status (Exhausted,
+        #                         Near Exhausted, Hot Pipeline, MQL - Action Needed,
+        #                         Active, Fresh)
+        if e["called_apr19"] > 0:
+            e["status_of_reachout"] = f"Tapped – {e['status']}"
+        else:
+            e["status_of_reachout"] = "Stale"
+
         # Re-assign: has untouched POCs but no call since Apr 19
         e["needs_reassign"] = bool(e["ytbm"] > 0 and e["called_apr19"] == 0)
 
@@ -258,6 +269,8 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict) -> tuple:
             fields[fm["needsReassign"]] = e["needs_reassign"]
         if fm.get("claimedBy"):
             fields[fm["claimedBy"]] = e.get("claimed_by", "")
+        if fm.get("statusOfReachout"):
+            fields[fm["statusOfReachout"]] = e.get("status_of_reachout", "Stale")
 
         rid = tbl._cache[co_id]["id"]
         tbl._updates.append((co_id, rid, fields))
