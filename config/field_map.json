@@ -21,10 +21,11 @@
     "calledSinceApr19":      "Called Since Apr 19",
     "accountStatus":         "Account Status",
     "needsReassign":         "Needs Re-assign",
-    "claimedBy":             "Claimed By"
+    "claimedBy":             "Claimed By",
+    "statusOfReachout":      "Status of Reachout"
   },
   "company_crm": {
-    "id":                    "Kylas Company Id",
+    "id":                    "Kylas Company ID",
     "name":                  "Company Name",
     "industry":              "Industry",
     "assignedTo":            "Owner",
@@ -47,7 +48,8 @@
     "calledSinceApr19":      "Called Since Apr 19",
     "accountStatus":         "Account Status",
     "needsReassign":         "Needs Re-assign",
-    "claimedBy":             "Claimed By"
+    "claimedBy":             "Claimed By",
+    "statusOfReachout":      "Status of Reachout"
   },
   "contact": {
     "id":            "Kylas Contact Id",
@@ -65,6 +67,7 @@
     "source":        "Source",
     "pipelineStage": "Pipeline Stage",
     "lastCalledAt":  "Last Called At",
+    "nextCallDate":  "Next Call Date",
     "remarks":       "Remarks",
     "createdAt":     "Created At",
     "updatedAt":     "Updated At"

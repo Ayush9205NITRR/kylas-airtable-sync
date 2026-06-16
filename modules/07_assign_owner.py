@@ -90,8 +90,14 @@ def run(view: str, base: str = "crm", dry_run: bool = False) -> dict:
 
         user_id = email_to_uid.get(owner_email)
         if not user_id:
-            print(f"  [SKIP] '{co_name}' — no Kylas user found for {owner_email}")
-            continue
+            # New user not yet in bulk list — try direct search
+            user_id = kylas.find_user_id_by_email(owner_email)
+            if user_id:
+                email_to_uid[owner_email] = user_id  # cache for subsequent records
+                print(f"  [INFO] Found {owner_email} via direct search → uid:{user_id}")
+            else:
+                print(f"  [SKIP] '{co_name}' — {owner_email} not found in Kylas (new user not yet active?)")
+                continue
 
         if dry_run:
             print(f"  [DRY] '{co_name}' (co:{kylas_co_id}) → {owner_email} (uid:{user_id})")

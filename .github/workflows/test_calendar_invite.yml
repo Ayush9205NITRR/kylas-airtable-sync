@@ -1,0 +1,42 @@
+name: Test Calendar Invite
+
+on:
+  workflow_dispatch:
+    inputs:
+      contact_id:
+        description: 'Specific Kylas contact ID (leave blank to scan last 72h)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry run (print details, do NOT send email)'
+        required: false
+        default: 'false'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run calendar invite test
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.contact_id }}" ]; then
+            ARGS="$ARGS --id ${{ github.event.inputs.contact_id }}"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python scripts/test_calendar_invite.py $ARGS
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          SMTP_USER:     ${{ secrets.SMTP_USER }}
+          SMTP_PASS:     ${{ secrets.SMTP_PASS }}

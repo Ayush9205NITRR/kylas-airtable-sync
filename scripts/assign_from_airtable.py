@@ -4,9 +4,9 @@ Airtable → Kylas owner assignment.
 Reads a named view from Company List (AIRTABLE_COMPANY_BASE_ID).
 For each record that has a Kylas Company Id and an owner in the
 'Owner - Kylas' field (an email OR a name; falls back to 'Owner Email'):
-  1. Resolves owner → Kylas user ID via config/team.json
-  2. Updates the company owner in Kylas via PATCH
-  3. Fetches all contacts of that company from Kylas
+  1. Resolves owner → Kylas user ID (team.json + live Kylas user list)
+  2. Updates the company owner in Kylas (GET full object, set ownedBy, PUT back)
+  3. Looks up that company's contacts (from one bulk contact fetch)
   4. Updates each contact's owner to the same user
 
 Usage:
@@ -23,9 +23,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pyairtable import Api as AirtableApi
 from utils.kylas_client import KylasClient
-
-KYLAS_BASE = "https://api.kylas.io/v1"
-PAGE_SIZE  = 200
 
 
 def _load_user_maps(config_path: str):
@@ -48,6 +45,14 @@ def _load_user_maps(config_path: str):
     return email_to_id, name_to_id
 
 
+def _to_id_str(val) -> str:
+    """Normalise any numeric/string company id to a plain integer string."""
+    try:
+        return str(int(float(str(val).strip())))
+    except (ValueError, TypeError):
+        return str(val).strip()
+
+
 def _resolve_user_id(raw: str, email_to_id: dict, name_to_id: dict):
     """raw may be an email or a full name; returns a Kylas user id or None."""
     raw = (raw or "").strip()
@@ -58,49 +63,7 @@ def _resolve_user_id(raw: str, email_to_id: dict, name_to_id: dict):
     return name_to_id.get(raw.lower())
 
 
-def _patch(client: KylasClient, path: str, data: dict) -> bool:
-    time.sleep(0.15)
-    try:
-        r = client.session.patch(f"{KYLAS_BASE}/{path}", json=data, timeout=30)
-        r.raise_for_status()
-        return True
-    except Exception as e:
-        print(f"  [WARN] PATCH {path} failed: {e}")
-        return False
 
-
-def _contacts_for_company(client: KylasClient, company_id: int) -> list:
-    records, page = [], 0
-    while True:
-        time.sleep(0.1)
-        try:
-            r = client.session.post(
-                f"{KYLAS_BASE}/search/contact",
-                params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
-                json={
-                    "fields": ["id"],
-                    "jsonRule": {
-                        "condition": "AND",
-                        "rules": [{
-                            "id": "companyId", "field": "companyId",
-                            "type": "integer", "operator": "equal",
-                            "value": company_id,
-                        }],
-                    },
-                },
-                timeout=60,
-            )
-            r.raise_for_status()
-            resp    = r.json()
-            content = resp.get("content", [])
-            records.extend(content)
-            if page >= resp.get("totalPages", 1) - 1 or not content:
-                break
-            page += 1
-        except Exception as e:
-            print(f"  [WARN] contact search failed: {e}")
-            break
-    return records
 
 
 def run(view_name: str, dry_run: bool = False):
@@ -111,7 +74,19 @@ def run(view_name: str, dry_run: bool = False):
     cfg_path    = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                "config", "team.json")
     email_to_id, name_to_id = _load_user_maps(cfg_path)
-    print(f"Loaded {len(email_to_id)} email→ID and {len(name_to_id)} name→ID mappings\n")
+
+    # Augment with live Kylas user list so users not in team.json (e.g. gurnoor@enout.in)
+    # are still resolved correctly.
+    client = KylasClient()
+    try:
+        live_map = client.get_users_by_email()  # {email_lower: uid}
+        before = len(email_to_id)
+        for email, uid in live_map.items():
+            email_to_id.setdefault(email, uid)  # team.json takes priority
+        print(f"Loaded {before} email→ID from team.json + {len(email_to_id) - before} extra from Kylas API")
+    except Exception as e:
+        print(f"[WARN] Could not fetch live Kylas users: {e}")
+    print(f"Total: {len(email_to_id)} email→ID and {len(name_to_id)} name→ID mappings\n")
 
     print(f"Reading view '{view_name}' from Company List...")
     records = table.all(view=view_name)
@@ -119,12 +94,11 @@ def run(view_name: str, dry_run: bool = False):
     if not records:
         return
 
-    client = KylasClient()
     assigned_co = assigned_ct = skipped = failed = 0
 
     for rec in records:
         f          = rec["fields"]
-        co_id_str  = str(f.get("Kylas Company Id", "")).strip()
+        co_id_str  = _to_id_str(f.get("Kylas Company Id", ""))
         # Owner source: 'Owner - Kylas' (email or name), falling back to 'Owner Email'.
         owner_raw  = (f.get("Owner - Kylas") or "").strip() or (f.get("Owner Email") or "").strip()
         co_name    = f.get("Company Name - Kylas") or f.get("Company Name") or co_id_str
@@ -135,36 +109,58 @@ def run(view_name: str, dry_run: bool = False):
             continue
         user_id = _resolve_user_id(owner_raw, email_to_id, name_to_id)
         if not user_id:
-            print(f"  [SKIP] '{co_name}' — owner '{owner_raw}' not found in team.json")
-            skipped += 1
-            continue
+            # Last-chance lookup directly from Kylas (handles brand-new users)
+            if "@" in owner_raw:
+                user_id = client.find_user_id_by_email(owner_raw)
+                if user_id:
+                    email_to_id[owner_raw.lower()] = user_id
+                    print(f"  [INFO] '{owner_raw}' found via Kylas direct search → uid:{user_id}")
+            if not user_id:
+                print(f"  [SKIP] '{co_name}' — owner '{owner_raw}' not found in Kylas")
+                skipped += 1
+                continue
 
         co_id = int(co_id_str)
         print(f"  '{co_name}' → user {user_id} ({owner_raw})")
 
         if dry_run:
-            print(f"    [DRY] PATCH companies/{co_id}")
+            print(f"    [DRY] PUT companies/{co_id}")
             assigned_co += 1
         else:
-            if _patch(client, f"companies/{co_id}", {"ownedById": user_id}):
+            if client.update_company_owner(co_id, user_id):
                 assigned_co += 1
             else:
                 failed += 1
                 continue
 
-        contacts = _contacts_for_company(client, co_id)
+        contacts = client.get_contacts_by_company(co_id)
         print(f"    → {len(contacts)} contacts")
         for ct in contacts:
             ct_id = ct.get("id")
             if not ct_id:
                 continue
+            # Skip contacts already owned by the target user (speed)
+            if ct.get("ownerId") == user_id or (
+                isinstance(ct.get("ownedBy"), dict) and ct["ownedBy"].get("id") == user_id
+            ):
+                assigned_ct += 1
+                continue
             if dry_run:
                 assigned_ct += 1
             else:
-                if _patch(client, f"contacts/{ct_id}", {"ownedById": user_id}):
+                # Pass full contact data so update_contact_owner skips the GET
+                if client.update_contact_owner(ct_id, user_id, contact_data=ct):
                     assigned_ct += 1
                 else:
                     failed += 1
+
+    # If no company-filter shape worked, surface the real Kylas field names so
+    # the next run can target contacts correctly instead of guessing.
+    if assigned_co and not assigned_ct and getattr(client, "_contact_method", None) is None:
+        fields = client.list_contact_filter_fields()
+        if fields:
+            print(f"\n[DIAG] No contacts matched any filter shape. "
+                  f"Kylas contact fields containing 'company': {fields}")
 
     print(f"\n{'[DRY RUN] ' if dry_run else ''}Done")
     print(f"Companies: {assigned_co}  Contacts: {assigned_ct}  Skipped: {skipped}  Failed: {failed}")

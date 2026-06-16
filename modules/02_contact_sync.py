@@ -10,6 +10,7 @@ from utils.kylas_client import KylasClient
 from utils.airtable_client import AirtableClient
 from utils.logger import SyncLogger
 from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_bd as _classify_bd, company_info as _company_info
+from utils.calendar_invite import send_invite as _send_invite
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 
@@ -52,6 +53,19 @@ def _fm():
 
 def _clean(d):
     return {k: v for k, v in d.items() if v is not None and (v != "" if isinstance(v, str) else True)}
+
+
+def _parse_call_date(raw: str) -> str:
+    """Parse a Kylas date string to ISO YYYY-MM-DD. Returns '' on failure."""
+    raw = (raw or "").strip()
+    if not raw:
+        return ""
+    if raw[0].isdigit():
+        return raw[:10]
+    try:
+        return datetime.strptime(raw.split(" at ")[0].strip(), "%b %d, %Y").strftime("%Y-%m-%d")
+    except ValueError:
+        return ""
 
 
 def _owner_name(raw: dict, user_map: dict = None) -> str:
@@ -109,18 +123,13 @@ def _map(raw: dict, user_map: dict = None, company_id_map: dict = None) -> dict:
         fm["updatedAt"]:     raw.get("updatedAt") or "",
     })
 
-    # Parse cfLastCalledAt: "Jun 08, 2026 at 06:44 PM" → "2026-06-08"
-    raw_lc = (cf.get("cfLastCalledAt") or "").strip()
-    if raw_lc:
-        if raw_lc[0].isdigit():
-            lc_date = raw_lc[:10]
-        else:
-            try:
-                lc_date = datetime.strptime(raw_lc.split(" at ")[0], "%b %d, %Y").strftime("%Y-%m-%d")
-            except ValueError:
-                lc_date = ""
-        if lc_date and fm.get("lastCalledAt"):
-            fields[fm["lastCalledAt"]] = lc_date
+    lc_date = _parse_call_date(cf.get("cfLastCalledAt"))
+    if lc_date and fm.get("lastCalledAt"):
+        fields[fm["lastCalledAt"]] = lc_date
+
+    nc_date = _parse_call_date(cf.get("cfNextCallDate"))
+    if nc_date and fm.get("nextCallDate"):
+        fields[fm["nextCallDate"]] = nc_date
 
     # Link to Companies table if Airtable record ID is available
     if company_id_map and company_id:
@@ -140,7 +149,7 @@ def run(test_mode: bool = False, test_id: int = None,
         logger = SyncLogger()
 
     log_id = logger.start("Contacts")
-    created = updated = failed = pre_cutoff = 0
+    created = updated = failed = pre_cutoff = cal_sent = 0
     per_user       = {}
     bd_daily       = {}
     account_activity = {}
@@ -149,6 +158,19 @@ def run(test_mode: bool = False, test_id: int = None,
     try:
         cached = airtable.build_cache("Kylas Contact Id")
         print(f"[Contacts] Cache loaded: {cached} existing")
+
+        # Build owner name → email map for calendar invites
+        user_email_map: dict = {}
+        try:
+            _tp = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
+            with open(_tp) as _tf:
+                user_email_map = json.load(_tf).get("kylas_user_emails", {})
+        except Exception:
+            pass
+        try:
+            user_email_map.update(kylas.get_user_emails())
+        except Exception:
+            pass
 
         if test_mode and test_id:
             contacts = [kylas.get_contact(test_id)]
@@ -170,14 +192,19 @@ def run(test_mode: bool = False, test_id: int = None,
                 owner    = _owner_name(ct, user_map)
                 kylas_id = str(ct["id"])
 
-                # Capture old stage before upsert for transition detection
-                _existing = airtable._cache.get(kylas_id)
-                old_stage = str(_existing["fields"].get(_fm()["pipelineStage"]) or "").strip() if _existing else ""
-                new_stage = _contact_stage(ct)
+                # Capture old values before upsert for change detection
+                _existing  = airtable._cache.get(kylas_id)
+                old_stage  = str(_existing["fields"].get(_fm()["pipelineStage"]) or "").strip() if _existing else ""
+                nc_field   = _fm().get("nextCallDate", "")
+                old_nc     = str(_existing["fields"].get(nc_field, "") if _existing else "").strip() if _existing else ""
+                new_stage  = _contact_stage(ct)
+
+                mapped_fields = _map(ct, user_map=user_map, company_id_map=company_id_map)
+                new_nc        = str(mapped_fields.get(nc_field, "")).strip() if nc_field else ""
 
                 action, _ = airtable.upsert(
                     "Kylas Contact Id", kylas_id,
-                    _map(ct, user_map=user_map, company_id_map=company_id_map),
+                    mapped_fields,
                     ct.get("updatedAt", ""),
                     updated_at_field=_fm()["updatedAt"],
                 )
@@ -214,6 +241,37 @@ def run(test_mode: bool = False, test_id: int = None,
                             if cats[key]:
                                 acc[key] += 1
 
+                # Calendar invite: only for incremental syncs and future dates
+                if nc_field and new_nc and new_nc != old_nc and since is not None:
+                    try:
+                        call_date = date.fromisoformat(new_nc)
+                        if call_date >= date.today():
+                            co_raw  = ct.get("company")
+                            co_name = co_raw.get("name", "") if isinstance(co_raw, dict) else ""
+                            cf_ct   = ct.get("customFieldValues") or {}
+                            em_list = ct.get("emails") or []
+                            ph_list = ct.get("phoneNumbers") or []
+                            ob      = ct.get("ownedBy") or {}
+                            owner_em = ""
+                            if isinstance(ob, dict):
+                                owner_em = (ob.get("email") or ob.get("emailId") or "").strip().lower()
+                            if not owner_em:
+                                owner_em = user_email_map.get(owner, "")
+                            ok = _send_invite(
+                                contact_id=kylas_id,
+                                contact_name=ct.get("name") or "",
+                                contact_email=em_list[0].get("value", "") if em_list else "",
+                                contact_phone=ph_list[0].get("value", "") if ph_list else "",
+                                company_name=co_name,
+                                remarks=cf_ct.get("cfRemarks") or "",
+                                call_date=call_date,
+                                owner_email=owner_em,
+                            )
+                            if ok:
+                                cal_sent += 1
+                    except Exception as exc:
+                        print(f"  [CalendarInvite] FAILED for contact {kylas_id}: {exc}")
+
             except Exception as e:
                 failed += 1
                 print(f"  [FAILED  ] Contact {ct.get('id')}: {e}")
@@ -222,7 +280,7 @@ def run(test_mode: bool = False, test_id: int = None,
         airtable.flush()
 
         logger.finish(log_id, created, updated, failed)
-        print(f"[Contacts] Done -> created={created} updated={updated} pre-cutoff={pre_cutoff} failed={failed}")
+        print(f"[Contacts] Done -> created={created} updated={updated} pre-cutoff={pre_cutoff} failed={failed} cal_invites={cal_sent}")
 
         total_bd = sum(v for m in bd_daily.values() for v in m.values())
         print(f"[Contacts] BD daily: {total_bd} stage transitions across {len(bd_daily)} owner(s)")
@@ -233,7 +291,8 @@ def run(test_mode: bool = False, test_id: int = None,
         raise
 
     return {"created": created, "updated": updated, "failed": failed,
-            "per_user": per_user, "bd_daily": bd_daily, "account_activity": account_activity}
+            "per_user": per_user, "bd_daily": bd_daily, "account_activity": account_activity,
+            "cal_invites": cal_sent}
 
 
 if __name__ == "__main__":

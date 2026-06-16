@@ -94,6 +94,7 @@ COMPANY_LIST_NEW = [
     {"name": "Account Status",                "type": T},
     {"name": "Needs Re-assign",               "type": CB},
     {"name": "Claimed By",                    "type": T},
+    {"name": "Status of Reachout",            "type": T},
 ]
 
 # ── Companies table (CRM base — for linking) ─────────────────────────────────
@@ -101,7 +102,7 @@ COMPANIES_TABLE = {
     "name": "Companies",
     "fields": [
         {"name": "Company Name",              "type": T},
-        {"name": "Kylas Company Id",          "type": T},
+        {"name": "Kylas Company ID",          "type": T},
         {"name": "Industry",                  "type": T},
         {"name": "Owner",                     "type": T},
         {"name": "Owner Email",               "type": T},
@@ -123,6 +124,7 @@ COMPANIES_TABLE = {
         {"name": "Account Status",            "type": T},
         {"name": "Needs Re-assign",           "type": CB},
         {"name": "Claimed By",                "type": T},
+        {"name": "Status of Reachout",        "type": T},
     ],
 }
 
@@ -142,6 +144,7 @@ COMPANIES_CRM_NEW = [
     {"name": "Account Status",                "type": T},
     {"name": "Needs Re-assign",               "type": CB},
     {"name": "Claimed By",                    "type": T},
+    {"name": "Status of Reachout",            "type": T},
 ]
 
 # ── Contacts: new columns ─────────────────────────────────────────────────────
@@ -155,6 +158,7 @@ CONTACT_NEW = [
     {"name": "Source",          "type": T},
     {"name": "Pipeline Stage",  "type": T},
     {"name": "Last Called At",  "type": T},
+    {"name": "Next Call Date",  "type": T},
     {"name": "Remarks",         "type": ML},
     {"name": "Created At",      "type": T},
     {"name": "Updated At",      "type": T},
