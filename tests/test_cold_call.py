@@ -19,6 +19,7 @@ from cold_call import analyze, config, email_coach, pipeline
 def test_is_supported():
     assert config.is_supported("call_001.mp4")
     assert config.is_supported("REC.M4A")  # case-insensitive
+    assert config.is_supported("WhatsApp Audio 2026-06-15 at 15.50.25.mpeg")
     assert not config.is_supported("notes.txt")
     assert not config.is_supported("noext")
 

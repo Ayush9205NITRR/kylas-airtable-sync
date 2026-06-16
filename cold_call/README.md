@@ -23,8 +23,9 @@ in Airtable, and emails each BD a coaching summary.
 └── Amit/
 ```
 
-Accepted formats: `.mp4 .m4a .mp3 .wav .ogg .aac`. Files modified on/after
-00:00 IST of the run day are picked up.
+Accepted formats: `.mp4 .m4a .mp3 .wav .ogg .aac .mpeg .mpga .opus .flac .webm`
+(covers WhatsApp audio / voice notes). Files modified on/after 00:00 IST of the
+run day are picked up.
 
 ## Layout
 

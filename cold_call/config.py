@@ -12,7 +12,10 @@ from datetime import datetime, timedelta, timezone
 IST = timezone(timedelta(hours=5, minutes=30))
 
 # ── Audio handling ───────────────────────────────────────────────────────────────
-SUPPORTED_FORMATS = {".mp4", ".m4a", ".mp3", ".wav", ".ogg", ".aac"}
+# Includes WhatsApp/voice-note formats (.mpeg/.mpga/.opus) — HF Whisper decodes
+# all of these via ffmpeg server-side.
+SUPPORTED_FORMATS = {".mp4", ".m4a", ".mp3", ".wav", ".ogg", ".aac",
+                     ".mpeg", ".mpga", ".opus", ".flac", ".webm"}
 MIN_DURATION_SECONDS = 10
 # The HF inference API is unhappy with very large request bodies; whisper-small
 # is comfortable under ~25 MB. Bigger files are split into chunks first.
