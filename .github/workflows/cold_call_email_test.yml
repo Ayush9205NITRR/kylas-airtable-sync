@@ -1,0 +1,29 @@
+name: Cold Call - Send Test Coaching Email
+
+on:
+  workflow_dispatch:
+    inputs:
+      to:
+        description: 'Email address to send the sample coaching email to'
+        required: true
+
+jobs:
+  email-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install python-dotenv
+
+      - name: Send a sample coaching email
+        run: python cold_call/email_coach.py --to "${{ github.event.inputs.to }}"
+        env:
+          SMTP_USER:            ${{ secrets.SMTP_USER }}
+          SMTP_PASS:            ${{ secrets.SMTP_PASS }}
+          COLD_CALL_FROM_EMAIL: ${{ secrets.COLD_CALL_FROM_EMAIL }}
