@@ -1,0 +1,45 @@
+name: Sync Team from Kylas
+
+# Runs daily at 7:00 AM IST (01:30 UTC) Mon–Fri.
+# Fetches all Kylas users (paginated) and updates config/team.json with
+# any new IDs or email addresses, then commits + pushes if anything changed.
+# All other keys in team.json (bd_team, cc, bd_targets, deal_rot, …) are
+# left untouched.
+
+on:
+  schedule:
+    - cron: '30 1 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Sync Kylas users into team.json
+        run: python scripts/sync_team.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add config/team.json
+          if git diff --staged --quiet; then
+            echo "team.json unchanged — nothing to commit"
+          else
+            git commit -m "Auto-sync: update Kylas team members in team.json [skip ci]"
+            git push
+          fi
