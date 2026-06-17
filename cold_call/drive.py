@@ -81,8 +81,10 @@ def fetch_new_files(target_day=None) -> list:
     if not config.DRIVE_FOLDER_ID:
         raise RuntimeError("GOOGLE_DRIVE_FOLDER_ID not set")
 
-    # RFC 3339, UTC ('Z') — Drive compares modifiedTime against this instant.
-    cutoff = config.ist_day_start_utc(target_day).strftime("%Y-%m-%dT%H:%M:%SZ")
+    # RFC 3339, UTC ('Z'). With an explicit day -> from 00:00 IST of that day;
+    # otherwise a rolling lookback window so recent uploads aren't missed.
+    cutoff_dt = config.ist_day_start_utc(target_day) if target_day else config.lookback_cutoff_utc()
+    cutoff = cutoff_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     folders = _bd_folders(config.DRIVE_FOLDER_ID)
     if folders:
         print(f"[drive] {len(folders)} BD subfolder(s) under calls/: "

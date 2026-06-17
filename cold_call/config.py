@@ -17,6 +17,10 @@ IST = timezone(timedelta(hours=5, minutes=30))
 SUPPORTED_FORMATS = {".mp4", ".m4a", ".mp3", ".wav", ".ogg", ".aac",
                      ".mpeg", ".mpga", ".opus", ".flac", ".webm"}
 MIN_DURATION_SECONDS = 10
+# How far back to look for files when no explicit --date is given. A rolling
+# window (instead of "today only") means yesterday's / late-evening uploads still
+# get picked up; the Airtable dedup stops already-processed files being re-done.
+LOOKBACK_HOURS = int(os.environ.get("COLD_CALL_LOOKBACK_HOURS", "48"))
 
 # ── External services ─────────────────────────────────────────────────────────────
 # Gemini handles BOTH transcription (audio) and analysis (text).
@@ -70,6 +74,11 @@ def ist_day_start_utc(day=None) -> datetime:
     day = day or today_ist()
     start_ist = datetime(day.year, day.month, day.day, tzinfo=IST)
     return start_ist.astimezone(timezone.utc)
+
+
+def lookback_cutoff_utc() -> datetime:
+    """Default fetch cutoff (now − LOOKBACK_HOURS) when no specific day is asked for."""
+    return datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)
 
 
 def now_ist_iso() -> str:

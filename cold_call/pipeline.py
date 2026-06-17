@@ -73,13 +73,16 @@ def _safe_insert(store, fields: dict) -> None:
 
 
 def run_pipeline(target_day=None, limit=None, send_email=True,
-                 only_bd=None, dry_run=False) -> dict:
+                 only_bd=None, dry_run=False, reprocess=False) -> dict:
     from cold_call import drive, transcribe, analyze, airtable_store, email_coach
 
-    target_day = target_day or config.today_ist()
-    day_iso = target_day.isoformat()
-    print(f"=== Cold-call pipeline · {day_iso} ===")
+    run_day = target_day or config.today_ist()
+    day_iso = run_day.isoformat()
+    window = f"day {day_iso}" if target_day else f"last {config.LOOKBACK_HOURS}h"
+    print(f"=== Cold-call pipeline · {day_iso} · window: {window}"
+          + ("  · REPROCESS (dedup off)" if reprocess else "") + " ===")
 
+    # target_day=None -> drive uses the rolling lookback window.
     files = drive.fetch_new_files(target_day)
     if only_bd:
         files = [f for f in files if f["bd_name"].lower() == only_bd.lower()]
@@ -109,14 +112,15 @@ def run_pipeline(target_day=None, limit=None, send_email=True,
             })
             continue
 
-        # Duplicate check
-        try:
-            if airtable_store.check_duplicate(bd, fname):
-                print(f"SKIP {bd}/{fname} — already processed")
-                counts["skipped"] += 1
-                continue
-        except Exception as exc:
-            print(f"  WARNING: duplicate check failed for {fname} ({exc}) — continuing")
+        # Duplicate check (disabled in --reprocess mode so existing files re-run)
+        if not reprocess:
+            try:
+                if airtable_store.check_duplicate(bd, fname):
+                    print(f"SKIP {bd}/{fname} — already processed")
+                    counts["skipped"] += 1
+                    continue
+            except Exception as exc:
+                print(f"  WARNING: duplicate check failed for {fname} ({exc}) — continuing")
 
         print(f"Processing: {bd} / {fname}")
         ext = os.path.splitext(fname)[1].lower()
@@ -196,6 +200,8 @@ def main():
     parser.add_argument("--bd", help="only this BD (folder name)")
     parser.add_argument("--no-email", action="store_true", help="skip coaching emails")
     parser.add_argument("--dry-run", action="store_true", help="list files, don't process")
+    parser.add_argument("--reprocess", action="store_true",
+                        help="ignore the duplicate check and re-analyze matching files")
     parser.add_argument("--test", action="store_true",
                         help="alias for --limit 3 --no-email")
     args = parser.parse_args()
@@ -211,7 +217,7 @@ def main():
         send_email = False
 
     run_pipeline(target_day=target, limit=limit, send_email=send_email,
-                 only_bd=args.bd, dry_run=args.dry_run)
+                 only_bd=args.bd, dry_run=args.dry_run, reprocess=args.reprocess)
 
 
 if __name__ == "__main__":

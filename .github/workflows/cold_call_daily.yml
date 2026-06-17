@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       date:
-        description: 'Target day YYYY-MM-DD (default: today IST)'
+        description: 'Target day YYYY-MM-DD (blank = rolling last-48h window)'
         required: false
         default: ''
       limit:
@@ -16,6 +16,10 @@ on:
         default: ''
       no_email:
         description: 'Skip coaching emails (true/false)'
+        required: false
+        default: 'false'
+      reprocess:
+        description: 'Re-analyze even already-processed files (true/false)'
         required: false
         default: 'false'
 
@@ -47,6 +51,9 @@ jobs:
           fi
           if [ "${{ github.event.inputs.no_email }}" = "true" ]; then
             ARGS="$ARGS --no-email"
+          fi
+          if [ "${{ github.event.inputs.reprocess }}" = "true" ]; then
+            ARGS="$ARGS --reprocess"
           fi
           python -m cold_call.pipeline $ARGS
         env:
