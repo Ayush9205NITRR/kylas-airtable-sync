@@ -184,14 +184,14 @@ if __name__ == "__main__":
          "discovery_score": 7, "top_miss": "Did not book a specific time for the demo",
          "objections_found": [
              {"objection": "Abhi budget nahi hai", "type": "price", "handled": "weak",
-              "better_response": "Samajh sakta hoon — isliye main pehle ROI dikhana chahta hoon, "
-                                 "fir aap decide karein. 10 min ka demo rakhein?"}]},
+              "better_response": "I understand — that's exactly why I'd like to show you the ROI "
+                                 "first, then you decide. Can we set a 10-minute demo?"}]},
         {"total_score": 71, "hook_score": 20, "objection_score": 26, "pitch_score": 18,
          "discovery_score": 7, "top_miss": "Pitch was a bit long-winded",
          "objections_found": [
              {"objection": "Hum already ek tool use karte hain", "type": "competitor",
-              "handled": "missed", "better_response": "Bilkul, aur aksar teams humein uske "
-              "saath-saath use karti hain — main dikha doon kahan gap bharta hai?"}]},
+              "handled": "missed", "better_response": "Absolutely — and teams often run us "
+              "alongside their current tool. Let me show you where it fills the gaps."}]},
     ]
     html = build_email_html("Rubal", sample)
     with open(args.out, "w") as fh:
