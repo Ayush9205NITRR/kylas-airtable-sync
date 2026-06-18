@@ -58,6 +58,64 @@ def _fetch_all_members(api_key: str) -> list:
     return []
 
 
+def _profile_name_from_detail(detail: dict) -> str:
+    """Pull a human-readable profile name out of a GET /users/{id} payload.
+
+    Kylas may expose the profile under several shapes, so check the known
+    keys first then fall back to any key containing 'profile'.
+    """
+    for key in ("profile", "userProfile", "userprofile", "role"):
+        v = detail.get(key)
+        if isinstance(v, dict):
+            n = v.get("name") or v.get("displayName")
+            if n:
+                return str(n)
+        elif isinstance(v, str) and v:
+            return v
+    for key in ("profileName", "profile_name", "roleName"):
+        if detail.get(key):
+            return str(detail[key])
+    for k, v in detail.items():
+        if "profile" in k.lower():
+            if isinstance(v, dict):
+                n = v.get("name") or v.get("displayName")
+                if n:
+                    return str(n)
+            elif isinstance(v, str) and v:
+                return v
+    return ""
+
+
+def _fetch_profiles(api_key: str, user_ids: list) -> dict:
+    """Return {str(id): profile_name} via GET /users/{id}.
+
+    The list endpoints (/users, /tenant/team-members) omit the profile, so we
+    fetch each user's detail record (the same endpoint that carries the email).
+    Logs the first user's profile-related fields once so the real shape is
+    visible in the workflow logs.
+    """
+    headers = {"api-key": api_key, "Content-Type": "application/json"}
+    profiles: dict = {}
+    logged = False
+    for uid in user_ids:
+        time.sleep(0.12)
+        try:
+            r = requests.get(f"{KYLAS_BASE}/users/{uid}", headers=headers, timeout=30)
+            r.raise_for_status()
+            resp   = r.json()
+            detail = resp.get("data", resp) if isinstance(resp, dict) else {}
+        except Exception as e:
+            print(f"[sync_team] WARNING: /users/{uid} failed — {e}")
+            continue
+        profiles[str(uid)] = _profile_name_from_detail(detail)
+        if not logged and isinstance(detail, dict):
+            prof_fields = {k: detail.get(k) for k in detail if "profile" in k.lower() or "role" in k.lower()}
+            print(f"[sync_team] sample user {uid} keys: {sorted(detail.keys())}")
+            print(f"[sync_team] sample user {uid} profile/role fields: {prof_fields}")
+            logged = True
+    return profiles
+
+
 def _extract(members: list) -> tuple:
     """Return (users_by_id, emails_by_name, dg_names) from raw member list.
 
@@ -111,8 +169,19 @@ def main():
         sys.exit(2)
 
     new_users, new_emails, dg_names = _extract(members)
+
+    # The list endpoints omit the profile, so dg_names is usually empty here.
+    # Fetch each user's detail record to find who has the Demand Generation
+    # profile (these are the BD callers who should receive the daily email).
+    profiles = _fetch_profiles(api_key, list(new_users.keys()))
+    for uid, name in new_users.items():
+        if "demand generation" in (profiles.get(uid, "") or "").lower():
+            dg_names.add(name)
+
     print(f"[sync_team] {len(new_users)} users, {len(new_emails)} with emails, "
           f"{len(dg_names)} Demand Generation")
+    if dg_names:
+        print(f"[sync_team] Demand Generation: {sorted(dg_names)}")
 
     with open(TEAM_PATH) as f:
         team = json.load(f)
