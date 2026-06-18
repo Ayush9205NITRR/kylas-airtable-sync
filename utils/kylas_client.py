@@ -43,11 +43,38 @@ class KylasClient:
             "api-key": os.environ["KYLAS_API_KEY"],
             "Content-Type": "application/json",
         })
-        self._delay = 0.1   # reduced from 0.25 — Kylas allows ~10 req/s
+        self._delay = 0.2        # pacing between calls (Kylas rate-limits hard)
+        self._max_retries = 5    # automatic retries on HTTP 429 (rate limit)
+
+    def _request(self, method: str, path: str, **kwargs) -> requests.Response:
+        """One Kylas HTTP call with pacing + automatic 429 (rate-limit) backoff.
+
+        `path` is relative to KYLAS_BASE. On HTTP 429 it waits — honoring the
+        Retry-After header when present, otherwise exponential backoff — and
+        retries up to self._max_retries times, then returns the final response.
+        Callers keep using r.raise_for_status()/r.ok exactly as before, so a
+        transient rate limit no longer loses an update or aborts a whole sync.
+        """
+        kwargs.setdefault("timeout", 30)
+        url = f"{KYLAS_BASE}/{path}"
+        attempt = 0
+        while True:
+            time.sleep(self._delay)
+            r = self.session.request(method, url, **kwargs)
+            if r.status_code != 429 or attempt >= self._max_retries:
+                return r
+            ra = r.headers.get("Retry-After")
+            try:
+                wait = float(ra) if ra else min(2 ** attempt, 30)
+            except (TypeError, ValueError):
+                wait = min(2 ** attempt, 30)
+            print(f"  [Kylas] 429 rate-limited on {method} {path} — "
+                  f"retry {attempt + 1}/{self._max_retries} in {wait:.0f}s")
+            time.sleep(wait)
+            attempt += 1
 
     def _get(self, path: str, params: dict = None) -> dict:
-        time.sleep(self._delay)
-        r = self.session.get(f"{KYLAS_BASE}/{path}", params=params or {}, timeout=30)
+        r = self._request("GET", path, params=params or {})
         r.raise_for_status()
         return r.json()
 
@@ -71,9 +98,8 @@ class KylasClient:
 
         records, page = [], 0
         while True:
-            time.sleep(self._delay)
-            r = self.session.post(
-                f"{KYLAS_BASE}/search/{entity}",
+            r = self._request(
+                "POST", f"search/{entity}",
                 params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
                 json={"fields": fields, "jsonRule": None},
                 timeout=60,
@@ -325,14 +351,12 @@ class KylasClient:
         return all_map.get(email)
 
     def _put(self, path: str, body: dict) -> dict:
-        time.sleep(self._delay)
-        r = self.session.put(f"{KYLAS_BASE}/{path}", json=body, timeout=30)
+        r = self._request("PUT", path, json=body)
         r.raise_for_status()
         return r.json() if r.content else {}
 
     def _patch(self, path: str, body: dict) -> dict:
-        time.sleep(self._delay)
-        r = self.session.patch(f"{KYLAS_BASE}/{path}", json=body, timeout=30)
+        r = self._request("PATCH", path, json=body)
         r.raise_for_status()
         return r.json() if r.content else {}
 
@@ -345,10 +369,9 @@ class KylasClient:
         Falls back to a full-object PUT with ownedBy if that is unavailable.
         """
         try:
-            time.sleep(self._delay)
-            r = self.session.put(
-                f"{KYLAS_BASE}/companies/{company_id}/owner",
-                json={"ownerId": user_id}, timeout=30,
+            r = self._request(
+                "PUT", f"companies/{company_id}/owner",
+                json={"ownerId": user_id},
             )
             if r.ok:
                 if not getattr(self, "_company_owner_logged", False):
@@ -386,10 +409,9 @@ class KylasClient:
         """
         # Preferred: dedicated owner-reassignment endpoint (fast, tiny body).
         try:
-            time.sleep(self._delay)
-            r = self.session.put(
-                f"{KYLAS_BASE}/contacts/{contact_id}/owner",
-                json={"ownerId": user_id}, timeout=30,
+            r = self._request(
+                "PUT", f"contacts/{contact_id}/owner",
+                json={"ownerId": user_id},
             )
             if r.ok:
                 if not getattr(self, "_contact_owner_logged", False):
@@ -455,12 +477,48 @@ class KylasClient:
             body["customFieldValues"] = cfv
         return changed
 
+    # Fields Kylas populates on GET but rejects (or ignores) on a PUT update.
+    # Echoing a fetched object straight back including these is what produced
+    # the "400 Bad Request" on company updates.
+    _READONLY_PUT_FIELDS = (
+        "id", "createdAt", "updatedAt", "createdBy", "updatedBy",
+        "ownerId", "ownedBy", "recordActions", "tenantId",
+    )
+
+    @staticmethod
+    def _clean_for_put(body: dict) -> dict:
+        """Return a copy of an entity body safe to PUT back to Kylas.
+
+        Drops the read-only/audit fields Kylas sets on GET but rejects on
+        update. Custom field values and all writable fields are preserved.
+        """
+        return {k: v for k, v in body.items()
+                if k not in KylasClient._READONLY_PUT_FIELDS}
+
+    def _without_owner_keys(self, fields: dict, entity: str) -> dict:
+        """Strip ownedBy/ownerId from a field-push map (owner isn't writable here).
+
+        Owner reassignment goes through the dedicated PUT /{entity}/{id}/owner
+        endpoint (use --mode owner / both), not the generic field PUT, where
+        Kylas ignores or rejects an owner value. Warns once so a stray mapping
+        gets noticed and fixed rather than silently failing every record.
+        """
+        owner_keys = [k for k in fields if k in ("ownedBy", "ownerId")]
+        if not owner_keys:
+            return fields
+        if not getattr(self, "_owner_field_warned", False):
+            print(f"  [Kylas] WARN: {owner_keys} in the {entity} field map is not "
+                  f"writable via field push — assign owners with --mode owner/both")
+            self._owner_field_warned = True
+        return {k: v for k, v in fields.items() if k not in owner_keys}
+
     def update_company_fields(self, company_id: int, fields: dict,
                               dry_run: bool = False) -> str:
         """Push mapped fields onto a company (GET full object, set, PUT back).
 
         Returns "updated", "unchanged", or "failed".
         """
+        fields = self._without_owner_keys(fields, "company")
         if not fields:
             return "unchanged"
         try:
@@ -474,7 +532,7 @@ class KylasClient:
         if dry_run:
             return "updated"
         try:
-            self._put(f"companies/{company_id}", body)
+            self._put(f"companies/{company_id}", self._clean_for_put(body))
             return "updated"
         except Exception as exc:
             print(f"[Kylas] ERROR updating company {company_id} fields: {exc}")
@@ -483,6 +541,7 @@ class KylasClient:
     def update_contact_fields(self, contact_id: int, fields: dict,
                               contact_data: dict = None, dry_run: bool = False) -> str:
         """Push mapped fields onto a contact. Returns updated/unchanged/failed."""
+        fields = self._without_owner_keys(fields, "contact")
         if not fields:
             return "unchanged"
         try:
@@ -501,11 +560,8 @@ class KylasClient:
         co = body.get("company")              # contact PUT wants company as an int id
         if isinstance(co, dict):
             body["company"] = co.get("id")
-        for ro in ("id", "createdAt", "updatedAt", "updatedBy",
-                   "createdBy", "ownerId", "recordActions"):
-            body.pop(ro, None)
         try:
-            self._put(f"contacts/{contact_id}", body)
+            self._put(f"contacts/{contact_id}", self._clean_for_put(body))
             return "updated"
         except Exception as exc:
             print(f"[Kylas] ERROR updating contact {contact_id} fields: {exc}")
@@ -661,10 +717,9 @@ class KylasClient:
             """
             records, page = [], 0
             while True:
-                time.sleep(self._delay)
                 try:
-                    r = self.session.get(
-                        f"{KYLAS_BASE}/contacts",
+                    r = self._request(
+                        "GET", "contacts",
                         params={"companyId": cid, "page": page, "size": PAGE_SIZE},
                         timeout=60,
                     )
@@ -692,10 +747,9 @@ class KylasClient:
             """
             records, page = [], 0
             while True:
-                time.sleep(self._delay)
                 try:
-                    r = self.session.post(
-                        f"{KYLAS_BASE}/search/contact",
+                    r = self._request(
+                        "POST", "search/contact",
                         params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
                         json={"fields": fields,
                               "jsonRule": {"condition": "AND", "valid": True,
