@@ -38,16 +38,17 @@ jobs:
 
       - name: Run assignment / field push
         run: |
-          if [ "${{ github.event.inputs.mode }}" = "inspect" ]; then
+          if [ "$MODE" = "inspect" ]; then
             python scripts/assign_from_airtable.py --inspect
+          elif [ "$DRY_RUN" = "true" ]; then
+            python scripts/assign_from_airtable.py --view "$VIEW_NAME" --mode "$MODE" --dry-run
           else
-            ARGS="--view=${{ github.event.inputs.view_name }} --mode=${{ github.event.inputs.mode }}"
-            if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-              ARGS="$ARGS --dry-run"
-            fi
-            python scripts/assign_from_airtable.py $ARGS
+            python scripts/assign_from_airtable.py --view "$VIEW_NAME" --mode "$MODE"
           fi
         env:
+          MODE:                     ${{ github.event.inputs.mode }}
+          VIEW_NAME:                ${{ github.event.inputs.view_name }}
+          DRY_RUN:                  ${{ github.event.inputs.dry_run }}
           KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
           AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
