@@ -70,10 +70,12 @@ def test_analyze_call_bad_json(monkeypatch):
         pass
 
 
-def test_build_record_omits_total_and_serializes_objections():
+def test_build_record_omits_total_and_formats_objections():
     analysis = {
         "hook_score": 18, "objection_score": 20, "pitch_score": 17, "discovery_score": 7,
-        "total_score": 62, "objections_found": [{"objection": "budget", "handled": "weak"}],
+        "total_score": 62,
+        "objections_found": [{"objection": "budget nahi hai", "type": "price",
+                              "handled": "weak", "better_response": "Show ROI first."}],
         "hook_feedback": "ok",
     }
     rec = pipeline._build_record("Priya", "c.mp4", "2026-06-15", 120, "hi", analysis)
@@ -81,8 +83,16 @@ def test_build_record_omits_total_and_serializes_objections():
     assert rec["status"] == "processed"
     assert rec["bd_name"] == "Priya"
     assert rec["duration_seconds"] == 120
-    # objections_list is valid JSON, not a Python repr
-    assert json.loads(rec["objections_list"])[0]["objection"] == "budget"
+    # objections_list is a readable, distilled string (not raw JSON)
+    ol = rec["objections_list"]
+    assert not ol.lstrip().startswith("[")        # not a JSON dump
+    assert "budget nahi hai" in ol and "price" in ol and "weak" in ol
+    assert "Better: Show ROI first." in ol
+
+
+def test_format_objections_empty():
+    assert pipeline._format_objections([]) == ""
+    assert pipeline._format_objections(None) == ""
 
 
 def test_resolve_bd_email():

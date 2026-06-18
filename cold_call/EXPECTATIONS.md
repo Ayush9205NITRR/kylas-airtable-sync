@@ -16,6 +16,9 @@ nothing is "ad hoc"; decisions get noted below.
 | 2026-06-17 | **All feedback in English.** Coaching/suggestions/summaries are written in English even though calls are Hinglish. Only verbatim quotes (`objection`, `rep_response`) stay in the original spoken language. |
 | 2026-06-17 | Transcription + analysis both run on Gemini (Hugging Face dropped — it no longer serves Whisper). |
 | 2026-06-17 | Direction: move from "just scores" → **pattern-based, expectation-aligned coaching**; scores become a secondary signal. *(pending final confirm)* |
+| 2026-06-17 | **Strict grounding** — never invent objections / deferrals / timelines that aren't in the transcript (fixed a "next year" hallucination on Sameer's call). |
+| 2026-06-17 | **Context-aware, nuanced judgment** — judge a call by its purpose; correctly identifying the wrong POC and committing to follow up is a positive, not a miss. Sound decisions aren't framed negatively. Non-applicable sections → "N/A — reason" instead of a forced suggestion. |
+| 2026-06-17 | **Objection list** kept (it has value) but reformatted into a distilled, numbered structure (`[type · handled]`, Rep:, Better:) instead of a JSON / transcript wall. |
 
 ---
 

@@ -34,12 +34,33 @@ def _safe_duration(path: str):
     return float(audio.info.length)
 
 
+def _format_objections(objs) -> str:
+    """Readable, distilled objection list for the Airtable cell (not raw JSON)."""
+    if not objs:
+        return ""
+    lines = []
+    for i, o in enumerate(objs, 1):
+        if not isinstance(o, dict):
+            lines.append(f"{i}. {o}")
+            continue
+        tag = " · ".join(x for x in [(o.get("type") or "").strip(),
+                                     (o.get("handled") or "").strip()] if x)
+        head = (o.get("objection") or "").strip()
+        lines.append(f"{i}. [{tag}] {head}" if tag else f"{i}. {head}")
+        rep = (o.get("rep_response") or "").strip()
+        if rep:
+            lines.append(f"   Rep: {rep}")
+        better = (o.get("better_response") or "").strip()
+        if better:
+            lines.append(f"   Better: {better}")
+    return "\n".join(lines)
+
+
 def _build_record(bd, fname, day_iso, duration, transcript, a) -> dict:
     """Map a Gemini analysis dict to Airtable fields.
 
     `total_score` is intentionally omitted — it's a computed formula field.
     """
-    import json
     return {
         "bd_name": bd,
         "audio_filename": fname,
@@ -50,7 +71,7 @@ def _build_record(bd, fname, day_iso, duration, transcript, a) -> dict:
         "hook_feedback": a.get("hook_feedback", ""),
         "hook_better_line": a.get("hook_better_line", ""),
         "objection_score": a.get("objection_score"),
-        "objections_list": json.dumps(a.get("objections_found", []), ensure_ascii=False),
+        "objections_list": _format_objections(a.get("objections_found", [])),
         "objection_feedback": a.get("objection_feedback", ""),
         "pitch_score": a.get("pitch_score"),
         "pitch_feedback": a.get("pitch_feedback", ""),
