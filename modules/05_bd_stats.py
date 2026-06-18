@@ -80,15 +80,18 @@ def _write_bd_daily(bd_metrics: dict, slot: str, today: str) -> dict:
 
     for owner, metrics in bd_metrics.items():
         stat_key = f"{today}|{slot}|{owner}"
+        w1_vals = w1_stored.get(owner, _ZERO())
+        # full_day: total = morning (W1) + afternoon; first_half: total = morning only
+        total = {k: w1_vals.get(k, 0) + metrics.get(k, 0) for k in BD_KEYS} if slot == "full_day" else metrics
         fields = {"Stat Key": stat_key, "Date": today, "Owner": owner, "Slot": slot}
         for k, fname in FIELD.items():
-            fields[fname] = metrics.get(k, 0)
+            fields[fname] = total.get(k, 0)
         if slot == "first_half":
             for k, fname in W1_FIELD.items():
                 fields[fname] = metrics.get(k, 0)
         tbl.upsert("Stat Key", stat_key, fields, updated_at="", updated_at_field="")
-        print(f"[BD Stats] {owner}: attempted={metrics.get('attempted',0)}"
-              f"  connected={metrics.get('connected',0)}  dcb={metrics.get('dcb',0)}")
+        print(f"[BD Stats] {owner}: attempted={total.get('attempted',0)}"
+              f"  connected={total.get('connected',0)}  dcb={total.get('dcb',0)}")
 
     tbl.flush()
     _prune_old(tbl, "BD Daily Stats")
@@ -96,8 +99,9 @@ def _write_bd_daily(bd_metrics: dict, slot: str, today: str) -> dict:
     result = {}
     for owner, metrics in bd_metrics.items():
         w1 = w1_stored.get(owner, _ZERO())
-        w2 = {k: max(0, metrics.get(k, 0) - w1.get(k, 0)) for k in BD_KEYS}
-        result[owner] = {**metrics, "w1": w1, "w2": w2}
+        w2 = {k: metrics.get(k, 0) for k in BD_KEYS}  # current run = afternoon only
+        total = {k: w1.get(k, 0) + w2.get(k, 0) for k in BD_KEYS} if slot == "full_day" else dict(metrics)
+        result[owner] = {**total, "w1": w1, "w2": w2}
     return result
 
 
@@ -113,7 +117,11 @@ def _write_account_activity(account_activity: dict, company_id_map: dict, today:
 
     for co_id, data in account_activity.items():
         stat_key = f"{today}|{co_id}"
-        owners_str = ", ".join(sorted(data.get("owners", set())))
+        existing_f = (tbl._cache.get(stat_key) or {}).get("fields", {})
+        # Merge owners from any prior sync today
+        prior_owners = set(filter(None, (existing_f.get("BD Owners") or "").split(", ")))
+        all_owners = prior_owners | data.get("owners", set())
+        owners_str = ", ".join(sorted(all_owners))
         fields = {
             "Stat Key":          stat_key,
             "Date":              today,
@@ -122,7 +130,8 @@ def _write_account_activity(account_activity: dict, company_id_map: dict, today:
             "BD Owners":         owners_str,
         }
         for k, fname in ACC_FIELD.items():
-            fields[fname] = data.get(k, 0)
+            prior_val = int(existing_f.get(fname, 0) or 0)
+            fields[fname] = prior_val + data.get(k, 0)
         airtable_id = company_id_map.get(co_id, "")
         if airtable_id:
             fields["Company"] = [airtable_id]
