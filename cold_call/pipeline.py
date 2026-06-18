@@ -25,13 +25,37 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from cold_call import config
 
 
-def _safe_duration(path: str):
-    """Audio length in seconds, or None if mutagen can't read it."""
-    from mutagen import File as MutagenFile
-    audio = MutagenFile(path)
-    if audio is None or getattr(audio, "info", None) is None:
+def _ffprobe_duration(path: str):
+    """Duration via ffprobe (reliable across containers; ships with ffmpeg)."""
+    import subprocess
+    try:
+        out = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", path],
+            capture_output=True, text=True, timeout=30,
+        )
+        val = (out.stdout or "").strip()
+        return float(val) if val else None
+    except Exception:
         return None
-    return float(audio.info.length)
+
+
+def _safe_duration(path: str):
+    """Audio length in seconds. Tries mutagen, then ffprobe; None if unknown.
+
+    Some containers (e.g. WhatsApp .mp4) make mutagen report 0.0 — we don't trust
+    a 0.0 and fall back to ffprobe so real calls aren't wrongly marked too_short.
+    """
+    try:
+        from mutagen import File as MutagenFile
+        audio = MutagenFile(path)
+        if audio is not None and getattr(audio, "info", None) is not None:
+            length = float(audio.info.length or 0)
+            if length > 0:
+                return length
+    except Exception:
+        pass
+    return _ffprobe_duration(path)
 
 
 def _format_objections(objs) -> str:
