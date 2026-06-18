@@ -1,11 +1,29 @@
 {
   "bd_team": [
-    {"name": "Rubal",   "email": "rubal@enout.in"},
-    {"name": "Bhaumik", "email": "bhaumik@enout.in"},
-    {"name": "Shreya",  "email": "shreya.bodwal@enout.in"},
-    {"name": "Mayra",   "email": "mayra@enout.in"},
-    {"name": "Devansh", "email": "devansh.shukla@enout.in"},
-    {"name": "Tanay",   "email": "tanay.kumar@enout.in"}
+    {
+      "name": "Rubal",
+      "email": "rubal@enout.in"
+    },
+    {
+      "name": "Bhaumik",
+      "email": "bhaumik@enout.in"
+    },
+    {
+      "name": "Shreya",
+      "email": "shreya.bodwal@enout.in"
+    },
+    {
+      "name": "Mayra",
+      "email": "mayra@enout.in"
+    },
+    {
+      "name": "Devansh",
+      "email": "devansh.shukla@enout.in"
+    },
+    {
+      "name": "Tanay",
+      "email": "tanay.kumar@enout.in"
+    }
   ],
   "revenue_team": [],
   "cc": [
@@ -19,15 +37,15 @@
   "bd_targets": {
     "daily": {
       "attempted": 100,
-      "connected":  35,
-      "dcb":         0,
-      "sql":         0
+      "connected": 35,
+      "dcb": 0,
+      "sql": 0
     },
     "monthly_fixed": {
       "dcb": 10,
-      "sql":  6
+      "sql": 6
     },
-    "weekly_multiplier":  5.5,
+    "weekly_multiplier": 5.5,
     "monthly_multiplier": 22
   },
   "deal_rot": {
@@ -60,19 +78,73 @@
     "76661": "Vipul Bansal",
     "74757": "Bhaumik Sachdeva",
     "74753": "Devansh Shukla",
-    "74752": "Rubal Sansanwal"
+    "74752": "Rubal Sansanwal",
+    "74767": "Siddharth Singh",
+    "74762": "Mahi Sharma",
+    "74763": "Ananya Garg",
+    "74768": "Tulika Chauhan",
+    "74766": "Aarushi Singh",
+    "77534": "Akash Deep Choudhary",
+    "74760": "Nitika Mann",
+    "74769": "Georgy Oommen",
+    "74750": "Prabhjot Juneja",
+    "74749": "Reema Agarwal",
+    "74747": "Rohit Roy",
+    "74764": "Ajay Priyadarshi",
+    "79873": "Riya Aggarwal",
+    "74765": "Riya Sharma",
+    "74761": "Udit Kumar",
+    "74759": "Hrithik Rawat",
+    "74725": "Enout Super Admin",
+    "79284": "keshav Kumar",
+    "79964": "Mohit Yadav",
+    "79349": "Vidhi Soni",
+    "80230": "Vedant Ojha",
+    "77537": "Ayush Tiwari",
+    "82866": "Arshdeep Singh",
+    "82978": "Gurnoor Kaur",
+    "82993": "Gaurav Kumar",
+    "82994": "Aditi saini",
+    "82867": "Muskan Rajpoot"
   },
   "kylas_user_emails": {
-    "Tanay Kumar":     "tanay.kumar@enout.in",
-    "Mayra Singh":     "mayra@enout.in",
-    "Shreya Bodwal":   "shreya.bodwal@enout.in",
-    "Hisham Nisaar":   "hisham@enout.in",
-    "Rashid Imam":     "rashid@enout.in",
+    "Tanay Kumar": "tanay.kumar@enout.in",
+    "Mayra Singh": "mayra@enout.in",
+    "Shreya Bodwal": "shreya.bodwal@enout.in",
+    "Hisham Nisaar": "hisham@enout.in",
+    "Rashid Imam": "rashid@enout.in",
     "Saahil Bhardwaj": "saahil@enout.in",
-    "Charu Rathi":     "charu@enout.in",
-    "Vipul Bansal":    "vipul.bansal@enout.in",
-    "Bhaumik Sachdeva":"bhaumik@enout.in",
-    "Devansh Shukla":  "devansh.shukla@enout.in",
-    "Rubal Sansanwal": "rubal@enout.in"
+    "Charu Rathi": "charu@enout.in",
+    "Vipul Bansal": "demand@enout.in",
+    "Bhaumik Sachdeva": "bhaumik@enout.in",
+    "Devansh Shukla": "devansh.shukla@enout.in",
+    "Rubal Sansanwal": "rubal@enout.in",
+    "Siddharth Singh": "siddharth@enout.in",
+    "Mahi Sharma": "mahi.sharma@enout.in",
+    "Ananya Garg": "ananya@enout.in",
+    "Tulika Chauhan": "tulika@enout.in",
+    "Aarushi Singh": "aarushi@enout.in",
+    "Akash Deep Choudhary": "akash@enout.in",
+    "Nitika Mann": "nitika@enout.in",
+    "Georgy Oommen": "georgy@enout.in",
+    "Prabhjot Juneja": "prabhjot@enout.in",
+    "Reema Agarwal": "reema@enout.in",
+    "Rohit Roy": "rohit@enout.in",
+    "Ajay Priyadarshi": "ajay@enout.in",
+    "Riya Aggarwal": "riya.aggarwal@enout.in",
+    "Riya Sharma": "riya@enout.in",
+    "Udit Kumar": "udit.kumar@enout.in",
+    "Hrithik Rawat": "hrithik@enout.in",
+    "Enout Super Admin": "crmadmin@enout.in",
+    "keshav Kumar": "keshav@enout.in",
+    "Mohit Yadav": "mohit@enout.in",
+    "Vidhi Soni": "vidhi@enout.in",
+    "Vedant Ojha": "vedant@enout.in",
+    "Ayush Tiwari": "ayush@enout.in",
+    "Arshdeep Singh": "arshdeep@enout.in",
+    "Gurnoor Kaur": "gurnoor@enout.in",
+    "Gaurav Kumar": "gaurav@enout.in",
+    "Aditi saini": "aditi.saini@enout.in",
+    "Muskan Rajpoot": "muskan@enout.in"
   }
 }
