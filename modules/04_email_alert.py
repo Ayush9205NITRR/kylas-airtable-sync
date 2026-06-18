@@ -203,10 +203,18 @@ def _load_account_activity_today() -> list:
         if not acc_rows:
             return []
 
-        # Companies CRM — contact stage lookup, source, offsite timeline
+        def _norm_cid(raw) -> str:
+            """Normalise company ID to plain integer string regardless of float/str format."""
+            try:
+                return str(int(float(raw))) if raw not in (None, "") else ""
+            except (ValueError, TypeError):
+                return str(raw).strip()
+
+        # Companies CRM — company name (fallback), contact stage lookup, source, offsite
         co_rows = AirtableClient("Companies").table.all(
             fields=[
                 "Kylas Company ID",
+                "Company Name",
                 "Pipeline Stage (from Contacts 2)",
                 "Source of Data",
                 "Offsite Timeline",
@@ -215,12 +223,13 @@ def _load_account_activity_today() -> list:
         co_info: dict = {}
         for r in co_rows:
             f   = r["fields"]
-            cid = str(f.get("Kylas Company ID") or "").strip()
+            cid = _norm_cid(f.get("Kylas Company ID"))
             if cid:
                 co_info[cid] = {
-                    "stages":   f.get("Pipeline Stage (from Contacts 2)") or [],
-                    "source":   str(f.get("Source of Data")   or ""),
-                    "offsite":  str(f.get("Offsite Timeline") or ""),
+                    "name":     str(f.get("Company Name")                    or ""),
+                    "stages":   f.get("Pipeline Stage (from Contacts 2)")    or [],
+                    "source":   str(f.get("Source of Data")                  or ""),
+                    "offsite":  str(f.get("Offsite Timeline")                or ""),
                 }
 
         result = []
@@ -229,10 +238,10 @@ def _load_account_activity_today() -> list:
             attempted = int(f.get("Attempted POCs", 0) or 0)
             if attempted == 0:
                 continue
-            cid = str(f.get("Kylas Company Id") or "").strip()
+            cid = _norm_cid(f.get("Kylas Company Id"))
             co  = co_info.get(cid, {})
             result.append({
-                "company":   str(f.get("Company Name") or ""),
+                "company":   str(f.get("Company Name") or "") or co.get("name", ""),
                 "stages":    _stages_summary(co.get("stages", [])),
                 "attempted": attempted,
                 "connected": int(f.get("Connected POCs", 0) or 0),
