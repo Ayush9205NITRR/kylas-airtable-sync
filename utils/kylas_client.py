@@ -73,9 +73,33 @@ class KylasClient:
             time.sleep(wait)
             attempt += 1
 
+    @staticmethod
+    def _raise_for_status(r) -> None:
+        """raise_for_status() that surfaces Kylas's error body in the message.
+
+        Kylas returns the actual reason it rejected a write (which field/value
+        was bad) in the response body; the stock HTTPError drops it, leaving an
+        opaque '400 Bad Request' / '500 Server Error'. Including it is what makes
+        a failed company/contact PUT diagnosable instead of guesswork.
+        """
+        if r.status_code < 400:
+            return
+        try:
+            j = r.json()
+            detail = (j.get("message") or j.get("error") or j.get("errorMessage")
+                      or j.get("detail") or str(j)) if isinstance(j, dict) else str(j)
+        except Exception:
+            detail = r.text or ""
+        detail = " ".join(str(detail).split())[:500]
+        raise requests.HTTPError(
+            f"{r.status_code} {r.reason} for url: {r.url}"
+            + (f" — {detail}" if detail else ""),
+            response=r,
+        )
+
     def _get(self, path: str, params: dict = None) -> dict:
         r = self._request("GET", path, params=params or {})
-        r.raise_for_status()
+        self._raise_for_status(r)
         return r.json()
 
     def _search_all(self, entity: str, fields: list, since: str = None) -> List[dict]:
@@ -352,12 +376,12 @@ class KylasClient:
 
     def _put(self, path: str, body: dict) -> dict:
         r = self._request("PUT", path, json=body)
-        r.raise_for_status()
+        self._raise_for_status(r)
         return r.json() if r.content else {}
 
     def _patch(self, path: str, body: dict) -> dict:
         r = self._request("PATCH", path, json=body)
-        r.raise_for_status()
+        self._raise_for_status(r)
         return r.json() if r.content else {}
 
     def update_company_owner(self, company_id: int, user_id: int) -> bool:
@@ -454,23 +478,39 @@ class KylasClient:
         """Kylas custom fields are conventionally named cfSomething."""
         return bool(key) and key[:2] == "cf" and len(key) > 2 and key[2].isupper()
 
-    @staticmethod
-    def _apply_fields(body: dict, fields: dict) -> bool:
+    def _apply_fields(self, body: dict, fields: dict) -> bool:
         """Set mapped fields on a fetched entity body in place.
 
         Keys named cfXxx go under customFieldValues, everything else is a
         top-level standard field. Returns True if anything actually changed
         (so callers can skip a no-op PUT).
+
+        A standard field whose current value is a structured object
+        (e.g. numberOfEmployees / industry are {id, name} in Kylas) cannot be
+        set from a bare scalar — doing so makes Kylas reject the whole PUT
+        (400). Such mappings are skipped with a one-time warning so the rest of
+        the fields still go through.
         """
         changed = False
         cfv = dict(body.get("customFieldValues") or {})
+        warned = getattr(self, "_field_shape_warned", None)
+        if warned is None:
+            warned = self._field_shape_warned = set()
         for key, value in fields.items():
             if KylasClient._is_custom_key(key):
                 if cfv.get(key) != value:
                     cfv[key] = value
                     changed = True
             else:
-                if body.get(key) != value:
+                current = body.get(key)
+                if isinstance(current, (dict, list)) and not isinstance(value, (dict, list)):
+                    if key not in warned:
+                        print(f"  [Kylas] WARN: standard field '{key}' is an object in "
+                              f"Kylas; can't set it from scalar {value!r} — skipping "
+                              f"(this mapping would 400 the whole record)")
+                        warned.add(key)
+                    continue
+                if current != value:
                     body[key] = value
                     changed = True
         if cfv:

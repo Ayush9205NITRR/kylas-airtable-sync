@@ -125,6 +125,46 @@ def test_owner_key_in_field_map_is_skipped():
     print("PASS ownedBy-only field map is skipped (no bad PUT)")
 
 
+def test_raise_for_status_surfaces_body():
+    import requests
+
+    class _ErrResp:
+        status_code = 500
+        reason = "Internal Server Error"
+        url = "https://api.kylas.io/v1/companies/1"
+
+        def json(self):
+            return {"message": "cfBooleanPostLink: expected boolean but got String"}
+
+    try:
+        KylasClient._raise_for_status(_ErrResp())
+    except requests.HTTPError as exc:
+        assert "cfBooleanPostLink" in str(exc) and "500" in str(exc), str(exc)
+        print("PASS _raise_for_status surfaces Kylas error body:", str(exc)[-70:])
+    else:
+        raise AssertionError("expected HTTPError")
+
+
+def test_object_field_from_scalar_is_skipped():
+    client = KylasClient()
+    # numberOfEmployees is an object in Kylas; mapping a scalar onto it must be
+    # skipped (not corrupt the body), while the custom field still applies.
+    full = {
+        "id": 9, "name": "Acme",
+        "numberOfEmployees": {"id": 83, "name": "50-99"},
+        "customFieldValues": {},
+    }
+    put_body = {}
+    client._get = lambda path: {"data": dict(full)}
+    client._put = lambda path, body: put_body.update(body) or {}
+    res = client.update_company_fields(
+        9, {"numberOfEmployees": 50, "cfSourceOfData": "LinkedIn"})
+    assert res == "updated", res
+    assert put_body["numberOfEmployees"] == {"id": 83, "name": "50-99"}, put_body
+    assert put_body["customFieldValues"]["cfSourceOfData"] == "LinkedIn", put_body
+    print("PASS object field is not clobbered by a scalar mapping")
+
+
 if __name__ == "__main__":
     test_clean_for_put_strips_readonly()
     test_request_retries_on_429()
@@ -132,4 +172,6 @@ if __name__ == "__main__":
     test_update_company_fields_cleans_body()
     test_update_contact_fields_coerces_company_id()
     test_owner_key_in_field_map_is_skipped()
+    test_raise_for_status_surfaces_body()
+    test_object_field_from_scalar_is_skipped()
     print("\nALL TESTS PASSED")
