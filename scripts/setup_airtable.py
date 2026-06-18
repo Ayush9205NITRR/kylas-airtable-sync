@@ -199,7 +199,7 @@ FIELD_MAP_TABLE = {
          "options": {"choices": [{"name": "Company"}, {"name": "Contact"}]}},
         {"name": "Airtable Column", "type": T},
         {"name": "Kylas Field",     "type": T},
-        {"name": "Active",          "type": CB},
+        {"name": "Active",          "type": CB, "options": {"icon": "check", "color": "greenBright"}},
         {"name": "Notes",           "type": T},
     ],
 }
