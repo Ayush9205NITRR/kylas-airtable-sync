@@ -1,29 +1,40 @@
 {
   "bd_team": [
-    {
-      "name": "Rubal",
-      "email": "rubal@enout.in"
-    },
-    {
-      "name": "Bhaumik",
-      "email": "bhaumik@enout.in"
-    },
-    {
-      "name": "Shreya",
-      "email": "shreya.bodwal@enout.in"
-    },
-    {
-      "name": "Mayra",
-      "email": "mayra@enout.in"
-    },
-    {
-      "name": "Devansh",
-      "email": "devansh.shukla@enout.in"
-    },
-    {
-      "name": "Tanay",
-      "email": "tanay.kumar@enout.in"
-    }
+    {"name": "Rubal",         "email": "rubal@enout.in"},
+    {"name": "Bhaumik",       "email": "bhaumik@enout.in"},
+    {"name": "Shreya",        "email": "shreya.bodwal@enout.in"},
+    {"name": "Mayra",         "email": "mayra@enout.in"},
+    {"name": "Devansh",       "email": "devansh.shukla@enout.in"},
+    {"name": "Tanay",         "email": "tanay.kumar@enout.in"},
+    {"name": "Hisham",        "email": "hisham@enout.in"},
+    {"name": "Rashid",        "email": "rashid@enout.in"},
+    {"name": "Saahil",        "email": "saahil@enout.in"},
+    {"name": "Charu",         "email": "charu@enout.in"},
+    {"name": "Vipul",         "email": "demand@enout.in"},
+    {"name": "Siddharth",     "email": "siddharth@enout.in"},
+    {"name": "Mahi",          "email": "mahi.sharma@enout.in"},
+    {"name": "Ananya",        "email": "ananya@enout.in"},
+    {"name": "Tulika",        "email": "tulika@enout.in"},
+    {"name": "Aarushi",       "email": "aarushi@enout.in"},
+    {"name": "Akash",         "email": "akash@enout.in"},
+    {"name": "Nitika",        "email": "nitika@enout.in"},
+    {"name": "Georgy",        "email": "georgy@enout.in"},
+    {"name": "Prabhjot",      "email": "prabhjot@enout.in"},
+    {"name": "Reema",         "email": "reema@enout.in"},
+    {"name": "Rohit",         "email": "rohit@enout.in"},
+    {"name": "Ajay",          "email": "ajay@enout.in"},
+    {"name": "Riya Aggarwal", "email": "riya.aggarwal@enout.in"},
+    {"name": "Riya Sharma",   "email": "riya@enout.in"},
+    {"name": "Udit",          "email": "udit.kumar@enout.in"},
+    {"name": "Hrithik",       "email": "hrithik@enout.in"},
+    {"name": "Keshav",        "email": "keshav@enout.in"},
+    {"name": "Mohit",         "email": "mohit@enout.in"},
+    {"name": "Vidhi",         "email": "vidhi@enout.in"},
+    {"name": "Arshdeep",      "email": "arshdeep@enout.in"},
+    {"name": "Gurnoor",       "email": "gurnoor@enout.in"},
+    {"name": "Gaurav",        "email": "gaurav@enout.in"},
+    {"name": "Aditi",         "email": "aditi.saini@enout.in"},
+    {"name": "Muskan",        "email": "muskan@enout.in"}
   ],
   "revenue_team": [],
   "cc": [

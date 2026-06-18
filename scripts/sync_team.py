@@ -107,15 +107,11 @@ def main():
     old_users  = team.get("kylas_users", {})
     old_emails = team.get("kylas_user_emails", {})
 
-    # Compute diff
+    # Compute diff for kylas_users / kylas_user_emails
     added_u   = [uid  for uid  in new_users  if uid  not in old_users]
     added_e   = [name for name in new_emails if name not in old_emails]
     changed_e = [name for name in new_emails
                  if name in old_emails and old_emails[name] != new_emails[name]]
-
-    if not added_u and not added_e and not changed_e:
-        print("[sync_team] No changes — team.json is already up to date")
-        return
 
     for uid in added_u:
         print(f"  + user  {uid}: {new_users[uid]}")
@@ -131,13 +127,44 @@ def main():
     team["kylas_user_emails"] = {**old_emails, **{k: v for k, v in new_emails.items() if k not in old_emails},
                                  **{k: v for k, v in new_emails.items() if k in changed_e}}
 
+    # Ensure every Kylas user with an email is also in bd_team so they receive
+    # BD daily emails.  Users with no BD activity are auto-skipped by the email
+    # module, so adding non-BD users here is harmless.  This check covers both
+    # newly added users AND any pre-existing kylas_users that were never in bd_team.
+    _SYSTEM_ACCOUNTS = {"Enout Super Admin"}  # skip non-human system accounts
+    existing_bd_emails = {m.get("email", "").lower() for m in team.get("bd_team", [])}
+    # Collect first names already in use so duplicates get full names (e.g. two Riyas)
+    existing_first_names = {m.get("name", "").split()[0].lower()
+                            for m in team.get("bd_team", [])}
+    added_bd = []
+    for name, email in team["kylas_user_emails"].items():
+        if not email or email.lower() in existing_bd_emails:
+            continue
+        if name in _SYSTEM_ACCOUNTS:
+            continue
+        first_name = name.split()[0]
+        # Use full name when first name already exists to avoid match ambiguity
+        bd_name = name if first_name.lower() in existing_first_names else first_name
+        team.setdefault("bd_team", []).append({"name": bd_name, "email": email})
+        existing_bd_emails.add(email.lower())
+        existing_first_names.add(first_name.lower())
+        added_bd.append(name)
+        print(f"  + bd_team {bd_name!r} ({name}): {email}")
+    if added_bd:
+        print(f"[sync_team] Added {len(added_bd)} user(s) to bd_team")
+
+    if not added_u and not added_e and not changed_e and not added_bd:
+        print("[sync_team] No changes — team.json is already up to date")
+        return
+
     with open(TEAM_PATH, "w") as f:
         json.dump(team, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
     total_u = len(team["kylas_users"])
     total_e = len(team["kylas_user_emails"])
-    print(f"[sync_team] Updated team.json → {total_u} users, {total_e} emails")
+    total_b = len(team.get("bd_team", []))
+    print(f"[sync_team] Updated team.json → {total_u} users, {total_e} emails, {total_b} bd_team members")
 
 
 if __name__ == "__main__":
