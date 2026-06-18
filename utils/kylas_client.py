@@ -531,6 +531,27 @@ class KylasClient:
             print(f"[Kylas] ERROR fetching sample {entity}: {exc}")
             return {}
 
+    def list_custom_field_keys(self, entity: str) -> dict:
+        """Return {cf_key: display_name} for ALL defined custom fields on entity.
+
+        Uses GET /entities/{entity}/fields so even null-valued fields appear.
+        Falls back to empty dict on error so inspect still works.
+        """
+        out = {}
+        try:
+            resp = self._get(f"entities/{entity}/fields", {
+                "entityType": entity, "custom-only": "true",
+                "sort": "createdAt,asc", "page": 0, "size": 200,
+            })
+            for fld in (resp.get("content") or resp.get("data") or []):
+                key  = fld.get("fieldName") or fld.get("name") or fld.get("id") or ""
+                name = fld.get("displayName") or fld.get("label") or fld.get("name") or key
+                if key:
+                    out[str(key)] = str(name)
+        except Exception as exc:
+            print(f"[Kylas] WARN: could not fetch {entity} field definitions: {exc}")
+        return out
+
     # Candidate jsonRule shapes for filtering contacts by their company.
     # Kylas has no documented company filter for /search/contact, so we try
     # several field/value shapes and keep whichever actually returns the

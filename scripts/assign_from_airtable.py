@@ -132,10 +132,22 @@ def _inspect(client: KylasClient):
             preview = (str(v)[:60] + "…") if len(str(v)) > 60 else str(v)
             print(f"    {k}: {preview}")
         print("  -- Custom fields (write key exactly as shown, e.g. cfSourceOfData) --")
+        # Fetch ALL defined custom fields so null-valued ones also appear.
+        all_cf_keys = client.list_custom_field_keys(entity)
+        shown = set()
+        for k in sorted(all_cf_keys.keys()):
+            display = all_cf_keys[k]
+            v = cfv.get(k)
+            preview = (str(v)[:60] + "…") if v is not None and len(str(v)) > 60 else str(v)
+            suffix = f"  [{display}]" if display != k else ""
+            print(f"    {k}: {preview}{suffix}")
+            shown.add(k)
+        # Also show any sample values not returned by the definitions endpoint.
         for k in sorted(cfv.keys()):
-            v = cfv[k]
-            preview = (str(v)[:60] + "…") if len(str(v)) > 60 else str(v)
-            print(f"    {k}: {preview}")
+            if k not in shown:
+                v = cfv[k]
+                preview = (str(v)[:60] + "…") if len(str(v)) > 60 else str(v)
+                print(f"    {k}: {preview}")
 
 
 def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: bool = False):
