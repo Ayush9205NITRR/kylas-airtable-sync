@@ -233,7 +233,8 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
         if do_fields and field_map["company"]:
             cfields = _row_fields(field_map["company"], f)
             if cfields:
-                res = client.update_company_fields(co_id, cfields, dry_run=dry_run)
+                res = client.update_company_fields(co_id, cfields, dry_run=dry_run,
+                                                   owner_id=user_id)
                 print(f"    company fields {list(cfields)} → {res}")
                 if res == "updated":
                     co_fields_set += 1
@@ -270,7 +271,8 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
 
             if contact_vals:
                 res = client.update_contact_fields(ct_id, contact_vals,
-                                                   contact_data=ct, dry_run=dry_run)
+                                                   contact_data=ct, dry_run=dry_run,
+                                                   owner_id=user_id)
                 if res == "updated":
                     ct_fields_set += 1
                 elif res == "failed":

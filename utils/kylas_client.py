@@ -536,6 +536,23 @@ class KylasClient:
         return {k: v for k, v in body.items()
                 if k not in KylasClient._READONLY_PUT_FIELDS}
 
+    @staticmethod
+    def _preserve_owner(base: dict, body: dict, owner_id: int = None) -> None:
+        """Keep the owner on a field-only PUT, in place.
+
+        A full PUT that omits ownedBy makes Kylas reset the record's owner to
+        the API user. So we re-assert it: owner_id when the caller resolved one
+        (e.g. --mode both), otherwise the record's current owner from the GET.
+        Kylas accepts ownedBy as {"id": <id>} on a full PUT (same shape the
+        owner-reassignment fallback uses).
+        """
+        if owner_id is None:
+            ob = body.get("ownedBy")
+            owner_id = (ob.get("id") if isinstance(ob, dict)
+                        else ob if isinstance(ob, int) else None)
+        if owner_id is not None:
+            base["ownedBy"] = {"id": owner_id}
+
     def _without_owner_keys(self, fields: dict, entity: str) -> dict:
         """Strip ownedBy/ownerId from a field-push map (owner isn't writable here).
 
@@ -786,11 +803,12 @@ class KylasClient:
         return "updated" if applied else "failed"
 
     def update_company_fields(self, company_id: int, fields: dict,
-                              dry_run: bool = False) -> str:
+                              dry_run: bool = False, owner_id: int = None) -> str:
         """Push mapped fields onto a company (GET full object, set, PUT back).
 
         Returns "updated", "unchanged", or "failed". On a Kylas rejection the
-        failing field(s) are isolated and named (see _put_fields).
+        failing field(s) are isolated and named (see _put_fields). The owner is
+        preserved (see _preserve_owner) so a field-only PUT never resets it.
         """
         fields = self._without_owner_keys(fields, "company")
         if not fields:
@@ -803,15 +821,18 @@ class KylasClient:
         except Exception as exc:
             print(f"[Kylas] ERROR fetching company {company_id}: {exc}")
             return "failed"
-        return self._put_fields("companies", company_id,
-                                self._clean_for_put(body), fields, dry_run, defs)
+        base = self._clean_for_put(body)
+        self._preserve_owner(base, body, owner_id)
+        return self._put_fields("companies", company_id, base, fields, dry_run, defs)
 
     def update_contact_fields(self, contact_id: int, fields: dict,
-                              contact_data: dict = None, dry_run: bool = False) -> str:
+                              contact_data: dict = None, dry_run: bool = False,
+                              owner_id: int = None) -> str:
         """Push mapped fields onto a contact. Returns updated/unchanged/failed.
 
         On a Kylas rejection the failing field(s) are isolated and named
-        (see _put_fields).
+        (see _put_fields). The owner is preserved (see _preserve_owner) so a
+        field-only PUT never resets it.
         """
         fields = self._without_owner_keys(fields, "contact")
         if not fields:
@@ -830,8 +851,9 @@ class KylasClient:
         co = body.get("company")              # contact PUT wants company as an int id
         if isinstance(co, dict):
             body["company"] = co.get("id")
-        return self._put_fields("contacts", contact_id,
-                                self._clean_for_put(body), fields, dry_run, defs)
+        base = self._clean_for_put(body)
+        self._preserve_owner(base, body, owner_id)
+        return self._put_fields("contacts", contact_id, base, fields, dry_run, defs)
 
     def fetch_sample(self, entity: str) -> dict:
         """Return the full detail record of one recent entity ('company'/'contact')."""
