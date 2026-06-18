@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import time
 import requests
 from datetime import datetime, timezone
@@ -556,14 +557,35 @@ class KylasClient:
     _PICKLIST_TYPES = {"PICK_LIST", "PICKLIST", "DROPDOWN", "DROP_DOWN", "SELECT", "RADIO"}
     _BOOLEAN_TYPES  = {"TOGGLE", "CHECKBOX", "BOOLEAN", "BOOL", "SWITCH"}
 
+    def _load_picklist_config(self) -> dict:
+        """Load config/kylas_picklists.json: {entity: {cf_key: {label: id}}}.
+
+        A manual fallback for dropdown options the API can't surface — notably
+        company custom fields, whose /entities/company/fields endpoint returns
+        no picklist values on this tenant. Optional; returns {} if absent.
+        """
+        cfg = getattr(self, "_pick_cfg", None)
+        if cfg is not None:
+            return cfg
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            "config", "kylas_picklists.json")
+        try:
+            with open(path) as f:
+                cfg = json.load(f)
+        except Exception:
+            cfg = {}
+        self._pick_cfg = cfg if isinstance(cfg, dict) else {}
+        return self._pick_cfg
+
     def get_custom_field_defs(self, entity: str) -> dict:
-        """Return {cf_key: {"type": str, "options": {label_lower: id}}} for entity.
+        """Return {cf_key: {"type", "options"(label_lower->id), "labels"(id->label)}}.
 
         Cached per entity. Powers outgoing value formatting: Kylas wants a
         dropdown field's option *id* (not its label, e.g. cfOffsiteTimeline
         "Jan - Mar" -> 257199) and a real boolean for toggle fields — pushing
-        the raw Airtable string otherwise trips an opaque 500. Best-effort:
-        returns {} if the definitions can't be read, so values pass through.
+        the raw Airtable string otherwise trips an opaque 500. Options come from
+        /entities/{entity}/fields, supplemented by config/kylas_picklists.json
+        for fields the API won't resolve. Best-effort.
         """
         cache = getattr(self, "_cf_defs_cache", None)
         if cache is None:
@@ -588,7 +610,7 @@ class KylasClient:
                 if not str(key).startswith("cf"):
                     continue
                 ftype = str(fld.get("type") or fld.get("fieldType") or "").upper()
-                options = {}
+                options, labels = {}, {}
                 for opt in (fld.get("pickLists") or fld.get("picklists")
                             or fld.get("options") or fld.get("pickList") or []):
                     if not isinstance(opt, dict):
@@ -598,22 +620,42 @@ class KylasClient:
                              or opt.get("name") or opt.get("label") or "")
                     if oid is not None and str(label).strip():
                         options[str(label).strip().lower()] = oid
-                # Prefer the entry that actually carries options.
+                        labels[oid] = str(label).strip()
                 if str(key) not in defs or (options and not defs[str(key)].get("options")):
-                    defs[str(key)] = {"type": ftype, "options": options}
+                    defs[str(key)] = {"type": ftype, "options": options, "labels": labels}
             if any(d.get("options") for d in defs.values()):
                 break   # got picklist data — second pass unnecessary
+
+        # Supplement with the config picklist map (fills in what the API omits).
+        for key, opt_map in (self._load_picklist_config().get(entity) or {}).items():
+            d = defs.get(str(key)) or {"type": "PICK_LIST", "options": {}, "labels": {}}
+            opts, labs = dict(d.get("options") or {}), dict(d.get("labels") or {})
+            for label, oid in opt_map.items():
+                opts[str(label).strip().lower()] = oid
+                labs[oid] = str(label).strip()
+            d.update({"type": d.get("type") or "PICK_LIST", "options": opts, "labels": labs})
+            defs[str(key)] = d
+
         cache[entity] = defs
         return defs
 
-    @staticmethod
-    def _format_cf_value(defn: dict, value):
+    def _warn_unmatched(self, key: str, value, defn: dict) -> None:
+        warned = getattr(self, "_pick_warned", None)
+        if warned is None:
+            warned = self._pick_warned = set()
+        if key in warned:
+            return
+        warned.add(key)
+        opts = ", ".join(sorted((defn.get("labels") or {}).values())[:8])
+        print(f"  [Kylas] WARN: {key} value {value!r} matches no dropdown option"
+              + (f" (options: {opts})" if opts else "") + " — leaving as-is")
+
+    def _format_cf_value(self, key: str, defn: dict, value):
         """Coerce one Airtable value to the shape Kylas wants for this cf type.
 
         Dropdown -> the option's numeric id (matched case-insensitively from its
-        label). Boolean -> a real bool. Anything unmatched or any other type is
-        passed through unchanged, so per-field isolation can still surface a
-        genuine problem rather than this silently mangling it.
+        label). Boolean -> a real bool. Anything unmatched / other types pass
+        through, so per-field isolation can still surface a genuine problem.
         """
         if not defn or value is None:
             return value
@@ -621,7 +663,7 @@ class KylasClient:
             value = value[0] if value else ""
         ftype   = defn.get("type", "")
         options = defn.get("options") or {}
-        if ftype in KylasClient._PICKLIST_TYPES or options:
+        if ftype in self._PICKLIST_TYPES or options:
             if isinstance(value, bool):
                 return value
             if isinstance(value, (int, float)):
@@ -631,8 +673,9 @@ class KylasClient:
                 return options[s.lower()]
             if s.isdigit():
                 return int(s)
+            self._warn_unmatched(key, value, defn)
             return value
-        if ftype in KylasClient._BOOLEAN_TYPES:
+        if ftype in self._BOOLEAN_TYPES:
             if isinstance(value, bool):
                 return value
             s = str(value).strip().lower()
@@ -642,23 +685,36 @@ class KylasClient:
                 return False
         return value
 
-    def _format_fields(self, fields: dict, entity: str) -> dict:
-        """Coerce custom-field values to Kylas's expected shapes (dropdown id, bool).
-
-        Best-effort and side-effect free: if field definitions can't be read,
-        the original values are returned and the write proceeds unchanged.
-        """
-        cf_keys = [k for k in fields if self._is_custom_key(k)]
-        if not cf_keys:
-            return fields
-        defs = self.get_custom_field_defs(entity)
+    def _format_fields(self, fields: dict, defs: dict) -> dict:
+        """Coerce custom-field values to Kylas's expected shapes (dropdown id, bool)."""
         if not defs:
             return fields
         out = dict(fields)
-        for k in cf_keys:
-            if k in defs:
-                out[k] = self._format_cf_value(defs[k], out[k])
+        for k in list(out):
+            if self._is_custom_key(k) and k in defs:
+                out[k] = self._format_cf_value(k, defs[k], out[k])
         return out
+
+    def _cf_candidates(self, key: str, value, defs: dict) -> list:
+        """Value encodings to try for one field, best first.
+
+        For a resolved dropdown id we don't know whether Kylas wants the bare
+        id, {"id": id}, or {"id": id, "name": label} — so isolation tries each.
+        Non-dropdown values yield just themselves.
+        """
+        defn = (defs or {}).get(key)
+        if not defn or isinstance(value, bool):
+            return [value]
+        is_pick = defn.get("type", "") in self._PICKLIST_TYPES or defn.get("options")
+        oid = value.get("id") if isinstance(value, dict) else (
+            value if isinstance(value, int) else None)
+        if not is_pick or oid is None:
+            return [value]
+        label = (defn.get("labels") or {}).get(oid)
+        cands = [oid, {"id": oid}]
+        if label:
+            cands.append({"id": oid, "name": label})
+        return cands
 
     @staticmethod
     def _short_err(exc) -> str:
@@ -667,7 +723,7 @@ class KylasClient:
         return s.split(" — ", 1)[1] if " — " in s else s[:140]
 
     def _put_fields(self, path: str, entity_id: int, base: dict,
-                    fields: dict, dry_run: bool) -> str:
+                    fields: dict, dry_run: bool, defs: dict = None) -> str:
         """Apply mapped `fields` onto a clean `base` body and PUT to {path}/{id}.
 
         Fast path: apply everything and PUT once. If Kylas rejects that — it
@@ -677,7 +733,9 @@ class KylasClient:
           1. PUT the unchanged base; if even that fails, the record itself
              can't round-trip and it is not a mapped-field problem.
           2. Otherwise apply the fields one at a time, keeping the ones Kylas
-             accepts and reporting exactly which one(s) it rejects.
+             accepts and reporting exactly which one(s) it rejects. Dropdown
+             values are retried in a few encodings (id / {id} / {id,name}) so a
+             wrong-shape guess self-corrects instead of failing.
         So one bad field no longer sinks the whole record, and the culprit is
         named in the log. Returns "updated" | "unchanged" | "failed".
         """
@@ -704,15 +762,23 @@ class KylasClient:
         # Base is fine — find which mapped field(s) Kylas rejects, keeping the good ones.
         good, applied, rejected = dict(base), [], {}
         for key, value in fields.items():
-            trial = dict(good)
-            if not self._apply_fields(trial, {key: value}):
+            candidates = self._cf_candidates(key, value, defs)
+            probe = dict(good)
+            if not self._apply_fields(probe, {key: candidates[0]}):
                 continue  # no-op or skipped (e.g. object-from-scalar guard)
-            try:
-                self._put(f"{path}/{entity_id}", trial)
-                good = trial
-                applied.append(key)
-            except Exception as exc:
-                rejected[key] = self._short_err(exc)
+            err = None
+            for cand in candidates:
+                trial = dict(good)
+                self._apply_fields(trial, {key: cand})
+                try:
+                    self._put(f"{path}/{entity_id}", trial)
+                    good, err = trial, None
+                    applied.append(key)
+                    break
+                except Exception as exc:
+                    err = self._short_err(exc)
+            if err is not None:
+                rejected[key] = err
         if rejected:
             detail = ", ".join(f"{k} [{v}]" for k, v in rejected.items())
             print(f"[Kylas] {path}/{entity_id}: Kylas rejected {detail}"
@@ -729,7 +795,8 @@ class KylasClient:
         fields = self._without_owner_keys(fields, "company")
         if not fields:
             return "unchanged"
-        fields = self._format_fields(fields, "company")
+        defs   = self.get_custom_field_defs("company")
+        fields = self._format_fields(fields, defs)
         try:
             body = self._get(f"companies/{company_id}")
             body = body.get("data", body)
@@ -737,7 +804,7 @@ class KylasClient:
             print(f"[Kylas] ERROR fetching company {company_id}: {exc}")
             return "failed"
         return self._put_fields("companies", company_id,
-                                self._clean_for_put(body), fields, dry_run)
+                                self._clean_for_put(body), fields, dry_run, defs)
 
     def update_contact_fields(self, contact_id: int, fields: dict,
                               contact_data: dict = None, dry_run: bool = False) -> str:
@@ -749,7 +816,8 @@ class KylasClient:
         fields = self._without_owner_keys(fields, "contact")
         if not fields:
             return "unchanged"
-        fields = self._format_fields(fields, "contact")
+        defs   = self.get_custom_field_defs("contact")
+        fields = self._format_fields(fields, defs)
         try:
             if contact_data and len(contact_data) > 4:
                 body = dict(contact_data)
@@ -763,7 +831,7 @@ class KylasClient:
         if isinstance(co, dict):
             body["company"] = co.get("id")
         return self._put_fields("contacts", contact_id,
-                                self._clean_for_put(body), fields, dry_run)
+                                self._clean_for_put(body), fields, dry_run, defs)
 
     def fetch_sample(self, entity: str) -> dict:
         """Return the full detail record of one recent entity ('company'/'contact')."""

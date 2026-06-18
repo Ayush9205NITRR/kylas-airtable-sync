@@ -89,7 +89,7 @@ def test_update_company_fields_cleans_body():
         "customFieldValues": {},
     }
     put_body = {}
-    client._get = lambda path: {"data": dict(full)}
+    client._get = lambda path, params=None: {"data": dict(full)}
     client._put = lambda path, body: put_body.update(body) or {}
     res = client.update_company_fields(123, {"cfSourceOfData": "LinkedIn"})
     assert res == "updated", res
@@ -155,7 +155,7 @@ def test_object_field_from_scalar_is_skipped():
         "customFieldValues": {},
     }
     put_body = {}
-    client._get = lambda path: {"data": dict(full)}
+    client._get = lambda path, params=None: {"data": dict(full)}
     client._put = lambda path, body: put_body.update(body) or {}
     res = client.update_company_fields(
         9, {"numberOfEmployees": 50, "cfSourceOfData": "LinkedIn"})
@@ -168,8 +168,8 @@ def test_object_field_from_scalar_is_skipped():
 def test_failing_field_is_isolated_and_good_ones_kept():
     import requests
     client = KylasClient()
-    client._get = lambda path: {"data": {"id": 7, "name": "Acme",
-                                         "customFieldValues": {}}}
+    client._get = lambda path, params=None: {"data": {"id": 7, "name": "Acme",
+                                                      "customFieldValues": {}}}
 
     puts = []
 
@@ -199,8 +199,8 @@ def test_failing_field_is_isolated_and_good_ones_kept():
 def test_all_fields_fail_returns_failed():
     import requests
     client = KylasClient()
-    client._get = lambda path: {"data": {"id": 8, "name": "Acme",
-                                         "customFieldValues": {}}}
+    client._get = lambda path, params=None: {"data": {"id": 8, "name": "Acme",
+                                                      "customFieldValues": {}}}
 
     def fake_put(path, body):
         if body.get("customFieldValues"):      # any field present -> reject
@@ -230,6 +230,32 @@ def test_custom_field_defs_parsed_from_endpoint():
     client._get = lambda *a, **k: (_ for _ in ()).throw(AssertionError("should be cached"))
     assert client.get_custom_field_defs("company")["cfNotes"]["type"] == "TEXT_FIELD"
     print("PASS custom field defs parsed (dropdown options + types) and cached")
+
+
+def test_company_dropdown_via_config_with_shape_fallback():
+    import requests
+    client = KylasClient()
+    # API returns no field defs for company; the config picklist map must
+    # supply cfOffsiteTimeline's options (Jan - Mar -> 257199).
+    def fake_get(path, params=None):
+        if path.startswith("entities/"):
+            return {"content": []}
+        return {"data": {"id": 1, "name": "Acme", "customFieldValues": {}}}
+    client._get = fake_get
+
+    puts = []
+    def fake_put(path, body):
+        puts.append(dict(body.get("customFieldValues") or {}))
+        v = (body.get("customFieldValues") or {}).get("cfOffsiteTimeline")
+        if v is not None and not isinstance(v, dict):   # bare id rejected; {id} accepted
+            raise requests.HTTPError("500 Server Error — Generic error, please check with admin.")
+        return {}
+    client._put = fake_put
+
+    res = client.update_company_fields(1, {"cfOffsiteTimeline": "Jan - Mar"})
+    assert res == "updated", res
+    assert puts[-1]["cfOffsiteTimeline"] == {"id": 257199}, puts[-1]
+    print("PASS company dropdown resolved via config + write-shape self-corrected to {id}")
 
 
 def test_dropdown_label_and_boolean_coerced_on_write():
@@ -269,5 +295,6 @@ if __name__ == "__main__":
     test_failing_field_is_isolated_and_good_ones_kept()
     test_all_fields_fail_returns_failed()
     test_custom_field_defs_parsed_from_endpoint()
+    test_company_dropdown_via_config_with_shape_fallback()
     test_dropdown_label_and_boolean_coerced_on_write()
     print("\nALL TESTS PASSED")

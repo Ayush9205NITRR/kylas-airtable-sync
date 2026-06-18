@@ -1,0 +1,12 @@
+{
+  "_comment": "Manual dropdown (picklist) option maps: {entity: {cfFieldKey: {label: optionId}}}. Used to format Airtable values into the option ids Kylas requires on write, for fields whose options the API does not return (notably company custom fields). Read the ids from Kylas: Customizations -> Fields -> open the field -> hover an option to see its Id. label match is case-insensitive.",
+  "company": {
+    "cfOffsiteTimeline": {
+      "Jan - Mar": 257199,
+      "Apr - Jun": 257200,
+      "Jul - Sep": 257201,
+      "Oct - Dec": 257202
+    }
+  },
+  "contact": {}
+}
