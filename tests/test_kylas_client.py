@@ -213,6 +213,50 @@ def test_all_fields_fail_returns_failed():
     print("PASS all-fields-bad returns failed (base still round-trips)")
 
 
+def test_custom_field_defs_parsed_from_endpoint():
+    client = KylasClient()
+    client._get = lambda path, params=None: {"content": [
+        {"fieldName": "cfOffsiteTimeline", "type": "PICK_LIST",
+         "pickLists": [{"id": 257199, "value": "Jan - Mar"},
+                       {"id": 257202, "value": "Oct - Dec"}]},
+        {"fieldName": "cfBooleanPostLink", "type": "TOGGLE", "pickLists": []},
+        {"fieldName": "cfNotes", "type": "TEXT_FIELD"},
+    ]}
+    defs = client.get_custom_field_defs("company")
+    assert defs["cfOffsiteTimeline"]["options"]["jan - mar"] == 257199, defs
+    assert defs["cfOffsiteTimeline"]["options"]["oct - dec"] == 257202, defs
+    assert defs["cfBooleanPostLink"]["type"] == "TOGGLE", defs
+    # cached: a second call must not re-hit the endpoint
+    client._get = lambda *a, **k: (_ for _ in ()).throw(AssertionError("should be cached"))
+    assert client.get_custom_field_defs("company")["cfNotes"]["type"] == "TEXT_FIELD"
+    print("PASS custom field defs parsed (dropdown options + types) and cached")
+
+
+def test_dropdown_label_and_boolean_coerced_on_write():
+    client = KylasClient()
+    client.get_custom_field_defs = lambda entity: {
+        "cfOffsiteTimeline": {"type": "PICK_LIST",
+                              "options": {"jan - mar": 257199, "oct - dec": 257202}},
+        "cfBooleanPostLink": {"type": "TOGGLE", "options": {}},
+        "cfSourceOfData":    {"type": "TEXT_FIELD", "options": {}},
+    }
+    client._get = lambda path, params=None: {"data": {"id": 1, "name": "Acme",
+                                                      "customFieldValues": {}}}
+    put_body = {}
+    client._put = lambda path, body: put_body.update(body) or {}
+    res = client.update_company_fields(1, {
+        "cfOffsiteTimeline": "Jan - Mar",   # dropdown label -> option id
+        "cfBooleanPostLink": "yes",         # boolean string -> True
+        "cfSourceOfData":    "LinkedIn",    # text -> unchanged
+    })
+    assert res == "updated", res
+    cfv = put_body["customFieldValues"]
+    assert cfv["cfOffsiteTimeline"] == 257199, cfv
+    assert cfv["cfBooleanPostLink"] is True, cfv
+    assert cfv["cfSourceOfData"] == "LinkedIn", cfv
+    print("PASS dropdown label -> id and boolean coerced; text untouched")
+
+
 if __name__ == "__main__":
     test_clean_for_put_strips_readonly()
     test_request_retries_on_429()
@@ -224,4 +268,6 @@ if __name__ == "__main__":
     test_object_field_from_scalar_is_skipped()
     test_failing_field_is_isolated_and_good_ones_kept()
     test_all_fields_fail_returns_failed()
+    test_custom_field_defs_parsed_from_endpoint()
+    test_dropdown_label_and_boolean_coerced_on_write()
     print("\nALL TESTS PASSED")

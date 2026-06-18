@@ -552,6 +552,114 @@ class KylasClient:
             self._owner_field_warned = True
         return {k: v for k, v in fields.items() if k not in owner_keys}
 
+    # Kylas custom-field "type" names (from /entities/{entity}/fields).
+    _PICKLIST_TYPES = {"PICK_LIST", "PICKLIST", "DROPDOWN", "DROP_DOWN", "SELECT", "RADIO"}
+    _BOOLEAN_TYPES  = {"TOGGLE", "CHECKBOX", "BOOLEAN", "BOOL", "SWITCH"}
+
+    def get_custom_field_defs(self, entity: str) -> dict:
+        """Return {cf_key: {"type": str, "options": {label_lower: id}}} for entity.
+
+        Cached per entity. Powers outgoing value formatting: Kylas wants a
+        dropdown field's option *id* (not its label, e.g. cfOffsiteTimeline
+        "Jan - Mar" -> 257199) and a real boolean for toggle fields — pushing
+        the raw Airtable string otherwise trips an opaque 500. Best-effort:
+        returns {} if the definitions can't be read, so values pass through.
+        """
+        cache = getattr(self, "_cf_defs_cache", None)
+        if cache is None:
+            cache = self._cf_defs_cache = {}
+        if entity in cache:
+            return cache[entity]
+        defs = {}
+        for custom_only in ("false", "true"):   # 'false' tends to return the richer payload
+            try:
+                resp = self._get(f"entities/{entity}/fields", {
+                    "entityType": entity, "custom-only": custom_only,
+                    "sort": "createdAt,asc", "page": 0, "size": 200,
+                })
+            except Exception:
+                continue
+            items = resp if isinstance(resp, list) else (
+                resp.get("content") or resp.get("data") or [])
+            for fld in items:
+                if not isinstance(fld, dict):
+                    continue
+                key = fld.get("fieldName") or fld.get("apiName") or fld.get("name") or ""
+                if not str(key).startswith("cf"):
+                    continue
+                ftype = str(fld.get("type") or fld.get("fieldType") or "").upper()
+                options = {}
+                for opt in (fld.get("pickLists") or fld.get("picklists")
+                            or fld.get("options") or fld.get("pickList") or []):
+                    if not isinstance(opt, dict):
+                        continue
+                    oid   = opt.get("id")
+                    label = (opt.get("value") or opt.get("displayName")
+                             or opt.get("name") or opt.get("label") or "")
+                    if oid is not None and str(label).strip():
+                        options[str(label).strip().lower()] = oid
+                # Prefer the entry that actually carries options.
+                if str(key) not in defs or (options and not defs[str(key)].get("options")):
+                    defs[str(key)] = {"type": ftype, "options": options}
+            if any(d.get("options") for d in defs.values()):
+                break   # got picklist data — second pass unnecessary
+        cache[entity] = defs
+        return defs
+
+    @staticmethod
+    def _format_cf_value(defn: dict, value):
+        """Coerce one Airtable value to the shape Kylas wants for this cf type.
+
+        Dropdown -> the option's numeric id (matched case-insensitively from its
+        label). Boolean -> a real bool. Anything unmatched or any other type is
+        passed through unchanged, so per-field isolation can still surface a
+        genuine problem rather than this silently mangling it.
+        """
+        if not defn or value is None:
+            return value
+        if isinstance(value, list):          # a single-select may arrive as a 1-item list
+            value = value[0] if value else ""
+        ftype   = defn.get("type", "")
+        options = defn.get("options") or {}
+        if ftype in KylasClient._PICKLIST_TYPES or options:
+            if isinstance(value, bool):
+                return value
+            if isinstance(value, (int, float)):
+                return int(value)
+            s = str(value).strip()
+            if s.lower() in options:
+                return options[s.lower()]
+            if s.isdigit():
+                return int(s)
+            return value
+        if ftype in KylasClient._BOOLEAN_TYPES:
+            if isinstance(value, bool):
+                return value
+            s = str(value).strip().lower()
+            if s in ("true", "yes", "y", "1", "checked", "on"):
+                return True
+            if s in ("false", "no", "n", "0", "unchecked", "off", ""):
+                return False
+        return value
+
+    def _format_fields(self, fields: dict, entity: str) -> dict:
+        """Coerce custom-field values to Kylas's expected shapes (dropdown id, bool).
+
+        Best-effort and side-effect free: if field definitions can't be read,
+        the original values are returned and the write proceeds unchanged.
+        """
+        cf_keys = [k for k in fields if self._is_custom_key(k)]
+        if not cf_keys:
+            return fields
+        defs = self.get_custom_field_defs(entity)
+        if not defs:
+            return fields
+        out = dict(fields)
+        for k in cf_keys:
+            if k in defs:
+                out[k] = self._format_cf_value(defs[k], out[k])
+        return out
+
     @staticmethod
     def _short_err(exc) -> str:
         """Compact one-line form of an error for per-field diagnostics."""
@@ -621,6 +729,7 @@ class KylasClient:
         fields = self._without_owner_keys(fields, "company")
         if not fields:
             return "unchanged"
+        fields = self._format_fields(fields, "company")
         try:
             body = self._get(f"companies/{company_id}")
             body = body.get("data", body)
@@ -640,6 +749,7 @@ class KylasClient:
         fields = self._without_owner_keys(fields, "contact")
         if not fields:
             return "unchanged"
+        fields = self._format_fields(fields, "contact")
         try:
             if contact_data and len(contact_data) > 4:
                 body = dict(contact_data)
