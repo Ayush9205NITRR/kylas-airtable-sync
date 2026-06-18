@@ -135,11 +135,64 @@ def _load_daily_targets() -> dict:
         return {}
 
 
+_STAGE_SHORT = {
+    "MQL (Marketing Qualified Lead)":               "MQL",
+    "CNC (Could Not Connect) - 1":                  "CNC-1",
+    "CNC (Could Not Connect) - 2":                  "CNC-2",
+    "SQL (Sales Qualified Lead)":                   "SQL",
+    "Discovery Call Booked":                        "DCB",
+    "Discovery Call No-Show":                       "DCB-NS",
+    "Discovery Call Done - Awaiting Client Inputs": "DCB-Done",
+    "Yet to Be Mined":                              "YtBM",
+    "Not Interested":                               "NOI",
+    "Follow-up (1)":                                "FU-1",
+    "Follow-up (2)":                                "FU-2",
+    "Follow-up (3)":                                "FU-3",
+    "Followup - CNC":                               "FU-CNC",
+    "Activation":                                   "Activation",
+    "Not a Decision Maker (NDM)":                   "NDM",
+    "Invalid Contact":                              "Invalid",
+    "Reschedule Pending":                           "Reschedule",
+    "Closing Loops - Low Value":                    "Low Value",
+    "Offsite Delayed":                              "Delayed",
+    "POC - Organisation - Changed":                 "POC-Changed",
+}
+
+_STAGE_ORDER = [
+    "MQL", "CNC-1", "CNC-2", "SQL", "DCB", "FU-1", "FU-2", "FU-3",
+    "FU-CNC", "Activation", "DCB-NS", "DCB-Done", "Reschedule",
+    "NDM", "Low Value", "Delayed", "NOI", "YtBM", "Invalid",
+    "POC-Changed",
+]
+
+
+def _stages_summary(raw) -> str:
+    """
+    Compact stage breakdown from a multipleLookupValues list or comma-string.
+    Returns e.g. "MQL: 5 · CNC-1: 3 · CNC-2: 2"
+    """
+    if not raw:
+        return "—"
+    items = raw if isinstance(raw, list) else [s.strip() for s in str(raw).split(",")]
+    counts: dict = {}
+    for s in items:
+        short = _STAGE_SHORT.get(str(s).strip(), str(s).strip())
+        counts[short] = counts.get(short, 0) + 1
+    # Sort by predefined order, then alphabetically for unlisted stages
+    def _rank(k):
+        try:
+            return _STAGE_ORDER.index(k)
+        except ValueError:
+            return len(_STAGE_ORDER)
+    parts = [f"{k}: {v}" for k, v in sorted(counts.items(), key=lambda x: _rank(x[0]))]
+    return " · ".join(parts) or "—"
+
+
 def _load_account_activity_today() -> list:
     """
     Reads today's Account Activity Log from Airtable, joins with Companies CRM
-    (for Pipeline Stage BD + Source of Data), and returns rows sorted by
-    Attempted POCs descending.  Only rows with at least 1 attempted POC included.
+    (for contact pipeline stage breakdown, Source of Data, Offsite Timeline).
+    Returns rows sorted by Attempted POCs descending (only rows with ≥1 attempt).
     """
     today = date.today().isoformat()
     try:
@@ -150,18 +203,24 @@ def _load_account_activity_today() -> list:
         if not acc_rows:
             return []
 
-        # Build a company-info lookup from the CRM Companies table
+        # Companies CRM — contact stage lookup, source, offsite timeline
         co_rows = AirtableClient("Companies").table.all(
-            fields=["Kylas Company Id", "Pipeline Stage BD", "Source of Data"]
+            fields=[
+                "Kylas Company ID",
+                "Pipeline Stage (from Contacts 2)",
+                "Source of Data",
+                "Offsite Timeline",
+            ]
         )
         co_info: dict = {}
         for r in co_rows:
             f   = r["fields"]
-            cid = str(f.get("Kylas Company Id") or "").strip()
+            cid = str(f.get("Kylas Company ID") or "").strip()
             if cid:
                 co_info[cid] = {
-                    "stage":  str(f.get("Pipeline Stage BD") or ""),
-                    "source": str(f.get("Source of Data")    or ""),
+                    "stages":   f.get("Pipeline Stage (from Contacts 2)") or [],
+                    "source":   str(f.get("Source of Data")   or ""),
+                    "offsite":  str(f.get("Offsite Timeline") or ""),
                 }
 
         result = []
@@ -170,15 +229,15 @@ def _load_account_activity_today() -> list:
             attempted = int(f.get("Attempted POCs", 0) or 0)
             if attempted == 0:
                 continue
-            cid  = str(f.get("Kylas Company Id") or "").strip()
-            co   = co_info.get(cid, {})
+            cid = str(f.get("Kylas Company Id") or "").strip()
+            co  = co_info.get(cid, {})
             result.append({
                 "company":   str(f.get("Company Name") or ""),
-                "stage":     co.get("stage",  ""),
-                "source":    co.get("source", ""),
+                "stages":    _stages_summary(co.get("stages", [])),
                 "attempted": attempted,
                 "connected": int(f.get("Connected POCs", 0) or 0),
-                "dcb":       int(f.get("DCB POCs",       0) or 0),
+                "source":    co.get("source",  ""),
+                "offsite":   co.get("offsite", ""),
             })
 
         result.sort(key=lambda x: x["attempted"], reverse=True)
@@ -196,21 +255,21 @@ def _account_table_html(rows: list) -> str:
         'Account Activity Today</p>'
         f'<table {_TABLE}><thead><tr>'
         f'<th {_TH}>Account</th>'
-        f'<th {_TH}>Pipeline Stage</th>'
-        f'<th {_TH}>Source</th>'
+        f'<th {_TH}>Pipeline Stages</th>'
         f'<th {_THC}>Attempted</th>'
         f'<th {_THC}>Connected</th>'
-        f'<th {_THC}>Discovery Calls</th>'
+        f'<th {_TH}>Source of Data</th>'
+        f'<th {_TH}>Offsite Timeline</th>'
         f'</tr></thead><tbody>'
     )
     body = "".join(
         f'<tr>'
         f'<td {_TD}>{r["company"]}</td>'
-        f'<td {_TD}>{r["stage"]}</td>'
-        f'<td {_TD}>{r["source"]}</td>'
+        f'<td {_TD} style="font-size:12px;">{r["stages"]}</td>'
         f'<td {_TDB}>{r["attempted"]}</td>'
         f'<td {_TDC}>{r["connected"]}</td>'
-        f'<td {_TDC}>{r["dcb"] if r["dcb"] else "—"}</td>'
+        f'<td {_TD}>{r["source"]  or "—"}</td>'
+        f'<td {_TD}>{r["offsite"] or "—"}</td>'
         f'</tr>'
         for r in rows
     )
