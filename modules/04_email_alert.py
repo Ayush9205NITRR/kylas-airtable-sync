@@ -27,6 +27,7 @@ from datetime import date
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 TEAM_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
@@ -134,6 +135,88 @@ def _load_daily_targets() -> dict:
         return {}
 
 
+def _load_account_activity_today() -> list:
+    """
+    Reads today's Account Activity Log from Airtable, joins with Companies CRM
+    (for Pipeline Stage BD + Source of Data), and returns rows sorted by
+    Attempted POCs descending.  Only rows with at least 1 attempted POC included.
+    """
+    today = date.today().isoformat()
+    try:
+        from utils.airtable_client import AirtableClient
+        acc_rows = AirtableClient("Account Activity Log").table.all(
+            formula=f"{{Date}}='{today}'"
+        )
+        if not acc_rows:
+            return []
+
+        # Build a company-info lookup from the CRM Companies table
+        co_rows = AirtableClient("Companies").table.all(
+            fields=["Kylas Company Id", "Pipeline Stage BD", "Source of Data"]
+        )
+        co_info: dict = {}
+        for r in co_rows:
+            f   = r["fields"]
+            cid = str(f.get("Kylas Company Id") or "").strip()
+            if cid:
+                co_info[cid] = {
+                    "stage":  str(f.get("Pipeline Stage BD") or ""),
+                    "source": str(f.get("Source of Data")    or ""),
+                }
+
+        result = []
+        for r in acc_rows:
+            f         = r["fields"]
+            attempted = int(f.get("Attempted POCs", 0) or 0)
+            if attempted == 0:
+                continue
+            cid  = str(f.get("Kylas Company Id") or "").strip()
+            co   = co_info.get(cid, {})
+            result.append({
+                "company":   str(f.get("Company Name") or ""),
+                "stage":     co.get("stage",  ""),
+                "source":    co.get("source", ""),
+                "attempted": attempted,
+                "connected": int(f.get("Connected POCs", 0) or 0),
+                "dcb":       int(f.get("DCB POCs",       0) or 0),
+            })
+
+        result.sort(key=lambda x: x["attempted"], reverse=True)
+        return result
+    except Exception as exc:
+        print(f"[Email] WARNING: could not load account activity: {exc}")
+        return []
+
+
+def _account_table_html(rows: list) -> str:
+    if not rows:
+        return ""
+    hdr = (
+        '<p style="font-weight:bold;font-size:14px;margin:24px 0 6px;">'
+        'Account Activity Today</p>'
+        f'<table {_TABLE}><thead><tr>'
+        f'<th {_TH}>Account</th>'
+        f'<th {_TH}>Pipeline Stage</th>'
+        f'<th {_TH}>Source</th>'
+        f'<th {_THC}>Attempted</th>'
+        f'<th {_THC}>Connected</th>'
+        f'<th {_THC}>Discovery Calls</th>'
+        f'</tr></thead><tbody>'
+    )
+    body = "".join(
+        f'<tr>'
+        f'<td {_TD}>{r["company"]}</td>'
+        f'<td {_TD}>{r["stage"]}</td>'
+        f'<td {_TD}>{r["source"]}</td>'
+        f'<td {_TDB}>{r["attempted"]}</td>'
+        f'<td {_TDC}>{r["connected"]}</td>'
+        f'<td {_TDC}>{r["dcb"] if r["dcb"] else "—"}</td>'
+        f'</tr>'
+        for r in rows
+    )
+    return hdr + body + "</tbody></table>"
+
+
 def _load_monthly_fixed() -> dict:
     """
     {metric: monthly_target} for metrics with fixed monthly goals (DCB, SQL).
@@ -234,7 +317,7 @@ def _build_first_half(name: str, today: str, bd: dict, targets: dict,
 
 
 def _build_full_day(name: str, today: str, bd: dict, targets: dict,
-                    monthly_fixed: dict = None) -> tuple:
+                    monthly_fixed: dict = None, account_rows: list = None) -> tuple:
     w1          = bd.get("w1", {})
     w2          = bd.get("w2", {})
     has_windows = any(w1.get(k, 0) for k in METRICS)
@@ -272,6 +355,8 @@ def _build_full_day(name: str, today: str, bd: dict, targets: dict,
 
     table   = f'<table {_TABLE}><thead><tr>{hdr}</tr></thead><tbody>{rows}</tbody></table>'
     content = table + _monthly_goal_html(monthly_fixed or {})
+    if account_rows:
+        content += _account_table_html(account_rows)
     subject  = f"BD | {name} | {_friendly_date()} | EOD"
     subtitle = f"BD Activity &nbsp;&middot;&nbsp; {today} &nbsp;&middot;&nbsp; End of Day"
     return subject, _html_doc(name, subtitle, content)
@@ -327,11 +412,14 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
 
     # Demo mode — send one sample to the provided addresses, no CC
     if demo_recipients:
-        sample_bd = next(iter((bd_enriched or {}).values()), {})
+        sample_bd    = next(iter((bd_enriched or {}).values()), {})
+        demo_acc     = _load_account_activity_today() if slot == "full_day" else []
         if slot == "first_half":
             subject, body = _build_first_half("Team", today, sample_bd, targets, monthly_fixed)
         else:
-            subject, body = _build_full_day("Team", today, sample_bd, targets, monthly_fixed)
+            subject, body = _build_full_day(
+                "Team", today, sample_bd, targets, monthly_fixed, account_rows=demo_acc
+            )
         for addr in demo_recipients:
             try:
                 _send(smtp_user, smtp_pass, addr, subject, body, [])
@@ -342,6 +430,12 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
 
     # Normal mode — send to each BD member
     bd_team = _load_bd_members()
+
+    # Load account activity once for EOD run (shared across all member emails)
+    account_rows = []
+    if slot == "full_day":
+        account_rows = _load_account_activity_today()
+        print(f"[Email] Account activity today: {len(account_rows)} companies")
 
     for member in bd_team:
         name  = member["name"]
@@ -355,7 +449,9 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
         if slot == "first_half":
             subject, body = _build_first_half(name, today, bd, targets, monthly_fixed)
         else:
-            subject, body = _build_full_day(name, today, bd, targets, monthly_fixed)
+            subject, body = _build_full_day(
+                name, today, bd, targets, monthly_fixed, account_rows=account_rows
+            )
 
         eff_cc = [a for a in cc_list if a.lower() != email.lower()]
         try:
