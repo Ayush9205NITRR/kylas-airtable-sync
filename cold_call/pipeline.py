@@ -119,7 +119,7 @@ def _safe_insert(store, fields: dict) -> None:
 
 def run_pipeline(target_day=None, limit=None, send_email=True,
                  only_bd=None, dry_run=False, reprocess=False) -> dict:
-    from cold_call import drive, transcribe, analyze, airtable_store, email_coach
+    from cold_call import drive, transcribe, analyze, airtable_store, email_coach, patterns
 
     run_day = target_day or config.today_ist()
     day_iso = run_day.isoformat()
@@ -223,6 +223,18 @@ def run_pipeline(target_day=None, limit=None, send_email=True,
             if tmp_path and os.path.exists(tmp_path):
                 os.remove(tmp_path)
 
+    # Pattern report per BD — the headline output (where the rep keeps going wrong)
+    pattern_reports = {}
+    if results_by_bd:
+        print("\n" + "=" * 12 + " PATTERNS " + "=" * 12)
+    for bd, calls in results_by_bd.items():
+        try:
+            report = patterns.build_pattern_report(bd, calls)
+            pattern_reports[bd] = report
+            print(patterns.format_text(bd, report))
+        except Exception as exc:
+            print(f"  WARNING: pattern analysis failed for {bd}: {exc}")
+
     # Coaching emails — one per BD that had at least one processed call
     if send_email:
         print("Sending coaching emails...")
@@ -235,7 +247,8 @@ def run_pipeline(target_day=None, limit=None, send_email=True,
         print("Email sending disabled")
 
     print(f"=== Done · {counts} ===")
-    return {"counts": counts, "results_by_bd": results_by_bd}
+    return {"counts": counts, "results_by_bd": results_by_bd,
+            "pattern_reports": pattern_reports}
 
 
 def main():

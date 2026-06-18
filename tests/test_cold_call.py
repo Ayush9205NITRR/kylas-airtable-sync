@@ -13,7 +13,7 @@ from datetime import date, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from cold_call import analyze, config, email_coach, pipeline
+from cold_call import analyze, config, email_coach, patterns, pipeline
 
 
 def test_is_supported():
@@ -93,6 +93,25 @@ def test_build_record_omits_total_and_formats_objections():
 def test_format_objections_empty():
     assert pipeline._format_objections([]) == ""
     assert pipeline._format_objections(None) == ""
+
+
+def test_patterns_aggregate():
+    calls = [
+        {"hook_score": 10, "top_miss": "No next step",
+         "objections_found": [{"type": "price", "handled": "weak"},
+                              {"type": "trust", "handled": "missed"}]},
+        {"hook_score": 20, "top_miss": "No next step",
+         "objections_found": [{"type": "price", "handled": "well"}]},
+    ]
+    agg = patterns.aggregate(calls)
+    assert agg["n_calls"] == 2
+    assert agg["weak_hooks"] == 1            # hook 10 < 15
+    assert agg["total_objections"] == 3
+    assert agg["weak_missed_pct"] == 67      # 2 of 3
+    assert dict(agg["objection_types"])["price"] == 2
+    assert agg["common_miss"] == "No next step"
+    txt = patterns.format_text("Muskan", {"agg": agg, "patterns": {}})
+    assert "Patterns · Muskan" in txt and "price×2" in txt
 
 
 def test_resolve_bd_email():
