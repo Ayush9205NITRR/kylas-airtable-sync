@@ -538,32 +538,56 @@ class KylasClient:
         Falls back to empty dict on error so inspect still works.
         """
         out = {}
-        endpoints = [
-            (f"entities/{entity}/fields",  {"entityType": entity, "custom-only": "true",  "page": 0, "size": 200}),
-            (f"entities/{entity}/fields",  {"entityType": entity, "custom-only": "false", "page": 0, "size": 200}),
-            ("custom-fields",              {"entityType": entity, "page": 0, "size": 200}),
-        ]
-        for path, params in endpoints:
-            try:
-                resp = self._get(path, params)
-                if isinstance(resp, list):
-                    items = resp
-                elif isinstance(resp, dict):
-                    items = resp.get("content") or resp.get("data") or []
-                else:
+        # 1. Try the entity fields definition endpoint (works for contact).
+        try:
+            resp = self._get(f"entities/{entity}/fields", {
+                "entityType": entity, "custom-only": "true",
+                "sort": "createdAt,asc", "page": 0, "size": 200,
+            })
+            items = resp if isinstance(resp, list) else (resp.get("content") or resp.get("data") or [])
+            for fld in items:
+                if not isinstance(fld, dict):
                     continue
-                for fld in items:
-                    if not isinstance(fld, dict):
-                        continue
-                    key = fld.get("fieldName") or fld.get("apiName") or fld.get("name") or fld.get("id") or ""
-                    if not str(key).startswith("cf"):
-                        continue
-                    name = fld.get("displayName") or fld.get("label") or fld.get("name") or key
-                    out[str(key)] = str(name)
-                if out:
-                    return out
-            except Exception:
-                continue
+                key  = fld.get("fieldName") or fld.get("apiName") or fld.get("name") or fld.get("id") or ""
+                if not str(key).startswith("cf"):
+                    continue
+                name = fld.get("displayName") or fld.get("label") or fld.get("name") or key
+                out[str(key)] = str(name)
+        except Exception:
+            pass
+
+        if out:
+            return out
+
+        # 2. Fallback: scan recent records and aggregate all cf* keys found.
+        #    Covers company (no fields endpoint) by sampling 20 recent records.
+        try:
+            search_entity = "company" if entity == "company" else entity
+            r = self.session.post(
+                f"{KYLAS_BASE}/search/{search_entity}",
+                params={"page": 0, "size": 20, "sort": "updatedAt,desc"},
+                json={"fields": ["id", "customFieldValues"], "jsonRule": None},
+                timeout=30,
+            )
+            r.raise_for_status()
+            path = "companies" if entity == "company" else f"{entity}s"
+            for rec in r.json().get("content", []):
+                rid = rec.get("id")
+                if not rid:
+                    continue
+                try:
+                    detail = self._get(f"{path}/{rid}")
+                    cfv = (detail.get("data", detail) if isinstance(detail, dict) else {}).get("customFieldValues") or {}
+                    for k in cfv:
+                        if str(k).startswith("cf") and k not in out:
+                            out[str(k)] = str(k)
+                except Exception:
+                    pass
+                if len(out) > 30:
+                    break
+        except Exception:
+            pass
+
         if not out:
             print(f"[Kylas] WARN: could not fetch {entity} custom field definitions")
         return out
