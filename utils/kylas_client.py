@@ -538,24 +538,34 @@ class KylasClient:
         Falls back to empty dict on error so inspect still works.
         """
         out = {}
-        try:
-            resp = self._get(f"entities/{entity}/fields", {
-                "entityType": entity, "custom-only": "true",
-                "sort": "createdAt,asc", "page": 0, "size": 200,
-            })
-            if isinstance(resp, list):
-                items = resp
-            else:
-                items = resp.get("content") or resp.get("data") or []
-            for fld in items:
-                if not isinstance(fld, dict):
+        endpoints = [
+            (f"entities/{entity}/fields",  {"entityType": entity, "custom-only": "true",  "page": 0, "size": 200}),
+            (f"entities/{entity}/fields",  {"entityType": entity, "custom-only": "false", "page": 0, "size": 200}),
+            ("custom-fields",              {"entityType": entity, "page": 0, "size": 200}),
+        ]
+        for path, params in endpoints:
+            try:
+                resp = self._get(path, params)
+                if isinstance(resp, list):
+                    items = resp
+                elif isinstance(resp, dict):
+                    items = resp.get("content") or resp.get("data") or []
+                else:
                     continue
-                key  = fld.get("fieldName") or fld.get("name") or fld.get("id") or ""
-                name = fld.get("displayName") or fld.get("label") or fld.get("name") or key
-                if key:
+                for fld in items:
+                    if not isinstance(fld, dict):
+                        continue
+                    key = fld.get("fieldName") or fld.get("apiName") or fld.get("name") or fld.get("id") or ""
+                    if not str(key).startswith("cf"):
+                        continue
+                    name = fld.get("displayName") or fld.get("label") or fld.get("name") or key
                     out[str(key)] = str(name)
-        except Exception as exc:
-            print(f"[Kylas] WARN: could not fetch {entity} field definitions: {exc}")
+                if out:
+                    return out
+            except Exception:
+                continue
+        if not out:
+            print(f"[Kylas] WARN: could not fetch {entity} custom field definitions")
         return out
 
     # Candidate jsonRule shapes for filtering contacts by their company.
