@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.kylas_client import KylasClient
 from utils.airtable_client import AirtableClient
 from utils.logger import SyncLogger
-from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_bd as _classify_bd, company_info as _company_info
+from utils.bd_metrics import BD_KEYS, ATTEMPTED_EXCLUDE, contact_stage as _contact_stage, classify_bd as _classify_bd, company_info as _company_info
 from utils.calendar_invite import send_invite as _send_invite
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
@@ -242,14 +242,17 @@ def run(test_mode: bool = False, test_id: int = None,
                 _ub_id = _ub.get("id") if isinstance(_ub, dict) else None
                 human_update  = (_ub_id is None) or (_ob_id and _ub_id and _ob_id == _ub_id)
                 updated_today = (ct.get("updatedAt") or "").startswith(today_iso) and human_update
-                stage_moved   = bool(new_stage) and (new_stage != old_stage) and updated_today
+                is_active   = bool(new_stage) and new_stage not in ATTEMPTED_EXCLUDE
+                stage_moved = bool(new_stage) and (new_stage != old_stage) and updated_today
 
-                if stage_moved:
+                if updated_today and is_active:
                     cats = _classify_bd(new_stage)
                     bd   = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})
-                    for key in BD_KEYS:
-                        if cats[key]:
-                            bd[key] += 1
+                    bd["attempted"] += 1
+                    if stage_moved:
+                        for key in BD_KEYS:
+                            if key != "attempted" and cats[key]:
+                                bd[key] += 1
 
                     co_id, co_name = _company_info(ct)
                     if co_id:
@@ -262,9 +265,11 @@ def run(test_mode: bool = False, test_id: int = None,
                             acc["company_name"] = co_name
                         acc["owners"].add(owner)
                         acc["pocs"] += 1
-                        for key in BD_KEYS:
-                            if cats[key]:
-                                acc[key] += 1
+                        acc["attempted"] += 1
+                        if stage_moved:
+                            for key in BD_KEYS:
+                                if key != "attempted" and cats[key]:
+                                    acc[key] += 1
 
                 # Calendar invite: only for incremental syncs and future dates
                 if nc_field and new_nc and new_nc != old_nc and since is not None:

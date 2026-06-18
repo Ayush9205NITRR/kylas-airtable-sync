@@ -29,6 +29,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Sync team from Kylas
+        run: python scripts/sync_team.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+
       - name: Run sync
         run: |
           ARGS="--slot=first_half"
