@@ -67,25 +67,37 @@ _TABLE2 = 'style="border-collapse:collapse;margin:4px 0 16px;"'
 def _load_bd_members() -> list:
     """
     Returns [{name, email}] for active BD team members.
-    Reads Airtable 'BD Members' first, falls back to team.json bd_team.
+    Reads Airtable 'BD Members' as the canonical list, then merges in any
+    members from team.json bd_team not already present (added by sync_team.py).
     """
+    airtable_members = []
     try:
         from utils.airtable_client import AirtableClient
         rows = AirtableClient("BD Members").table.all()
-        members = [
+        airtable_members = [
             {"name": r["fields"]["Name"], "email": r["fields"]["Email"]}
             for r in rows
             if r["fields"].get("Active", True)
             and r["fields"].get("Group", "BD") == "BD"
             and r["fields"].get("Name") and r["fields"].get("Email")
         ]
-        if members:
-            return members
     except Exception:
         pass
-    with open(TEAM_PATH) as fh:
-        cfg = json.load(fh)
-    return cfg.get("bd_team", cfg.get("members", []))
+
+    try:
+        with open(TEAM_PATH) as fh:
+            cfg = json.load(fh)
+        json_members = cfg.get("bd_team", cfg.get("members", []))
+    except Exception:
+        json_members = []
+
+    if not airtable_members:
+        return json_members
+
+    # Airtable wins on conflicts; add team.json members whose email isn't already there
+    at_emails = {m["email"].lower() for m in airtable_members}
+    extra = [m for m in json_members if m.get("email", "").lower() not in at_emails]
+    return airtable_members + extra
 
 
 def _load_daily_targets() -> dict:
