@@ -523,8 +523,7 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
         bd    = _member_bd(name, bd_enriched or {})
 
         if not bd:
-            print(f"[Email] No BD data for {name} — skipping")
-            continue
+            print(f"[Email] No BD data for {name} — sending with zeros")
 
         if slot == "first_half":
             subject, body = _build_first_half(name, today, bd, targets, monthly_fixed)
