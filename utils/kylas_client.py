@@ -552,11 +552,71 @@ class KylasClient:
             self._owner_field_warned = True
         return {k: v for k, v in fields.items() if k not in owner_keys}
 
+    @staticmethod
+    def _short_err(exc) -> str:
+        """Compact one-line form of an error for per-field diagnostics."""
+        s = str(exc)
+        return s.split(" — ", 1)[1] if " — " in s else s[:140]
+
+    def _put_fields(self, path: str, entity_id: int, base: dict,
+                    fields: dict, dry_run: bool) -> str:
+        """Apply mapped `fields` onto a clean `base` body and PUT to {path}/{id}.
+
+        Fast path: apply everything and PUT once. If Kylas rejects that — it
+        often answers a single bad custom-field value (e.g. a raw string sent
+        to a dropdown/boolean field) with an opaque 500 naming no field — fall
+        back to isolation:
+          1. PUT the unchanged base; if even that fails, the record itself
+             can't round-trip and it is not a mapped-field problem.
+          2. Otherwise apply the fields one at a time, keeping the ones Kylas
+             accepts and reporting exactly which one(s) it rejects.
+        So one bad field no longer sinks the whole record, and the culprit is
+        named in the log. Returns "updated" | "unchanged" | "failed".
+        """
+        body = dict(base)
+        if not self._apply_fields(body, fields):
+            return "unchanged"
+        if dry_run:
+            return "updated"
+        try:
+            self._put(f"{path}/{entity_id}", body)
+            return "updated"
+        except Exception:
+            pass  # isolate below to find the offending field(s)
+
+        # Does the record round-trip unchanged at all?
+        try:
+            self._put(f"{path}/{entity_id}", dict(base))
+        except Exception as base_err:
+            print(f"[Kylas] ERROR {path}/{entity_id}: unchanged PUT also fails — Kylas "
+                  f"can't round-trip this record, not a mapped-field issue "
+                  f"({self._short_err(base_err)})")
+            return "failed"
+
+        # Base is fine — find which mapped field(s) Kylas rejects, keeping the good ones.
+        good, applied, rejected = dict(base), [], {}
+        for key, value in fields.items():
+            trial = dict(good)
+            if not self._apply_fields(trial, {key: value}):
+                continue  # no-op or skipped (e.g. object-from-scalar guard)
+            try:
+                self._put(f"{path}/{entity_id}", trial)
+                good = trial
+                applied.append(key)
+            except Exception as exc:
+                rejected[key] = self._short_err(exc)
+        if rejected:
+            detail = ", ".join(f"{k} [{v}]" for k, v in rejected.items())
+            print(f"[Kylas] {path}/{entity_id}: Kylas rejected {detail}"
+                  + (f"; applied {applied}" if applied else "; applied none"))
+        return "updated" if applied else "failed"
+
     def update_company_fields(self, company_id: int, fields: dict,
                               dry_run: bool = False) -> str:
         """Push mapped fields onto a company (GET full object, set, PUT back).
 
-        Returns "updated", "unchanged", or "failed".
+        Returns "updated", "unchanged", or "failed". On a Kylas rejection the
+        failing field(s) are isolated and named (see _put_fields).
         """
         fields = self._without_owner_keys(fields, "company")
         if not fields:
@@ -567,20 +627,16 @@ class KylasClient:
         except Exception as exc:
             print(f"[Kylas] ERROR fetching company {company_id}: {exc}")
             return "failed"
-        if not self._apply_fields(body, fields):
-            return "unchanged"
-        if dry_run:
-            return "updated"
-        try:
-            self._put(f"companies/{company_id}", self._clean_for_put(body))
-            return "updated"
-        except Exception as exc:
-            print(f"[Kylas] ERROR updating company {company_id} fields: {exc}")
-            return "failed"
+        return self._put_fields("companies", company_id,
+                                self._clean_for_put(body), fields, dry_run)
 
     def update_contact_fields(self, contact_id: int, fields: dict,
                               contact_data: dict = None, dry_run: bool = False) -> str:
-        """Push mapped fields onto a contact. Returns updated/unchanged/failed."""
+        """Push mapped fields onto a contact. Returns updated/unchanged/failed.
+
+        On a Kylas rejection the failing field(s) are isolated and named
+        (see _put_fields).
+        """
         fields = self._without_owner_keys(fields, "contact")
         if not fields:
             return "unchanged"
@@ -593,19 +649,11 @@ class KylasClient:
         except Exception as exc:
             print(f"[Kylas] ERROR fetching contact {contact_id}: {exc}")
             return "failed"
-        if not self._apply_fields(body, fields):
-            return "unchanged"
-        if dry_run:
-            return "updated"
         co = body.get("company")              # contact PUT wants company as an int id
         if isinstance(co, dict):
             body["company"] = co.get("id")
-        try:
-            self._put(f"contacts/{contact_id}", self._clean_for_put(body))
-            return "updated"
-        except Exception as exc:
-            print(f"[Kylas] ERROR updating contact {contact_id} fields: {exc}")
-            return "failed"
+        return self._put_fields("contacts", contact_id,
+                                self._clean_for_put(body), fields, dry_run)
 
     def fetch_sample(self, entity: str) -> dict:
         """Return the full detail record of one recent entity ('company'/'contact')."""

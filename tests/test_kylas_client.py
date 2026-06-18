@@ -165,6 +165,54 @@ def test_object_field_from_scalar_is_skipped():
     print("PASS object field is not clobbered by a scalar mapping")
 
 
+def test_failing_field_is_isolated_and_good_ones_kept():
+    import requests
+    client = KylasClient()
+    client._get = lambda path: {"data": {"id": 7, "name": "Acme",
+                                         "customFieldValues": {}}}
+
+    puts = []
+
+    def fake_put(path, body):
+        puts.append(dict(body.get("customFieldValues") or {}))
+        # Kylas 500s whenever the bad field is present (mimics a dropdown/boolean
+        # field rejecting a raw string), succeeds otherwise.
+        if "cfOffsiteTimeline" in (body.get("customFieldValues") or {}):
+            raise requests.HTTPError("500 Server Error — Generic error, please check with admin.")
+        return {}
+
+    client._put = fake_put
+    res = client.update_company_fields(7, {
+        "cfSourceOfData": "LinkedIn",
+        "cfOffsiteTimeline": "This Quarter",   # the culprit
+        "cfBooleanPostLink": True,
+    })
+    # Partial success: good fields applied, culprit isolated out.
+    assert res == "updated", res
+    last_good = puts[-1]
+    assert "cfOffsiteTimeline" not in last_good, last_good
+    assert last_good.get("cfSourceOfData") == "LinkedIn", last_good
+    assert last_good.get("cfBooleanPostLink") is True, last_good
+    print("PASS bad field isolated, good fields kept")
+
+
+def test_all_fields_fail_returns_failed():
+    import requests
+    client = KylasClient()
+    client._get = lambda path: {"data": {"id": 8, "name": "Acme",
+                                         "customFieldValues": {}}}
+
+    def fake_put(path, body):
+        if body.get("customFieldValues"):      # any field present -> reject
+            raise requests.HTTPError("500 Server Error — Generic error")
+        return {}                              # unchanged base round-trips fine
+
+    client._put = fake_put
+    res = client.update_company_fields(8, {"cfA": "x", "cfB": "y"})
+    assert res == "failed", res
+    print("PASS all-fields-bad returns failed (base still round-trips)")
+
+
 if __name__ == "__main__":
     test_clean_for_put_strips_readonly()
     test_request_retries_on_429()
@@ -174,4 +222,6 @@ if __name__ == "__main__":
     test_owner_key_in_field_map_is_skipped()
     test_raise_for_status_surfaces_body()
     test_object_field_from_scalar_is_skipped()
+    test_failing_field_is_isolated_and_good_ones_kept()
+    test_all_fields_fail_returns_failed()
     print("\nALL TESTS PASSED")
