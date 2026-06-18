@@ -423,6 +423,114 @@ class KylasClient:
             print(f"[Kylas] ERROR updating contact {contact_id} owner: {exc}")
             return False
 
+    # ------------------------------------------------------------------
+    # Generic field push (Airtable → Kylas) + read-only field inspection
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _is_custom_key(key: str) -> bool:
+        """Kylas custom fields are conventionally named cfSomething."""
+        return bool(key) and key[:2] == "cf" and len(key) > 2 and key[2].isupper()
+
+    @staticmethod
+    def _apply_fields(body: dict, fields: dict) -> bool:
+        """Set mapped fields on a fetched entity body in place.
+
+        Keys named cfXxx go under customFieldValues, everything else is a
+        top-level standard field. Returns True if anything actually changed
+        (so callers can skip a no-op PUT).
+        """
+        changed = False
+        cfv = dict(body.get("customFieldValues") or {})
+        for key, value in fields.items():
+            if KylasClient._is_custom_key(key):
+                if cfv.get(key) != value:
+                    cfv[key] = value
+                    changed = True
+            else:
+                if body.get(key) != value:
+                    body[key] = value
+                    changed = True
+        if cfv:
+            body["customFieldValues"] = cfv
+        return changed
+
+    def update_company_fields(self, company_id: int, fields: dict,
+                              dry_run: bool = False) -> str:
+        """Push mapped fields onto a company (GET full object, set, PUT back).
+
+        Returns "updated", "unchanged", or "failed".
+        """
+        if not fields:
+            return "unchanged"
+        try:
+            body = self._get(f"companies/{company_id}")
+            body = body.get("data", body)
+        except Exception as exc:
+            print(f"[Kylas] ERROR fetching company {company_id}: {exc}")
+            return "failed"
+        if not self._apply_fields(body, fields):
+            return "unchanged"
+        if dry_run:
+            return "updated"
+        try:
+            self._put(f"companies/{company_id}", body)
+            return "updated"
+        except Exception as exc:
+            print(f"[Kylas] ERROR updating company {company_id} fields: {exc}")
+            return "failed"
+
+    def update_contact_fields(self, contact_id: int, fields: dict,
+                              contact_data: dict = None, dry_run: bool = False) -> str:
+        """Push mapped fields onto a contact. Returns updated/unchanged/failed."""
+        if not fields:
+            return "unchanged"
+        try:
+            if contact_data and len(contact_data) > 4:
+                body = dict(contact_data)
+            else:
+                resp = self._get(f"contacts/{contact_id}")
+                body = resp.get("data", resp)
+        except Exception as exc:
+            print(f"[Kylas] ERROR fetching contact {contact_id}: {exc}")
+            return "failed"
+        if not self._apply_fields(body, fields):
+            return "unchanged"
+        if dry_run:
+            return "updated"
+        co = body.get("company")              # contact PUT wants company as an int id
+        if isinstance(co, dict):
+            body["company"] = co.get("id")
+        for ro in ("id", "createdAt", "updatedAt", "updatedBy",
+                   "createdBy", "ownerId", "recordActions"):
+            body.pop(ro, None)
+        try:
+            self._put(f"contacts/{contact_id}", body)
+            return "updated"
+        except Exception as exc:
+            print(f"[Kylas] ERROR updating contact {contact_id} fields: {exc}")
+            return "failed"
+
+    def fetch_sample(self, entity: str) -> dict:
+        """Return the full detail record of one recent entity ('company'/'contact')."""
+        try:
+            r = self.session.post(
+                f"{KYLAS_BASE}/search/{entity}",
+                params={"page": 0, "size": 1, "sort": "updatedAt,desc"},
+                json={"fields": ["id"], "jsonRule": None}, timeout=30,
+            )
+            r.raise_for_status()
+            content = r.json().get("content", [])
+            if not content:
+                return {}
+            rid  = content[0].get("id")
+            path = "companies" if entity == "company" else "contacts"
+            resp = self._get(f"{path}/{rid}")
+            return resp.get("data", resp)
+        except Exception as exc:
+            print(f"[Kylas] ERROR fetching sample {entity}: {exc}")
+            return {}
+
     # Candidate jsonRule shapes for filtering contacts by their company.
     # Kylas has no documented company filter for /search/contact, so we try
     # several field/value shapes and keep whichever actually returns the

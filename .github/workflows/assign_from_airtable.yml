@@ -3,9 +3,19 @@ name: Assign Companies from Airtable → Kylas
 on:
   workflow_dispatch:
     inputs:
-      view_name:
-        description: 'Airtable view name to read from (Company List table)'
+      mode:
+        description: 'owner = reassign owners | fields = push mapped fields | both | inspect = list Kylas field keys'
         required: true
+        type: choice
+        default: 'owner'
+        options:
+          - owner
+          - fields
+          - both
+          - inspect
+      view_name:
+        description: 'Airtable view name to read from (Company List table). Not needed for inspect.'
+        required: false
         default: 'BD Assignment'
       dry_run:
         description: 'true = print only, no Kylas updates'
@@ -26,13 +36,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run assignment
+      - name: Run assignment / field push
         run: |
-          ARGS="--view=${{ github.event.inputs.view_name }}"
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            ARGS="$ARGS --dry-run"
+          if [ "${{ github.event.inputs.mode }}" = "inspect" ]; then
+            python scripts/assign_from_airtable.py --inspect
+          else
+            ARGS="--view=${{ github.event.inputs.view_name }} --mode=${{ github.event.inputs.mode }}"
+            if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+              ARGS="$ARGS --dry-run"
+            fi
+            python scripts/assign_from_airtable.py $ARGS
           fi
-          python scripts/assign_from_airtable.py $ARGS
         env:
           KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}

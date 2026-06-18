@@ -188,6 +188,23 @@ DEALS_TABLE_BASE_FIELDS = [
 ]
 
 
+# ── Kylas Field Map (the mapping "UI" — edit rows in Airtable) ────────────────
+# Each row maps one Airtable Company-List column → one Kylas field. Entity picks
+# whether it lands on the company or on its associated contacts. Keys named
+# cfXxx are pushed as Kylas custom fields.
+FIELD_MAP_TABLE = {
+    "name": "Kylas Field Map",
+    "fields": [
+        {"name": "Entity", "type": "singleSelect",
+         "options": {"choices": [{"name": "Company"}, {"name": "Contact"}]}},
+        {"name": "Airtable Column", "type": T},
+        {"name": "Kylas Field",     "type": T},
+        {"name": "Active",          "type": CB},
+        {"name": "Notes",           "type": T},
+    ],
+}
+
+
 def main():
     print("=== Airtable Schema Setup ===\n")
 
@@ -198,6 +215,13 @@ def main():
         add_missing(COMPANY_BASE, co_tables["Company List"], COMPANY_LIST_NEW)
     else:
         print("    ! Company List table not found")
+
+    # ── 1b. Kylas Field Map (mapping table for Airtable → Kylas field push) ───
+    print("\n1b. Kylas Field Map (Company Database base)")
+    if "Kylas Field Map" in co_tables:
+        print("    ~ Already exists")
+    else:
+        create_table(COMPANY_BASE, FIELD_MAP_TABLE)
 
     # ── 2. CRM Sales Pipeline base ────────────────────────────────────────────
     print("\n2. CRM Sales Pipeline base")
