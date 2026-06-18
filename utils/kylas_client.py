@@ -543,7 +543,13 @@ class KylasClient:
                 "entityType": entity, "custom-only": "true",
                 "sort": "createdAt,asc", "page": 0, "size": 200,
             })
-            for fld in (resp.get("content") or resp.get("data") or []):
+            if isinstance(resp, list):
+                items = resp
+            else:
+                items = resp.get("content") or resp.get("data") or []
+            for fld in items:
+                if not isinstance(fld, dict):
+                    continue
                 key  = fld.get("fieldName") or fld.get("name") or fld.get("id") or ""
                 name = fld.get("displayName") or fld.get("label") or fld.get("name") or key
                 if key:
