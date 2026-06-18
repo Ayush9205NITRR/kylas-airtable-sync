@@ -463,7 +463,9 @@ def _send(smtp_user: str, smtp_pass: str, to: str, subject: str, body: str, cc: 
 def _member_bd(name: str, bd_enriched: dict) -> dict:
     lo = name.lower()
     for owner, stats in bd_enriched.items():
-        if lo in owner.lower():
+        owner_lo = owner.lower()
+        # Match either direction: "riya" in "riya singh" OR "riya singh" in "riya"
+        if lo in owner_lo or owner_lo in lo:
             return stats
     return {}
 
@@ -510,6 +512,8 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
 
     # Normal mode — send to each BD member
     bd_team = _load_bd_members()
+    print(f"[Email] BD team ({len(bd_team)}): {[m['name'] for m in bd_team]}")
+    print(f"[Email] bd_enriched owners: {list((bd_enriched or {}).keys())}")
 
     # Load account activity once for EOD run (shared across all member emails)
     account_rows = []
