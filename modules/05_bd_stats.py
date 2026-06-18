@@ -60,7 +60,15 @@ def _prune_old(tbl: AirtableClient, label: str, retention_days: int = RETENTION_
 
 
 def _write_bd_daily(bd_metrics: dict, slot: str, today: str) -> dict:
-    """Write per-owner BD stats; return enriched dict with W1/W2 breakdown."""
+    """Write per-owner BD stats; return enriched dict with W1/W2 breakdown.
+
+    Metrics ACCUMULATE across re-runs. Each sync only detects the *delta* of
+    stage moves since the previous sync (Airtable already holds the synced
+    stage, so a moved contact looks unchanged on the next run). We therefore
+    ADD this run's delta to the total already stored for today rather than
+    overwriting it. Without this, a second run of the day would find an empty
+    delta and zero out everyone's numbers.
+    """
     try:
         tbl    = AirtableClient("BD Daily Stats")
         cached = tbl.build_cache("Stat Key")
@@ -70,38 +78,55 @@ def _write_bd_daily(bd_metrics: dict, slot: str, today: str) -> dict:
         print("[BD Stats] Run 'Setup BD Dashboard' workflow first")
         return {owner: {**m, "w1": _ZERO(), "w2": dict(m)} for owner, m in bd_metrics.items()}
 
-    # On full_day run: read W1 snapshot written during first_half run
+    # Frozen morning snapshot (W1) from the first_half row(s) written at 1:30 PM
     w1_stored = {}
-    if slot == "full_day":
-        for owner in bd_metrics:
-            rec = tbl._cache.get(f"{today}|first_half|{owner}")
-            if rec:
-                w1_stored[owner] = {k: rec["fields"].get(W1_FIELD[k], 0) for k in BD_KEYS}
+    # Totals already stored for today in THIS slot's row — the accumulator base
+    stored = {}
+    for rec in tbl._cache.values():
+        f = rec["fields"]
+        if f.get("Date") != today:
+            continue
+        owner = f.get("Owner")
+        if not owner:
+            continue
+        if f.get("Slot") == "first_half":
+            w1_stored[owner] = {k: int(f.get(W1_FIELD[k], 0) or 0) for k in BD_KEYS}
+        if f.get("Slot") == slot:
+            stored[owner] = {k: int(f.get(FIELD[k], 0) or 0) for k in BD_KEYS}
 
-    for owner, metrics in bd_metrics.items():
+    # Process everyone with activity today: detected this run, already stored,
+    # or present in the morning snapshot. This guarantees a member who worked
+    # earlier still gets emailed even when this run's delta is empty.
+    all_owners = set(bd_metrics) | set(stored) | set(w1_stored)
+
+    result = {}
+    for owner in sorted(all_owners):
+        delta = bd_metrics.get(owner, _ZERO())   # stage moves detected on THIS run
+        w1    = w1_stored.get(owner, _ZERO())
+        if owner in stored:
+            base = stored[owner]                  # already includes W1 + prior deltas
+        elif slot == "full_day":
+            base = w1                             # seed full_day with morning snapshot
+        else:
+            base = _ZERO()
+        total = {k: base.get(k, 0) + delta.get(k, 0) for k in BD_KEYS}
+
         stat_key = f"{today}|{slot}|{owner}"
-        w1_vals = w1_stored.get(owner, _ZERO())
-        # full_day: total = morning (W1) + afternoon; first_half: total = morning only
-        total = {k: w1_vals.get(k, 0) + metrics.get(k, 0) for k in BD_KEYS} if slot == "full_day" else metrics
         fields = {"Stat Key": stat_key, "Date": today, "Owner": owner, "Slot": slot}
         for k, fname in FIELD.items():
-            fields[fname] = total.get(k, 0)
+            fields[fname] = total[k]
         if slot == "first_half":
             for k, fname in W1_FIELD.items():
-                fields[fname] = metrics.get(k, 0)
+                fields[fname] = total[k]
         tbl.upsert("Stat Key", stat_key, fields, updated_at="", updated_at_field="")
-        print(f"[BD Stats] {owner}: attempted={total.get('attempted',0)}"
-              f"  connected={total.get('connected',0)}  dcb={total.get('dcb',0)}")
+        print(f"[BD Stats] {owner}: attempted={total['attempted']}"
+              f"  connected={total['connected']}  dcb={total['dcb']}")
+
+        w2 = {k: max(0, total[k] - w1.get(k, 0)) for k in BD_KEYS}
+        result[owner] = {**total, "w1": w1, "w2": w2}
 
     tbl.flush()
     _prune_old(tbl, "BD Daily Stats")
-
-    result = {}
-    for owner, metrics in bd_metrics.items():
-        w1 = w1_stored.get(owner, _ZERO())
-        w2 = {k: metrics.get(k, 0) for k in BD_KEYS}  # current run = afternoon only
-        total = {k: w1.get(k, 0) + w2.get(k, 0) for k in BD_KEYS} if slot == "full_day" else dict(metrics)
-        result[owner] = {**total, "w1": w1, "w2": w2}
     return result
 
 
