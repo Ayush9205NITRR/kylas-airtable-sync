@@ -195,10 +195,10 @@ DEALS_TABLE_BASE_FIELDS = [
 FIELD_MAP_TABLE = {
     "name": "Kylas Field Map",
     "fields": [
-        {"name": "Entity", "type": "singleSelect",
-         "options": {"choices": [{"name": "Company"}, {"name": "Contact"}]}},
         {"name": "Airtable Column", "type": T},
         {"name": "Kylas Field",     "type": T},
+        {"name": "Entity", "type": "singleSelect",
+         "options": {"choices": [{"name": "Company"}, {"name": "Contact"}]}},
         {"name": "Active",          "type": CB, "options": {"icon": "check", "color": "greenBright"}},
         {"name": "Notes",           "type": T},
     ],
