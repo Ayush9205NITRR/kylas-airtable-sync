@@ -743,31 +743,50 @@ class KylasClient:
                     fields: dict, dry_run: bool, defs: dict = None) -> str:
         """Apply mapped `fields` onto a clean `base` body and PUT to {path}/{id}.
 
-        Fast path: apply everything and PUT once. If Kylas rejects that — it
-        often answers a single bad custom-field value (e.g. a raw string sent
-        to a dropdown/boolean field) with an opaque 500 naming no field — fall
-        back to isolation:
-          1. PUT the unchanged base; if even that fails, the record itself
-             can't round-trip and it is not a mapped-field problem.
-          2. Otherwise apply the fields one at a time, keeping the ones Kylas
-             accepts and reporting exactly which one(s) it rejects. Dropdown
-             values are retried in a few encodings (id / {id} / {id,name}) so a
-             wrong-shape guess self-corrects instead of failing.
-        So one bad field no longer sinks the whole record, and the culprit is
-        named in the log. Returns "updated" | "unchanged" | "failed".
+        Fast path: apply everything (incl. the asserted owner) and PUT once. If
+        that fails, isolate so one bad part never sinks the rest:
+          1. Drop ownedBy and retry — an asserted owner can be rejected on its
+             own ("Invalid owner" for an admin/deactivated user) and must not
+             block the field updates. The owner is then left unchanged.
+          2. PUT the unchanged (owner-free) base; if even that fails, the record
+             itself can't round-trip and it is not a mapped-field problem.
+          3. Apply the fields one at a time, keeping the ones Kylas accepts and
+             reporting which it rejects. Dropdown values are retried across a
+             few encodings (id / {id} / {id,name}) so a wrong-shape guess self-
+             corrects.
+        Returns "updated" | "unchanged" | "failed".
         """
         body = dict(base)
         if not self._apply_fields(body, fields):
             return "unchanged"
         if dry_run:
             return "updated"
+        first_err = None
         try:
             self._put(f"{path}/{entity_id}", body)
             return "updated"
-        except Exception:
-            pass  # isolate below to find the offending field(s)
+        except Exception as exc:
+            first_err = exc  # isolate below
 
-        # Does the record round-trip unchanged at all?
+        # Drop the asserted owner for every remaining attempt — it's a separate,
+        # non-blocking concern (Kylas rejects setting some users as owner).
+        owner_note = ""
+        if base.get("ownedBy") is not None:
+            owner_note = f"  (owner change skipped: {self._short_err(first_err)})"
+        base = {k: v for k, v in base.items() if k != "ownedBy"}
+
+        # Retry everything at once without the owner.
+        body = dict(base)
+        self._apply_fields(body, fields)
+        try:
+            self._put(f"{path}/{entity_id}", body)
+            if owner_note:
+                print(f"[Kylas] {path}/{entity_id}: fields updated{owner_note}")
+            return "updated"
+        except Exception:
+            pass
+
+        # Does the record round-trip unchanged at all (owner already excluded)?
         try:
             self._put(f"{path}/{entity_id}", dict(base))
         except Exception as base_err:
@@ -799,7 +818,9 @@ class KylasClient:
         if rejected:
             detail = ", ".join(f"{k} [{v}]" for k, v in rejected.items())
             print(f"[Kylas] {path}/{entity_id}: Kylas rejected {detail}"
-                  + (f"; applied {applied}" if applied else "; applied none"))
+                  + (f"; applied {applied}" if applied else "; applied none") + owner_note)
+        elif owner_note:
+            print(f"[Kylas] {path}/{entity_id}: fields updated{owner_note}")
         return "updated" if applied else "failed"
 
     def update_company_fields(self, company_id: int, fields: dict,

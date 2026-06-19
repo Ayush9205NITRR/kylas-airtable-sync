@@ -115,6 +115,18 @@ def _row_fields(mappings: list, row: dict) -> dict:
     return fields
 
 
+def _owner_column(mappings: list):
+    """Airtable column mapped to ownedBy in the field map, or None.
+
+    Lets an `ownedBy` mapping drive owner assignment even in --mode fields,
+    instead of being silently dropped (owner isn't writable as a plain field).
+    """
+    for col, key in mappings:
+        if key == "ownedBy":
+            return col
+    return None
+
+
 def _inspect(client: KylasClient):
     """Print writable field keys of a sample company + contact (read-only)."""
     for entity in ("company", "contact"):
@@ -164,8 +176,20 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
     api   = AirtableApi(os.environ["AIRTABLE_PAT"])
     table = api.table(company_base, "Company List")
 
+    field_map = _load_field_map(company_base) if do_fields else {"company": [], "contact": []}
+
+    # Owner assignment runs in owner/both mode, and also in fields mode when the
+    # field map maps a column to ownedBy — so that mapping actually takes effect
+    # instead of being silently ignored.
+    co_owner_col = _owner_column(field_map["company"])
+    ct_owner_col = _owner_column(field_map["contact"])
+    assign_co_owner = do_owner or bool(co_owner_col)
+    assign_ct_owner = do_owner or bool(ct_owner_col)
+    resolve_owner   = assign_co_owner or assign_ct_owner
+    owner_col       = co_owner_col or ct_owner_col or "Owner - Kylas"
+
     email_to_id = name_to_id = {}
-    if do_owner:
+    if resolve_owner:
         cfg_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                 "config", "team.json")
         email_to_id, name_to_id = _load_user_maps(cfg_path)
@@ -177,9 +201,8 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
             print(f"Loaded {before} email→ID from team.json + {len(email_to_id) - before} extra from Kylas API")
         except Exception as e:
             print(f"[WARN] Could not fetch live Kylas users: {e}")
-        print(f"Total: {len(email_to_id)} email→ID and {len(name_to_id)} name→ID mappings\n")
-
-    field_map = _load_field_map(company_base) if do_fields else {"company": [], "contact": []}
+        print(f"Total: {len(email_to_id)} email→ID and {len(name_to_id)} name→ID mappings"
+              f"  (owner column: '{owner_col}')\n")
 
     print(f"Reading view '{view_name}' from Company List...")
     records = table.all(view=view_name)
@@ -202,10 +225,10 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
             continue
         co_id = int(co_id_str)
 
-        # Resolve owner up front (only needed for owner mode)
+        # Resolve owner up front (owner/both mode, or fields mode with ownedBy mapped)
         user_id = None
-        if do_owner:
-            owner_raw = (f.get("Owner - Kylas") or "").strip() or (f.get("Owner Email") or "").strip()
+        if resolve_owner:
+            owner_raw = (f.get(owner_col) or "").strip() or (f.get("Owner Email") or "").strip()
             user_id   = _resolve_user_id(owner_raw, email_to_id, name_to_id)
             if not user_id and "@" in owner_raw:
                 user_id = client.find_user_id_by_email(owner_raw)
@@ -221,7 +244,7 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
         print(f"  '{co_name}' (company {co_id})")
 
         # ---- Company-level updates ----
-        if do_owner and user_id:
+        if assign_co_owner and user_id:
             if dry_run:
                 print(f"    [DRY] set owner → {user_id}")
                 assigned_co += 1
@@ -232,6 +255,7 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
 
         if do_fields and field_map["company"]:
             cfields = _row_fields(field_map["company"], f)
+            cfields.pop("ownedBy", None)   # owner is set via assignment, not the field PUT
             if cfields:
                 res = client.update_company_fields(co_id, cfields, dry_run=dry_run,
                                                    owner_id=user_id)
@@ -242,12 +266,13 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
                     failed += 1
 
         # ---- Contact-level updates (fetch contacts once, reuse) ----
-        need_contacts = (do_owner and user_id) or (do_fields and field_map["contact"])
+        need_contacts = (assign_ct_owner and user_id) or (do_fields and field_map["contact"])
         if not need_contacts:
             continue
 
         contacts      = client.get_contacts_by_company(co_id)
         contact_vals  = _row_fields(field_map["contact"], f) if do_fields else {}
+        contact_vals.pop("ownedBy", None)   # owner is set via assignment, not the field PUT
         print(f"    → {len(contacts)} contacts"
               + (f"  | contact fields {list(contact_vals)}" if contact_vals else ""))
 
@@ -256,7 +281,7 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
             if not ct_id:
                 continue
 
-            if do_owner and user_id:
+            if assign_ct_owner and user_id:
                 already = ct.get("ownerId") == user_id or (
                     isinstance(ct.get("ownedBy"), dict) and ct["ownedBy"].get("id") == user_id
                 )

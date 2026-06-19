@@ -234,6 +234,30 @@ def test_custom_field_defs_parsed_from_endpoint():
     print("PASS custom field defs parsed (dropdown options + types) and cached")
 
 
+def test_invalid_owner_does_not_block_fields():
+    import requests
+    client = KylasClient()
+    client.get_custom_field_defs = lambda e: {}
+    client._get = lambda path, params=None: {"data": {
+        "id": 3, "name": "Acme", "ownedBy": {"id": 999}, "customFieldValues": {}}}
+    puts = []
+
+    def fake_put(path, body):
+        puts.append(dict(body))
+        if "ownedBy" in body:                       # Kylas rejects this owner
+            raise requests.HTTPError("400 Bad Request — Invalid owner.")
+        return {}
+
+    client._put = fake_put
+    # owner 999 will be rejected, but the field update must still go through.
+    res = client.update_company_fields(3, {"cfSourceOfData": "LinkedIn"})
+    assert res == "updated", res
+    last = puts[-1]
+    assert "ownedBy" not in last, last
+    assert last["customFieldValues"]["cfSourceOfData"] == "LinkedIn", last
+    print("PASS invalid owner is skipped; fields still update")
+
+
 def test_field_put_preserves_existing_owner():
     client = KylasClient()
     client.get_custom_field_defs = lambda e: {}
@@ -324,6 +348,7 @@ if __name__ == "__main__":
     test_failing_field_is_isolated_and_good_ones_kept()
     test_all_fields_fail_returns_failed()
     test_custom_field_defs_parsed_from_endpoint()
+    test_invalid_owner_does_not_block_fields()
     test_field_put_preserves_existing_owner()
     test_field_put_asserts_resolved_owner()
     test_company_dropdown_via_config_with_shape_fallback()
