@@ -259,14 +259,16 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
 
         if assign_co_owner and user_id:
             if dry_run:
-                print(f"    [DRY] set owner → {owner_raw} (uid {user_id})")
+                print(f"    [OWNER company] would set → {owner_raw} (uid {user_id})")
                 assigned_co += 1
             elif client.update_company_owner(co_id, user_id):
-                print(f"    owner → {owner_raw} (uid {user_id})")
+                print(f"    [OWNER company] ✓ set → {owner_raw} (uid {user_id})")
                 assigned_co += 1
             else:
-                print(f"    [WARN] owner NOT set → {owner_raw} (uid {user_id})")
+                print(f"    [OWNER company] ✗ NOT set → {owner_raw} (uid {user_id})")
                 failed += 1
+        elif assign_co_owner and not user_id:
+            print(f"    [OWNER company] ✗ skipped — owner not resolved to a Kylas user")
 
         # ---- Contact-level updates (fetch contacts once, reuse) ----
         need_contacts = (assign_ct_owner and user_id) or (do_fields and field_map["contact"])
@@ -279,6 +281,7 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
         print(f"    → {len(contacts)} contacts"
               + (f"  | contact fields {list(contact_vals)}" if contact_vals else ""))
 
+        ct_owned_here = ct_owner_failed_here = 0
         for ct in contacts:
             ct_id = ct.get("id")
             if not ct_id:
@@ -297,14 +300,21 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
                 already = ct.get("ownerId") == user_id or (
                     isinstance(ct.get("ownedBy"), dict) and ct["ownedBy"].get("id") == user_id
                 )
-                if already:
+                if already or dry_run:
                     assigned_ct += 1
-                elif dry_run:
-                    assigned_ct += 1
+                    ct_owned_here += 1
                 elif client.update_contact_owner(ct_id, user_id, contact_data=ct):
                     assigned_ct += 1
+                    ct_owned_here += 1
                 else:
                     failed += 1
+                    ct_owner_failed_here += 1
+
+        if assign_ct_owner and user_id and contacts:
+            msg = f"    [OWNER contacts] ✓ {ct_owned_here}/{len(contacts)} → {owner_raw}"
+            if ct_owner_failed_here:
+                msg += f"  (✗ {ct_owner_failed_here} failed)"
+            print(msg)
 
     # Surface real Kylas field names if no contact filter shape worked.
     if (assigned_co or co_fields_set) and not (assigned_ct or ct_fields_set) \
@@ -315,9 +325,12 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
                   f"Kylas contact fields containing 'company': {fields}")
 
     print(f"\n{'[DRY RUN] ' if dry_run else ''}Done")
-    print(f"Owner → companies: {assigned_co}  contacts: {assigned_ct}")
-    print(f"Fields → companies: {co_fields_set}  contacts: {ct_fields_set}")
+    print(f"OWNER  set → companies: {assigned_co}  contacts: {assigned_ct}")
+    print(f"FIELDS set → companies: {co_fields_set}  contacts: {ct_fields_set}")
     print(f"Skipped: {skipped}  Failed: {failed}")
+    if assign_co_owner and assigned_co == 0:
+        print("[OWNER] WARNING: 0 company owners set — check that 'Owner - Kylas' "
+              "holds valid Kylas user emails (the API/admin account can't own records)")
 
 
 if __name__ == "__main__":
