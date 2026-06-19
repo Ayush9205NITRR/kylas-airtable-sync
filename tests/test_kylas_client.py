@@ -250,6 +250,34 @@ def test_field_put_excludes_owner():
     print("PASS field PUT excludes owner (handled by dedicated endpoint)")
 
 
+def test_dropdown_encoding_cached_after_first_isolation():
+    import requests
+    client = KylasClient()
+    client.get_custom_field_defs = lambda e: {
+        "cfX": {"type": "PICK_LIST", "options": {"a": 111}, "labels": {111: "A"}}}
+    client._get = lambda path, params=None: {"data": {
+        "id": 1, "name": "Co", "customFieldValues": {}}}
+    puts = []
+
+    def fake_put(path, body):
+        v = (body.get("customFieldValues") or {}).get("cfX")
+        puts.append(v)
+        if v is not None and not isinstance(v, dict):   # bare id rejected, {id} accepted
+            raise requests.HTTPError("500 Server Error — Generic error")
+        return {}
+
+    client._put = fake_put
+    # 1st record: isolation discovers the {id} encoding works and caches it.
+    assert client.update_company_fields(1, {"cfX": "A"}) == "updated"
+    assert client._pick_style.get("cfX") == "idobj", client._pick_style
+    # 2nd record: the very first PUT must already use {id} (fast path, no isolation).
+    puts.clear()
+    assert client.update_company_fields(2, {"cfX": "A"}) == "updated"
+    assert puts[0] == {"id": 111}, puts          # used cached encoding immediately
+    assert len(puts) == 1, puts                  # one PUT, no isolation round-trips
+    print("PASS dropdown encoding cached -> later records skip isolation (fast)")
+
+
 def test_company_dropdown_via_config_with_shape_fallback():
     import requests
     client = KylasClient()
@@ -314,6 +342,7 @@ if __name__ == "__main__":
     test_all_fields_fail_returns_failed()
     test_custom_field_defs_parsed_from_endpoint()
     test_field_put_excludes_owner()
+    test_dropdown_encoding_cached_after_first_isolation()
     test_company_dropdown_via_config_with_shape_fallback()
     test_dropdown_label_and_boolean_coerced_on_write()
     print("\nALL TESTS PASSED")

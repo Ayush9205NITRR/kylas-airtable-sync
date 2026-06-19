@@ -44,8 +44,9 @@ class KylasClient:
             "api-key": os.environ["KYLAS_API_KEY"],
             "Content-Type": "application/json",
         })
-        self._delay = 0.2        # pacing between calls (Kylas rate-limits hard)
+        self._delay = 0.12       # pacing between calls; 429 retry absorbs spikes
         self._max_retries = 5    # automatic retries on HTTP 429 (rate limit)
+        self._pick_style = {}    # cf_key -> dropdown encoding that worked ("id"/"idobj"/"idname")
 
     def _request(self, method: str, path: str, **kwargs) -> requests.Response:
         """One Kylas HTTP call with pacing + automatic 429 (rate-limit) backoff.
@@ -650,12 +651,22 @@ class KylasClient:
         print(f"  [Kylas] WARN: {key} value {value!r} matches no dropdown option"
               + (f" (options: {opts})" if opts else "") + " — leaving as-is")
 
+    @staticmethod
+    def _encode_pick(oid, label, style):
+        """Encode a resolved dropdown option id in the style Kylas accepts."""
+        if style == "idobj":
+            return {"id": oid}
+        if style == "idname" and label:
+            return {"id": oid, "name": label}
+        return oid
+
     def _format_cf_value(self, key: str, defn: dict, value):
         """Coerce one Airtable value to the shape Kylas wants for this cf type.
 
-        Dropdown -> the option's numeric id (matched case-insensitively from its
-        label). Boolean -> a real bool. Anything unmatched / other types pass
-        through, so per-field isolation can still surface a genuine problem.
+        Dropdown -> the option id, encoded in the style already proven to work
+        for this field this run (see _pick_style) so only the first record pays
+        the isolation cost. Boolean -> a real bool. Anything unmatched / other
+        types pass through, so isolation can still surface a genuine problem.
         """
         if not defn or value is None:
             return value
@@ -666,15 +677,20 @@ class KylasClient:
         if ftype in self._PICKLIST_TYPES or options:
             if isinstance(value, bool):
                 return value
+            oid = None
             if isinstance(value, (int, float)):
-                return int(value)
-            s = str(value).strip()
-            if s.lower() in options:
-                return options[s.lower()]
-            if s.isdigit():
-                return int(s)
-            self._warn_unmatched(key, value, defn)
-            return value
+                oid = int(value)
+            else:
+                s = str(value).strip()
+                if s.lower() in options:
+                    oid = options[s.lower()]
+                elif s.isdigit():
+                    oid = int(s)
+            if oid is None:
+                self._warn_unmatched(key, value, defn)
+                return value
+            label = (defn.get("labels") or {}).get(oid)
+            return self._encode_pick(oid, label, self._pick_style.get(key, "id"))
         if ftype in self._BOOLEAN_TYPES:
             if isinstance(value, bool):
                 return value
@@ -711,10 +727,12 @@ class KylasClient:
         if not is_pick or oid is None:
             return [value]
         label = (defn.get("labels") or {}).get(oid)
-        cands = [oid, {"id": oid}]
+        by_style = {"id": oid, "idobj": {"id": oid}}
         if label:
-            cands.append({"id": oid, "name": label})
-        return cands
+            by_style["idname"] = {"id": oid, "name": label}
+        pref  = self._pick_style.get(key, "id")          # try the proven style first
+        order = [pref] + [s for s in ("id", "idobj", "idname") if s != pref]
+        return [by_style[s] for s in order if s in by_style]
 
     @staticmethod
     def _short_err(exc) -> str:
@@ -777,6 +795,9 @@ class KylasClient:
                     self._put(f"{path}/{entity_id}", trial)
                     good, err = trial, None
                     applied.append(key)
+                    if len(candidates) > 1:   # dropdown: remember the encoding that worked
+                        self._pick_style[key] = ("idname" if isinstance(cand, dict) and "name" in cand
+                                                 else "idobj" if isinstance(cand, dict) else "id")
                     break
                 except Exception as exc:
                     err = self._short_err(exc)
@@ -975,7 +996,7 @@ class KylasClient:
         """
         cid = int(company_id)
         cid_str = str(cid)
-        fields = ["id", "name", "company"]
+        fields = ["id", "name", "company", "ownedBy"]   # ownedBy lets callers skip already-correct owners
         # No single company has anywhere near this many contacts; a response
         # larger than this means Kylas ignored our filter and returned the
         # whole contact set, so that filter shape is not usable.
