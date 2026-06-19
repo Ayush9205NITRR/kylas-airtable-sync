@@ -244,6 +244,19 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
         print(f"  '{co_name}' (company {co_id})")
 
         # ---- Company-level updates ----
+        # Fields FIRST, then owner: a field PUT resets the owner to the API
+        # user, so owner assignment must run last to have the final say.
+        if do_fields and field_map["company"]:
+            cfields = _row_fields(field_map["company"], f)
+            cfields.pop("ownedBy", None)   # owner is set via assignment, not the field PUT
+            if cfields:
+                res = client.update_company_fields(co_id, cfields, dry_run=dry_run)
+                print(f"    company fields {list(cfields)} → {res}")
+                if res == "updated":
+                    co_fields_set += 1
+                elif res == "failed":
+                    failed += 1
+
         if assign_co_owner and user_id:
             if dry_run:
                 print(f"    [DRY] set owner → {user_id}")
@@ -252,18 +265,6 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
                 assigned_co += 1
             else:
                 failed += 1
-
-        if do_fields and field_map["company"]:
-            cfields = _row_fields(field_map["company"], f)
-            cfields.pop("ownedBy", None)   # owner is set via assignment, not the field PUT
-            if cfields:
-                res = client.update_company_fields(co_id, cfields, dry_run=dry_run,
-                                                   owner_id=user_id)
-                print(f"    company fields {list(cfields)} → {res}")
-                if res == "updated":
-                    co_fields_set += 1
-                elif res == "failed":
-                    failed += 1
 
         # ---- Contact-level updates (fetch contacts once, reuse) ----
         need_contacts = (assign_ct_owner and user_id) or (do_fields and field_map["contact"])
@@ -281,6 +282,15 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
             if not ct_id:
                 continue
 
+            # Fields FIRST, then owner (a field PUT resets the owner).
+            if contact_vals:
+                res = client.update_contact_fields(ct_id, contact_vals,
+                                                   contact_data=ct, dry_run=dry_run)
+                if res == "updated":
+                    ct_fields_set += 1
+                elif res == "failed":
+                    failed += 1
+
             if assign_ct_owner and user_id:
                 already = ct.get("ownerId") == user_id or (
                     isinstance(ct.get("ownedBy"), dict) and ct["ownedBy"].get("id") == user_id
@@ -292,15 +302,6 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
                 elif client.update_contact_owner(ct_id, user_id, contact_data=ct):
                     assigned_ct += 1
                 else:
-                    failed += 1
-
-            if contact_vals:
-                res = client.update_contact_fields(ct_id, contact_vals,
-                                                   contact_data=ct, dry_run=dry_run,
-                                                   owner_id=user_id)
-                if res == "updated":
-                    ct_fields_set += 1
-                elif res == "failed":
                     failed += 1
 
     # Surface real Kylas field names if no contact filter shape worked.

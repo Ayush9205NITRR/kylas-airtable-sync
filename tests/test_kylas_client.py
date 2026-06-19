@@ -93,11 +93,12 @@ def test_update_company_fields_cleans_body():
     client._put = lambda path, body: put_body.update(body) or {}
     res = client.update_company_fields(123, {"cfSourceOfData": "LinkedIn"})
     assert res == "updated", res
-    for ro in ("id", "recordActions", "updatedAt"):
+    # ownedBy is excluded from the field PUT (owner is set separately, and a
+    # full PUT carrying ownedBy is rejected); audit fields are stripped too.
+    for ro in ("id", "recordActions", "updatedAt", "ownedBy"):
         assert ro not in put_body, (ro, put_body)
-    assert put_body.get("ownedBy") == {"id": 9}, put_body   # owner preserved, not reset
     assert put_body["customFieldValues"]["cfSourceOfData"] == "LinkedIn", put_body
-    print("PASS update_company_fields PUTs a cleaned body (owner preserved)")
+    print("PASS update_company_fields PUTs a cleaned, owner-free body")
 
 
 def test_update_contact_fields_coerces_company_id():
@@ -112,9 +113,8 @@ def test_update_contact_fields_coerces_company_id():
                                        contact_data=contact)
     assert res == "updated", res
     assert put_body["company"] == 894, put_body.get("company")  # dict -> int id
-    assert "id" not in put_body, put_body
-    assert put_body.get("ownedBy") == {"id": 9}, put_body       # owner preserved, not reset
-    print("PASS update_contact_fields coerces company id and preserves owner")
+    assert "id" not in put_body and "ownedBy" not in put_body, put_body  # owner-free PUT
+    print("PASS update_contact_fields coerces company id and excludes owner")
 
 
 def test_owner_key_in_field_map_is_skipped():
@@ -234,31 +234,8 @@ def test_custom_field_defs_parsed_from_endpoint():
     print("PASS custom field defs parsed (dropdown options + types) and cached")
 
 
-def test_invalid_owner_does_not_block_fields():
-    import requests
-    client = KylasClient()
-    client.get_custom_field_defs = lambda e: {}
-    client._get = lambda path, params=None: {"data": {
-        "id": 3, "name": "Acme", "ownedBy": {"id": 999}, "customFieldValues": {}}}
-    puts = []
-
-    def fake_put(path, body):
-        puts.append(dict(body))
-        if "ownedBy" in body:                       # Kylas rejects this owner
-            raise requests.HTTPError("400 Bad Request — Invalid owner.")
-        return {}
-
-    client._put = fake_put
-    # owner 999 will be rejected, but the field update must still go through.
-    res = client.update_company_fields(3, {"cfSourceOfData": "LinkedIn"})
-    assert res == "updated", res
-    last = puts[-1]
-    assert "ownedBy" not in last, last
-    assert last["customFieldValues"]["cfSourceOfData"] == "LinkedIn", last
-    print("PASS invalid owner is skipped; fields still update")
-
-
-def test_field_put_preserves_existing_owner():
+def test_field_put_excludes_owner():
+    # The field PUT must never carry ownedBy — owner is assigned separately.
     client = KylasClient()
     client.get_custom_field_defs = lambda e: {}
     client._get = lambda path, params=None: {"data": {
@@ -266,23 +243,11 @@ def test_field_put_preserves_existing_owner():
         "customFieldValues": {}}}
     put = {}
     client._put = lambda path, body: put.update(body) or {}
-    res = client.update_company_fields(5, {"cfSourceOfData": "LinkedIn"})  # no owner_id
+    res = client.update_company_fields(5, {"cfSourceOfData": "LinkedIn"})
     assert res == "updated", res
-    assert put.get("ownedBy") == {"id": 99}, put   # current owner kept, not reset to API user
-    print("PASS field PUT preserves existing owner (no reset to API user)")
-
-
-def test_field_put_asserts_resolved_owner():
-    client = KylasClient()
-    client.get_custom_field_defs = lambda e: {}
-    client._get = lambda path, params=None: {"data": {
-        "id": 5, "name": "Acme", "ownedBy": {"id": 99}, "customFieldValues": {}}}
-    put = {}
-    client._put = lambda path, body: put.update(body) or {}
-    res = client.update_company_fields(5, {"cfSourceOfData": "X"}, owner_id=42)
-    assert res == "updated", res
-    assert put.get("ownedBy") == {"id": 42}, put   # resolved owner wins over current
-    print("PASS field PUT asserts resolved owner_id (--mode both)")
+    assert "ownedBy" not in put and "ownerId" not in put, put
+    assert put["customFieldValues"]["cfSourceOfData"] == "LinkedIn", put
+    print("PASS field PUT excludes owner (handled by dedicated endpoint)")
 
 
 def test_company_dropdown_via_config_with_shape_fallback():
@@ -348,9 +313,7 @@ if __name__ == "__main__":
     test_failing_field_is_isolated_and_good_ones_kept()
     test_all_fields_fail_returns_failed()
     test_custom_field_defs_parsed_from_endpoint()
-    test_invalid_owner_does_not_block_fields()
-    test_field_put_preserves_existing_owner()
-    test_field_put_asserts_resolved_owner()
+    test_field_put_excludes_owner()
     test_company_dropdown_via_config_with_shape_fallback()
     test_dropdown_label_and_boolean_coerced_on_write()
     print("\nALL TESTS PASSED")
