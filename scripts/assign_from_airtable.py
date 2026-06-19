@@ -259,11 +259,13 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
 
         if assign_co_owner and user_id:
             if dry_run:
-                print(f"    [DRY] set owner → {user_id}")
+                print(f"    [DRY] set owner → {owner_raw} (uid {user_id})")
                 assigned_co += 1
             elif client.update_company_owner(co_id, user_id):
+                print(f"    owner → {owner_raw} (uid {user_id})")
                 assigned_co += 1
             else:
+                print(f"    [WARN] owner NOT set → {owner_raw} (uid {user_id})")
                 failed += 1
 
         # ---- Contact-level updates (fetch contacts once, reuse) ----
