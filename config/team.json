@@ -1,16 +1,49 @@
 {
   "bd_team": [
-    {"name": "Rubal",    "email": "rubal@enout.in"},
-    {"name": "Bhaumik",  "email": "bhaumik@enout.in"},
-    {"name": "Shreya",   "email": "shreya.bodwal@enout.in"},
-    {"name": "Mayra",    "email": "mayra@enout.in"},
-    {"name": "Devansh",  "email": "devansh.shukla@enout.in"},
-    {"name": "Tanay",    "email": "tanay.kumar@enout.in"},
-    {"name": "Arshdeep", "email": "arshdeep@enout.in"},
-    {"name": "Gurnoor",  "email": "gurnoor@enout.in"},
-    {"name": "Gaurav",   "email": "gaurav@enout.in"},
-    {"name": "Aditi",    "email": "aditi.saini@enout.in"},
-    {"name": "Muskan",   "email": "muskan@enout.in"}
+    {
+      "name": "Rubal",
+      "email": "rubal@enout.in"
+    },
+    {
+      "name": "Bhaumik",
+      "email": "bhaumik@enout.in"
+    },
+    {
+      "name": "Shreya",
+      "email": "shreya.bodwal@enout.in"
+    },
+    {
+      "name": "Mayra",
+      "email": "mayra@enout.in"
+    },
+    {
+      "name": "Devansh",
+      "email": "devansh.shukla@enout.in"
+    },
+    {
+      "name": "Tanay",
+      "email": "tanay.kumar@enout.in"
+    },
+    {
+      "name": "Arshdeep",
+      "email": "arshdeep@enout.in"
+    },
+    {
+      "name": "Gurnoor",
+      "email": "gurnoor@enout.in"
+    },
+    {
+      "name": "Gaurav",
+      "email": "gaurav@enout.in"
+    },
+    {
+      "name": "Aditi",
+      "email": "aditi.saini@enout.in"
+    },
+    {
+      "name": "Muskan",
+      "email": "muskan@enout.in"
+    }
   ],
   "revenue_team": [],
   "cc": [
@@ -92,7 +125,9 @@
     "82978": "Gurnoor Kaur",
     "82993": "Gaurav Kumar",
     "82994": "Aditi saini",
-    "82867": "Muskan Rajpoot"
+    "82867": "Muskan Rajpoot",
+    "83129": "Anjali Athya",
+    "83130": "Ifee Malpani"
   },
   "kylas_user_emails": {
     "Tanay Kumar": "tanay.kumar@enout.in",
@@ -132,6 +167,8 @@
     "Gurnoor Kaur": "gurnoor@enout.in",
     "Gaurav Kumar": "gaurav@enout.in",
     "Aditi saini": "aditi.saini@enout.in",
-    "Muskan Rajpoot": "muskan@enout.in"
+    "Muskan Rajpoot": "muskan@enout.in",
+    "Anjali Athya": "anjali.athya@enout.in",
+    "Ifee Malpani": "ife.malpani@enout.in"
   }
 }
