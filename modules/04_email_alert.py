@@ -647,9 +647,14 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
             subject, body = _build_first_half(
                 name, today, bd, targets, monthly_fixed, account_rows=account_rows)
         else:
+            my_issues = None
+            if validation_rows is not None:
+                lo = name.lower()
+                my_issues = [r for r in validation_rows
+                             if lo in r["owner"].lower() or r["owner"].lower() in lo]
             subject, body = _build_full_day(
                 name, today, bd, targets, monthly_fixed,
-                account_rows=account_rows, validation_rows=validation_rows)
+                account_rows=account_rows, validation_rows=my_issues)
 
         eff_cc = [a for a in cc_list if a.lower() != email.lower()]
         try:
