@@ -123,22 +123,18 @@ def _map(raw: dict, user_map: dict = None, company_id_map: dict = None) -> dict:
     })
 
     # "Updated At" stores the NAME of the human who last updated this contact.
-    # Workflow / automation updates (ownedBy.id != updatedBy.id) are ignored
-    # so they don't overwrite the last rep who genuinely worked the contact.
+    # Only counts when the contact OWNER made the update — admin, system, and
+    # other-user updates are excluded so metrics reflect genuine owner work.
     ob_id = (raw.get("ownedBy") or {}).get("id")
     ub    = raw.get("updatedBy") or {}
     ub_id = ub.get("id") if isinstance(ub, dict) else None
-    if ub_id is None:
-        # updatedBy not in payload — fall back to owner name
-        ub_name = _owner_name(raw, user_map)
-        is_human = True
-    elif ob_id and ub_id and ob_id == ub_id:
+    if ob_id and ub_id and ob_id == ub_id:
         ub_name  = (ub.get("name") or
                     f"{ub.get('firstName','')} {ub.get('lastName','')}".strip())
         is_human = True
     else:
         ub_name  = ""
-        is_human = False   # workflow / another user → don't overwrite
+        is_human = False
 
     if is_human and ub_name and fm.get("updatedAt"):
         fields[fm["updatedAt"]] = ub_name
@@ -235,13 +231,13 @@ def run(test_mode: bool = False, test_id: int = None,
                     updated += 1
                     per_user.setdefault(owner, {"created": 0, "updated": 0})["updated"] += 1
 
-                # BD metrics: only count human updates (ownedBy == updatedBy).
-                # Workflow / automation changes are excluded.
+                # BD metrics: only count when the contact OWNER made the update.
+                # Admin, system, and other-user updates are excluded.
                 _ob_id = (ct.get("ownedBy") or {}).get("id")
                 _ub    = ct.get("updatedBy") or {}
                 _ub_id = _ub.get("id") if isinstance(_ub, dict) else None
-                human_update  = (_ub_id is None) or (_ob_id and _ub_id and _ob_id == _ub_id)
-                updated_today = (ct.get("updatedAt") or "").startswith(today_iso) and human_update
+                owner_update  = bool(_ob_id and _ub_id and _ob_id == _ub_id)
+                updated_today = (ct.get("updatedAt") or "").startswith(today_iso) and owner_update
                 stage_moved = bool(new_stage) and (new_stage != old_stage) and updated_today
 
                 if stage_moved:
