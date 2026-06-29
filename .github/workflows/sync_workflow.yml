@@ -1,0 +1,38 @@
+name: Kylas-Airtable Sync
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 13 * * 1-5' # 13:00 UTC (6:30 PM IST) on weekdays
+  workflow_dispatch:
+    inputs:
+      is_test_run:
+        description: 'Run as Test (Dry Run)'
+        type: boolean
+        default: true
+
+jobs:
+  run-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Sync Script
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          TEST_MODE: ${{ github.event.inputs.is_test_run }} # Pass the input as an environment variable
+        run: python3 run_sync.py
