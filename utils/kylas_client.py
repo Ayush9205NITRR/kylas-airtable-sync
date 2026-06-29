@@ -857,8 +857,11 @@ class KylasClient:
                   f"current={sorted(current_ids)} add={added} result={sorted_ids}")
             return "updated"
 
-        # Build PUT body: mirror update_company_fields (_clean_for_put + no owner).
+        # Build PUT body from the GET response, stripping read-only/audit fields
+        # but keeping ownerId so Kylas doesn't reset the owner to the API user.
         base = self._clean_for_put(body)
+        if body.get("ownerId"):
+            base["ownerId"] = body["ownerId"]
         base_cfv = dict(base.get("customFieldValues") or {})
 
         # Build {id, name} objects — matches the shape GET returns (and PUT requires).
