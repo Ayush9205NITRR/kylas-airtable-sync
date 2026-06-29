@@ -319,7 +319,9 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
         if fm.get("claimedBy"):
             fields[fm["claimedBy"]] = e.get("claimed_by", "")
         if fm.get("statusOfReachout"):
-            fields[fm["statusOfReachout"]] = e.get("status_of_reachout", "Stale")
+            sor = e.get("status_of_reachout", "Stale")
+            lc  = e.get("last_called", "")
+            fields[fm["statusOfReachout"]] = f"{sor} | Last Call: {lc}" if lc else f"{sor} | Last Call: —"
         if by_name:                       # backfill id so next run matches directly
             fields[id_field] = co_id
             matched_by_name += 1
