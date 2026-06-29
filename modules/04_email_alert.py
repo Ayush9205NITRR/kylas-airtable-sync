@@ -293,6 +293,110 @@ def _account_table_html(rows: list) -> str:
     return hdr + body + "</tbody></table>"
 
 
+# ── Contact validation (stage-based required fields) ────────────────────────────
+# Kylas can't block a save on a conditional rule, so we surface violations
+# reactively in the EOD email. Each rule = a case-insensitive substring matched
+# against the contact's Pipeline Stage -> the field(s) that must then be filled.
+# Tune the stage strings to your exact pipeline-stage names. Known contact stages
+# include: "MQL (Marketing Qualified Lead)", "SQL ...", "Activation",
+# "Discovery Call Booked", "Offsite Delayed", "Follow-up (1..3)", "CNC ...".
+#   kind "offsite"  -> the account's Offsite Timeline (Companies table)
+#   kind "nextcall" -> the contact's Next Call Date   (Contacts table)
+_VALIDATION_RULES = [
+    ("mql",              [("Offsite Timeline", "offsite"), ("Next Call Date", "nextcall")]),
+    ("offsite timeline", [("Next Call Date", "nextcall")]),
+]
+
+
+def _norm_company_id(raw) -> str:
+    """Company id as a plain integer string, regardless of float/str format."""
+    try:
+        return str(int(float(raw))) if raw not in (None, "") else ""
+    except (ValueError, TypeError):
+        return str(raw).strip()
+
+
+def _load_validation_issues() -> list:
+    """Scan Airtable Contacts against _VALIDATION_RULES.
+
+    Returns violation rows {company, contact, owner, stage, missing} for every
+    contact whose stage requires fields that are currently empty. Offsite
+    Timeline is read from the contact's company (Companies table). Best-effort:
+    returns [] if the tables can't be read.
+    """
+    try:
+        from utils.airtable_client import AirtableClient
+        contacts = AirtableClient("Contacts").table.all(fields=[
+            "Contact Name", "Contact Owner", "Kylas Company Id",
+            "Pipeline Stage", "Next Call Date",
+        ])
+    except Exception as exc:
+        print(f"[Email] WARNING: could not load Contacts for validation: {exc}")
+        return []
+
+    offsite_by_cid, name_by_cid = {}, {}
+    try:
+        from utils.airtable_client import AirtableClient
+        for r in AirtableClient("Companies").table.all(
+                fields=["Kylas Company ID", "Company Name", "Offsite Timeline"]):
+            f   = r["fields"]
+            cid = _norm_company_id(f.get("Kylas Company ID"))
+            if cid:
+                offsite_by_cid[cid] = str(f.get("Offsite Timeline") or "").strip()
+                name_by_cid[cid]    = str(f.get("Company Name") or "")
+    except Exception as exc:
+        print(f"[Email] WARNING: could not load Companies for validation: {exc}")
+
+    issues = []
+    for r in contacts:
+        f     = r["fields"]
+        stage = str(f.get("Pipeline Stage") or "").strip()
+        if not stage:
+            continue
+        slo    = stage.lower()
+        cid    = _norm_company_id(f.get("Kylas Company Id"))
+        values = {
+            "nextcall": str(f.get("Next Call Date") or "").strip(),
+            "offsite":  offsite_by_cid.get(cid, ""),
+        }
+        for stage_match, required in _VALIDATION_RULES:
+            if stage_match not in slo:
+                continue
+            missing = [label for label, kind in required if not values.get(kind)]
+            if missing:
+                issues.append({
+                    "company": name_by_cid.get(cid) or cid or "—",
+                    "contact": str(f.get("Contact Name") or "—"),
+                    "owner":   str(f.get("Contact Owner") or "Unassigned"),
+                    "stage":   stage,
+                    "missing": ", ".join(missing),
+                })
+            break   # first matching rule wins
+    issues.sort(key=lambda x: (x["company"].lower(), x["contact"].lower()))
+    print(f"[Email] Validation issues: {len(issues)} contacts")
+    return issues
+
+
+def _validation_table_html(rows: list) -> str:
+    hdr = ('<p style="font-weight:bold;font-size:14px;margin:24px 0 6px;">'
+           f'Contact Validation Issues ({len(rows)})</p>')
+    if not rows:
+        return (hdr + '<p style="font-size:13px;color:#2e7d32;margin:4px 0 16px;">'
+                'All MQL / Offsite contacts have their required fields. &#10003;</p>')
+    head = (f'<table {_TABLE}><thead><tr>'
+            f'<th {_TH}>Account</th><th {_TH}>Contact</th><th {_TH}>Owner</th>'
+            f'<th {_TH}>Stage</th><th {_TH}>Missing required field(s)</th>'
+            f'</tr></thead><tbody>')
+    body = "".join(
+        f'<tr><td {_TD}>{r["company"]}</td><td {_TD}>{r["contact"]}</td>'
+        f'<td {_TD}>{r["owner"]}</td>'
+        f'<td {_TD} style="font-size:12px;">{r["stage"]}</td>'
+        f'<td {_TD} style="color:#c62828;font-weight:bold;">{r["missing"]}</td></tr>'
+        for r in rows
+    )
+    return hdr + head + body + "</tbody></table>"
+
+
 def _load_monthly_fixed() -> dict:
     """
     {metric: monthly_target} for metrics with fixed monthly goals (DCB, SQL).
@@ -395,7 +499,8 @@ def _build_first_half(name: str, today: str, bd: dict, targets: dict,
 
 
 def _build_full_day(name: str, today: str, bd: dict, targets: dict,
-                    monthly_fixed: dict = None, account_rows: list = None) -> tuple:
+                    monthly_fixed: dict = None, account_rows: list = None,
+                    validation_rows: list = None) -> tuple:
     w1          = bd.get("w1", {})
     w2          = bd.get("w2", {})
     has_windows = any(w1.get(k, 0) for k in METRICS)
@@ -435,6 +540,9 @@ def _build_full_day(name: str, today: str, bd: dict, targets: dict,
     content = table + _monthly_goal_html(monthly_fixed or {})
     if account_rows:
         content += _account_table_html(account_rows)
+    # Section 2: contact validation issues (compiled across all accounts).
+    if validation_rows is not None:
+        content += _validation_table_html(validation_rows)
     subject  = f"BD | {name} | {_friendly_date()} | EOD"
     subtitle = f"BD Activity &nbsp;&middot;&nbsp; {today} &nbsp;&middot;&nbsp; End of Day"
     return subject, _html_doc(name, subtitle, content)
@@ -487,6 +595,8 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
     monthly_fixed = _load_monthly_fixed()
     account_rows  = _load_account_activity_today()
     print(f"[Email] Account activity today: {len(account_rows)} companies")
+    # Validation issues only go in the End-of-Day email (Section 2).
+    validation_rows = _load_validation_issues() if slot != "first_half" else None
 
     with open(TEAM_PATH) as fh:
         cfg = json.load(fh)
@@ -500,7 +610,8 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
                 "Team", today, sample_bd, targets, monthly_fixed, account_rows=account_rows)
         else:
             subject, body = _build_full_day(
-                "Team", today, sample_bd, targets, monthly_fixed, account_rows=account_rows)
+                "Team", today, sample_bd, targets, monthly_fixed,
+                account_rows=account_rows, validation_rows=validation_rows)
         for addr in demo_recipients:
             try:
                 _send(smtp_user, smtp_pass, addr, subject, body, [])
@@ -527,7 +638,8 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
                 name, today, bd, targets, monthly_fixed, account_rows=account_rows)
         else:
             subject, body = _build_full_day(
-                name, today, bd, targets, monthly_fixed, account_rows=account_rows)
+                name, today, bd, targets, monthly_fixed,
+                account_rows=account_rows, validation_rows=validation_rows)
 
         eff_cc = [a for a in cc_list if a.lower() != email.lower()]
         try:
