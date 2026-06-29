@@ -3,7 +3,7 @@ Contact → Company "Offsite Timeline" rollup.
 
 For each company in a given Airtable view, reads every linked contact's
 Offsite Timeline (single-select) value, collects the union of labels, and
-merges them into the company's "Offsite Timeline - New" multi-select field
+merges them into the company's "Offsite Timeline (BD - New)" multi-select field
 in Kylas.
 
 Usage:
@@ -16,7 +16,7 @@ If it doesn't, create it first:
     python scripts/create_offsite_field.py --dry-run   (preview)
     python scripts/create_offsite_field.py             (create)
 or manually in Kylas: Settings → Customization → Form Fields → Company →
-add a multi-select picklist "Offsite Timeline - New".
+add a multi-select picklist "Offsite Timeline (BD - New)".
 """
 import argparse
 import os
@@ -172,7 +172,7 @@ if __name__ == "__main__":
                         help="Print intended changes without writing to Kylas")
     parser.add_argument("--inspect", action="store_true",
                         help="Print resolved keys + option maps then exit")
-    parser.add_argument("--company-field", default="Offsite Timeline - New",
+    parser.add_argument("--company-field", default="Offsite Timeline (BD - New)",
                         help="Display name of the company multi-select field in Kylas")
     parser.add_argument("--contact-field", default="Offsite Timeline",
                         help="Display name of the contact single-select field in Kylas")

@@ -1,5 +1,5 @@
 """
-Create the "Offsite Timeline - New" multi-select picklist field on a Kylas entity.
+Create the "Offsite Timeline (BD - New)" multi-select picklist field on a Kylas entity.
 
 This script POSTs to /entities/{entity}/fields to create the field. Kylas has
 no field-update endpoint — type and multiValue cannot be changed after creation.
@@ -10,7 +10,7 @@ UI fallback (if you prefer the Kylas interface):
   1. Log in to Kylas → Settings → Customization → Form Fields.
   2. Select "Company" from the entity drop-down.
   3. Click "Add Field" → choose "Picklist (Multi-select)".
-  4. Set Display Name to "Offsite Timeline - New".
+  4. Set Display Name to "Offsite Timeline (BD - New)".
   5. Add the option labels: Jan - Mar, Apr - Jun, Jul - Sep, Oct - Dec.
      (These must match the option labels in the contact's "Offsite Timeline"
       single-select field so the label-bridge in the rollup script works.)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Create a multi-select picklist field on a Kylas entity."
     )
-    parser.add_argument("--display", default="Offsite Timeline - New",
+    parser.add_argument("--display", default="Offsite Timeline (BD - New)",
                         help="Display name for the new field")
     parser.add_argument("--entity", default="company",
                         help="Kylas entity type (default: company)")

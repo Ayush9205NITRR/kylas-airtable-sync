@@ -24,6 +24,10 @@ on:
         description: 'Comma-separated picklist option labels (create-field only)'
         required: false
         default: 'Jan - Mar,Apr - Jun,Jul - Sep,Oct - Dec'
+      field_name:
+        description: 'Company multi-select field display name'
+        required: false
+        default: 'Offsite Timeline (BD - New)'
 
 jobs:
   rollup:
@@ -43,17 +47,17 @@ jobs:
         run: |
           if [ "$MODE" = "create-field" ]; then
             if [ "$DRY_RUN" = "true" ]; then
-              python scripts/create_offsite_field.py --options "$OPTIONS" --dry-run
+              python scripts/create_offsite_field.py --display "$FIELD_NAME" --options "$OPTIONS" --dry-run
             else
-              python scripts/create_offsite_field.py --options "$OPTIONS"
+              python scripts/create_offsite_field.py --display "$FIELD_NAME" --options "$OPTIONS"
             fi
           elif [ "$MODE" = "inspect" ]; then
-            python scripts/rollup_offsite_timeline.py --inspect
+            python scripts/rollup_offsite_timeline.py --inspect --company-field "$FIELD_NAME"
           else
             if [ "$DRY_RUN" = "true" ]; then
-              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME" --dry-run
+              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME" --company-field "$FIELD_NAME" --dry-run
             else
-              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME"
+              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME" --company-field "$FIELD_NAME"
             fi
           fi
         env:
@@ -61,6 +65,7 @@ jobs:
           VIEW_NAME:                ${{ github.event.inputs.view_name }}
           DRY_RUN:                  ${{ github.event.inputs.dry_run }}
           OPTIONS:                  ${{ github.event.inputs.options }}
+          FIELD_NAME:               ${{ github.event.inputs.field_name }}
           KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
           AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
