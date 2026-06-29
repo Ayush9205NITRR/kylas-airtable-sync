@@ -579,21 +579,23 @@ class KylasClient:
         return self._pick_cfg
 
     def _field_defs_from_layout(self, entity: str) -> dict:
-        """Return {cf_key: defn} by walking GET ui/layouts/CREATE/{ENTITY_UPPER}.
+        """Return {cf_key: defn} by walking layout endpoints for ENTITY_UPPER.
+
+        Tries layout types in order (CREATE, EDIT, DETAIL, VIEW), each wrapped
+        in its own try/except so a 400/404 on one type doesn't block the rest.
+        Results are merged across all successful responses: a key is added if
+        not yet present; if the stored entry has empty options and a later type
+        returns non-empty options, the options/labels are upgraded.
 
         The layout endpoint is the authoritative source for field definitions on
         tenants where /entities/{entity}/fields returns no picklist data. The
         response nests fields arbitrarily deep under repeated layoutItems/item
         structures; we recurse generically so any depth works.
 
-        Returns {} on any error (best-effort).
+        Returns {} if all layout types fail (best-effort).
         """
-        try:
-            resp = self._get(f"ui/layouts/CREATE/{entity.upper()}")
-        except Exception:
-            return {}
-
-        defs = {}
+        entity_upper = entity.upper()
+        defs: dict = {}
 
         def _walk(node):
             if isinstance(node, list):
@@ -618,20 +620,34 @@ class KylasClient:
                             options[str(lbl).strip().lower()] = oid
                             labels[oid] = str(lbl).strip()
                     multi = bool(node.get("multiValue"))
-                    defs[str(iname)] = {
+                    new_def = {
                         "type":        str(ftype).upper(),
                         "displayName": str(display),
                         "multiValue":  multi,
                         "options":     options,
                         "labels":      labels,
                     }
+                    key = str(iname)
+                    existing = defs.get(key)
+                    if existing is None:
+                        defs[key] = new_def
+                    elif not existing.get("options") and new_def.get("options"):
+                        # Upgrade: keep existing but fill in options/labels.
+                        existing["options"] = new_def["options"]
+                        existing["labels"]  = new_def["labels"]
                 # Always recurse into child values regardless of whether this node
                 # was itself a field object (sections contain fields, etc.).
                 for v in node.values():
                     if isinstance(v, (dict, list)):
                         _walk(v)
 
-        _walk(resp)
+        for layout_type in ("CREATE", "EDIT", "DETAIL", "VIEW"):
+            try:
+                resp = self._get(f"ui/layouts/{layout_type}/{entity_upper}")
+                _walk(resp)
+            except Exception:
+                continue
+
         return defs
 
     def get_custom_field_defs(self, entity: str) -> dict:
