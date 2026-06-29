@@ -119,9 +119,6 @@ def main():
         phones     = ct.get("phoneNumbers") or []
         ob         = ct.get("ownedBy") or {}
 
-        if args.contact_id:
-            print(f"  [DEBUG] ownedBy raw: {ct.get('ownedBy')}")
-
         owner_em = ""
         if isinstance(ob, dict):
             owner_em = (ob.get("email") or ob.get("emailId") or "").strip().lower()
