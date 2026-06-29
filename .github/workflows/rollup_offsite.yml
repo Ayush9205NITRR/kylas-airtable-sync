@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'rollup = run rollup | create-field = create company field | inspect = show resolved keys'
+        description: 'rollup = run rollup | create-field = create company field | inspect = show resolved keys | discover = print customFieldValues for a company record'
         required: true
         type: choice
         default: 'rollup'
@@ -12,6 +12,11 @@ on:
           - rollup
           - create-field
           - inspect
+          - discover
+      company_id:
+        description: 'Kylas company id to inspect (required for discover mode)'
+        required: false
+        default: ''
       view_name:
         description: 'Airtable Company List view name (required for rollup mode)'
         required: false
@@ -45,7 +50,9 @@ jobs:
 
       - name: Run rollup / create-field / inspect
         run: |
-          if [ "$MODE" = "create-field" ]; then
+          if [ "$MODE" = "discover" ]; then
+            python scripts/rollup_offsite_timeline.py --discover --company-id "$COMPANY_ID"
+          elif [ "$MODE" = "create-field" ]; then
             if [ "$DRY_RUN" = "true" ]; then
               python scripts/create_offsite_field.py --display "$FIELD_NAME" --options "$OPTIONS" --dry-run
             else
@@ -62,6 +69,7 @@ jobs:
           fi
         env:
           MODE:                     ${{ github.event.inputs.mode }}
+          COMPANY_ID:               ${{ github.event.inputs.company_id }}
           VIEW_NAME:                ${{ github.event.inputs.view_name }}
           DRY_RUN:                  ${{ github.event.inputs.dry_run }}
           OPTIONS:                  ${{ github.event.inputs.options }}
