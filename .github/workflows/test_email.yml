@@ -4,13 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       slot:
-        description: 'Slot (first_half or full_day)'
+        description: 'Slot (first_half or full_day). full_day includes the Contact Validation Issues section.'
         required: false
-        default: 'first_half'
+        default: 'full_day'
       demo_only:
-        description: 'Send preview to Ayush + Vedant only (not full team)'
+        description: 'Send a preview to the recipients below only (not the full team)'
         required: false
         default: 'true'
+      recipients:
+        description: 'Space-separated preview recipient emails'
+        required: false
+        default: 'ayush@enout.in vedant@enout.in'
 
 jobs:
   test-email:
@@ -30,7 +34,7 @@ jobs:
         run: |
           ARGS="--slot ${{ github.event.inputs.slot }}"
           if [ "${{ github.event.inputs.demo_only }}" = "true" ]; then
-            ARGS="$ARGS --demo ayush@enout.in vedant@enout.in"
+            ARGS="$ARGS --demo ${{ github.event.inputs.recipients }}"
           fi
           python modules/04_email_alert.py $ARGS
         env:

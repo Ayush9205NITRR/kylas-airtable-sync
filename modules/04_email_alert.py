@@ -293,18 +293,24 @@ def _account_table_html(rows: list) -> str:
     return hdr + body + "</tbody></table>"
 
 
-# ── Contact validation (stage-based required fields) ────────────────────────────
+# ── Contact validation (conditional required fields) ────────────────────────────
 # Kylas can't block a save on a conditional rule, so we surface violations
-# reactively in the EOD email. Each rule = a case-insensitive substring matched
-# against the contact's Pipeline Stage -> the field(s) that must then be filled.
-# Tune the stage strings to your exact pipeline-stage names. Known contact stages
-# include: "MQL (Marketing Qualified Lead)", "SQL ...", "Activation",
+# reactively in the EOD email. Each rule has a condition + the field(s) that must
+# then be filled. A contact is checked against every rule and the missing fields
+# are pooled. Conditions:
+#   "when_stage": substring matched (case-insensitive) against Pipeline Stage
+#   "when_set":   triggers when that field already has a value
+# Field kinds:
+#   "offsite"  -> the account's Offsite Timeline (Companies table)
+#   "nextcall" -> the contact's Next Call Date   (Contacts table)
+# Known contact stages: "MQL (Marketing Qualified Lead)", "SQL ...", "Activation",
 # "Discovery Call Booked", "Offsite Delayed", "Follow-up (1..3)", "CNC ...".
-#   kind "offsite"  -> the account's Offsite Timeline (Companies table)
-#   kind "nextcall" -> the contact's Next Call Date   (Contacts table)
 _VALIDATION_RULES = [
-    ("mql",              [("Offsite Timeline", "offsite"), ("Next Call Date", "nextcall")]),
-    ("offsite timeline", [("Next Call Date", "nextcall")]),
+    # Stage = MQL  -> Offsite Timeline + Next Call Date both required.
+    {"when_stage": "mql", "require": [("Offsite Timeline", "offsite"),
+                                      ("Next Call Date", "nextcall")]},
+    # Offsite Timeline field is set -> a Next Call Date must be scheduled.
+    {"when_set": "offsite", "require": [("Next Call Date", "nextcall")]},
 ]
 
 
@@ -359,19 +365,23 @@ def _load_validation_issues() -> list:
             "nextcall": str(f.get("Next Call Date") or "").strip(),
             "offsite":  offsite_by_cid.get(cid, ""),
         }
-        for stage_match, required in _VALIDATION_RULES:
-            if stage_match not in slo:
+        missing = []
+        for rule in _VALIDATION_RULES:
+            applies = (("when_stage" in rule and rule["when_stage"] in slo) or
+                       ("when_set" in rule and bool(values.get(rule["when_set"]))))
+            if not applies:
                 continue
-            missing = [label for label, kind in required if not values.get(kind)]
-            if missing:
-                issues.append({
-                    "company": name_by_cid.get(cid) or cid or "—",
-                    "contact": str(f.get("Contact Name") or "—"),
-                    "owner":   str(f.get("Contact Owner") or "Unassigned"),
-                    "stage":   stage,
-                    "missing": ", ".join(missing),
-                })
-            break   # first matching rule wins
+            for label, kind in rule["require"]:
+                if not values.get(kind) and label not in missing:
+                    missing.append(label)
+        if missing:
+            issues.append({
+                "company": name_by_cid.get(cid) or cid or "—",
+                "contact": str(f.get("Contact Name") or "—"),
+                "owner":   str(f.get("Contact Owner") or "Unassigned"),
+                "stage":   stage,
+                "missing": ", ".join(missing),
+            })
     issues.sort(key=lambda x: (x["company"].lower(), x["contact"].lower()))
     print(f"[Email] Validation issues: {len(issues)} contacts")
     return issues
