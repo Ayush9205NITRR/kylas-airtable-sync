@@ -2,6 +2,7 @@ import os
 import re
 import json
 import time
+import threading
 import requests
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -44,9 +45,27 @@ class KylasClient:
             "api-key": os.environ["KYLAS_API_KEY"],
             "Content-Type": "application/json",
         })
-        self._delay = 0.12       # pacing between calls; 429 retry absorbs spikes
+        self._delay = 0.12       # min seconds between request starts (global)
         self._max_retries = 5    # automatic retries on HTTP 429 (rate limit)
         self._pick_style = {}    # cf_key -> dropdown encoding that worked ("id"/"idobj"/"idname")
+        self._pace_lock = threading.Lock()   # serialises slot assignment across threads
+        self._next_call_at = 0.0             # monotonic time of the next allowed request
+
+    def _pace(self):
+        """Thread-safe global rate gate.
+
+        Hands each caller a request slot spaced >= self._delay apart, then
+        sleeps (outside the lock) until that slot. This caps the aggregate
+        request rate at ~1/_delay no matter how many worker threads are running,
+        so parallelism overlaps network round-trips without multiplying the rate
+        and tripping Kylas's 429 limit.
+        """
+        with self._pace_lock:
+            slot = max(time.monotonic(), self._next_call_at)
+            self._next_call_at = slot + self._delay
+        wait = slot - time.monotonic()
+        if wait > 0:
+            time.sleep(wait)
 
     def _request(self, method: str, path: str, **kwargs) -> requests.Response:
         """One Kylas HTTP call with pacing + automatic 429 (rate-limit) backoff.
@@ -61,7 +80,7 @@ class KylasClient:
         url = f"{KYLAS_BASE}/{path}"
         attempt = 0
         while True:
-            time.sleep(self._delay)
+            self._pace()
             r = self.session.request(method, url, **kwargs)
             if r.status_code != 429 or attempt >= self._max_retries:
                 return r
@@ -201,7 +220,7 @@ class KylasClient:
         """
         out = []
         for page in range(max_pages):
-            time.sleep(self._delay)
+            self._pace()
             try:
                 r = self.session.post(
                     f"{KYLAS_BASE}/notes/search",
@@ -324,7 +343,7 @@ class KylasClient:
             try:
                 page = 0
                 while True:
-                    time.sleep(self._delay)
+                    self._pace()
                     r = self.session.get(
                         f"{KYLAS_BASE}/{path}",
                         params={"page": page, "size": 100},
@@ -354,7 +373,7 @@ class KylasClient:
         email = email.strip().lower()
         # Try filtered search
         try:
-            time.sleep(self._delay)
+            self._pace()
             r = self.session.post(
                 f"{KYLAS_BASE}/search/user",
                 params={"page": 0, "size": 10},

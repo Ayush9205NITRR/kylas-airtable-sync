@@ -9,6 +9,7 @@ Run: python tests/test_kylas_client.py
 """
 import os
 import sys
+import time
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -250,6 +251,33 @@ def test_field_put_excludes_owner():
     print("PASS field PUT excludes owner (handled by dedicated endpoint)")
 
 
+def test_pace_rate_gate_holds_across_threads():
+    import threading
+    client = KylasClient()
+    client._delay = 0.01
+    starts, lk = [], threading.Lock()
+
+    def worker():
+        for _ in range(8):
+            client._pace()
+            with lk:
+                starts.append(time.monotonic())
+
+    threads = [threading.Thread(target=worker) for _ in range(4)]  # 4 x 8 = 32 calls
+    t0 = time.monotonic()
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    total = time.monotonic() - t0
+    # Global rate is ~1/delay no matter the thread count, so total >= ~N*delay.
+    assert total >= 32 * client._delay - 0.05, total
+    starts.sort()
+    violations = sum(1 for a, b in zip(starts, starts[1:]) if b - a < client._delay - 0.003)
+    assert violations <= 2, violations  # allow a little scheduler jitter
+    print("PASS _pace global rate-gate holds across threads (no rate multiplication)")
+
+
 def test_dropdown_encoding_cached_after_first_isolation():
     import requests
     client = KylasClient()
@@ -342,6 +370,7 @@ if __name__ == "__main__":
     test_all_fields_fail_returns_failed()
     test_custom_field_defs_parsed_from_endpoint()
     test_field_put_excludes_owner()
+    test_pace_rate_gate_holds_across_threads()
     test_dropdown_encoding_cached_after_first_isolation()
     test_company_dropdown_via_config_with_shape_fallback()
     test_dropdown_label_and_boolean_coerced_on_write()

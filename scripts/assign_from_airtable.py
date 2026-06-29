@@ -162,7 +162,8 @@ def _inspect(client: KylasClient):
                 print(f"    {k}: {preview}")
 
 
-def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: bool = False):
+def run(view_name: str, mode: str = "owner", dry_run: bool = False,
+        inspect: bool = False, workers: int = 6):
     company_base = os.environ.get("AIRTABLE_COMPANY_BASE_ID") or os.environ["AIRTABLE_BASE_ID"]
     client       = KylasClient()
 
@@ -210,114 +211,138 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
     if not records:
         return
 
-    assigned_co = assigned_ct = 0
-    co_fields_set = ct_fields_set = 0
-    skipped = failed = 0
+    acc = {"assigned_co": 0, "assigned_ct": 0, "co_fields_set": 0,
+           "ct_fields_set": 0, "skipped": 0, "failed": 0}
 
-    for rec in records:
-        f         = rec["fields"]
-        co_id_str = _to_id_str(f.get("Kylas Company Id", ""))
-        co_name   = f.get("Company Name - Kylas") or f.get("Company Name") or co_id_str
+    def _process(rec: dict) -> dict:
+        """Process one company (fields + owner + its contacts). Returns counts
+        plus a buffered list of log lines so parallel output stays grouped."""
+        out = {k: 0 for k in acc}
+        lines = out["log"] = []
+        try:
+            f         = rec["fields"]
+            co_id_str = _to_id_str(f.get("Kylas Company Id", ""))
+            co_name   = f.get("Company Name - Kylas") or f.get("Company Name") or co_id_str
+            if not co_id_str:
+                lines.append(f"  [SKIP] '{co_name}' — no Kylas Company Id")
+                out["skipped"] += 1
+                return out
+            co_id = int(co_id_str)
 
-        if not co_id_str:
-            print(f"  [SKIP] '{co_name}' — no Kylas Company Id")
-            skipped += 1
-            continue
-        co_id = int(co_id_str)
+            # Resolve owner up front (owner/both mode, or fields with ownedBy mapped)
+            user_id, owner_raw = None, ""
+            if resolve_owner:
+                owner_raw = (f.get(owner_col) or "").strip() or (f.get("Owner Email") or "").strip()
+                user_id   = _resolve_user_id(owner_raw, email_to_id, name_to_id)
+                if not user_id and "@" in owner_raw:
+                    user_id = client.find_user_id_by_email(owner_raw)
+                    if user_id:
+                        email_to_id[owner_raw.lower()] = user_id
+                if not user_id:
+                    lines.append(f"  [SKIP owner] '{co_name}' — owner '{owner_raw}' not found in Kylas")
+                    if not do_fields:
+                        out["skipped"] += 1
+                        return out
 
-        # Resolve owner up front (owner/both mode, or fields mode with ownedBy mapped)
-        user_id = None
-        if resolve_owner:
-            owner_raw = (f.get(owner_col) or "").strip() or (f.get("Owner Email") or "").strip()
-            user_id   = _resolve_user_id(owner_raw, email_to_id, name_to_id)
-            if not user_id and "@" in owner_raw:
-                user_id = client.find_user_id_by_email(owner_raw)
-                if user_id:
-                    email_to_id[owner_raw.lower()] = user_id
-                    print(f"  [INFO] '{owner_raw}' found via Kylas direct search → uid:{user_id}")
-            if not user_id:
-                print(f"  [SKIP owner] '{co_name}' — owner '{owner_raw}' not found in Kylas")
-                if not do_fields:
-                    skipped += 1
-                    continue
+            lines.append(f"  '{co_name}' (company {co_id})")
 
-        print(f"  '{co_name}' (company {co_id})")
+            # Fields FIRST, then owner: a field PUT resets the owner to the API
+            # user, so owner assignment must run last to have the final say.
+            if do_fields and field_map["company"]:
+                cfields = _row_fields(field_map["company"], f)
+                cfields.pop("ownedBy", None)   # owner is set via assignment, not the field PUT
+                if cfields:
+                    res = client.update_company_fields(co_id, cfields, dry_run=dry_run)
+                    lines.append(f"    company fields {list(cfields)} → {res}")
+                    if res == "updated":
+                        out["co_fields_set"] += 1
+                    elif res == "failed":
+                        out["failed"] += 1
 
-        # ---- Company-level updates ----
-        # Fields FIRST, then owner: a field PUT resets the owner to the API
-        # user, so owner assignment must run last to have the final say.
-        if do_fields and field_map["company"]:
-            cfields = _row_fields(field_map["company"], f)
-            cfields.pop("ownedBy", None)   # owner is set via assignment, not the field PUT
-            if cfields:
-                res = client.update_company_fields(co_id, cfields, dry_run=dry_run)
-                print(f"    company fields {list(cfields)} → {res}")
-                if res == "updated":
-                    co_fields_set += 1
-                elif res == "failed":
-                    failed += 1
-
-        if assign_co_owner and user_id:
-            if dry_run:
-                print(f"    [OWNER company] would set → {owner_raw} (uid {user_id})")
-                assigned_co += 1
-            elif client.update_company_owner(co_id, user_id):
-                print(f"    [OWNER company] ✓ set → {owner_raw} (uid {user_id})")
-                assigned_co += 1
-            else:
-                print(f"    [OWNER company] ✗ NOT set → {owner_raw} (uid {user_id})")
-                failed += 1
-        elif assign_co_owner and not user_id:
-            print(f"    [OWNER company] ✗ skipped — owner not resolved to a Kylas user")
-
-        # ---- Contact-level updates (fetch contacts once, reuse) ----
-        need_contacts = (assign_ct_owner and user_id) or (do_fields and field_map["contact"])
-        if not need_contacts:
-            continue
-
-        contacts      = client.get_contacts_by_company(co_id)
-        contact_vals  = _row_fields(field_map["contact"], f) if do_fields else {}
-        contact_vals.pop("ownedBy", None)   # owner is set via assignment, not the field PUT
-        print(f"    → {len(contacts)} contacts"
-              + (f"  | contact fields {list(contact_vals)}" if contact_vals else ""))
-
-        ct_owned_here = ct_owner_failed_here = 0
-        for ct in contacts:
-            ct_id = ct.get("id")
-            if not ct_id:
-                continue
-
-            # Fields FIRST, then owner (a field PUT resets the owner).
-            if contact_vals:
-                res = client.update_contact_fields(ct_id, contact_vals,
-                                                   contact_data=ct, dry_run=dry_run)
-                if res == "updated":
-                    ct_fields_set += 1
-                elif res == "failed":
-                    failed += 1
-
-            if assign_ct_owner and user_id:
-                already = ct.get("ownerId") == user_id or (
-                    isinstance(ct.get("ownedBy"), dict) and ct["ownedBy"].get("id") == user_id
-                )
-                if already or dry_run:
-                    assigned_ct += 1
-                    ct_owned_here += 1
-                elif client.update_contact_owner(ct_id, user_id, contact_data=ct):
-                    assigned_ct += 1
-                    ct_owned_here += 1
+            if assign_co_owner and user_id:
+                if dry_run:
+                    lines.append(f"    [OWNER company] would set → {owner_raw} (uid {user_id})")
+                    out["assigned_co"] += 1
+                elif client.update_company_owner(co_id, user_id):
+                    lines.append(f"    [OWNER company] ✓ set → {owner_raw} (uid {user_id})")
+                    out["assigned_co"] += 1
                 else:
-                    failed += 1
-                    ct_owner_failed_here += 1
+                    lines.append(f"    [OWNER company] ✗ NOT set → {owner_raw} (uid {user_id})")
+                    out["failed"] += 1
+            elif assign_co_owner and not user_id:
+                lines.append("    [OWNER company] ✗ skipped — owner not resolved to a Kylas user")
 
-        if assign_ct_owner and user_id and contacts:
-            msg = f"    [OWNER contacts] ✓ {ct_owned_here}/{len(contacts)} → {owner_raw}"
-            if ct_owner_failed_here:
-                msg += f"  (✗ {ct_owner_failed_here} failed)"
-            print(msg)
+            need_contacts = (assign_ct_owner and user_id) or (do_fields and field_map["contact"])
+            if not need_contacts:
+                return out
+
+            contacts     = client.get_contacts_by_company(co_id)
+            contact_vals = _row_fields(field_map["contact"], f) if do_fields else {}
+            contact_vals.pop("ownedBy", None)   # owner is set via assignment, not the field PUT
+            lines.append(f"    → {len(contacts)} contacts"
+                         + (f"  | contact fields {list(contact_vals)}" if contact_vals else ""))
+
+            ct_owned_here = ct_owner_failed_here = 0
+            for ct in contacts:
+                ct_id = ct.get("id")
+                if not ct_id:
+                    continue
+                if contact_vals:
+                    res = client.update_contact_fields(ct_id, contact_vals,
+                                                       contact_data=ct, dry_run=dry_run)
+                    if res == "updated":
+                        out["ct_fields_set"] += 1
+                    elif res == "failed":
+                        out["failed"] += 1
+                if assign_ct_owner and user_id:
+                    already = ct.get("ownerId") == user_id or (
+                        isinstance(ct.get("ownedBy"), dict) and ct["ownedBy"].get("id") == user_id
+                    )
+                    if already or dry_run:
+                        out["assigned_ct"] += 1
+                        ct_owned_here += 1
+                    elif client.update_contact_owner(ct_id, user_id, contact_data=ct):
+                        out["assigned_ct"] += 1
+                        ct_owned_here += 1
+                    else:
+                        out["failed"] += 1
+                        ct_owner_failed_here += 1
+
+            if assign_ct_owner and user_id and contacts:
+                m = f"    [OWNER contacts] ✓ {ct_owned_here}/{len(contacts)} → {owner_raw}"
+                if ct_owner_failed_here:
+                    m += f"  (✗ {ct_owner_failed_here} failed)"
+                lines.append(m)
+        except Exception as exc:
+            lines.append(f"  [ERROR] {rec.get('fields', {}).get('Company Name', '?')}: {exc}")
+            out["failed"] += 1
+        return out
+
+    def _emit(res: dict):
+        for line in res.pop("log"):
+            print(line)
+        for k in acc:
+            acc[k] += res.get(k, 0)
+
+    # Process the first record alone to warm shared caches (custom-field defs,
+    # the working dropdown encoding, the contact-filter method) — so the
+    # parallel workers don't each rediscover them. Then fan the rest out across
+    # `workers` threads; a shared rate-gate in the client keeps total req/s
+    # under Kylas's limit, so workers just overlap network round-trips.
+    _emit(_process(records[0]))
+    rest = records[1:]
+    if rest and workers > 1:
+        from concurrent.futures import ThreadPoolExecutor
+        print(f"[parallel] processing {len(rest)} more companies with {workers} workers\n")
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for res in pool.map(_process, rest):   # map preserves input order
+                _emit(res)
+    else:
+        for rec in rest:
+            _emit(_process(rec))
 
     # Surface real Kylas field names if no contact filter shape worked.
-    if (assigned_co or co_fields_set) and not (assigned_ct or ct_fields_set) \
+    if (acc["assigned_co"] or acc["co_fields_set"]) and not (acc["assigned_ct"] or acc["ct_fields_set"]) \
             and getattr(client, "_contact_method", None) is None:
         fields = client.list_contact_filter_fields()
         if fields:
@@ -325,10 +350,10 @@ def run(view_name: str, mode: str = "owner", dry_run: bool = False, inspect: boo
                   f"Kylas contact fields containing 'company': {fields}")
 
     print(f"\n{'[DRY RUN] ' if dry_run else ''}Done")
-    print(f"OWNER  set → companies: {assigned_co}  contacts: {assigned_ct}")
-    print(f"FIELDS set → companies: {co_fields_set}  contacts: {ct_fields_set}")
-    print(f"Skipped: {skipped}  Failed: {failed}")
-    if assign_co_owner and assigned_co == 0:
+    print(f"OWNER  set → companies: {acc['assigned_co']}  contacts: {acc['assigned_ct']}")
+    print(f"FIELDS set → companies: {acc['co_fields_set']}  contacts: {acc['ct_fields_set']}")
+    print(f"Skipped: {acc['skipped']}  Failed: {acc['failed']}")
+    if assign_co_owner and acc["assigned_co"] == 0:
         print("[OWNER] WARNING: 0 company owners set — check that 'Owner - Kylas' "
               "holds valid Kylas user emails (the API/admin account can't own records)")
 
@@ -341,9 +366,14 @@ if __name__ == "__main__":
     parser.add_argument("--inspect", action="store_true",
                         help="Read-only: print sample Kylas field keys, then exit")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--workers", type=int,
+                        default=int(os.environ.get("ASSIGN_WORKERS", "6")),
+                        help="parallel worker threads (default 6; 1 = sequential). "
+                             "A shared rate-gate keeps total req/s under Kylas's limit.")
     args = parser.parse_args()
     from dotenv import load_dotenv; load_dotenv()
 
     if not args.inspect and not args.view:
         parser.error("--view is required unless --inspect is used")
-    run(view_name=args.view, mode=args.mode, dry_run=args.dry_run, inspect=args.inspect)
+    run(view_name=args.view, mode=args.mode, dry_run=args.dry_run,
+        inspect=args.inspect, workers=max(1, args.workers))
