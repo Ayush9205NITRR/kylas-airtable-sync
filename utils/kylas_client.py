@@ -597,15 +597,76 @@ class KylasClient:
         self._pick_cfg = cfg if isinstance(cfg, dict) else {}
         return self._pick_cfg
 
+    def _field_defs_from_layout(self, entity: str) -> dict:
+        """Return {cf_key: defn} by walking GET ui/layouts/CREATE/{ENTITY_UPPER}.
+
+        The layout endpoint is the authoritative source for field definitions on
+        tenants where /entities/{entity}/fields returns no picklist data. The
+        response nests fields arbitrarily deep under repeated layoutItems/item
+        structures; we recurse generically so any depth works.
+
+        Returns {} on any error (best-effort).
+        """
+        try:
+            resp = self._get(f"ui/layouts/CREATE/{entity.upper()}")
+        except Exception:
+            return {}
+
+        defs = {}
+
+        def _walk(node):
+            if isinstance(node, list):
+                for item in node:
+                    _walk(item)
+            elif isinstance(node, dict):
+                # A field object has both an internalName (or fieldName) and a type.
+                iname = node.get("internalName") or node.get("fieldName") or ""
+                ftype = node.get("type") or ""
+                if iname and ftype:
+                    display = (node.get("displayName") or node.get("label")
+                               or node.get("name") or iname)
+                    options, labels = {}, {}
+                    for opt in (node.get("pickLists") or node.get("picklists")
+                                or node.get("options") or node.get("pickList") or []):
+                        if not isinstance(opt, dict):
+                            continue
+                        oid = opt.get("id")
+                        lbl = (opt.get("value") or opt.get("displayName")
+                               or opt.get("name") or opt.get("label") or "")
+                        if oid is not None and str(lbl).strip():
+                            options[str(lbl).strip().lower()] = oid
+                            labels[oid] = str(lbl).strip()
+                    multi = bool(node.get("multiValue"))
+                    defs[str(iname)] = {
+                        "type":        str(ftype).upper(),
+                        "displayName": str(display),
+                        "multiValue":  multi,
+                        "options":     options,
+                        "labels":      labels,
+                    }
+                # Always recurse into child values regardless of whether this node
+                # was itself a field object (sections contain fields, etc.).
+                for v in node.values():
+                    if isinstance(v, (dict, list)):
+                        _walk(v)
+
+        _walk(resp)
+        return defs
+
     def get_custom_field_defs(self, entity: str) -> dict:
-        """Return {cf_key: {"type", "options"(label_lower->id), "labels"(id->label)}}.
+        """Return {cf_key: {"type", "displayName", "options"(label_lower->id), "labels"(id->label), "multiValue"}}.
 
         Cached per entity. Powers outgoing value formatting: Kylas wants a
         dropdown field's option *id* (not its label, e.g. cfOffsiteTimeline
         "Jan - Mar" -> 257199) and a real boolean for toggle fields — pushing
-        the raw Airtable string otherwise trips an opaque 500. Options come from
-        /entities/{entity}/fields, supplemented by config/kylas_picklists.json
-        for fields the API won't resolve. Best-effort.
+        the raw Airtable string otherwise trips an opaque 500.
+
+        Source priority (lowest to highest):
+          1. /entities/{entity}/fields (two passes: custom-only=false then true)
+          2. ui/layouts/CREATE/{ENTITY_UPPER} — fills gaps in display names and
+             picklist options for tenants where the /entities endpoint is sparse
+          3. config/kylas_picklists.json (manual fallback; config wins for opts it specifies)
+        Best-effort: returns partial results rather than raising.
         """
         cache = getattr(self, "_cf_defs_cache", None)
         if cache is None:
@@ -630,6 +691,8 @@ class KylasClient:
                 if not str(key).startswith("cf"):
                     continue
                 ftype = str(fld.get("type") or fld.get("fieldType") or "").upper()
+                display = (fld.get("displayName") or fld.get("label")
+                           or fld.get("name") or str(key))
                 options, labels = {}, {}
                 for opt in (fld.get("pickLists") or fld.get("picklists")
                             or fld.get("options") or fld.get("pickList") or []):
@@ -641,14 +704,37 @@ class KylasClient:
                     if oid is not None and str(label).strip():
                         options[str(label).strip().lower()] = oid
                         labels[oid] = str(label).strip()
+                multi = bool(fld.get("multiValue"))
                 if str(key) not in defs or (options and not defs[str(key)].get("options")):
-                    defs[str(key)] = {"type": ftype, "options": options, "labels": labels}
+                    defs[str(key)] = {"type": ftype, "displayName": str(display),
+                                      "options": options, "labels": labels,
+                                      "multiValue": multi}
             if any(d.get("options") for d in defs.values()):
                 break   # got picklist data — second pass unnecessary
 
-        # Supplement with the config picklist map (fills in what the API omits).
+        # Supplement from layout endpoint — authoritative source for tenants
+        # where /entities returns no picklist data or missing display names.
+        layout_defs = self._field_defs_from_layout(entity)
+        for key, ldef in layout_defs.items():
+            existing = defs.get(key)
+            if existing is None:
+                # Layout-only key: adopt wholesale.
+                defs[key] = ldef
+            else:
+                # Fill missing/empty options and display name from layout.
+                if not existing.get("options") and ldef.get("options"):
+                    existing["options"] = ldef["options"]
+                    existing["labels"]  = ldef["labels"]
+                if not existing.get("displayName") or existing["displayName"] == key:
+                    existing["displayName"] = ldef.get("displayName") or existing["displayName"]
+                if not existing.get("multiValue") and ldef.get("multiValue"):
+                    existing["multiValue"] = ldef["multiValue"]
+
+        # Supplement with the config picklist map (fills in what the API omits;
+        # config wins for options it specifies).
         for key, opt_map in (self._load_picklist_config().get(entity) or {}).items():
-            d = defs.get(str(key)) or {"type": "PICK_LIST", "options": {}, "labels": {}}
+            d = defs.get(str(key)) or {"type": "PICK_LIST", "displayName": str(key),
+                                       "options": {}, "labels": {}, "multiValue": False}
             opts, labs = dict(d.get("options") or {}), dict(d.get("labels") or {})
             for label, oid in opt_map.items():
                 opts[str(label).strip().lower()] = oid
@@ -658,6 +744,137 @@ class KylasClient:
 
         cache[entity] = defs
         return defs
+
+    def cf_key_for_display(self, entity: str, display_name: str):
+        """Return the cf_key whose display name matches display_name (case-insensitive).
+
+        Checks list_custom_field_keys (entity fields endpoint) first, then
+        scans get_custom_field_defs (which includes layout-sourced displayNames)
+        so fields that only appear in the layout endpoint are also matched.
+        Returns None if no match is found.
+        """
+        target = display_name.strip().lower()
+        for key, name in self.list_custom_field_keys(entity).items():
+            if str(name).strip().lower() == target:
+                return key
+        # Secondary scan: layout-sourced displayNames in get_custom_field_defs.
+        for key, defn in self.get_custom_field_defs(entity).items():
+            dn = defn.get("displayName") or ""
+            if str(dn).strip().lower() == target:
+                return key
+        return None
+
+    @staticmethod
+    def _as_id_set(raw) -> set:
+        """Normalise a customFieldValues multi-select raw value to a set of int ids.
+
+        Accepts: None, a bare int, {"id": int}, or a list of any of those.
+        Silently skips entries that can't be coerced to int.
+        """
+        if raw is None:
+            return set()
+        if not isinstance(raw, list):
+            raw = [raw]
+        out = set()
+        for item in raw:
+            try:
+                if isinstance(item, dict):
+                    out.add(int(item["id"]))
+                else:
+                    out.add(int(item))
+            except (KeyError, TypeError, ValueError):
+                pass
+        return out
+
+    def merge_company_multiselect(self, company_id: int, cf_key: str,
+                                  add_labels: list, dry_run: bool = False) -> str:
+        """Union add_labels into a company's multi-select custom field.
+
+        Steps:
+          1. GET the company and read its current multi-select value.
+          2. Map each label in add_labels to an option id (via get_custom_field_defs).
+          3. Compute union; if no change return "unchanged".
+          4. PUT bare-id list [id1, id2, ...]; if that fails retry with
+             [{"id": id1}, {"id": id2}, ...] (unknown API shape — self-correcting).
+          5. dry_run=True prints the intended change without writing.
+        Returns "updated" | "unchanged" | "failed".
+        """
+        defn    = self.get_custom_field_defs("company").get(cf_key, {})
+        options = defn.get("options") or {}   # label_lower -> id
+
+        # GET the company.
+        try:
+            resp = self._get(f"companies/{company_id}")
+            body = resp.get("data", resp)
+        except Exception as exc:
+            print(f"[Kylas] ERROR fetching company {company_id}: {exc}")
+            return "failed"
+
+        cfv         = body.get("customFieldValues") or {}
+        current_ids = self._as_id_set(cfv.get(cf_key))
+
+        # Map labels to ids; warn once per key for unmapped ones.
+        add_ids = set()
+        warned_labels = getattr(self, "_multiselect_label_warned", None)
+        if warned_labels is None:
+            warned_labels = self._multiselect_label_warned = set()
+        for lbl in add_labels:
+            norm = str(lbl).strip().lower()
+            oid  = options.get(norm)
+            if oid is not None:
+                add_ids.add(int(oid))
+            else:
+                wkey = (cf_key, norm)
+                if wkey not in warned_labels:
+                    warned_labels.add(wkey)
+                    known = ", ".join(sorted(str(v) for v in options.keys())[:8])
+                    print(f"  [Kylas] WARN: {cf_key} label {lbl!r} matches no option"
+                          + (f" (options: {known})" if known else "") + " — skipping")
+
+        union = current_ids | add_ids
+        if union == current_ids:
+            return "unchanged"
+
+        sorted_ids = sorted(union)
+        if dry_run:
+            added = sorted(add_ids - current_ids)
+            print(f"  [DRY RUN] company {company_id} {cf_key}: "
+                  f"current={sorted(current_ids)} add={added} result={sorted_ids}")
+            return "updated"
+
+        # Build PUT body: mirror update_company_fields (_clean_for_put + no owner).
+        base = self._clean_for_put(body)
+        base_cfv = dict(base.get("customFieldValues") or {})
+
+        # Try bare-id list first; on failure retry with object list.
+        for attempt, value in enumerate([
+            sorted_ids,
+            [{"id": i} for i in sorted_ids],
+        ]):
+            base_cfv[cf_key] = value
+            base["customFieldValues"] = base_cfv
+            try:
+                self._put(f"companies/{company_id}", base)
+                return "updated"
+            except Exception as exc:
+                if attempt == 0:
+                    print(f"  [Kylas] multi-select bare-id PUT failed for {cf_key} "
+                          f"— retrying with object list ({self._short_err(exc)})")
+                else:
+                    print(f"[Kylas] ERROR {cf_key} on company {company_id}: "
+                          f"{self._short_err(exc)}")
+        return "failed"
+
+    def contact_label_map(self) -> dict:
+        """Return {option_id: label} for the contact's Offsite Timeline field.
+
+        Resolves the contact field key by display name "Offsite Timeline" at
+        runtime; falls back to the conventional key cfOffsiteTimeline. Returns
+        {} if the field definitions can't be fetched.
+        """
+        key = self.cf_key_for_display("contact", "Offsite Timeline") or "cfOffsiteTimeline"
+        defs = self.get_custom_field_defs("contact")
+        return dict(defs.get(key, {}).get("labels") or {})
 
     def _warn_unmatched(self, key: str, value, defn: dict) -> None:
         warned = getattr(self, "_pick_warned", None)

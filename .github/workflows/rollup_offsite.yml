@@ -1,0 +1,72 @@
+name: Offsite Timeline Rollup (Contact → Company)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'rollup = run rollup | create-field = create company field | inspect = show resolved keys'
+        required: true
+        type: choice
+        default: 'rollup'
+        options:
+          - rollup
+          - create-field
+          - inspect
+      view_name:
+        description: 'Airtable Company List view name (required for rollup mode)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'true = print only, no Kylas writes'
+        required: false
+        default: 'true'
+      options:
+        description: 'Comma-separated picklist option labels (create-field only)'
+        required: false
+        default: 'Jan - Mar,Apr - Jun,Jul - Sep,Oct - Dec'
+      field_name:
+        description: 'Company multi-select field display name'
+        required: false
+        default: 'Offsite Timeline (BD - New)'
+
+jobs:
+  rollup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run rollup / create-field / inspect
+        run: |
+          if [ "$MODE" = "create-field" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              python scripts/create_offsite_field.py --display "$FIELD_NAME" --options "$OPTIONS" --dry-run
+            else
+              python scripts/create_offsite_field.py --display "$FIELD_NAME" --options "$OPTIONS"
+            fi
+          elif [ "$MODE" = "inspect" ]; then
+            python scripts/rollup_offsite_timeline.py --inspect --company-field "$FIELD_NAME"
+          else
+            if [ "$DRY_RUN" = "true" ]; then
+              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME" --company-field "$FIELD_NAME" --dry-run
+            else
+              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME" --company-field "$FIELD_NAME"
+            fi
+          fi
+        env:
+          MODE:                     ${{ github.event.inputs.mode }}
+          VIEW_NAME:                ${{ github.event.inputs.view_name }}
+          DRY_RUN:                  ${{ github.event.inputs.dry_run }}
+          OPTIONS:                  ${{ github.event.inputs.options }}
+          FIELD_NAME:               ${{ github.event.inputs.field_name }}
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}

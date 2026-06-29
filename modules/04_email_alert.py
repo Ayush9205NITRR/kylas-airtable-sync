@@ -78,7 +78,7 @@ def _load_bd_members() -> list:
             {"name": r["fields"]["Name"], "email": r["fields"]["Email"]}
             for r in rows
             if r["fields"].get("Active", True)
-            and r["fields"].get("Group", "BD") == "BD"
+            and r["fields"].get("Group", "BD").strip().upper() == "BD"
             and r["fields"].get("Name") and r["fields"].get("Email")
         ]
     except Exception:
@@ -273,24 +273,20 @@ def _account_table_html(rows: list) -> str:
         return ""
     hdr = (
         '<p style="font-weight:bold;font-size:14px;margin:24px 0 6px;">'
-        'Account Activity Today</p>'
+        'Accounts Tapped Today</p>'
         f'<table {_TABLE}><thead><tr>'
-        f'<th {_TH}>Account</th>'
-        f'<th {_TH}>Pipeline Stages</th>'
-        f'<th {_THC}>Attempted</th>'
-        f'<th {_THC}>Connected</th>'
-        f'<th {_TH}>Source of Data</th>'
+        f'<th {_TH}>Account Name</th>'
+        f'<th {_TH}>Pipeline Stage</th>'
         f'<th {_TH}>Offsite Timeline</th>'
+        f'<th {_TH}>Source of Data</th>'
         f'</tr></thead><tbody>'
     )
     body = "".join(
         f'<tr>'
         f'<td {_TD}>{r["company"]}</td>'
         f'<td {_TD} style="font-size:12px;">{r["stages"]}</td>'
-        f'<td {_TDB}>{r["attempted"]}</td>'
-        f'<td {_TDC}>{r["connected"]}</td>'
-        f'<td {_TD}>{r["source"]  or "—"}</td>'
         f'<td {_TD}>{r["offsite"] or "—"}</td>'
+        f'<td {_TD}>{r["source"]  or "—"}</td>'
         f'</tr>'
         for r in rows
     )
@@ -374,7 +370,7 @@ def _html_doc(name: str, subtitle: str, content: str) -> str:
 # ── Email body builders ───────────────────────────────────────────────────────
 
 def _build_first_half(name: str, today: str, bd: dict, targets: dict,
-                      monthly_fixed: dict = None) -> tuple:
+                      monthly_fixed: dict = None, account_rows: list = None) -> tuple:
     rows = "".join(
         f'<tr><td {_TD}>{LABEL[k]}</td>'
         f'<td {_TDB}>{bd.get(k, 0)}</td>'
@@ -391,6 +387,8 @@ def _build_first_half(name: str, today: str, bd: dict, targets: dict,
     note = ('<p style="font-size:13px;color:#666;margin:0 0 8px;">'
             'Afternoon window: 3:00 PM – 6:00 PM</p>')
     content = table + _monthly_goal_html(monthly_fixed or {}) + note
+    if account_rows:
+        content += _account_table_html(account_rows)
     subject = f"BD | {name} | {_friendly_date()} | 11 AM Window"
     subtitle = f"BD Activity &nbsp;&middot;&nbsp; {today} &nbsp;&middot;&nbsp; 11:00 AM – 1:00 PM"
     return subject, _html_doc(name, subtitle, content)
@@ -487,6 +485,8 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
     today         = date.today().strftime("%d %b %Y")
     targets       = _load_daily_targets()
     monthly_fixed = _load_monthly_fixed()
+    account_rows  = _load_account_activity_today()
+    print(f"[Email] Account activity today: {len(account_rows)} companies")
 
     with open(TEAM_PATH) as fh:
         cfg = json.load(fh)
@@ -494,14 +494,13 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
 
     # Demo mode — send one sample to the provided addresses, no CC
     if demo_recipients:
-        sample_bd    = next(iter((bd_enriched or {}).values()), {})
-        demo_acc     = _load_account_activity_today() if slot == "full_day" else []
+        sample_bd = next(iter((bd_enriched or {}).values()), {})
         if slot == "first_half":
-            subject, body = _build_first_half("Team", today, sample_bd, targets, monthly_fixed)
+            subject, body = _build_first_half(
+                "Team", today, sample_bd, targets, monthly_fixed, account_rows=account_rows)
         else:
             subject, body = _build_full_day(
-                "Team", today, sample_bd, targets, monthly_fixed, account_rows=demo_acc
-            )
+                "Team", today, sample_bd, targets, monthly_fixed, account_rows=account_rows)
         for addr in demo_recipients:
             try:
                 _send(smtp_user, smtp_pass, addr, subject, body, [])
@@ -515,12 +514,6 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
     print(f"[Email] BD team ({len(bd_team)}): {[m['name'] for m in bd_team]}")
     print(f"[Email] bd_enriched owners: {list((bd_enriched or {}).keys())}")
 
-    # Load account activity once for EOD run (shared across all member emails)
-    account_rows = []
-    if slot == "full_day":
-        account_rows = _load_account_activity_today()
-        print(f"[Email] Account activity today: {len(account_rows)} companies")
-
     for member in bd_team:
         name  = member["name"]
         email = member["email"]
@@ -530,11 +523,11 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
             print(f"[Email] No BD data for {name} — sending with zeros")
 
         if slot == "first_half":
-            subject, body = _build_first_half(name, today, bd, targets, monthly_fixed)
+            subject, body = _build_first_half(
+                name, today, bd, targets, monthly_fixed, account_rows=account_rows)
         else:
             subject, body = _build_full_day(
-                name, today, bd, targets, monthly_fixed, account_rows=account_rows
-            )
+                name, today, bd, targets, monthly_fixed, account_rows=account_rows)
 
         eff_cc = [a for a in cc_list if a.lower() != email.lower()]
         try:
