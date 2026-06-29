@@ -24,16 +24,30 @@ from utils.calendar_invite import send_invite
 KYLAS_CONTACT_URL = "https://app.kylas.io/sales/contacts/details/{contact_id}"
 
 
-def _parse_date(raw: str) -> str:
+def _parse_dt(raw: str):
+    """Return (date_str, time_str) from cfNextCallDateCallLater value.
+    time_str is 'HH:MM:SS' if present, else ''.
+    Kylas stores timestamps with a Z but the actual value is IST.
+    """
     raw = (raw or "").strip()
     if not raw:
-        return ""
+        return "", ""
     if raw[0].isdigit():
-        return raw[:10]
+        date_str = raw[:10]
+        time_str = raw[11:19] if len(raw) > 10 and raw[10] == "T" else ""
+        return date_str, time_str
     try:
-        return datetime.strptime(raw.split(" at ")[0].strip(), "%b %d, %Y").strftime("%Y-%m-%d")
+        parts = raw.split(" at ")
+        date_str = datetime.strptime(parts[0].strip(), "%b %d, %Y").strftime("%Y-%m-%d")
+        time_str = ""
+        if len(parts) > 1:
+            try:
+                time_str = datetime.strptime(parts[1].strip(), "%I:%M %p").strftime("%H:%M:%S")
+            except ValueError:
+                pass
+        return date_str, time_str
     except ValueError:
-        return ""
+        return "", ""
 
 
 def main():
@@ -81,7 +95,7 @@ def main():
     for ct in contacts:
         cf = ct.get("customFieldValues") or {}
         raw_nc = cf.get("cfNextCallDateCallLater") or ""
-        nc_date = _parse_date(raw_nc)
+        nc_date, nc_time = _parse_dt(raw_nc)
 
         if not nc_date or nc_date < today:
             skipped += 1
@@ -105,6 +119,9 @@ def main():
         phones     = ct.get("phoneNumbers") or []
         ob         = ct.get("ownedBy") or {}
 
+        if args.contact_id:
+            print(f"  [DEBUG] ownedBy raw: {ct.get('ownedBy')}")
+
         owner_em = ""
         if isinstance(ob, dict):
             owner_em = (ob.get("email") or ob.get("emailId") or "").strip().lower()
@@ -117,6 +134,7 @@ def main():
         print(f"\n  Contact : {name}  (ID {contact_id})")
         print(f"  Company : {co_name or '—'}")
         print(f"  Date    : {nc_date}")
+        print(f"  Time    : {nc_time or '(all-day)'}")
         print(f"  Owner   : {owner_em or '(no email found)'}")
         print(f"  URL     : {kylas_url}")
 
@@ -134,6 +152,7 @@ def main():
             call_date=date.fromisoformat(nc_date),
             owner_email=owner_em,
             kylas_url=kylas_url,
+            call_time=nc_time,
         )
         if ok:
             sent += 1
