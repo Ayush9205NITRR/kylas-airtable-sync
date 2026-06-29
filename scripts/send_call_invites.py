@@ -62,12 +62,18 @@ def main():
 
     kylas = KylasClient()
 
-    # Build email map: prefer team.json, then live Kylas lookup
+    # Build name→email and id→email maps from team.json + live Kylas
     user_email_map = {}
+    user_id_email_map = {}
     try:
         _tp = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
         with open(_tp) as f:
-            user_email_map = json.load(f).get("kylas_user_emails", {})
+            _td = json.load(f)
+            user_email_map = _td.get("kylas_user_emails", {})
+            for uid, uname in _td.get("kylas_users", {}).items():
+                em = user_email_map.get(uname, "")
+                if em:
+                    user_id_email_map[str(uid)] = em
     except Exception:
         pass
     try:
@@ -125,6 +131,10 @@ def main():
         if not owner_em:
             o_name = ob.get("name", "") if isinstance(ob, dict) else ""
             owner_em = user_email_map.get(o_name, "")
+        if not owner_em:
+            o_id = str(ct.get("ownerId") or "")
+            if o_id:
+                owner_em = user_id_email_map.get(o_id, "")
 
         kylas_url = KYLAS_CONTACT_URL.format(contact_id=contact_id)
 
