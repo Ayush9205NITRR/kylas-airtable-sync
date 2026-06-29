@@ -88,12 +88,19 @@ def main():
             continue
 
         contact_id = str(ct["id"])
-        if args.contact_id:
-            name_keys = {k: v for k, v in ct.items() if "name" in k.lower() or "company" in k.lower() or "poc" in k.lower()}
-            print(f"  [DEBUG] name/company keys: {name_keys}")
-        name       = ct.get("name") or f"Contact {contact_id}"
-        co         = ct.get("company")
-        co_name    = co.get("name", "") if isinstance(co, dict) else ""
+        first = (ct.get("firstName") or "").strip()
+        last  = (ct.get("lastName") or "").strip()
+        name  = ct.get("name") or f"{first} {last}".strip() or f"Contact {contact_id}"
+        co    = ct.get("company")
+        if isinstance(co, dict):
+            co_name = co.get("name", "")
+        elif isinstance(co, int) and co:
+            try:
+                co_name = kylas.get_company(co).get("name", "")
+            except Exception:
+                co_name = ""
+        else:
+            co_name = ""
         emails     = ct.get("emails") or []
         phones     = ct.get("phoneNumbers") or []
         ob         = ct.get("ownedBy") or {}
