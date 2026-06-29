@@ -88,6 +88,9 @@ def main():
             continue
 
         contact_id = str(ct["id"])
+        if args.contact_id:
+            name_keys = {k: v for k, v in ct.items() if "name" in k.lower() or "company" in k.lower() or "poc" in k.lower()}
+            print(f"  [DEBUG] name/company keys: {name_keys}")
         name       = ct.get("name") or f"Contact {contact_id}"
         co         = ct.get("company")
         co_name    = co.get("name", "") if isinstance(co, dict) else ""
