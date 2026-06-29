@@ -622,8 +622,10 @@ class KylasClient:
                     if oid is not None and str(label).strip():
                         options[str(label).strip().lower()] = oid
                         labels[oid] = str(label).strip()
+                multi = bool(fld.get("multiValue"))
                 if str(key) not in defs or (options and not defs[str(key)].get("options")):
-                    defs[str(key)] = {"type": ftype, "options": options, "labels": labels}
+                    defs[str(key)] = {"type": ftype, "options": options, "labels": labels,
+                                      "multiValue": multi}
             if any(d.get("options") for d in defs.values()):
                 break   # got picklist data — second pass unnecessary
 
@@ -639,6 +641,131 @@ class KylasClient:
 
         cache[entity] = defs
         return defs
+
+    def cf_key_for_display(self, entity: str, display_name: str):
+        """Return the cf_key whose display name matches display_name (case-insensitive).
+
+        Uses list_custom_field_keys which tries the /entities/{entity}/fields
+        endpoint first, then falls back to scanning recent records. Returns None
+        if no match is found (caller should surface a clear error to the user).
+        """
+        target = display_name.strip().lower()
+        for key, name in self.list_custom_field_keys(entity).items():
+            if str(name).strip().lower() == target:
+                return key
+        return None
+
+    @staticmethod
+    def _as_id_set(raw) -> set:
+        """Normalise a customFieldValues multi-select raw value to a set of int ids.
+
+        Accepts: None, a bare int, {"id": int}, or a list of any of those.
+        Silently skips entries that can't be coerced to int.
+        """
+        if raw is None:
+            return set()
+        if not isinstance(raw, list):
+            raw = [raw]
+        out = set()
+        for item in raw:
+            try:
+                if isinstance(item, dict):
+                    out.add(int(item["id"]))
+                else:
+                    out.add(int(item))
+            except (KeyError, TypeError, ValueError):
+                pass
+        return out
+
+    def merge_company_multiselect(self, company_id: int, cf_key: str,
+                                  add_labels: list, dry_run: bool = False) -> str:
+        """Union add_labels into a company's multi-select custom field.
+
+        Steps:
+          1. GET the company and read its current multi-select value.
+          2. Map each label in add_labels to an option id (via get_custom_field_defs).
+          3. Compute union; if no change return "unchanged".
+          4. PUT bare-id list [id1, id2, ...]; if that fails retry with
+             [{"id": id1}, {"id": id2}, ...] (unknown API shape — self-correcting).
+          5. dry_run=True prints the intended change without writing.
+        Returns "updated" | "unchanged" | "failed".
+        """
+        defn    = self.get_custom_field_defs("company").get(cf_key, {})
+        options = defn.get("options") or {}   # label_lower -> id
+
+        # GET the company.
+        try:
+            resp = self._get(f"companies/{company_id}")
+            body = resp.get("data", resp)
+        except Exception as exc:
+            print(f"[Kylas] ERROR fetching company {company_id}: {exc}")
+            return "failed"
+
+        cfv         = body.get("customFieldValues") or {}
+        current_ids = self._as_id_set(cfv.get(cf_key))
+
+        # Map labels to ids; warn once per key for unmapped ones.
+        add_ids = set()
+        warned_labels = getattr(self, "_multiselect_label_warned", None)
+        if warned_labels is None:
+            warned_labels = self._multiselect_label_warned = set()
+        for lbl in add_labels:
+            norm = str(lbl).strip().lower()
+            oid  = options.get(norm)
+            if oid is not None:
+                add_ids.add(int(oid))
+            else:
+                wkey = (cf_key, norm)
+                if wkey not in warned_labels:
+                    warned_labels.add(wkey)
+                    known = ", ".join(sorted(str(v) for v in options.keys())[:8])
+                    print(f"  [Kylas] WARN: {cf_key} label {lbl!r} matches no option"
+                          + (f" (options: {known})" if known else "") + " — skipping")
+
+        union = current_ids | add_ids
+        if union == current_ids:
+            return "unchanged"
+
+        sorted_ids = sorted(union)
+        if dry_run:
+            added = sorted(add_ids - current_ids)
+            print(f"  [DRY RUN] company {company_id} {cf_key}: "
+                  f"current={sorted(current_ids)} add={added} result={sorted_ids}")
+            return "updated"
+
+        # Build PUT body: mirror update_company_fields (_clean_for_put + no owner).
+        base = self._clean_for_put(body)
+        base_cfv = dict(base.get("customFieldValues") or {})
+
+        # Try bare-id list first; on failure retry with object list.
+        for attempt, value in enumerate([
+            sorted_ids,
+            [{"id": i} for i in sorted_ids],
+        ]):
+            base_cfv[cf_key] = value
+            base["customFieldValues"] = base_cfv
+            try:
+                self._put(f"companies/{company_id}", base)
+                return "updated"
+            except Exception as exc:
+                if attempt == 0:
+                    print(f"  [Kylas] multi-select bare-id PUT failed for {cf_key} "
+                          f"— retrying with object list ({self._short_err(exc)})")
+                else:
+                    print(f"[Kylas] ERROR {cf_key} on company {company_id}: "
+                          f"{self._short_err(exc)}")
+        return "failed"
+
+    def contact_label_map(self) -> dict:
+        """Return {option_id: label} for the contact's Offsite Timeline field.
+
+        Resolves the contact field key by display name "Offsite Timeline" at
+        runtime; falls back to the conventional key cfOffsiteTimeline. Returns
+        {} if the field definitions can't be fetched.
+        """
+        key = self.cf_key_for_display("contact", "Offsite Timeline") or "cfOffsiteTimeline"
+        defs = self.get_custom_field_defs("contact")
+        return dict(defs.get(key, {}).get("labels") or {})
 
     def _warn_unmatched(self, key: str, value, defn: dict) -> None:
         warned = getattr(self, "_pick_warned", None)
