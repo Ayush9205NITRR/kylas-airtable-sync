@@ -80,10 +80,16 @@ _ENTITIES_SPARSE = [
 
 
 def _fresh_client():
-    """Return a KylasClient with cleared caches."""
+    """Return a KylasClient with cleared caches, isolated from the real config.
+
+    _pick_cfg is forced empty so these layout/entities tests don't pick up
+    real config/kylas_picklists.json entries (which would override the fixture
+    option ids, since config wins in get_custom_field_defs).
+    """
     client = KylasClient()
     client._cf_defs_cache = {}
     client._cf_cache = {}
+    client._pick_cfg = {}
     return client
 
 
