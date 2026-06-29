@@ -74,8 +74,11 @@ def test_new_label_returns_updated_and_puts():
     result = client.merge_company_multiselect(1, CF_KEY, ["Apr - Jun"])
     assert result == "updated", result
     assert len(calls) == 1, f"Expected exactly 1 PUT call, got {len(calls)}"
-    sent = set(calls[0]["customFieldValues"][CF_KEY])
-    assert sent == {101, 102}, f"Expected {{101, 102}}, got {sent}"
+    # First attempt uses {id, name} format matching Kylas GET shape.
+    sent = calls[0]["customFieldValues"][CF_KEY]
+    sent_ids = {v["id"] for v in sent}
+    assert sent_ids == {101, 102}, f"Expected {{101, 102}}, got {sent_ids}"
+    assert all("name" in v for v in sent), f"Expected {{id,name}} dicts, got {sent}"
 
 
 # ---------------------------------------------------------------------------
@@ -88,8 +91,9 @@ def test_dedup_labels_no_duplicate_ids():
         1, CF_KEY, ["Jan - Mar", "Apr - Jun", "Apr - Jun"]
     )
     assert result == "updated", result
-    sent = set(calls[0]["customFieldValues"][CF_KEY])
-    assert sent == {101, 102}, f"Expected {{101, 102}}, got {sent}"
+    sent = calls[0]["customFieldValues"][CF_KEY]
+    sent_ids = {v["id"] for v in sent}
+    assert sent_ids == {101, 102}, f"Expected {{101, 102}}, got {sent_ids}"
 
 
 # ---------------------------------------------------------------------------
@@ -140,16 +144,21 @@ def test_retry_with_object_list_on_put_failure():
     def fake_put(path, body):
         val = body["customFieldValues"][CF_KEY]
         attempts.append(val)
-        if all(isinstance(v, int) for v in val):   # bare ids -> fail
+        # Fail the first attempt ({id,name} dicts); succeed on subsequent.
+        if len(attempts) == 1:
             raise requests.HTTPError("500 Server Error — bad encoding")
-        return {}   # object list -> succeed
+        return {}
 
     client._put = fake_put
     result = client.merge_company_multiselect(1, CF_KEY, ["Apr - Jun"])
     assert result == "updated", result
     assert len(attempts) == 2, f"Expected 2 PUT attempts, got {len(attempts)}"
-    assert all(isinstance(v, dict) for v in attempts[1]), (
-        f"Second attempt should use object list, got {attempts[1]}"
+    # First attempt: {id, name} format; second: bare-id list.
+    assert all(isinstance(v, dict) and "name" in v for v in attempts[0]), (
+        f"First attempt should use {{id,name}} dicts, got {attempts[0]}"
+    )
+    assert all(isinstance(v, int) for v in attempts[1]), (
+        f"Second attempt should use bare-id list, got {attempts[1]}"
     )
 
 

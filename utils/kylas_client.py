@@ -810,8 +810,7 @@ class KylasClient:
           1. GET the company and read its current multi-select value.
           2. Map each label in add_labels to an option id (via get_custom_field_defs).
           3. Compute union; if no change return "unchanged".
-          4. PUT bare-id list [id1, id2, ...]; if that fails retry with
-             [{"id": id1}, {"id": id2}, ...] (unknown API shape — self-correcting).
+          4. PUT [{id,name}, ...] matching GET shape; fallback to bare-id then {id}-only.
           5. dry_run=True prints the intended change without writing.
         Returns "updated" | "unchanged" | "failed".
         """
@@ -862,8 +861,13 @@ class KylasClient:
         base = self._clean_for_put(body)
         base_cfv = dict(base.get("customFieldValues") or {})
 
-        # Try bare-id list first; on failure retry with object list.
+        # Build {id, name} objects — matches the shape GET returns (and PUT requires).
+        labels_rev   = defn.get("labels") or {}   # {option_id: label}
+        id_name_list = [{"id": i, "name": labels_rev.get(i, "")} for i in sorted_ids]
+
+        # Try {id,name} first (GET/PUT native shape), then bare-id, then {id}-only.
         for attempt, value in enumerate([
+            id_name_list,
             sorted_ids,
             [{"id": i} for i in sorted_ids],
         ]):
@@ -873,9 +877,9 @@ class KylasClient:
                 self._put(f"companies/{company_id}", base)
                 return "updated"
             except Exception as exc:
-                if attempt == 0:
-                    print(f"  [Kylas] multi-select bare-id PUT failed for {cf_key} "
-                          f"— retrying with object list ({self._short_err(exc)})")
+                if attempt < 2:
+                    print(f"  [Kylas] multi-select attempt {attempt + 1} failed for {cf_key} "
+                          f"— retrying ({self._short_err(exc)})")
                 else:
                     print(f"[Kylas] ERROR {cf_key} on company {company_id}: "
                           f"{self._short_err(exc)}")
