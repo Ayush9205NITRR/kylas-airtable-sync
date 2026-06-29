@@ -12,7 +12,8 @@ from datetime import date, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-ADMIN_EMAIL = "ayush@enout.in"
+ADMIN_EMAIL   = "ayush@enout.in"
+VEDANT_EMAIL  = "vedant@enout.in"
 
 
 def _esc(text: str) -> str:
@@ -36,14 +37,18 @@ def _build_ical(
     call_date: date,
     owner_email: str,
     organizer_email: str,
+    kylas_url: str = "",
 ) -> str:
     """Return an RFC 5545 VCALENDAR string (all-day event, METHOD:REQUEST)."""
-    uid   = f"call-contact-{contact_id}@kylas-sync"
+    # UID includes the date so changing the call date creates a NEW event
+    # rather than updating the old one — the old date's event stays intact.
+    uid   = f"call-{contact_id}-{call_date.strftime('%Y%m%d')}@kylas-sync"
     dt_s  = call_date.strftime("%Y%m%d")
     dt_e  = (call_date + timedelta(days=1)).strftime("%Y%m%d")
 
     desc = (
         "hi you have a call scheduled with\\n"
+        f"Kylas URL - {_esc(kylas_url)}\\n"
         f"Name - {_esc(contact_name)}\\n"
         f"Email - {_esc(contact_email)}\\n"
         f"Phone No. - {_esc(contact_phone)}\\n"
@@ -52,7 +57,7 @@ def _build_ical(
     )
     summary = _esc(f"Call: {contact_name}" + (f" ({company_name})" if company_name else ""))
 
-    recipients = sorted({owner_email.lower(), ADMIN_EMAIL.lower()})
+    recipients = sorted({owner_email.lower(), ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()})
     attendee_lines = "\r\n".join(
         "ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;"
         f"PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:{em}"
@@ -90,9 +95,10 @@ def send_invite(
     remarks: str,
     call_date: date,
     owner_email: str,
+    kylas_url: str = "",
 ) -> bool:
     """
-    Send a calendar invite to owner_email + ayush@enout.in.
+    Send a calendar invite to owner_email + ayush@enout.in + vedant@enout.in.
     Reads SMTP_USER / SMTP_PASS from the environment.
     Returns True on success.
     """
@@ -105,7 +111,7 @@ def send_invite(
         print(f"[CalendarInvite] No owner email for {contact_name!r} — skipping")
         return False
 
-    recipients = sorted({owner_email.lower(), ADMIN_EMAIL.lower()})
+    recipients = sorted({owner_email.lower(), ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()})
     cal_str    = _build_ical(
         contact_id=contact_id,
         contact_name=contact_name,
@@ -116,6 +122,7 @@ def send_invite(
         call_date=call_date,
         owner_email=owner_email,
         organizer_email=smtp_user,
+        kylas_url=kylas_url,
     )
 
     date_label = call_date.strftime("%b %d, %Y")
@@ -129,6 +136,7 @@ def send_invite(
         f"Phone:   {contact_phone}\n"
         f"Company: {company_name}\n"
         f"Date:    {date_label}\n"
+        f"Kylas:   {kylas_url}\n"
         f"Remarks: {remarks}\n\n"
         "Accept the calendar invitation to block your calendar."
     )
