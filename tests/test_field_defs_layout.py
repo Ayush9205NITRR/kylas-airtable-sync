@@ -137,6 +137,32 @@ def test_layout_error_returns_empty_dict():
     assert result == {}, f"Expected {{}} on error, got {result}"
 
 
+def test_layout_fallback_to_edit_when_create_fails():
+    """Fix 1: CREATE raises 400; EDIT returns the fixture — parser must still succeed."""
+    client = _fresh_client()
+
+    def _selective_get(path, params=None):
+        if "CREATE" in path:
+            raise RuntimeError("400 Layout does not exist")
+        if "EDIT" in path:
+            return _LAYOUT_FIXTURE
+        # DETAIL / VIEW also fail — only EDIT works.
+        raise RuntimeError("400 Layout does not exist")
+
+    client._get = _selective_get
+    defs = client._field_defs_from_layout("company")
+
+    assert defs, "Expected non-empty defs when EDIT layout succeeds"
+    assert "cfOffsiteTimelineBdNew" in defs, (
+        "cfOffsiteTimelineBdNew must be parsed from EDIT layout when CREATE fails"
+    )
+    defn = defs["cfOffsiteTimelineBdNew"]
+    assert defn["options"].get("jan - mar") == 201
+    assert defn["options"].get("apr - jun") == 202
+    assert defn["multiValue"] is True
+    assert defn["displayName"] == "Offsite Timeline (BD - New)"
+
+
 # ---------------------------------------------------------------------------
 # B) get_custom_field_defs — layout options fill the gap left by /entities
 # ---------------------------------------------------------------------------

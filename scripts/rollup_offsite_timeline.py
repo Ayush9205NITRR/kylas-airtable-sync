@@ -120,6 +120,10 @@ def _inspect(client: KylasClient, company_field: str, contact_field: str):
                 if isinstance(v, (dict, list)):
                     _walk_layout(v, collected, limit)
 
+    # Accumulate all field objects found across company + lead probes so we can
+    # scan for "offsite"-like fields at the end.
+    _all_probed_fields: list = []   # each entry: (entity, source_endpoint, fld_dict)
+
     for entity in ("company", "contact"):
         entity_upper = entity.upper()
         print()
@@ -137,6 +141,8 @@ def _inspect(client: KylasClient, company_field: str, contact_field: str):
                 print(f"  GET {label}")
                 print(f"    container={type(resp).__name__}  field_objects={len(items)}")
                 _summarise_field_list(items, limit=40)
+                for fld in items:
+                    _all_probed_fields.append((entity, label, fld))
             except Exception as exc:
                 print(f"  GET {label}  ERROR: {exc}")
 
@@ -153,6 +159,107 @@ def _inspect(client: KylasClient, company_field: str, contact_field: str):
                 print(f"    ... (truncated at 60)")
         except Exception as exc:
             print(f"  GET {layout_path}  ERROR: {exc}")
+
+    # ------------------------------------------------------------------
+    # Extended company layout probes: list endpoint + all layout types.
+    # ------------------------------------------------------------------
+    print()
+    print("--- Company layout discovery ---")
+
+    # ui/layouts/list/{company / COMPANY}
+    for list_path in ("ui/layouts/list/company", "ui/layouts/list/COMPANY"):
+        try:
+            resp = client._get(list_path)
+            rtype = type(resp).__name__
+            layouts = resp if isinstance(resp, list) else (
+                resp.get("content") or resp.get("data") or resp.get("layouts") or [])
+            summary = []
+            for lay in (layouts if isinstance(layouts, list) else []):
+                if not isinstance(lay, dict):
+                    continue
+                entry = {k: lay.get(k) for k in ("id", "name", "layoutType", "recordType") if lay.get(k) is not None}
+                summary.append(entry)
+            print(f"  GET {list_path}  -> container={rtype}  layouts_found={len(summary)}")
+            for s in summary[:20]:
+                print(f"    {s}")
+            if len(summary) > 20:
+                print(f"    ... (truncated at 20)")
+        except Exception as exc:
+            print(f"  GET {list_path}  ERROR: {exc}")
+
+    # Probe all layout types for COMPANY
+    print()
+    for ltype in ("CREATE", "EDIT", "DETAIL", "VIEW"):
+        lpath = f"ui/layouts/{ltype}/COMPANY"
+        try:
+            resp = client._get(lpath)
+            collected: list = []
+            _walk_layout(resp, collected, limit=60)
+            print(f"  GET {lpath}  -> ok, {len(collected)} field objects found")
+            # Register discovered fields for the offsite scan below.
+            for line in collected[:60]:
+                print(line)
+            if len(collected) >= 60:
+                print(f"    ... (truncated at 60)")
+        except Exception as exc:
+            print(f"  GET {lpath}  ERROR: {exc}")
+
+    # ------------------------------------------------------------------
+    # LEAD probes: /entities/lead/fields + ui/layouts/CREATE/LEAD
+    # ------------------------------------------------------------------
+    print()
+    print("--- Entity: lead ---")
+
+    lead_fields_path = "entities/lead/fields"
+    try:
+        resp = client._get(lead_fields_path, {
+            "custom-only": "true", "page": 0, "size": 200,
+        })
+        items = resp if isinstance(resp, list) else (
+            resp.get("content") or resp.get("data") or [])
+        print(f"  GET {lead_fields_path}?custom-only=true&size=200")
+        print(f"    container={type(resp).__name__}  field_objects={len(items)}")
+        _summarise_field_list(items, limit=40)
+        for fld in items:
+            _all_probed_fields.append(("lead", lead_fields_path, fld))
+    except Exception as exc:
+        print(f"  GET {lead_fields_path}  ERROR: {exc}")
+
+    lead_layout_path = "ui/layouts/CREATE/LEAD"
+    try:
+        resp = client._get(lead_layout_path)
+        collected: list = []
+        _walk_layout(resp, collected, limit=60)
+        print(f"  GET {lead_layout_path}  -> ok, {len(collected)} field objects found")
+        for line in collected[:60]:
+            print(line)
+        if len(collected) >= 60:
+            print(f"    ... (truncated at 60)")
+    except Exception as exc:
+        print(f"  GET {lead_layout_path}  ERROR: {exc}")
+
+    # ------------------------------------------------------------------
+    # Scan ALL probed field objects for anything "offsite"-like.
+    # ------------------------------------------------------------------
+    print()
+    print("--- Offsite field scan (all probed entities + endpoints) ---")
+    found_any = False
+    for (ent, src, fld) in _all_probed_fields:
+        if not isinstance(fld, dict):
+            continue
+        key  = (fld.get("fieldName") or fld.get("apiName")
+                or fld.get("name") or fld.get("internalName") or "")
+        disp = fld.get("displayName") or fld.get("label") or ""
+        if "offsite" in str(key).lower() or "offsite" in str(disp).lower():
+            ftype    = fld.get("type") or fld.get("fieldType") or ""
+            opts_raw = (fld.get("pickLists") or fld.get("picklists")
+                        or fld.get("options") or fld.get("pickList") or [])
+            opts_str = str(opts_raw)[:120]
+            print(f"  FOUND offsite-like field: entity={ent} source={src}"
+                  f" key={key!r} display={disp!r} type={ftype!r} opts={opts_str}")
+            found_any = True
+    if not found_any:
+        print("  (none found — field may not exist on company or lead)")
 
 
 def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
@@ -223,16 +330,11 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
                     pass
             if raw is None:
                 continue
-            # single-select: raw is an int id (or {"id":...}).
-            if isinstance(raw, dict):
-                raw = raw.get("id")
-            try:
-                oid = int(raw)
-            except (TypeError, ValueError):
-                continue
-            lbl = ct_labels.get(oid)
-            if lbl:
-                label_set.add(lbl)
+            # MULTI_PICKLIST: raw may be a list of ints or {"id":...} dicts.
+            for oid in client._as_id_set(raw):
+                lbl = ct_labels.get(oid)
+                if lbl:
+                    label_set.add(lbl)
 
         if not label_set:
             print(f"  [SKIP] '{co_name}' (id={co_id}) — no contact offsite timeline values")
