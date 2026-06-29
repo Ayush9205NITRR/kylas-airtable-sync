@@ -71,7 +71,7 @@ def main():
     found = []
     for ct in contacts:
         cf = ct.get("customFieldValues") or {}
-        raw_nc = cf.get("cfNextCallDate") or ""
+        raw_nc = cf.get("cfNextCallDateCallLater") or ""
         nc_date = _parse_date(raw_nc)
         if nc_date and nc_date >= today:
             found.append((ct, nc_date))

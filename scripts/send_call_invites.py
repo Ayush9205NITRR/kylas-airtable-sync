@@ -80,11 +80,7 @@ def main():
 
     for ct in contacts:
         cf = ct.get("customFieldValues") or {}
-        if args.contact_id:
-            nc_keys = {k: v for k, v in cf.items() if "call" in k.lower() or "date" in k.lower()}
-            print(f"  [DEBUG] customFieldValues (call/date keys): {nc_keys}")
-            print(f"  [DEBUG] all CF keys: {list(cf.keys())}")
-        raw_nc = cf.get("cfNextCallDate") or ""
+        raw_nc = cf.get("cfNextCallDateCallLater") or ""
         nc_date = _parse_date(raw_nc)
 
         if not nc_date or nc_date < today:
