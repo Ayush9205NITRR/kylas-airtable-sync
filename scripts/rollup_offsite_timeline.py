@@ -68,6 +68,92 @@ def _inspect(client: KylasClient, company_field: str, contact_field: str):
     for oid, lbl in sorted(labs.items(), key=lambda kv: kv[0]):
         print(f"    {oid!r:10} -> {lbl!r}")
 
+    # ------------------------------------------------------------------
+    # RAW ENDPOINT DIAGNOSTIC
+    # Each probe is wrapped in try/except so inspect never crashes.
+    # ------------------------------------------------------------------
+    print()
+    print("=" * 60)
+    print("RAW ENDPOINT DIAGNOSTIC")
+    print("=" * 60)
+
+    def _summarise_field_list(items, limit=40):
+        """Print compact field summary rows (up to limit), return count found."""
+        count = 0
+        for fld in items:
+            if not isinstance(fld, dict):
+                continue
+            key = (fld.get("fieldName") or fld.get("apiName")
+                   or fld.get("name") or fld.get("id") or "?")
+            disp = fld.get("displayName") or fld.get("label") or ""
+            ftype = fld.get("type") or fld.get("fieldType") or ""
+            opts_raw = (fld.get("pickLists") or fld.get("picklists")
+                        or fld.get("options") or fld.get("pickList") or [])
+            print(f"    key={key}  display={disp!r}  type={ftype}  opts={len(opts_raw)}")
+            count += 1
+            if count >= limit:
+                print(f"    ... (truncated at {limit})")
+                break
+        return count
+
+    def _walk_layout(node, collected, limit=60):
+        """Recursively collect field-object summaries from a layout response."""
+        if len(collected) >= limit:
+            return
+        if isinstance(node, list):
+            for item in node:
+                _walk_layout(item, collected, limit)
+        elif isinstance(node, dict):
+            iname = node.get("internalName") or node.get("fieldName") or ""
+            ftype = node.get("type") or ""
+            if iname and ftype:
+                disp = (node.get("displayName") or node.get("label")
+                        or node.get("name") or iname)
+                opts_raw = (node.get("pickLists") or node.get("picklists")
+                            or node.get("options") or node.get("pickList") or [])
+                multi = node.get("multiValue")
+                collected.append(
+                    f"    internalName={iname}  display={disp!r}  type={ftype}"
+                    f"  opts={len(opts_raw)}  multiValue={multi}"
+                )
+            for v in node.values():
+                if isinstance(v, (dict, list)):
+                    _walk_layout(v, collected, limit)
+
+    for entity in ("company", "contact"):
+        entity_upper = entity.upper()
+        print()
+        print(f"--- Entity: {entity} ---")
+
+        # /entities/{entity}/fields with custom-only=true
+        for co in ("true", "false"):
+            label = f"entities/{entity}/fields?custom-only={co}&page=0&size=200"
+            try:
+                resp = client._get(f"entities/{entity}/fields", {
+                    "entityType": entity, "custom-only": co, "page": 0, "size": 200,
+                })
+                items = resp if isinstance(resp, list) else (
+                    resp.get("content") or resp.get("data") or [])
+                print(f"  GET {label}")
+                print(f"    container={type(resp).__name__}  field_objects={len(items)}")
+                _summarise_field_list(items, limit=40)
+            except Exception as exc:
+                print(f"  GET {label}  ERROR: {exc}")
+
+        # ui/layouts/CREATE/{ENTITY_UPPER}
+        layout_path = f"ui/layouts/CREATE/{entity_upper}"
+        try:
+            resp = client._get(layout_path)
+            collected: list = []
+            _walk_layout(resp, collected, limit=60)
+            print(f"  GET {layout_path}  -> ok, {len(collected)} field objects found")
+            for line in collected[:60]:
+                print(line)
+            if len(collected) >= 60:
+                print(f"    ... (truncated at 60)")
+        except Exception as exc:
+            print(f"  GET {layout_path}  ERROR: {exc}")
+
 
 def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
         inspect: bool):

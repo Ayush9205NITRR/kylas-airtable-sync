@@ -578,15 +578,76 @@ class KylasClient:
         self._pick_cfg = cfg if isinstance(cfg, dict) else {}
         return self._pick_cfg
 
+    def _field_defs_from_layout(self, entity: str) -> dict:
+        """Return {cf_key: defn} by walking GET ui/layouts/CREATE/{ENTITY_UPPER}.
+
+        The layout endpoint is the authoritative source for field definitions on
+        tenants where /entities/{entity}/fields returns no picklist data. The
+        response nests fields arbitrarily deep under repeated layoutItems/item
+        structures; we recurse generically so any depth works.
+
+        Returns {} on any error (best-effort).
+        """
+        try:
+            resp = self._get(f"ui/layouts/CREATE/{entity.upper()}")
+        except Exception:
+            return {}
+
+        defs = {}
+
+        def _walk(node):
+            if isinstance(node, list):
+                for item in node:
+                    _walk(item)
+            elif isinstance(node, dict):
+                # A field object has both an internalName (or fieldName) and a type.
+                iname = node.get("internalName") or node.get("fieldName") or ""
+                ftype = node.get("type") or ""
+                if iname and ftype:
+                    display = (node.get("displayName") or node.get("label")
+                               or node.get("name") or iname)
+                    options, labels = {}, {}
+                    for opt in (node.get("pickLists") or node.get("picklists")
+                                or node.get("options") or node.get("pickList") or []):
+                        if not isinstance(opt, dict):
+                            continue
+                        oid = opt.get("id")
+                        lbl = (opt.get("value") or opt.get("displayName")
+                               or opt.get("name") or opt.get("label") or "")
+                        if oid is not None and str(lbl).strip():
+                            options[str(lbl).strip().lower()] = oid
+                            labels[oid] = str(lbl).strip()
+                    multi = bool(node.get("multiValue"))
+                    defs[str(iname)] = {
+                        "type":        str(ftype).upper(),
+                        "displayName": str(display),
+                        "multiValue":  multi,
+                        "options":     options,
+                        "labels":      labels,
+                    }
+                # Always recurse into child values regardless of whether this node
+                # was itself a field object (sections contain fields, etc.).
+                for v in node.values():
+                    if isinstance(v, (dict, list)):
+                        _walk(v)
+
+        _walk(resp)
+        return defs
+
     def get_custom_field_defs(self, entity: str) -> dict:
-        """Return {cf_key: {"type", "options"(label_lower->id), "labels"(id->label)}}.
+        """Return {cf_key: {"type", "displayName", "options"(label_lower->id), "labels"(id->label), "multiValue"}}.
 
         Cached per entity. Powers outgoing value formatting: Kylas wants a
         dropdown field's option *id* (not its label, e.g. cfOffsiteTimeline
         "Jan - Mar" -> 257199) and a real boolean for toggle fields — pushing
-        the raw Airtable string otherwise trips an opaque 500. Options come from
-        /entities/{entity}/fields, supplemented by config/kylas_picklists.json
-        for fields the API won't resolve. Best-effort.
+        the raw Airtable string otherwise trips an opaque 500.
+
+        Source priority (lowest to highest):
+          1. /entities/{entity}/fields (two passes: custom-only=false then true)
+          2. ui/layouts/CREATE/{ENTITY_UPPER} — fills gaps in display names and
+             picklist options for tenants where the /entities endpoint is sparse
+          3. config/kylas_picklists.json (manual fallback; config wins for opts it specifies)
+        Best-effort: returns partial results rather than raising.
         """
         cache = getattr(self, "_cf_defs_cache", None)
         if cache is None:
@@ -611,6 +672,8 @@ class KylasClient:
                 if not str(key).startswith("cf"):
                     continue
                 ftype = str(fld.get("type") or fld.get("fieldType") or "").upper()
+                display = (fld.get("displayName") or fld.get("label")
+                           or fld.get("name") or str(key))
                 options, labels = {}, {}
                 for opt in (fld.get("pickLists") or fld.get("picklists")
                             or fld.get("options") or fld.get("pickList") or []):
@@ -624,14 +687,35 @@ class KylasClient:
                         labels[oid] = str(label).strip()
                 multi = bool(fld.get("multiValue"))
                 if str(key) not in defs or (options and not defs[str(key)].get("options")):
-                    defs[str(key)] = {"type": ftype, "options": options, "labels": labels,
+                    defs[str(key)] = {"type": ftype, "displayName": str(display),
+                                      "options": options, "labels": labels,
                                       "multiValue": multi}
             if any(d.get("options") for d in defs.values()):
                 break   # got picklist data — second pass unnecessary
 
-        # Supplement with the config picklist map (fills in what the API omits).
+        # Supplement from layout endpoint — authoritative source for tenants
+        # where /entities returns no picklist data or missing display names.
+        layout_defs = self._field_defs_from_layout(entity)
+        for key, ldef in layout_defs.items():
+            existing = defs.get(key)
+            if existing is None:
+                # Layout-only key: adopt wholesale.
+                defs[key] = ldef
+            else:
+                # Fill missing/empty options and display name from layout.
+                if not existing.get("options") and ldef.get("options"):
+                    existing["options"] = ldef["options"]
+                    existing["labels"]  = ldef["labels"]
+                if not existing.get("displayName") or existing["displayName"] == key:
+                    existing["displayName"] = ldef.get("displayName") or existing["displayName"]
+                if not existing.get("multiValue") and ldef.get("multiValue"):
+                    existing["multiValue"] = ldef["multiValue"]
+
+        # Supplement with the config picklist map (fills in what the API omits;
+        # config wins for options it specifies).
         for key, opt_map in (self._load_picklist_config().get(entity) or {}).items():
-            d = defs.get(str(key)) or {"type": "PICK_LIST", "options": {}, "labels": {}}
+            d = defs.get(str(key)) or {"type": "PICK_LIST", "displayName": str(key),
+                                       "options": {}, "labels": {}, "multiValue": False}
             opts, labs = dict(d.get("options") or {}), dict(d.get("labels") or {})
             for label, oid in opt_map.items():
                 opts[str(label).strip().lower()] = oid
@@ -645,13 +729,19 @@ class KylasClient:
     def cf_key_for_display(self, entity: str, display_name: str):
         """Return the cf_key whose display name matches display_name (case-insensitive).
 
-        Uses list_custom_field_keys which tries the /entities/{entity}/fields
-        endpoint first, then falls back to scanning recent records. Returns None
-        if no match is found (caller should surface a clear error to the user).
+        Checks list_custom_field_keys (entity fields endpoint) first, then
+        scans get_custom_field_defs (which includes layout-sourced displayNames)
+        so fields that only appear in the layout endpoint are also matched.
+        Returns None if no match is found.
         """
         target = display_name.strip().lower()
         for key, name in self.list_custom_field_keys(entity).items():
             if str(name).strip().lower() == target:
+                return key
+        # Secondary scan: layout-sourced displayNames in get_custom_field_defs.
+        for key, defn in self.get_custom_field_defs(entity).items():
+            dn = defn.get("displayName") or ""
+            if str(dn).strip().lower() == target:
                 return key
         return None
 
