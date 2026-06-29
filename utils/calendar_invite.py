@@ -57,7 +57,10 @@ def _build_ical(
     )
     summary = _esc(f"Call: {contact_name}" + (f" ({company_name})" if company_name else ""))
 
-    recipients = sorted({owner_email.lower(), ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()})
+    base = {ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()}
+    if owner_email:
+        base.add(owner_email.lower())
+    recipients = sorted(base)
     attendee_lines = "\r\n".join(
         "ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;"
         f"PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:{em}"
@@ -108,10 +111,12 @@ def send_invite(
         print("[CalendarInvite] SMTP not configured — skipping invite")
         return False
     if not owner_email:
-        print(f"[CalendarInvite] No owner email for {contact_name!r} — skipping")
-        return False
+        print(f"[CalendarInvite] No owner email for {contact_name!r} — sending to admin only")
 
-    recipients = sorted({owner_email.lower(), ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()})
+    base_recipients = {ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()}
+    if owner_email:
+        base_recipients.add(owner_email.lower())
+    recipients = sorted(base_recipients)
     cal_str    = _build_ical(
         contact_id=contact_id,
         contact_name=contact_name,
