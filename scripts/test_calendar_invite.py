@@ -71,7 +71,7 @@ def main():
     found = []
     for ct in contacts:
         cf = ct.get("customFieldValues") or {}
-        raw_nc = cf.get("cfNextCallDate") or ""
+        raw_nc = cf.get("cfNextCallDateCallLater") or ""
         nc_date = _parse_date(raw_nc)
         if nc_date and nc_date >= today:
             found.append((ct, nc_date))
@@ -86,9 +86,19 @@ def main():
     print(f"\nFound {len(found)} contact(s) with future next call date:\n")
     for ct, nc_date in found[:5]:  # show at most 5
         cf       = ct.get("customFieldValues") or {}
-        name     = ct.get("name") or f"Contact {ct['id']}"
-        co       = ct.get("company")
-        co_name  = co.get("name", "") if isinstance(co, dict) else ""
+        first   = (ct.get("firstName") or "").strip()
+        last    = (ct.get("lastName") or "").strip()
+        name    = ct.get("name") or f"{first} {last}".strip() or f"Contact {ct['id']}"
+        co      = ct.get("company")
+        if isinstance(co, dict):
+            co_name = co.get("name", "")
+        elif isinstance(co, int) and co:
+            try:
+                co_name = kylas.get_company(co).get("name", "")
+            except Exception:
+                co_name = ""
+        else:
+            co_name = ""
         emails   = ct.get("emails") or []
         phones   = ct.get("phoneNumbers") or []
         ob       = ct.get("ownedBy") or {}
