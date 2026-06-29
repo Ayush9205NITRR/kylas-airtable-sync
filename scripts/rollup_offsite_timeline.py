@@ -10,6 +10,7 @@ Usage:
     python scripts/rollup_offsite_timeline.py --inspect
     python scripts/rollup_offsite_timeline.py --view "Company List" --dry-run
     python scripts/rollup_offsite_timeline.py --view "Company List"
+    python scripts/rollup_offsite_timeline.py --discover --company-id 12345
 
 The company multi-select field must exist in Kylas before running rollup.
 If it doesn't, create it first:
@@ -19,13 +20,13 @@ or manually in Kylas: Settings → Customization → Form Fields → Company →
 add a multi-select picklist "Offsite Timeline (BD - New)".
 """
 import argparse
+import json
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
-from pyairtable import Api as AirtableApi
 from utils.kylas_client import KylasClient
 
 
@@ -35,6 +36,18 @@ def _to_id_str(val) -> str:
         return str(int(float(str(val).strip())))
     except (ValueError, TypeError):
         return str(val).strip()
+
+
+def _company_key_from_config(cfg: dict):
+    """Return the single cf_key from the 'company' block of the picklist config.
+
+    Returns the key string if exactly one key is present, else None.
+    """
+    company_cfg = cfg.get("company") or {}
+    keys = list(company_cfg.keys())
+    if len(keys) == 1:
+        return keys[0]
+    return None
 
 
 def _inspect(client: KylasClient, company_field: str, contact_field: str):
@@ -262,8 +275,68 @@ def _inspect(client: KylasClient, company_field: str, contact_field: str):
         print("  (none found — field may not exist on company or lead)")
 
 
+def _discover(client: KylasClient, company_id: int, labels_str: str):
+    """Read a company record and print customFieldValues + proposed config snippet."""
+    print("=" * 60)
+    print(f"DISCOVER — customFieldValues for company id={company_id}")
+    print("=" * 60)
+
+    body = client.get_company(company_id)
+    cfv = body.get("customFieldValues") or {}
+
+    if not cfv:
+        print("  (no customFieldValues found on this record)")
+        return
+
+    print("\nAll customFieldValues (key -> value):")
+    for k, v in cfv.items():
+        print(f"  {k}: {v!r}")
+
+    # Candidate fields: key contains "offsite" (case-insensitive) OR value is a list.
+    labels = [s.strip() for s in labels_str.split(",") if s.strip()]
+    candidates = [
+        (k, v) for k, v in cfv.items()
+        if "offsite" in str(k).lower() or isinstance(v, list)
+    ]
+
+    if not candidates:
+        print("\nNo candidate fields found (no key containing 'offsite' and no list values).")
+        return
+
+    print(f"\nCandidate fields ({len(candidates)} found):")
+    for cf_key, raw_val in candidates:
+        ids = sorted(client._as_id_set(raw_val))
+        print(f"\n  cfKey : {cf_key}")
+        print(f"  value : {raw_val!r}")
+        print(f"  ids   : {ids}")
+
+        if not ids:
+            print("  (no numeric ids found — cannot build mapping)")
+            continue
+
+        if len(ids) != len(labels):
+            print(f"  WARNING: {len(ids)} option id(s) found but {len(labels)} label(s) provided.")
+            print(f"    Provided labels : {labels}")
+            print(f"    Adjust --labels to match the actual number of options.")
+
+        # Zip ids (sorted ascending ~ creation order) to labels in order.
+        pairs = list(zip(ids, labels))
+        mapping = {lbl: oid for oid, lbl in pairs}
+
+        print()
+        print("  PROPOSED config/kylas_picklists.json entry (VERIFY the label->id order):")
+        snippet = {"company": {cf_key: mapping}}
+        print(json.dumps(snippet, indent=2))
+
+    print()
+    print("=" * 60)
+    print("After verifying above, merge the 'company' block into config/kylas_picklists.json")
+    print("and re-run the rollup.")
+    print("=" * 60)
+
+
 def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
-        inspect: bool):
+        inspect: bool, company_cf_key_arg: str = None):
     load_dotenv()
     company_base = os.environ.get("AIRTABLE_COMPANY_BASE_ID") or os.environ["AIRTABLE_BASE_ID"]
     client = KylasClient()
@@ -272,15 +345,38 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
         _inspect(client, company_field, contact_field)
         return
 
-    # Resolve company field key.
-    company_cf_key = client.cf_key_for_display("company", company_field)
+    # Resolve company field key — three-level fallback chain.
+    company_cf_key = None
+
+    # 1. Explicit --company-cf-key argument.
+    if company_cf_key_arg:
+        company_cf_key = company_cf_key_arg
+        print(f"INFO: using company cf_key from --company-cf-key: {company_cf_key}")
+
+    # 2. API display-name resolution.
+    if not company_cf_key:
+        company_cf_key = client.cf_key_for_display("company", company_field)
+
+    # 3. Single-key config fallback.
+    if not company_cf_key:
+        cfg = client._load_picklist_config()
+        key_from_cfg = _company_key_from_config(cfg)
+        if key_from_cfg:
+            company_cf_key = key_from_cfg
+            print(f"INFO: company cf_key resolved from config/kylas_picklists.json: {company_cf_key}")
+
     if not company_cf_key:
         print(f"ERROR: company field '{company_field}' not found in Kylas.")
         print("Create it first:")
         print("  python scripts/create_offsite_field.py --dry-run   (preview body)")
         print("  python scripts/create_offsite_field.py             (create field)")
-        print("Or in Kylas UI: Settings → Customization → Form Fields → Company")
-        print(f"  → add multi-select picklist '{company_field}'")
+        print("Or in Kylas UI: Settings -> Customization -> Form Fields -> Company")
+        print(f"  -> add multi-select picklist '{company_field}'")
+        print()
+        print("Company fields aren't exposed via API on this tenant — set the field on one")
+        print("company, then run:")
+        print("  python scripts/rollup_offsite_timeline.py --discover --company-id <ID>")
+        print("to learn its key/option-ids and add them to config/kylas_picklists.json.")
         sys.exit(1)
 
     # Resolve contact field key + build id->label map.
@@ -294,6 +390,7 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
     print()
 
     # Read Airtable view.
+    from pyairtable import Api as AirtableApi  # lazy — not needed in discover/inspect paths
     print(f"Reading view '{view_name}' from Company List...")
     api     = AirtableApi(os.environ["AIRTABLE_PAT"])
     table   = api.table(company_base, "Company List")
@@ -353,21 +450,37 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Roll up contact Offsite Timeline → company multi-select in Kylas."
+        description="Roll up contact Offsite Timeline -> company multi-select in Kylas."
     )
-    parser.add_argument("--view", help="Airtable Company List view name (required unless --inspect)")
+    parser.add_argument("--view", help="Airtable Company List view name (required unless --inspect or --discover)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print intended changes without writing to Kylas")
     parser.add_argument("--inspect", action="store_true",
                         help="Print resolved keys + option maps then exit")
+    parser.add_argument("--discover", action="store_true",
+                        help="Read a company record and print customFieldValues to discover cf_key + option ids")
+    parser.add_argument("--company-id", type=int,
+                        help="Kylas company id to inspect (required for --discover)")
+    parser.add_argument("--company-cf-key", default=None,
+                        help="Override: explicit cf_key for the company multi-select field")
+    parser.add_argument("--labels", default="Jan - Mar,Apr - Jun,Jul - Sep,Oct - Dec",
+                        help="Comma-separated option labels in creation order (used by --discover)")
     parser.add_argument("--company-field", default="Offsite Timeline (BD - New)",
                         help="Display name of the company multi-select field in Kylas")
     parser.add_argument("--contact-field", default="Offsite Timeline",
                         help="Display name of the contact single-select field in Kylas")
     args = parser.parse_args()
 
+    if args.discover:
+        if not args.company_id:
+            parser.error("--company-id is required with --discover")
+        load_dotenv()
+        client = KylasClient()
+        _discover(client, args.company_id, args.labels)
+        sys.exit(0)
+
     if not args.inspect and not args.view:
-        parser.error("--view is required unless --inspect is used")
+        parser.error("--view is required unless --inspect or --discover is used")
 
     run(
         view_name=args.view,
@@ -375,4 +488,5 @@ if __name__ == "__main__":
         company_field=args.company_field,
         contact_field=args.contact_field,
         inspect=args.inspect,
+        company_cf_key_arg=args.company_cf_key,
     )

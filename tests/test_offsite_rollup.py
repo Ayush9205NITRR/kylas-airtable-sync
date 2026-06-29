@@ -1,4 +1,4 @@
-"""Unit tests for KylasClient.merge_company_multiselect.
+"""Unit tests for KylasClient.merge_company_multiselect and rollup helpers.
 
 Stubs:
   - get_custom_field_defs("company") -> options {"jan - mar":101,"apr - jun":102,"jul - sep":103}
@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 os.environ.setdefault("KYLAS_API_KEY", "test:1")
 
 from utils.kylas_client import KylasClient  # noqa: E402
+from scripts.rollup_offsite_timeline import _company_key_from_config  # noqa: E402
 
 CF_KEY = "cfOffsiteTimelineNew"
 
@@ -152,6 +153,43 @@ def test_retry_with_object_list_on_put_failure():
     )
 
 
+# ---------------------------------------------------------------------------
+# _company_key_from_config: single-key config fallback resolution.
+# ---------------------------------------------------------------------------
+def test_company_key_from_config_single_key():
+    """Returns the sole key when exactly one is present in the company block."""
+    cfg = {"company": {"cfOffsiteTimelineBdNew": {"jan - mar": 501}}}
+    assert _company_key_from_config(cfg) == "cfOffsiteTimelineBdNew"
+
+
+def test_company_key_from_config_no_company_block():
+    """Returns None when there is no company block."""
+    assert _company_key_from_config({}) is None
+
+
+def test_company_key_from_config_multiple_keys():
+    """Returns None when there are multiple keys (ambiguous — caller must specify)."""
+    cfg = {"company": {"cfKeyA": {"jan - mar": 501}, "cfKeyB": {"jan - mar": 502}}}
+    assert _company_key_from_config(cfg) is None
+
+
+def test_company_key_from_config_empty_company_block():
+    """Returns None when the company block is present but empty."""
+    assert _company_key_from_config({"company": {}}) is None
+
+
+def test_company_key_from_config_via_monkeypatch():
+    """Integration: monkeypatching _load_picklist_config on a real client picks the config key."""
+    client = KylasClient()
+    client._cf_defs_cache = {"company": {}}  # no API-sourced defs for company
+    client._load_picklist_config = lambda: {
+        "company": {"cfOffsiteTimelineBdNew": {"jan - mar": 501}}
+    }
+    cfg = client._load_picklist_config()
+    resolved = _company_key_from_config(cfg)
+    assert resolved == "cfOffsiteTimelineBdNew"
+
+
 if __name__ == "__main__":
     test_already_present_returns_unchanged()
     test_new_label_returns_updated_and_puts()
@@ -160,4 +198,9 @@ if __name__ == "__main__":
     test_as_id_set_normalises_formats()
     test_dry_run_no_put()
     test_retry_with_object_list_on_put_failure()
+    test_company_key_from_config_single_key()
+    test_company_key_from_config_no_company_block()
+    test_company_key_from_config_multiple_keys()
+    test_company_key_from_config_empty_company_block()
+    test_company_key_from_config_via_monkeypatch()
     print("\nALL TESTS PASSED")
