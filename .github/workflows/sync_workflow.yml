@@ -30,9 +30,11 @@ jobs:
 
       - name: Run Sync Script
         env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          TEST_MODE: ${{ github.event.inputs.is_test_run }} # Pass the input as an environment variable
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+          SMTP_USER:                ${{ secrets.SMTP_USER }}
+          SMTP_PASS:                ${{ secrets.SMTP_PASS }}
+          TEST_MODE: ${{ github.event.inputs.is_test_run }}
         run: python3 run_sync.py

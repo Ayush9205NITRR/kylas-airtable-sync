@@ -441,6 +441,53 @@ class KylasClient:
             print(f"[Kylas] ERROR updating company {company_id} owner: {exc}")
             return False
 
+    def list_entity_fields(self, entity: str) -> List[dict]:
+        """
+        Return raw field-definition dicts for `entity` (e.g. "company") via
+        GET /entities/{entity}/fields, including custom fields. Each dict
+        carries "name" (the customFieldValues key, e.g. "cfOffsiteTimeline")
+        and "displayName" (the human label shown in the Kylas UI).
+        """
+        out, page = [], 0
+        while True:
+            try:
+                resp = self._get(f"entities/{entity}/fields", {
+                    "entityType": entity, "custom-only": "false",
+                    "sort": "createdAt,asc", "page": page, "size": 200,
+                })
+            except Exception:
+                break
+            content = resp.get("content") or resp.get("data") or []
+            if not isinstance(content, list):
+                break
+            out.extend(content)
+            total_pages = resp.get("totalPages", 1)
+            if page >= total_pages - 1 or not content:
+                break
+            page += 1
+        return out
+
+    def update_company_custom_field(self, company_id: int, field_key: str, value) -> bool:
+        """
+        Set a single custom-field value on a company via full GET + PUT.
+
+        Mirrors the update_company_owner fallback: fetch the full record and
+        PUT it back unchanged except for the one customFieldValues key, so
+        every other field — including ownedBy/owner — is left exactly as
+        Kylas returned it.
+        """
+        try:
+            body = self._get(f"companies/{company_id}")
+            body = body.get("data", body)
+            cf = dict(body.get("customFieldValues") or {})
+            cf[field_key] = value
+            body["customFieldValues"] = cf
+            self._put(f"companies/{company_id}", body)
+            return True
+        except Exception as exc:
+            print(f"[Kylas] ERROR updating company {company_id} custom field {field_key!r}: {exc}")
+            return False
+
     def update_contact_owner(self, contact_id: int, user_id: int,
                              contact_data: dict = None) -> bool:
         """
