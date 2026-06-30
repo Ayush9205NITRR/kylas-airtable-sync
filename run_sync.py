@@ -114,13 +114,14 @@ def main():
     print("\n" + "=" * 40 + "\nMODULE 4: Email Alert\n" + "=" * 40)
     _load("04_email_alert.py").send_alert(stats, args.slot, bd_enriched=bd_enriched)
 
+    # Account health: update Status of Reachout + POC stats on every sync
+    print("\n" + "=" * 40 + "\nMODULE 6: Account Health\n" + "=" * 40)
+    _load("06_account_health.py").run(kylas=KylasClient(), send_email=False)
+
     # Hot Pipeline digest → management, once a day on the EOD (6:30 PM) run
     if args.slot == "full_day":
         print("\n" + "=" * 40 + "\nMODULE 7: Hot Pipeline Digest\n" + "=" * 40)
         _load("07_hot_pipeline.py").run()
-
-        print("\n" + "=" * 40 + "\nMODULE 6: Account Health\n" + "=" * 40)
-        _load("06_account_health.py").run(kylas=KylasClient(), send_email=False)
 
     print("\n[run_sync] All modules complete.")
 
