@@ -572,7 +572,6 @@ class KylasClient:
             warned = self._field_shape_warned = set()
         for key, value in fields.items():
             if KylasClient._is_custom_key(key):
-                print(f"[cmp] {key}: existing={cfv.get(key)!r} type={type(cfv.get(key)).__name__}  incoming={value!r} type={type(value).__name__}  equal={cfv.get(key) == value}")
                 if cfv.get(key) != value:
                     cfv[key] = value
                     changed = True
@@ -1035,8 +1034,8 @@ class KylasClient:
             return fields
         out = dict(fields)
         for k in list(out):
-            if self._is_custom_key(k) and k in defs:
-                out[k] = self._format_cf_value(k, defs[k], out[k])
+            if self._is_custom_key(k):
+                out[k] = self._format_cf_value(k, defs.get(k), out[k])
         return out
 
     def _cf_candidates(self, key: str, value, defs: dict) -> list:
