@@ -959,7 +959,15 @@ class KylasClient:
             base["customFieldValues"] = base_cfv
             try:
                 self._put(f"companies/{company_id}", base)
+                # Kylas ignores ownerId in the PUT body and reassigns the
+                # record to the API user — re-assert via the owner endpoint.
+                if _oid and not self.update_company_owner(int(company_id), int(_oid)):
+                    raise SystemExit(
+                        f"OWNER RE-ASSERT FAILED on company {company_id} "
+                        f"(uid {_oid}); aborting run to protect owners.")
                 return "updated"
+            except SystemExit:
+                raise
             except Exception as exc:
                 if attempt < 2:
                     print(f"  [Kylas] multi-select attempt {attempt + 1} failed for {cf_key} "
@@ -1227,6 +1235,18 @@ class KylasClient:
         if owner_before:
             base["ownerId"] = owner_before
         result = self._put_fields("companies", company_id, base, fields, dry_run, defs)
+
+        # Kylas IGNORES ownerId in the full company PUT body and reassigns the
+        # record to the API user (verified live 2026-07-01). The dedicated
+        # owner endpoint is the only mechanism it honors, so re-assert the
+        # owner after ANY non-dry PUT attempt ("failed" still round-trips the
+        # base body, which also resets the owner). A failed re-assert aborts
+        # the run — better stopped than silently reassigning records.
+        if result != "unchanged" and not dry_run and owner_before:
+            if not self.update_company_owner(int(company_id), int(owner_before)):
+                raise SystemExit(
+                    f"OWNER RE-ASSERT FAILED on company {company_id} "
+                    f"(uid {owner_before}); aborting run to protect owners.")
 
         # Owner tripwire: verify the first few live updates (and every 100th
         # thereafter) did not change the record owner. If one did, restore it
