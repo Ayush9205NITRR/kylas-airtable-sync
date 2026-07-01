@@ -1195,8 +1195,10 @@ class KylasClient:
         except Exception as exc:
             print(f"[Kylas] ERROR fetching company {company_id}: {exc}")
             return "failed"
-        return self._put_fields("companies", company_id,
-                                self._clean_for_put(body), fields, dry_run, defs)
+        base = self._clean_for_put(body)
+        if body.get("ownerId"):
+            base["ownerId"] = body["ownerId"]
+        return self._put_fields("companies", company_id, base, fields, dry_run, defs)
 
     def update_contact_fields(self, contact_id: int, fields: dict,
                               contact_data: dict = None, dry_run: bool = False) -> str:
