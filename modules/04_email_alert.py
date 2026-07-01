@@ -229,7 +229,7 @@ def _load_account_activity_today() -> list:
                 "Company Name",
                 "Pipeline Stage (from Contacts 2)",
                 "Source of Data",
-                "Offsite Timeline",
+                "Offsite Timeline (BD - New)",
             ]
         )
         co_info: dict = {}
@@ -241,7 +241,7 @@ def _load_account_activity_today() -> list:
                     "name":     str(f.get("Company Name")                    or ""),
                     "stages":   f.get("Pipeline Stage (from Contacts 2)")    or [],
                     "source":   str(f.get("Source of Data")                  or ""),
-                    "offsite":  str(f.get("Offsite Timeline")                or ""),
+                    "offsite":  str(f.get("Offsite Timeline (BD - New)")     or ""),
                 }
 
         result = []
@@ -277,7 +277,7 @@ def _account_table_html(rows: list) -> str:
         f'<table {_TABLE}><thead><tr>'
         f'<th {_TH}>Account Name</th>'
         f'<th {_TH}>Pipeline Stage</th>'
-        f'<th {_TH}>Offsite Timeline</th>'
+        f'<th {_TH}>Offsite Timeline (BD - New)</th>'
         f'<th {_TH}>Source of Data</th>'
         f'</tr></thead><tbody>'
     )
@@ -307,7 +307,7 @@ def _account_table_html(rows: list) -> str:
 # "Discovery Call Booked", "Offsite Delayed", "Follow-up (1..3)", "CNC ...".
 _VALIDATION_RULES = [
     # Stage = MQL  -> Offsite Timeline + Next Call Date both required.
-    {"when_stage": "mql", "require": [("Offsite Timeline", "offsite"),
+    {"when_stage": "mql", "require": [("Offsite Timeline (BD - New)", "offsite"),
                                       ("Next Call Date", "nextcall")]},
     # Offsite Timeline field is set -> a Next Call Date must be scheduled.
     {"when_set": "offsite", "require": [("Next Call Date", "nextcall")]},
@@ -344,11 +344,11 @@ def _load_validation_issues() -> list:
     try:
         from utils.airtable_client import AirtableClient
         for r in AirtableClient("Companies").table.all(
-                fields=["Kylas Company ID", "Company Name", "Offsite Timeline"]):
+                fields=["Kylas Company ID", "Company Name", "Offsite Timeline (BD - New)"]):
             f   = r["fields"]
             cid = _norm_company_id(f.get("Kylas Company ID"))
             if cid:
-                offsite_by_cid[cid] = str(f.get("Offsite Timeline") or "").strip()
+                offsite_by_cid[cid] = str(f.get("Offsite Timeline (BD - New)") or "").strip()
                 name_by_cid[cid]    = str(f.get("Company Name") or "")
     except Exception as exc:
         print(f"[Email] WARNING: could not load Companies for validation: {exc}")

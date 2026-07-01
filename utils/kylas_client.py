@@ -1305,7 +1305,7 @@ class KylasClient:
         """
         cid = int(company_id)
         cid_str = str(cid)
-        fields = ["id", "name", "company", "ownedBy"]   # ownedBy lets callers skip already-correct owners
+        fields = ["id", "name", "company", "ownedBy", "customFieldValues"]
         # No single company has anywhere near this many contacts; a response
         # larger than this means Kylas ignored our filter and returned the
         # whole contact set, so that filter shape is not usable.

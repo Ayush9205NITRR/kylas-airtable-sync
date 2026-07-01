@@ -50,3 +50,14 @@ jobs:
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
           SMTP_USER:                ${{ secrets.SMTP_USER }}
           SMTP_PASS:                ${{ secrets.SMTP_PASS }}
+
+      - name: Rollup Offsite Timeline (Contact → Company)
+        run: |
+          python scripts/rollup_offsite_timeline.py \
+            --company-field "Offsite Timeline (BD - New)" \
+            --company-cf-key "cfOffsiteTimelineBdNew"
+        env:
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
