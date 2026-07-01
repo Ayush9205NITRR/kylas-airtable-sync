@@ -26,8 +26,8 @@ load_dotenv()
 
 from utils.kylas_client import KylasClient
 
-SRC_KEY = "cfOffsiteTimeline"       # "Offsite Timeline"            — source
-DST_KEY = "cfOffsiteTimelineBdNew"  # "Offsite Timeline (BD - New)" — destination
+SRC_KEY = "cfOffsiteTimelineBdNew"  # "Offsite Timeline (BD - New)" — has the data
+DST_KEY = "cfOffsiteTimeline"       # "Offsite Timeline"            — needs to be filled
 
 
 def _scan_cf_keys(companies: list) -> set:
