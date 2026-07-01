@@ -389,13 +389,13 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
     print(f"Label map      : {ct_labels}")
     print()
 
-    # Read Airtable view.
+    # Read Airtable view — only companies where "Last Called AT - Date" is filled.
     from pyairtable import Api as AirtableApi  # lazy — not needed in discover/inspect paths
-    print(f"Reading view '{view_name}' from Company List...")
+    print(f"Reading view '{view_name}' from Company List (filter: Last Called AT - Date not empty)...")
     api     = AirtableApi(os.environ["AIRTABLE_PAT"])
     table   = api.table(company_base, "Company List")
-    records = table.all(view=view_name)
-    print(f"Found {len(records)} companies{' (DRY RUN)' if dry_run else ''}\n")
+    records = table.all(view=view_name, formula="NOT({Last Called AT - Date} = '')")
+    print(f"Found {len(records)} companies with Last Called AT - Date set{' (DRY RUN)' if dry_run else ''}\n")
 
     tallies = {"updated": 0, "unchanged": 0, "failed": 0, "skipped": 0}
 
