@@ -43,13 +43,14 @@ def _load_module(filename: str):
 
 
 def _guess_cf_key(display_name: str) -> str:
-    """Convention-based cf key guess: 'Account Status' → 'cfAccountStatus'."""
+    """Convention-based cf key guess: 'Account Health (BD)' → 'cfAccountHealthBd'."""
     import re
     words = re.split(r"[\s\-_/]+", display_name.strip())
-    if not words:
+    # Strip non-alphanumeric before capitalizing so "(BD)" → "BD" → "Bd", not "(bd)" → "bd"
+    clean = [re.sub(r"[^a-zA-Z0-9]", "", w) for w in words if re.sub(r"[^a-zA-Z0-9]", "", w)]
+    if not clean:
         return ""
-    camel = words[0].lower() + "".join(w.capitalize() for w in words[1:])
-    camel = re.sub(r"[^a-zA-Z0-9]", "", camel)
+    camel = clean[0].lower() + "".join(w.capitalize() for w in clean[1:])
     return "cf" + camel[0].upper() + camel[1:] if camel else ""
 
 
