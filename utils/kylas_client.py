@@ -988,7 +988,14 @@ class KylasClient:
         the isolation cost. Boolean -> a real bool. Anything unmatched / other
         types pass through, so isolation can still surface a genuine problem.
         """
-        if not defn or value is None:
+        if value is None:
+            return value
+        if isinstance(value, str):
+            import re as _re
+            _s = value.strip()
+            if _re.match(r'^\d{4}-\d{2}-\d{2}$', _s):
+                value = _s + "T00:00:00.000Z"
+        if not defn:
             return value
         if isinstance(value, list):          # a single-select may arrive as a 1-item list
             value = value[0] if value else ""
@@ -1019,11 +1026,6 @@ class KylasClient:
                 return True
             if s in ("false", "no", "n", "0", "unchecked", "off", ""):
                 return False
-        if isinstance(value, str):
-            import re as _re
-            s = value.strip()
-            if _re.match(r'^\d{4}-\d{2}-\d{2}$', s):
-                return s + "T00:00:00.000Z"
         return value
 
     def _format_fields(self, fields: dict, defs: dict) -> dict:
