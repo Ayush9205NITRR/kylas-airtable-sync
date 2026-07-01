@@ -7,6 +7,14 @@ on:
         description: 'Test mode: process only first N companies (leave blank = full backfill)'
         required: false
         default: ''
+      status_key:
+        description: 'Kylas cf key for Account Status field (e.g. cfAccountStatus). Leave blank to auto-discover.'
+        required: false
+        default: ''
+      lc_key:
+        description: 'Kylas cf key for Last Called AT-Date field (e.g. cfLastCalledAtDate). Leave blank to auto-discover.'
+        required: false
+        default: ''
       dry_run:
         description: 'Dry run — print what would be pushed, no API writes'
         type: boolean
@@ -38,6 +46,12 @@ jobs:
             FLAGS="--test ${{ github.event.inputs.test_n }}"
           else
             FLAGS="--all"
+          fi
+          if [ -n "${{ github.event.inputs.status_key }}" ]; then
+            FLAGS="$FLAGS --status-key ${{ github.event.inputs.status_key }}"
+          fi
+          if [ -n "${{ github.event.inputs.lc_key }}" ]; then
+            FLAGS="$FLAGS --lc-key ${{ github.event.inputs.lc_key }}"
           fi
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             FLAGS="$FLAGS --dry-run"
