@@ -609,6 +609,25 @@ class KylasClient:
         return {k: v for k, v in body.items()
                 if k not in KylasClient._READONLY_PUT_FIELDS}
 
+    @staticmethod
+    def _owner_id_from_body(body: dict):
+        """Extract the owner user id from a fetched entity body.
+
+        The detail GET may expose the owner as top-level ownerId, or only as
+        ownedBy {id, name} — check both. Returns None if neither is present.
+        A PUT body without an owner makes Kylas silently reassign the record
+        to the API user, so callers MUST re-add this to the PUT body.
+        """
+        oid = body.get("ownerId")
+        if oid:
+            return oid
+        ob = body.get("ownedBy")
+        if isinstance(ob, dict):
+            return ob.get("id")
+        if isinstance(ob, (int, str)) and str(ob).strip():
+            return ob
+        return None
+
     def _without_owner_keys(self, fields: dict, entity: str) -> dict:
         """Strip ownedBy/ownerId from a field-push map (owner isn't writable here).
 
@@ -919,10 +938,11 @@ class KylasClient:
             return "updated"
 
         # Build PUT body from the GET response, stripping read-only/audit fields
-        # but keeping ownerId so Kylas doesn't reset the owner to the API user.
+        # but keeping the owner so Kylas doesn't reset it to the API user.
         base = self._clean_for_put(body)
-        if body.get("ownerId"):
-            base["ownerId"] = body["ownerId"]
+        _oid = self._owner_id_from_body(body)
+        if _oid:
+            base["ownerId"] = _oid
         base_cfv = dict(base.get("customFieldValues") or {})
 
         # Build {id, name} objects — matches the shape GET returns (and PUT requires).
@@ -1203,9 +1223,40 @@ class KylasClient:
             print(f"[Kylas] ERROR fetching company {company_id}: {exc}")
             return "failed"
         base = self._clean_for_put(body)
-        if body.get("ownerId"):
-            base["ownerId"] = body["ownerId"]
-        return self._put_fields("companies", company_id, base, fields, dry_run, defs)
+        owner_before = self._owner_id_from_body(body)
+        if owner_before:
+            base["ownerId"] = owner_before
+        result = self._put_fields("companies", company_id, base, fields, dry_run, defs)
+
+        # Owner tripwire: verify the first few live updates (and every 100th
+        # thereafter) did not change the record owner. If one did, restore it
+        # via the dedicated owner endpoint and ABORT the whole run — a silent
+        # mass owner-reassignment is far worse than a stopped backfill.
+        # SystemExit deliberately bypasses callers' per-record `except Exception`.
+        if result == "updated" and not dry_run:
+            n = getattr(self, "_owner_checks_done", 0)
+            self._owner_checks_done = n + 1
+            if n < 3 or n % 100 == 0:
+                try:
+                    after = self._get(f"companies/{company_id}")
+                    after = after.get("data", after)
+                    owner_after = self._owner_id_from_body(after)
+                except Exception as exc:
+                    print(f"  [owner-check] company {company_id}: verify GET failed ({exc})")
+                    owner_after = owner_before   # can't verify; don't false-alarm
+                if owner_before and str(owner_after) != str(owner_before):
+                    print(f"  [owner-check] company {company_id}: OWNER CHANGED "
+                          f"{owner_before} -> {owner_after}; restoring original")
+                    try:
+                        self.update_company_owner(int(company_id), int(owner_before))
+                    except Exception as exc:
+                        print(f"  [owner-check] restore failed: {exc}")
+                    raise SystemExit(
+                        f"OWNER TRIPWIRE: field PUT on company {company_id} changed the "
+                        f"owner ({owner_before} -> {owner_after}). Owner restored; run "
+                        f"ABORTED before touching more records.")
+                print(f"  [owner-check] company {company_id}: owner preserved (uid {owner_before})")
+        return result
 
     def update_contact_fields(self, contact_id: int, fields: dict,
                               contact_data: dict = None, dry_run: bool = False) -> str:

@@ -1,0 +1,49 @@
+name: Restore Company Owners (from Airtable snapshot)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'scan = read-only mismatch report; restore = fix owners'
+        type: choice
+        options: [scan, restore]
+        default: scan
+      from_owner_id:
+        description: 'Restore only companies currently owned by this uid (required for restore; take from scan histogram)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'With restore: print the plan, write nothing'
+        type: boolean
+        default: true
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Scan / restore company owners
+        env:
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+        run: |
+          if [ "${{ github.event.inputs.mode }}" = "scan" ]; then
+            python scripts/restore_company_owners.py --scan
+          else
+            FLAGS="--restore --from-owner-id ${{ github.event.inputs.from_owner_id }}"
+            if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+              FLAGS="$FLAGS --dry-run"
+            fi
+            python scripts/restore_company_owners.py $FLAGS
+          fi

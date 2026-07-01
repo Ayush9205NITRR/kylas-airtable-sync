@@ -105,6 +105,10 @@ def main():
         for tf in ("name", "type", "industry", "numberOfEmployees", "pipeline"):
             if tf in body:
                 print(f"  [{tf}]: {_json.dumps(body[tf])}")
+        print(f"\n[probe] Owner-related fields:")
+        for tf in ("ownerId", "ownedBy", "createdBy", "updatedBy"):
+            print(f"  [{tf}]: {_json.dumps(body.get(tf))}")
+        print(f"\n[probe] All top-level keys: {sorted(body.keys())}")
         return
 
     # ── --list-fields: dump all discoverable company cf keys and exit ─────────
