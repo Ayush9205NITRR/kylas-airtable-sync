@@ -457,6 +457,9 @@ class KylasClient:
                 })
             except Exception:
                 break
+            if isinstance(resp, list):
+                out.extend(resp)
+                break
             content = resp.get("content") or resp.get("data") or []
             if not isinstance(content, list):
                 break
