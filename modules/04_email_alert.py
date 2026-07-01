@@ -556,6 +556,30 @@ def _send(smtp_user: str, smtp_pass: str, to: str, subject: str, body: str, cc: 
 
 # ── Public entry point ────────────────────────────────────────────────────────
 
+def _read_member_eod(name: str) -> tuple:
+    """Read one BD member's full_day stats for today from the 'BD Daily Stats'
+    Airtable table. Returns (resolved_owner_name, {metric: value})."""
+    from utils.airtable_client import AirtableClient
+    today_iso = date.today().isoformat()
+    field = {"attempted": "Attempted", "connected": "Connected",
+             "dcb": "Discovery Calls", "sql": "SQL",
+             "mql": "MQL", "activation": "Activation"}
+    lo = name.strip().lower()
+    try:
+        tbl  = AirtableClient("BD Daily Stats")
+        recs = tbl.table.all(formula=f"AND({{Slot}}='full_day', {{Date}}='{today_iso}')")
+    except Exception as exc:
+        print(f"[Email] WARNING: could not read BD Daily Stats — {exc}")
+        recs = []
+    for r in recs:
+        f     = r["fields"]
+        owner = (f.get("Owner") or "").strip()
+        if owner and (lo in owner.lower() or owner.lower() in lo):
+            return owner, {k: int(f.get(col, 0) or 0) for k, col in field.items()}
+    print(f"[Email] No full_day BD Daily Stats row for {name!r} on {today_iso} — using zeros")
+    return name, {k: 0 for k in field}
+
+
 def _member_bd(name: str, bd_enriched: dict) -> dict:
     lo = name.lower()
     for owner, stats in bd_enriched.items():
@@ -592,15 +616,18 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
         cfg = json.load(fh)
     cc_list = cfg.get("cc", [])
 
-    # Demo mode — send one sample to the provided addresses, no CC
+    # Demo mode — send one sample to the provided addresses, no CC.
+    # Uses the first owner in bd_enriched (so a single-member preview shows
+    # that member's real name + numbers; otherwise falls back to "Team").
     if demo_recipients:
-        sample_bd = next(iter((bd_enriched or {}).values()), {})
+        _items = list((bd_enriched or {}).items())
+        demo_name, sample_bd = _items[0] if _items else ("Team", {})
         if slot == "first_half":
             subject, body = _build_first_half(
-                "Team", today, sample_bd, targets, monthly_fixed, account_rows=account_rows)
+                demo_name, today, sample_bd, targets, monthly_fixed, account_rows=account_rows)
         else:
             subject, body = _build_full_day(
-                "Team", today, sample_bd, targets, monthly_fixed,
+                demo_name, today, sample_bd, targets, monthly_fixed,
                 account_rows=account_rows, validation_rows=validation_rows)
         for addr in demo_recipients:
             try:
@@ -660,8 +687,17 @@ if __name__ == "__main__":
     parser.add_argument("--slot", default="first_half")
     parser.add_argument("--demo", nargs="+", metavar="EMAIL",
                         help="Send a sample email to these addresses (no team blast)")
+    parser.add_argument("--member", metavar="NAME",
+                        help="With --demo: render this member's REAL stats for today "
+                             "(read from BD Daily Stats) instead of hardcoded sample data")
     args = parser.parse_args()
     from dotenv import load_dotenv; load_dotenv()
+
+    if args.demo and args.member:
+        owner, bd = _read_member_eod(args.member)
+        print(f"[Email] Demo for {owner!r}: {bd}")
+        send_alert({}, args.slot, bd_enriched={owner: bd}, demo_recipients=args.demo)
+        raise SystemExit(0)
 
     test_bd = {
         "Bhaumik": {

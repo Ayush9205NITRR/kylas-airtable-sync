@@ -15,6 +15,10 @@ on:
         description: 'Space-separated preview recipient emails'
         required: false
         default: 'ayush@enout.in vedant@enout.in'
+      member:
+        description: "Render this BD member's REAL stats for today (e.g. Muskan). Blank = hardcoded sample."
+        required: false
+        default: ''
 
 jobs:
   test-email:
@@ -36,9 +40,13 @@ jobs:
           if [ "${{ github.event.inputs.demo_only }}" = "true" ]; then
             ARGS="$ARGS --demo ${{ github.event.inputs.recipients }}"
           fi
+          if [ -n "${{ github.event.inputs.member }}" ]; then
+            ARGS="$ARGS --member ${{ github.event.inputs.member }}"
+          fi
           python modules/04_email_alert.py $ARGS
         env:
-          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-          SMTP_USER:        ${{ secrets.SMTP_USER }}
-          SMTP_PASS:        ${{ secrets.SMTP_PASS }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+          SMTP_USER:                ${{ secrets.SMTP_USER }}
+          SMTP_PASS:                ${{ secrets.SMTP_PASS }}
