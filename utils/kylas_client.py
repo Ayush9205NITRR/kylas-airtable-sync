@@ -480,11 +480,8 @@ class KylasClient:
         Kylas returned it.
         """
         try:
-            resp = self._get(f"companies/{company_id}")
-            raw = resp.get("data", resp)
-            body = self._clean_for_put(raw)
-            if raw.get("ownerId"):
-                body["ownerId"] = raw["ownerId"]
+            body = self._get(f"companies/{company_id}")
+            body = body.get("data", body)
             cf = dict(body.get("customFieldValues") or {})
             cf[field_key] = value
             body["customFieldValues"] = cf
