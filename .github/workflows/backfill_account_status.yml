@@ -1,0 +1,45 @@
+name: Backfill Account Status → Kylas (run once)
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_n:
+        description: 'Test mode: process only first N companies (leave blank = full backfill)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry run — print what would be pushed, no API writes'
+        type: boolean
+        default: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Push Account Status + Last Called Date to Kylas
+        env:
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+        run: |
+          FLAGS=""
+          if [ -n "${{ github.event.inputs.test_n }}" ]; then
+            FLAGS="--test ${{ github.event.inputs.test_n }}"
+          else
+            FLAGS="--all"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            FLAGS="$FLAGS --dry-run"
+          fi
+          python scripts/push_account_status.py $FLAGS
