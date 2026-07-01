@@ -26,6 +26,10 @@ load_dotenv()
 
 from utils.kylas_client import KylasClient
 
+SRC_KEY = "cfOffsiteTimeline"       # "Offsite Timeline"
+DST_KEY = "cfOffsiteTimelineBdNew"  # "Offsite Timeline (BD - New)"
+
+
 def _scan_cf_keys(companies: list) -> set:
     """Collect every customFieldValues key seen across all company records."""
     keys = set()
@@ -56,33 +60,15 @@ def main():
         companies = kylas.get_companies()
         print(f"Fetched {len(companies)} companies")
 
-    # Discover custom field keys from real records (entities/company/fields is unreliable)
-    all_cf_keys = _scan_cf_keys(companies)
-    offsite_keys = sorted(k for k in all_cf_keys if "offsite" in k.lower())
-
     if args.list_fields:
+        all_cf_keys = _scan_cf_keys(companies)
         print(f"\nAll custom field keys found across {len(companies)} companies:")
         for k in sorted(all_cf_keys):
             print(f"  {k}")
-        print(f"\nOffsite-related keys ({len(offsite_keys)}):")
-        for k in offsite_keys:
-            print(f"  {k}")
         sys.exit(0)
 
-    if len(offsite_keys) < 2:
-        print(f"ERROR: expected 2 offsite keys, found {len(offsite_keys)}: {offsite_keys}")
-        print("Run with --list-fields to inspect available keys.")
-        sys.exit(1)
-
-    # Heuristic: shorter key = source ("Offsite Timeline"),
-    # longer / containing 'bd' or 'new' = destination ("Offsite Timeline (BD - New)")
-    offsite_keys_sorted = sorted(offsite_keys, key=lambda k: (len(k), k))
-    src_key = offsite_keys_sorted[0]
-    dst_key = next(
-        (k for k in offsite_keys if any(x in k.lower() for x in ("bd", "new"))),
-        offsite_keys_sorted[-1],
-    )
-
+    src_key = SRC_KEY
+    dst_key = DST_KEY
     print(f"\n  Source : {src_key}")
     print(f"  Dest   : {dst_key}\n")
 
