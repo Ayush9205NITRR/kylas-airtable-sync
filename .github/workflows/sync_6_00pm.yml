@@ -18,7 +18,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -52,6 +52,9 @@ jobs:
           SMTP_PASS:                ${{ secrets.SMTP_PASS }}
 
       - name: Rollup Offsite Timeline (Contact → Company)
+        # Secondary enrichment: never fail the run if this hiccups (rate limits,
+        # timeout) — the sync + email above have already completed.
+        continue-on-error: true
         run: |
           python scripts/rollup_offsite_timeline.py \
             --company-field "Offsite Timeline (BD - New)" \
