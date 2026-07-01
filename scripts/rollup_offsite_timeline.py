@@ -455,16 +455,20 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
                     print(f"    [WARN] get_contact({ct['id']}) failed: {e}")
             if raw is None:
                 continue
-            # SINGLE_PICKLIST: raw may be a dict {'name': ..., 'id': ...} or an int id.
-            if isinstance(raw, dict):
-                lbl = raw.get("name")
-                if lbl:
-                    contact_labels.add(lbl)
-            else:
-                # Fallback: treat as numeric id and look up in label map.
+            # The offsite-timeline value can arrive in several shapes:
+            #   dict            {'name': 'Jul - Sep', 'id': 2880426}
+            #   int id          2880426
+            #   list of ints    [2880424, 2880425]            (multi-select)
+            #   list of dicts   [{'name': 'Jul - Sep', ...}]  (multi-select)
+            # Normalise all of them to a set of label strings.
+            for item in (raw if isinstance(raw, list) else [raw]):
+                if isinstance(item, dict):
+                    lbl = item.get("name")
+                    if lbl:
+                        contact_labels.add(lbl)
+                    continue
                 try:
-                    oid = int(raw)
-                    lbl = ct_labels.get(oid)
+                    lbl = ct_labels.get(int(item))
                     if lbl:
                         contact_labels.add(lbl)
                 except (ValueError, TypeError):
