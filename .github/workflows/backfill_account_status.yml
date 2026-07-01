@@ -27,6 +27,14 @@ on:
         description: 'GET a single company by ID and dump its raw customFieldValues (for debugging field format)'
         required: false
         default: ''
+      restore_mode:
+        description: 'Owner restore: "scan" = read-only mismatch report; "restore" = fix owners (needs restore_from_owner_id; honors dry_run)'
+        required: false
+        default: ''
+      restore_from_owner_id:
+        description: 'With restore_mode=restore: only fix companies currently owned by this uid (take from scan histogram)'
+        required: false
+        default: ''
 
 jobs:
   backfill:
@@ -49,6 +57,18 @@ jobs:
           AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
         run: |
+          if [ "${{ github.event.inputs.restore_mode }}" = "scan" ]; then
+            python scripts/restore_company_owners.py --scan
+            exit 0
+          fi
+          if [ "${{ github.event.inputs.restore_mode }}" = "restore" ]; then
+            FLAGS="--restore --from-owner-id ${{ github.event.inputs.restore_from_owner_id }}"
+            if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+              FLAGS="$FLAGS --dry-run"
+            fi
+            python scripts/restore_company_owners.py $FLAGS
+            exit 0
+          fi
           if [ -n "${{ github.event.inputs.probe_company }}" ]; then
             python scripts/push_account_status.py --probe-company ${{ github.event.inputs.probe_company }}
             exit 0
