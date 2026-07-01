@@ -511,40 +511,20 @@ def _build_first_half(name: str, today: str, bd: dict, targets: dict,
 def _build_full_day(name: str, today: str, bd: dict, targets: dict,
                     monthly_fixed: dict = None, account_rows: list = None,
                     validation_rows: list = None) -> tuple:
-    w1          = bd.get("w1", {})
-    w2          = bd.get("w2", {})
-    has_windows = any(w1.get(k, 0) for k in METRICS)
-
-    if has_windows:
-        hdr = (
-            f'<th {_TH}>Metric</th>'
-            f'<th {_THC}>W1 (11–1)</th>'
-            f'<th {_THC}>W2 (3–6)</th>'
-            f'<th {_THC}>Total</th>'
-            f'<th {_THC}>Daily</th>'
-        )
-        rows = "".join(
-            f'<tr><td {_TD}>{LABEL[k]}</td>'
-            f'<td {_TDC}>{w1.get(k, 0)}</td>'
-            f'<td {_TDC}>{w2.get(k, 0)}</td>'
-            f'<td {_TDB}>{bd.get(k, 0)}</td>'
-            f'<td {_TDC}>{_fmt_tgt(targets.get(k, 0))}</td></tr>'
-            for k in METRICS
-        )
-    else:
-        hdr = (
-            f'<th {_TH}>Metric</th>'
-            f'<th {_THC}>Done</th>'
-            f'<th {_THC}>Daily</th>'
-            f'<th {_THC}>Window</th>'
-        )
-        rows = "".join(
-            f'<tr><td {_TD}>{LABEL[k]}</td>'
-            f'<td {_TDB}>{bd.get(k, 0)}</td>'
-            f'<td {_TDC}>{_fmt_tgt(targets.get(k, 0))}</td>'
-            f'<td {_TDC}>{_fmt_win(targets.get(k, 0))}</td></tr>'
-            for k in METRICS
-        )
+    # EOD email shows the DAY-END total achieved vs the daily target.
+    # No per-window (W1/W2) breakdown — the intra-day split lives in the
+    # 11 AM Window mail; at end of day we only care about the day's total.
+    hdr = (
+        f'<th {_TH}>Metric</th>'
+        f'<th {_THC}>Done</th>'
+        f'<th {_THC}>Daily</th>'
+    )
+    rows = "".join(
+        f'<tr><td {_TD}>{LABEL[k]}</td>'
+        f'<td {_TDB}>{bd.get(k, 0)}</td>'
+        f'<td {_TDC}>{_fmt_tgt(targets.get(k, 0))}</td></tr>'
+        for k in METRICS
+    )
 
     table   = f'<table {_TABLE}><thead><tr>{hdr}</tr></thead><tbody>{rows}</tbody></table>'
     content = table + _monthly_goal_html(monthly_fixed or {})
