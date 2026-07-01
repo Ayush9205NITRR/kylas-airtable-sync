@@ -11,6 +11,10 @@ on:
         description: 'Optional: migrate a single Kylas company ID'
         required: false
         default: ''
+      list_fields:
+        description: 'List all company field labels from Kylas and exit (for debugging)'
+        type: boolean
+        default: false
 
 jobs:
   migrate:
@@ -34,6 +38,9 @@ jobs:
           fi
           if [ -n "${{ github.event.inputs.company_id }}" ]; then
             ARGS="$ARGS --id ${{ github.event.inputs.company_id }}"
+          fi
+          if [ "${{ github.event.inputs.list_fields }}" = "true" ]; then
+            ARGS="$ARGS --list-fields"
           fi
           python scripts/migrate_offsite_timeline.py $ARGS
         env:

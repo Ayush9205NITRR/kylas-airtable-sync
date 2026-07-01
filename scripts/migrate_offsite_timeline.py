@@ -30,12 +30,17 @@ SRC_LABEL = "Offsite Timeline"
 DST_LABEL = "Offsite Timeline (BD - New)"
 
 
-def _resolve_field_keys(kylas: KylasClient) -> dict:
+def _resolve_field_keys(kylas: KylasClient, debug: bool = False) -> dict:
     """Map company field display name (lowercased) -> customFieldValues key."""
     mapping = {}
     for fld in kylas.list_entity_fields("company"):
-        label = (fld.get("displayName") or fld.get("display_name") or "").strip()
-        key = fld.get("name") or fld.get("fieldName") or ""
+        # Kylas may use different keys depending on endpoint version
+        label = (fld.get("displayName") or fld.get("display_name") or
+                 fld.get("label") or fld.get("fieldLabel") or "").strip()
+        key   = (fld.get("name") or fld.get("fieldName") or
+                 fld.get("id") or fld.get("fieldId") or "").strip()
+        if debug:
+            print(f"    field keys={list(fld.keys())} label={label!r} key={key!r}")
         if label and key:
             mapping[label.lower()] = key
     return mapping
@@ -49,12 +54,21 @@ def main():
                         help="Print planned changes, write nothing")
     parser.add_argument("--id", type=int, dest="company_id",
                         help="Migrate a single company by Kylas ID")
+    parser.add_argument("--list-fields", action="store_true",
+                        help="Print all company field keys from Kylas and exit")
     args = parser.parse_args()
 
     kylas = KylasClient()
 
     print("Resolving custom field keys from Kylas...")
-    field_map = _resolve_field_keys(kylas)
+    field_map = _resolve_field_keys(kylas, debug=args.list_fields)
+
+    if args.list_fields:
+        print(f"\nAll {len(field_map)} company fields found:")
+        for label, key in sorted(field_map.items()):
+            print(f"  {label!r:50} -> {key}")
+        sys.exit(0)
+
     src_key = field_map.get(SRC_LABEL.lower())
     dst_key = field_map.get(DST_LABEL.lower())
 
@@ -62,8 +76,8 @@ def main():
     print(f"  {DST_LABEL!r:35} -> {dst_key or '(NOT FOUND)'}\n")
 
     if not src_key or not dst_key:
-        print("ERROR: could not resolve one or both field keys. "
-              "Both fields must already exist on the Company entity in Kylas.")
+        print("ERROR: could not resolve one or both field keys.")
+        print("Run with --list-fields to see all available field labels.")
         sys.exit(1)
 
     if args.company_id:
