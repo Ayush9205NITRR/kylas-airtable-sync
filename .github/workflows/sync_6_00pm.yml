@@ -54,7 +54,6 @@ jobs:
       - name: Rollup Offsite Timeline (Contact → Company)
         run: |
           python scripts/rollup_offsite_timeline.py \
-            --view "Company List" \
             --company-field "Offsite Timeline (BD - New)" \
             --company-cf-key "cfOffsiteTimelineBdNew"
         env:

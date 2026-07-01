@@ -389,12 +389,12 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
     print(f"Label map      : {ct_labels}")
     print()
 
-    # Read Airtable view — only companies where "Last Called AT - Date" is filled.
+    # Fetch all companies where "Last Called AT - Date" is filled.
     from pyairtable import Api as AirtableApi  # lazy — not needed in discover/inspect paths
-    print(f"Reading view '{view_name}' from Company List (filter: Last Called AT - Date not empty)...")
+    print("Reading Company List (filter: Last Called AT - Date not empty)...")
     api     = AirtableApi(os.environ["AIRTABLE_PAT"])
     table   = api.table(company_base, "Company List")
-    records = table.all(view=view_name, formula="NOT({Last Called AT - Date} = '')")
+    records = table.all(formula="NOT({Last Called AT - Date} = '')")
     print(f"Found {len(records)} companies with Last Called AT - Date set{' (DRY RUN)' if dry_run else ''}\n")
 
     tallies = {"updated": 0, "unchanged": 0, "failed": 0, "skipped": 0}
@@ -482,7 +482,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Roll up contact Offsite Timeline -> company multi-select in Kylas."
     )
-    parser.add_argument("--view", help="Airtable Company List view name (required unless --inspect or --discover)")
+    parser.add_argument("--view", help="(unused, kept for backwards compat)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print intended changes without writing to Kylas")
     parser.add_argument("--inspect", action="store_true",
@@ -508,9 +508,6 @@ if __name__ == "__main__":
         client = KylasClient()
         _discover(client, args.company_id, args.labels)
         sys.exit(0)
-
-    if not args.inspect and not args.view:
-        parser.error("--view is required unless --inspect or --discover is used")
 
     run(
         view_name=args.view,
