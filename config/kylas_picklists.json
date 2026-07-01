@@ -12,6 +12,15 @@
       "Apr - Jun": 258138,
       "Jul - Sep": 258139,
       "Oct - Dec": 258140
+    },
+    "cfAccountStatus": {
+      "Exhausted": 258334,
+      "Offsite Delayed": 258335,
+      "SQL": 258336,
+      "Discovery Call Stage": 258337,
+      "MQL - Action Needed": 258338,
+      "Active": 258339,
+      "Fresh": 258340
     }
   },
   "contact": {}
