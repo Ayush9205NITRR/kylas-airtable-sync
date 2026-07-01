@@ -781,6 +781,14 @@ class KylasClient:
         # Supplement from layout endpoint — authoritative source for tenants
         # where /entities returns no picklist data or missing display names.
         layout_defs = self._field_defs_from_layout(entity)
+        # DEBUG: show what the layout actually returns for key fields BEFORE picklist override
+        for _dbg_key in ("cfAccountStatus", "cfLastCalledAtDate"):
+            if _dbg_key in layout_defs:
+                _d = layout_defs[_dbg_key]
+                print(f"[debug] layout {entity}/{_dbg_key}: type={_d.get('type')!r} "
+                      f"display={_d.get('displayName')!r} options={_d.get('options')}")
+            else:
+                print(f"[debug] layout {entity}/{_dbg_key}: NOT FOUND in layout endpoints")
         for key, ldef in layout_defs.items():
             existing = defs.get(key)
             if existing is None:
