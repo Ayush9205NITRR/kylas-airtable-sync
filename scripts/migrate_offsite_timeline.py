@@ -2,10 +2,10 @@
 One-time migration: copy each company's "Offsite Timeline" custom field
 value into "Offsite Timeline (BD - New)" in Kylas.
 
-Both fields must already exist on the Company entity in Kylas — this script
-only copies values, it does not create fields. Field keys are resolved at
-runtime by display name (via GET /entities/company/fields), so no internal
-key is hardcoded.
+The source field (cfOffsiteTimeline) stores a single-select dict like
+  {'name': 'Jul - Sep', 'id': 257201}
+The destination field (cfOffsiteTimelineBdNew) uses different option IDs,
+discovered by scanning existing records. The mapping is hardcoded below.
 
 Writes go through a full GET /companies/{id} + PUT, changing ONLY the
 destination custom field. Every other field on the record — including
@@ -26,8 +26,17 @@ load_dotenv()
 
 from utils.kylas_client import KylasClient
 
-SRC_KEY = "cfOffsiteTimelineBdNew"  # "Offsite Timeline (BD - New)" — has the data
-DST_KEY = "cfOffsiteTimeline"       # "Offsite Timeline"            — needs to be filled
+SRC_KEY = "cfOffsiteTimeline"       # "Offsite Timeline"            — has the data
+DST_KEY = "cfOffsiteTimelineBdNew"  # "Offsite Timeline (BD - New)" — needs to be filled
+
+# Option IDs for the destination field, discovered from existing records.
+# These differ from the source field's IDs even for the same quarter names.
+DST_OPTIONS = {
+    'Jan - Mar': 258137,
+    'Apr - Jun': 258138,
+    'Jul - Sep': 258139,
+    'Oct - Dec': 258140,
+}
 
 
 def _scan_cf_keys(companies: list) -> set:
@@ -36,6 +45,22 @@ def _scan_cf_keys(companies: list) -> set:
     for co in companies:
         keys.update((co.get("customFieldValues") or {}).keys())
     return keys
+
+
+def _src_name(src_val) -> str:
+    """Extract the quarter name from a source field value (dict or string)."""
+    if isinstance(src_val, dict):
+        return src_val.get('name', '')
+    return str(src_val) if src_val else ''
+
+
+def _dst_matches(dst_val, name: str) -> bool:
+    """True if the destination field already contains the given quarter name."""
+    if isinstance(dst_val, dict):
+        return dst_val.get('name') == name
+    if isinstance(dst_val, list):
+        return any(isinstance(v, dict) and v.get('name') == name for v in dst_val)
+    return False
 
 
 def main():
@@ -67,34 +92,47 @@ def main():
             print(f"  {k}")
         sys.exit(0)
 
-    src_key = SRC_KEY
-    dst_key = DST_KEY
-    print(f"\n  Source : {src_key}")
-    print(f"  Dest   : {dst_key}\n")
+    print(f"\n  Source : {SRC_KEY}")
+    print(f"  Dest   : {DST_KEY}\n")
 
     migrated = 0
     skipped_empty = 0
     skipped_match = 0
+    skipped_unknown = 0
     failed = 0
 
     for co in companies:
         cid = co.get("id")
         name = co.get("name") or f"Company {cid}"
         cf = co.get("customFieldValues") or {}
-        src_val = cf.get(src_key)
-        if src_val in (None, ""):
+
+        src_val = cf.get(SRC_KEY)
+        if not src_val:
             skipped_empty += 1
             continue
-        dst_val = cf.get(dst_key)
-        if dst_val == src_val:
+
+        src_name = _src_name(src_val)
+        if not src_name:
+            skipped_empty += 1
+            continue
+
+        dst_option_id = DST_OPTIONS.get(src_name)
+        if dst_option_id is None:
+            print(f"  WARNING: {name} (ID {cid}): unrecognised value {src_name!r}, skipping")
+            skipped_unknown += 1
+            continue
+
+        dst_val = cf.get(DST_KEY)
+        if _dst_matches(dst_val, src_name):
             skipped_match += 1
             continue
 
-        print(f"  {name} (ID {cid}): {dst_val!r} -> {src_val!r}")
+        new_val = {'name': src_name, 'id': dst_option_id}
+        print(f"  {name} (ID {cid}): {dst_val!r} -> {new_val!r}")
         if args.dry_run:
             continue
 
-        ok = kylas.update_company_custom_field(cid, dst_key, src_val)
+        ok = kylas.update_company_custom_field(cid, DST_KEY, new_val)
         if ok:
             migrated += 1
         else:
@@ -102,7 +140,7 @@ def main():
 
     label = "[DRY RUN] " if args.dry_run else ""
     print(f"\n{label}Migrated: {migrated} | Already matching: {skipped_match} | "
-          f"No source value: {skipped_empty} | Failed: {failed}")
+          f"No source value: {skipped_empty} | Unknown value: {skipped_unknown} | Failed: {failed}")
 
 
 if __name__ == "__main__":
