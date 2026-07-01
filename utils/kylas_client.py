@@ -107,11 +107,14 @@ class KylasClient:
             return
         try:
             j = r.json()
-            detail = (j.get("message") or j.get("error") or j.get("errorMessage")
-                      or j.get("detail") or str(j)) if isinstance(j, dict) else str(j)
+            msg = (j.get("message") or j.get("error") or j.get("errorMessage")
+                   or j.get("detail") or "") if isinstance(j, dict) else ""
+            # Include full JSON so field-level errors (fieldErrors, code, etc.) are visible
+            full = str(j)
+            detail = (f"{msg} | full={full}" if msg and full != f"'{msg}'" else full or msg)
         except Exception:
             detail = r.text or ""
-        detail = " ".join(str(detail).split())[:500]
+        detail = " ".join(str(detail).split())[:800]
         raise requests.HTTPError(
             f"{r.status_code} {r.reason} for url: {r.url}"
             + (f" — {detail}" if detail else ""),
@@ -1150,7 +1153,23 @@ class KylasClient:
                     print(f"[debug] _put_fields: key={key!r} cand={cand!r} full_error={exc!s}")
                     err = self._short_err(exc)
             if err is not None:
-                rejected[key] = err
+                # Last resort: PATCH with just this one custom field (avoids full-body validation)
+                if self._is_custom_key(key):
+                    for cand in candidates[:3]:
+                        try:
+                            self._patch(f"{path}/{entity_id}",
+                                        {"customFieldValues": {key: cand}})
+                            good_cfv = dict(good.get("customFieldValues") or {})
+                            good_cfv[key] = cand
+                            good["customFieldValues"] = good_cfv
+                            applied.append(key)
+                            print(f"[debug] _put_fields: key={key!r} PATCH succeeded cand={cand!r}")
+                            err = None
+                            break
+                        except Exception as patch_exc:
+                            print(f"[debug] _put_fields: key={key!r} PATCH cand={cand!r} — {patch_exc!s}")
+                if err is not None:
+                    rejected[key] = err
         if rejected:
             detail = ", ".join(f"{k} [{v}]" for k, v in rejected.items())
             print(f"[Kylas] {path}/{entity_id}: Kylas rejected {detail}"
