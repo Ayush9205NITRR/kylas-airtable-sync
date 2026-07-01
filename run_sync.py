@@ -118,10 +118,11 @@ def main():
     print("\n" + "=" * 40 + "\nMODULE 6: Account Health\n" + "=" * 40)
     _load("06_account_health.py").run(kylas=KylasClient(), send_email=False)
 
-    # Hot Pipeline digest → management, once a day on the EOD (6:30 PM) run
-    if args.slot == "full_day":
-        print("\n" + "=" * 40 + "\nMODULE 7: Hot Pipeline Digest\n" + "=" * 40)
-        _load("07_hot_pipeline.py").run()
+    # Hot Pipeline digest — DISABLED (email removed per request 2026-07).
+    # To re-enable, uncomment the block below.
+    # if args.slot == "full_day":
+    #     print("\n" + "=" * 40 + "\nMODULE 7: Hot Pipeline Digest\n" + "=" * 40)
+    #     _load("07_hot_pipeline.py").run()
 
     print("\n[run_sync] All modules complete.")
 
