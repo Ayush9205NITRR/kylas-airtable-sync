@@ -336,7 +336,8 @@ def _discover(client: KylasClient, company_id: int, labels_str: str):
 
 
 def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
-        inspect: bool, company_cf_key_arg: str = None, target_company_id: int = None):
+        inspect: bool, company_cf_key_arg: str = None, target_company_id: int = None,
+        target_contact_id: int = None):
     load_dotenv()
     company_base = os.environ.get("AIRTABLE_COMPANY_BASE_ID") or os.environ["AIRTABLE_BASE_ID"]
     client = KylasClient()
@@ -344,6 +345,18 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
     if inspect:
         _inspect(client, company_field, contact_field)
         return
+
+    # Resolve a target contact to its parent company, so a single edited
+    # contact can be verified end-to-end without knowing the company id.
+    if target_contact_id and not target_company_id:
+        ct = client.get_contact(target_contact_id)
+        co = ct.get("company")
+        co_id = co.get("id") if isinstance(co, dict) else co
+        if not co_id:
+            print(f"Contact {target_contact_id} has no linked company — nothing to roll up.")
+            return
+        target_company_id = int(co_id)
+        print(f"Contact {target_contact_id} → company id {target_company_id}")
 
     # Resolve company field key — three-level fallback chain.
     company_cf_key = None
@@ -502,6 +515,8 @@ if __name__ == "__main__":
                         help="Override: explicit cf_key for the company multi-select field")
     parser.add_argument("--target-company-id", type=int, default=None,
                         help="Test with a single Kylas company ID (bypasses Airtable filter)")
+    parser.add_argument("--target-contact-id", type=int, default=None,
+                        help="Test with a single Kylas contact ID — resolves its company and rolls up just that one")
     parser.add_argument("--labels", default="Jan - Mar,Apr - Jun,Jul - Sep,Oct - Dec",
                         help="Comma-separated option labels in creation order (used by --discover)")
     parser.add_argument("--company-field", default="Offsite Timeline (BD - New)",
@@ -526,4 +541,5 @@ if __name__ == "__main__":
         inspect=args.inspect,
         company_cf_key_arg=args.company_cf_key,
         target_company_id=args.target_company_id,
+        target_contact_id=args.target_contact_id,
     )
