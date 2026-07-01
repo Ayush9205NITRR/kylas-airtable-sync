@@ -481,7 +481,7 @@ class KylasClient:
         """
         try:
             body = self._get(f"companies/{company_id}")
-            body = body.get("data", body)
+            body = self._clean_for_put(body.get("data", body))
             cf = dict(body.get("customFieldValues") or {})
             cf[field_key] = value
             body["customFieldValues"] = cf
