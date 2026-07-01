@@ -170,8 +170,7 @@ def run(test_mode: bool = False, test_id: int = None,
     bd_daily       = {}
     account_activity = {}
     today_iso      = date.today().isoformat()
-    _dbg = {"upd_today": 0, "has_stage": 0, "owner_update": 0, "called_today": 0, "all3": 0}
-    _dbg_samples = []
+    _dbg = {"upd_today": 0, "has_stage": 0, "called_today": 0, "counted": 0}
 
     try:
         cached = airtable.build_cache("Kylas Contact Id")
@@ -232,37 +231,28 @@ def run(test_mode: bool = False, test_id: int = None,
                     updated += 1
                     per_user.setdefault(owner, {"created": 0, "updated": 0})["updated"] += 1
 
-                # BD metrics: count a contact when the OWNER worked it TODAY.
-                #   1. "Last Called At" date == today  → the proof the owner
-                #      changed/worked this contact today (this is our signal).
-                #   2. The last update to the record was made by the contact's
-                #      owner (exclude admin/system edits).
-                # We deliberately do NOT require the pipeline stage to differ
-                # from yesterday — a same-stage call (e.g. CNC again) still
-                # counts, matching the Kylas "BD - Daily Report".
-                _ob_id = (ct.get("ownedBy") or {}).get("id")
-                _ub    = ct.get("updatedBy") or {}
-                _ub_id = _ub.get("id") if isinstance(_ub, dict) else None
-                _cf    = ct.get("customFieldValues") or {}
-                owner_update = bool(_ob_id and _ub_id and _ob_id == _ub_id)
+                # BD metrics: count a contact when the OWNER worked it TODAY,
+                # i.e. its "Last Called At" date == today. That date is itself
+                # the proof the owner called/worked the contact today, so we
+                # group the count under the contact's owner (ownedBy).
+                #
+                # We do NOT check "updated by the owner": the search API returns
+                # ownedBy/updatedBy without ids on this tenant (both come back
+                # None), so that test was always false and zeroed every number.
+                # We also do NOT require the pipeline stage to differ from
+                # yesterday — a same-stage call (e.g. CNC again) still counts,
+                # matching the Kylas "BD - Daily Report".
+                _cf          = ct.get("customFieldValues") or {}
                 called_today = (_parse_call_date(_cf.get("cfLastCalledAt")) == today_iso)
 
                 if os.environ.get("BD_DEBUG") and (ct.get("updatedAt") or "").startswith(today_iso):
                     _dbg["upd_today"]    += 1
                     _dbg["has_stage"]    += 1 if new_stage else 0
-                    _dbg["owner_update"] += 1 if owner_update else 0
                     _dbg["called_today"] += 1 if called_today else 0
-                    if new_stage and owner_update and called_today:
-                        _dbg["all3"] += 1
-                    if len(_dbg_samples) < 8:
-                        _dbg_samples.append(
-                            f"id={ct.get('id')} owner={owner!r} ob={_ob_id} ub={_ub_id} "
-                            f"lastcalled={_cf.get('cfLastCalledAt')!r} "
-                            f"parsed={_parse_call_date(_cf.get('cfLastCalledAt'))!r} "
-                            f"stage={new_stage!r}"
-                        )
+                    if new_stage and called_today:
+                        _dbg["counted"] += 1
 
-                if bool(new_stage) and owner_update and called_today:
+                if bool(new_stage) and called_today:
                     cats = _classify_bd(new_stage)
                     bd   = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})
                     for key in BD_KEYS:
@@ -332,10 +322,11 @@ def run(test_mode: bool = False, test_id: int = None,
         if os.environ.get("BD_DEBUG"):
             print(f"[BD DEBUG] today={today_iso}  of contacts updated today: "
                   f"upd_today={_dbg['upd_today']}  has_stage={_dbg['has_stage']}  "
-                  f"owner_update={_dbg['owner_update']}  called_today={_dbg['called_today']}  "
-                  f"all3={_dbg['all3']}")
-            for s in _dbg_samples:
-                print(f"[BD DEBUG] {s}")
+                  f"called_today={_dbg['called_today']}  counted={_dbg['counted']}")
+            for o, m in sorted(bd_daily.items(), key=lambda x: -x[1].get("attempted", 0)):
+                print(f"[BD DEBUG] {o}: attempted={m.get('attempted',0)} "
+                      f"connected={m.get('connected',0)} dcb={m.get('dcb',0)} "
+                      f"sql={m.get('sql',0)} mql={m.get('mql',0)}")
 
     except Exception as e:
         logger.fail(log_id, str(e))
