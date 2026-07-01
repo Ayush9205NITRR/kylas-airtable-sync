@@ -90,14 +90,27 @@ def main():
     # ── --list-fields: dump all discoverable company cf keys and exit ─────────
     if args.list_fields:
         print("[push] Fetching company custom field keys from Kylas...")
+
+        # Raw field definitions from /entities/company/fields (no cf prefix filter)
+        raw_fields = kylas.list_entity_fields("company")
+        if raw_fields:
+            print(f"\n[push] Raw /entities/company/fields — {len(raw_fields)} total fields:")
+            for fld in raw_fields:
+                fname   = (fld.get("fieldName") or fld.get("apiName") or fld.get("name")
+                           or fld.get("id") or "?")
+                display = fld.get("displayName") or fld.get("label") or fname
+                ftype   = fld.get("type") or fld.get("fieldType") or ""
+                print(f"  {fname:<45} '{display}'  [{ftype}]")
+        else:
+            print("[push] /entities/company/fields returned nothing")
+
         keys = kylas.list_custom_field_keys("company")
         defs = kylas.get_custom_field_defs("company")
         all_keys = sorted(set(list(keys.keys()) + list(defs.keys())))
         if not all_keys:
-            print("[push] No custom field keys found via API.")
-            print("[push] Try running --test 1 with --status-key / --lc-key to provide keys manually.")
+            print("[push] No custom field keys found via value-scan either.")
         else:
-            print(f"[push] Found {len(all_keys)} company custom field key(s):\n")
+            print(f"\n[push] Found {len(all_keys)} company custom field key(s) via value scan:\n")
             for k in all_keys:
                 display = keys.get(k) or defs.get(k, {}).get("displayName") or k
                 ftype   = defs.get(k, {}).get("type", "")
