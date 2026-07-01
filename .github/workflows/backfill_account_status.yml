@@ -3,6 +3,10 @@ name: Backfill Account Status → Kylas (run once)
 on:
   workflow_dispatch:
     inputs:
+      list_fields:
+        description: 'List all company custom field keys from Kylas and exit (use to find correct key names)'
+        type: boolean
+        default: false
       test_n:
         description: 'Test mode: process only first N companies (leave blank = full backfill)'
         required: false
@@ -41,6 +45,10 @@ jobs:
           AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
         run: |
+          if [ "${{ github.event.inputs.list_fields }}" = "true" ]; then
+            python scripts/push_account_status.py --list-fields
+            exit 0
+          fi
           FLAGS=""
           if [ -n "${{ github.event.inputs.test_n }}" ]; then
             FLAGS="--test ${{ github.event.inputs.test_n }}"
