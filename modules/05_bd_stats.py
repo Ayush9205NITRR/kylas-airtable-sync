@@ -62,12 +62,12 @@ def _prune_old(tbl: AirtableClient, label: str, retention_days: int = RETENTION_
 def _write_bd_daily(bd_metrics: dict, slot: str, today: str) -> dict:
     """Write per-owner BD stats; return enriched dict with W1/W2 breakdown.
 
-    Metrics ACCUMULATE across re-runs. Each sync only detects the *delta* of
-    stage moves since the previous sync (Airtable already holds the synced
-    stage, so a moved contact looks unchanged on the next run). We therefore
-    ADD this run's delta to the total already stored for today rather than
-    overwriting it. Without this, a second run of the day would find an empty
-    delta and zero out everyone's numbers.
+    bd_metrics is a full daily SNAPSHOT — every contact whose "Last Called At"
+    is today (worked by its owner). Each sync recomputes the whole snapshot, so
+    we OVERWRITE today's row with the latest count rather than accumulating.
+    To stay safe against a re-run with a narrower fetch window, we never let the
+    stored number regress: total = max(this run's snapshot, what's already
+    stored today / the morning W1 snapshot).
     """
     try:
         tbl    = AirtableClient("BD Daily Stats")
@@ -101,15 +101,14 @@ def _write_bd_daily(bd_metrics: dict, slot: str, today: str) -> dict:
 
     result = {}
     for owner in sorted(all_owners):
-        delta = bd_metrics.get(owner, _ZERO())   # stage moves detected on THIS run
-        w1    = w1_stored.get(owner, _ZERO())
-        if owner in stored:
-            base = stored[owner]                  # already includes W1 + prior deltas
-        elif slot == "full_day":
-            base = w1                             # seed full_day with morning snapshot
-        else:
-            base = _ZERO()
-        total = {k: base.get(k, 0) + delta.get(k, 0) for k in BD_KEYS}
+        snapshot = bd_metrics.get(owner, _ZERO())   # full snapshot from THIS run
+        w1       = w1_stored.get(owner, _ZERO())
+        # Floor = the highest already recorded today for this slot (or the
+        # morning W1 snapshot when seeding a full_day row). Snapshot overwrites,
+        # but never regresses below the floor — so a late/narrow re-run can't
+        # zero out numbers, and a normal re-run just refreshes without doubling.
+        floor = stored.get(owner) or (w1 if slot == "full_day" else _ZERO())
+        total = {k: max(snapshot.get(k, 0), floor.get(k, 0)) for k in BD_KEYS}
 
         stat_key = f"{today}|{slot}|{owner}"
         fields = {"Stat Key": stat_key, "Date": today, "Owner": owner, "Slot": slot}
