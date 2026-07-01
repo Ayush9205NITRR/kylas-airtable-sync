@@ -231,13 +231,17 @@ def run(test_mode: bool = False, test_id: int = None,
                     updated += 1
                     per_user.setdefault(owner, {"created": 0, "updated": 0})["updated"] += 1
 
-                # BD metrics: only count when the contact OWNER made the update.
-                # Admin, system, and other-user updates are excluded.
+                # BD metrics: only count when:
+                #  1. Contact OWNER made the update (exclude admin/system/other)
+                #  2. Last Called At is not empty (owner actually called)
                 _ob_id = (ct.get("ownedBy") or {}).get("id")
                 _ub    = ct.get("updatedBy") or {}
                 _ub_id = _ub.get("id") if isinstance(_ub, dict) else None
+                _cf    = ct.get("customFieldValues") or {}
                 owner_update  = bool(_ob_id and _ub_id and _ob_id == _ub_id)
-                updated_today = (ct.get("updatedAt") or "").startswith(today_iso) and owner_update
+                has_call_date = bool(_parse_call_date(_cf.get("cfLastCalledAt")))
+                updated_today = ((ct.get("updatedAt") or "").startswith(today_iso)
+                                 and owner_update and has_call_date)
                 stage_moved = bool(new_stage) and (new_stage != old_stage) and updated_today
 
                 if stage_moved:

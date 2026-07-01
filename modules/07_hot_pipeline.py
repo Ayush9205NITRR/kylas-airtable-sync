@@ -206,7 +206,7 @@ def _build_body(groups: dict, friendly: str) -> str:
         sections += (
             f'<table {_TABLE}><thead><tr>'
             f'<th {_TH}>Company</th><th {_TH}>Source</th>'
-            f'<th {_TH}>Industry</th><th {_TH}>Offsite Timeline</th>'
+            f'<th {_TH}>Industry</th><th {_TH}>Offsite Timeline (BD - New)</th>'
             f'</tr></thead><tbody>{rows}</tbody></table>'
         )
 

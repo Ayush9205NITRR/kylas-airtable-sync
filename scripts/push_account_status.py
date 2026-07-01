@@ -9,11 +9,17 @@ Modes:
   --all       : Full backfill — process every company with health data.
   --since DATE: Incremental — only companies where last_called >= DATE.
                 Daily runs use this with yesterday's date to narrow scope.
+  --list-fields: Print all discoverable company custom field keys and exit.
   --dry-run   : Show what would be written; no Kylas API writes.
 
+Field key overrides (use if auto-discovery fails):
+  --status-key cfXxx  : Kylas internal key for the "Account Status" field.
+  --lc-key     cfXxx  : Kylas internal key for the "Last Called AT - Date" field.
+
 Examples:
-  python scripts/push_account_status.py --test
-  python scripts/push_account_status.py --test 10 --dry-run
+  python scripts/push_account_status.py --list-fields
+  python scripts/push_account_status.py --test --dry-run
+  python scripts/push_account_status.py --test 10 --status-key cfAccountStatus --lc-key cfLastCalledAtDate
   python scripts/push_account_status.py --since 2026-06-01
   python scripts/push_account_status.py --all
 """
@@ -36,6 +42,17 @@ def _load_module(filename: str):
     return mod
 
 
+def _guess_cf_key(display_name: str) -> str:
+    """Convention-based cf key guess: 'Account Status' → 'cfAccountStatus'."""
+    import re
+    words = re.split(r"[\s\-_/]+", display_name.strip())
+    if not words:
+        return ""
+    camel = words[0].lower() + "".join(w.capitalize() for w in words[1:])
+    camel = re.sub(r"[^a-zA-Z0-9]", "", camel)
+    return "cf" + camel[0].upper() + camel[1:] if camel else ""
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Push Account Status + Last Called Date to Kylas companies",
@@ -47,13 +64,20 @@ def main():
                       help="Process all companies (full backfill)")
     mode.add_argument("--since", metavar="DATE",
                       help="Only companies where last_called >= DATE (YYYY-MM-DD)")
+    mode.add_argument("--list-fields", action="store_true",
+                      help="List all discoverable company cf keys and exit")
+    parser.add_argument("--status-key", metavar="cfXxx",
+                        help="Kylas cf key for 'Account Status' (overrides auto-discovery)")
+    parser.add_argument("--lc-key", metavar="cfXxx",
+                        help="Kylas cf key for 'Last Called AT - Date' (overrides auto-discovery)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print actions without making any Kylas API writes")
     args = parser.parse_args()
 
-    if args.test is None and not args.all and args.since is None:
+    if (args.test is None and not args.all and args.since is None
+            and not args.list_fields):
         parser.print_help()
-        print("\nERROR: specify --test, --all, or --since DATE")
+        print("\nERROR: specify --test, --all, --since DATE, or --list-fields")
         sys.exit(1)
 
     from dotenv import load_dotenv
@@ -63,21 +87,62 @@ def main():
 
     kylas = KylasClient()
 
+    # ── --list-fields: dump all discoverable company cf keys and exit ─────────
+    if args.list_fields:
+        print("[push] Fetching company custom field keys from Kylas...")
+
+        # Raw field definitions from /entities/company/fields (no cf prefix filter)
+        raw_fields = kylas.list_entity_fields("company")
+        if raw_fields:
+            print(f"\n[push] Raw /entities/company/fields — {len(raw_fields)} total fields:")
+            for fld in raw_fields:
+                fname   = (fld.get("fieldName") or fld.get("apiName") or fld.get("name")
+                           or fld.get("id") or "?")
+                display = fld.get("displayName") or fld.get("label") or fname
+                ftype   = fld.get("type") or fld.get("fieldType") or ""
+                print(f"  {fname:<45} '{display}'  [{ftype}]")
+        else:
+            print("[push] /entities/company/fields returned nothing")
+
+        keys = kylas.list_custom_field_keys("company")
+        defs = kylas.get_custom_field_defs("company")
+        all_keys = sorted(set(list(keys.keys()) + list(defs.keys())))
+        if not all_keys:
+            print("[push] No custom field keys found via value-scan either.")
+        else:
+            print(f"\n[push] Found {len(all_keys)} company custom field key(s) via value scan:\n")
+            for k in all_keys:
+                display = keys.get(k) or defs.get(k, {}).get("displayName") or k
+                ftype   = defs.get(k, {}).get("type", "")
+                opts    = defs.get(k, {}).get("options") or {}
+                opt_str = f"  options={list(opts.keys())[:5]}" if opts else ""
+                print(f"  {k:<40} '{display}'  [{ftype}]{opt_str}")
+        return
+
     # ── Discover Kylas custom-field keys by display name ──────────────────────
     print("[push] Discovering Kylas company custom field keys...")
-    status_key = kylas.cf_key_for_display("company", "Account Status")
-    lc_key     = kylas.cf_key_for_display("company", "Last Called AT - Date")
-    print(f"[push]   'Account Status'        → {status_key!r}")
-    print(f"[push]   'Last Called AT - Date' → {lc_key!r}")
+
+    status_key = args.status_key or kylas.cf_key_for_display("company", "Account Status")
+    lc_key     = args.lc_key     or kylas.cf_key_for_display("company", "Last Called AT - Date")
+
+    # Convention-based fallback: "Account Status" → cfAccountStatus
+    if not status_key:
+        guess = _guess_cf_key("Account Status")
+        print(f"[push]   'Account Status' not found via API — trying convention guess: {guess!r}")
+        status_key = guess
+    if not lc_key:
+        guess = _guess_cf_key("Last Called AT - Date")
+        print(f"[push]   'Last Called AT - Date' not found via API — trying convention guess: {guess!r}")
+        lc_key = guess
+
+    print(f"[push]   Account Status key   → {status_key!r}")
+    print(f"[push]   Last Called Date key  → {lc_key!r}")
+    print(f"[push]   (override with --status-key / --lc-key if these are wrong)")
 
     if not status_key and not lc_key:
-        print("[push] ERROR: Neither Kylas field found — "
-              "check that the custom fields exist in Kylas (Company entity)")
+        print("[push] ERROR: No field keys available. Use --list-fields to inspect Kylas fields,")
+        print("       then re-run with --status-key cfXxx --lc-key cfXxx")
         sys.exit(1)
-    if not status_key:
-        print("[push] WARNING: 'Account Status' not found in Kylas — that field will be skipped")
-    if not lc_key:
-        print("[push] WARNING: 'Last Called AT - Date' not found in Kylas — that field will be skipped")
 
     # ── Fetch contacts + compute health ───────────────────────────────────────
     print("[push] Fetching all contacts from Kylas...")

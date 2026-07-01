@@ -441,6 +441,56 @@ class KylasClient:
             print(f"[Kylas] ERROR updating company {company_id} owner: {exc}")
             return False
 
+    def list_entity_fields(self, entity: str) -> List[dict]:
+        """
+        Return raw field-definition dicts for `entity` (e.g. "company") via
+        GET /entities/{entity}/fields, including custom fields. Each dict
+        carries "name" (the customFieldValues key, e.g. "cfOffsiteTimeline")
+        and "displayName" (the human label shown in the Kylas UI).
+        """
+        out, page = [], 0
+        while True:
+            try:
+                resp = self._get(f"entities/{entity}/fields", {
+                    "entityType": entity, "custom-only": "false",
+                    "sort": "createdAt,asc", "page": page, "size": 200,
+                })
+            except Exception:
+                break
+            if isinstance(resp, list):
+                out.extend(resp)
+                break
+            content = resp.get("content") or resp.get("data") or []
+            if not isinstance(content, list):
+                break
+            out.extend(content)
+            total_pages = resp.get("totalPages", 1)
+            if page >= total_pages - 1 or not content:
+                break
+            page += 1
+        return out
+
+    def update_company_custom_field(self, company_id: int, field_key: str, value) -> bool:
+        """
+        Set a single custom-field value on a company via full GET + PUT.
+
+        Mirrors the update_company_owner fallback: fetch the full record and
+        PUT it back unchanged except for the one customFieldValues key, so
+        every other field — including ownedBy/owner — is left exactly as
+        Kylas returned it.
+        """
+        try:
+            body = self._get(f"companies/{company_id}")
+            body = body.get("data", body)
+            cf = dict(body.get("customFieldValues") or {})
+            cf[field_key] = value
+            body["customFieldValues"] = cf
+            self._put(f"companies/{company_id}", body)
+            return True
+        except Exception as exc:
+            print(f"[Kylas] ERROR updating company {company_id} custom field {field_key!r}: {exc}")
+            return False
+
     def update_contact_owner(self, contact_id: int, user_id: int,
                              contact_data: dict = None) -> bool:
         """
@@ -810,8 +860,7 @@ class KylasClient:
           1. GET the company and read its current multi-select value.
           2. Map each label in add_labels to an option id (via get_custom_field_defs).
           3. Compute union; if no change return "unchanged".
-          4. PUT bare-id list [id1, id2, ...]; if that fails retry with
-             [{"id": id1}, {"id": id2}, ...] (unknown API shape — self-correcting).
+          4. PUT [{id,name}, ...] matching GET shape; fallback to bare-id then {id}-only.
           5. dry_run=True prints the intended change without writing.
         Returns "updated" | "unchanged" | "failed".
         """
@@ -858,12 +907,20 @@ class KylasClient:
                   f"current={sorted(current_ids)} add={added} result={sorted_ids}")
             return "updated"
 
-        # Build PUT body: mirror update_company_fields (_clean_for_put + no owner).
+        # Build PUT body from the GET response, stripping read-only/audit fields
+        # but keeping ownerId so Kylas doesn't reset the owner to the API user.
         base = self._clean_for_put(body)
+        if body.get("ownerId"):
+            base["ownerId"] = body["ownerId"]
         base_cfv = dict(base.get("customFieldValues") or {})
 
-        # Try bare-id list first; on failure retry with object list.
+        # Build {id, name} objects — matches the shape GET returns (and PUT requires).
+        labels_rev   = defn.get("labels") or {}   # {option_id: label}
+        id_name_list = [{"id": i, "name": labels_rev.get(i, "")} for i in sorted_ids]
+
+        # Try {id,name} first (GET/PUT native shape), then bare-id, then {id}-only.
         for attempt, value in enumerate([
+            id_name_list,
             sorted_ids,
             [{"id": i} for i in sorted_ids],
         ]):
@@ -873,9 +930,9 @@ class KylasClient:
                 self._put(f"companies/{company_id}", base)
                 return "updated"
             except Exception as exc:
-                if attempt == 0:
-                    print(f"  [Kylas] multi-select bare-id PUT failed for {cf_key} "
-                          f"— retrying with object list ({self._short_err(exc)})")
+                if attempt < 2:
+                    print(f"  [Kylas] multi-select attempt {attempt + 1} failed for {cf_key} "
+                          f"— retrying ({self._short_err(exc)})")
                 else:
                     print(f"[Kylas] ERROR {cf_key} on company {company_id}: "
                           f"{self._short_err(exc)}")
@@ -1250,7 +1307,7 @@ class KylasClient:
         """
         cid = int(company_id)
         cid_str = str(cid)
-        fields = ["id", "name", "company", "ownedBy"]   # ownedBy lets callers skip already-correct owners
+        fields = ["id", "name", "company", "ownedBy", "customFieldValues"]
         # No single company has anywhere near this many contacts; a response
         # larger than this means Kylas ignored our filter and returned the
         # whole contact set, so that filter shape is not usable.

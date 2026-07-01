@@ -97,6 +97,11 @@ class AirtableClient:
                     [self._strip_skip(f) for f in records_fields]
                 )
             except requests.exceptions.HTTPError as exc:
+                if "TOO_MANY_RECORDS_IN_BASE" in str(exc):
+                    print(f"[AirtableClient] WARNING: base is at record limit — "
+                          f"skipping {len(records_fields)} create(s). "
+                          f"Upgrade the Airtable workspace to allow new records.")
+                    return []
                 if not self._try_skip_named(exc):
                     raise
 

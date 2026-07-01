@@ -1,0 +1,47 @@
+name: Call Invites — Auto Calendar Block
+
+on:
+  schedule:
+    - cron: '0 13 * * 1-6'   # 1:00 PM UTC = 6:30 PM IST, Mon–Sat
+  workflow_dispatch:
+    inputs:
+      contact_id:
+        description: 'Specific Kylas contact ID (leave blank to scan last 26h)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'true = print only, no email'
+        required: false
+        default: 'true'
+      hours:
+        description: 'Scan contacts updated in last N hours'
+        required: false
+        default: '26'
+
+jobs:
+  send-invites:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send call invites
+        run: |
+          ARGS="--hours ${HOURS}"
+          if [ -n "${CONTACT_ID}" ]; then ARGS="$ARGS --id ${CONTACT_ID}"; fi
+          if [ "${DRY_RUN}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python scripts/send_call_invites.py $ARGS
+        env:
+          CONTACT_ID:    ${{ github.event.inputs.contact_id }}
+          DRY_RUN:       ${{ github.event.inputs.dry_run || 'false' }}
+          HOURS:         ${{ github.event.inputs.hours || '26' }}
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          SMTP_USER:     ${{ secrets.SMTP_USER }}
+          SMTP_PASS:     ${{ secrets.SMTP_PASS }}

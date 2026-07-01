@@ -8,11 +8,12 @@ same calendar event rather than creating a duplicate.
 """
 import os
 import smtplib
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-ADMIN_EMAIL = "ayush@enout.in"
+ADMIN_EMAIL   = "ayush@enout.in"
+VEDANT_EMAIL  = "vedant@enout.in"
 
 
 def _esc(text: str) -> str:
@@ -36,15 +37,50 @@ def _build_ical(
     call_date: date,
     owner_email: str,
     organizer_email: str,
+    kylas_url: str = "",
+    call_time: str = "",
 ) -> str:
-    """Return an RFC 5545 VCALENDAR string (all-day event, METHOD:REQUEST)."""
-    uid   = f"call-contact-{contact_id}@kylas-sync"
-    dt_s  = call_date.strftime("%Y%m%d")
-    dt_e  = (call_date + timedelta(days=1)).strftime("%Y%m%d")
+    """Return an RFC 5545 VCALENDAR string (timed or all-day, METHOD:REQUEST)."""
+    # UID includes the date so changing the call date creates a NEW event
+    # rather than updating the old one — the old date's event stays intact.
+    uid = f"call-{contact_id}-{call_date.strftime('%Y%m%d')}@kylas-sync"
+
+    if call_time:
+        # Treat stored time as IST (Kylas stores local time with Z suffix)
+        time_compact = call_time.replace(":", "")[:6]  # HHMMSS
+        end_dt = datetime.strptime(f"{call_date}T{call_time}", "%Y-%m-%dT%H:%M:%S") + timedelta(hours=1)
+        dtstart_line = f"DTSTART;TZID=Asia/Kolkata:{call_date.strftime('%Y%m%d')}T{time_compact}"
+        dtend_line   = f"DTEND;TZID=Asia/Kolkata:{end_dt.strftime('%Y%m%dT%H%M%S')}"
+        # Add VTIMEZONE block before VEVENT
+        vtimezone = (
+            "BEGIN:VTIMEZONE\r\n"
+            "TZID:Asia/Kolkata\r\n"
+            "BEGIN:STANDARD\r\n"
+            "TZOFFSETFROM:+0530\r\n"
+            "TZOFFSETTO:+0530\r\n"
+            "TZNAME:IST\r\n"
+            "DTSTART:19700101T000000\r\n"
+            "END:STANDARD\r\n"
+            "END:VTIMEZONE"
+        )
+    else:
+        dtstart_line = f"DTSTART;VALUE=DATE:{call_date.strftime('%Y%m%d')}"
+        dtend_line   = f"DTEND;VALUE=DATE:{(call_date + timedelta(days=1)).strftime('%Y%m%d')}"
+        vtimezone    = ""
+
+    if call_time:
+        t = datetime.strptime(call_time, "%H:%M:%S")
+        time_label = t.strftime("%I:%M %p").lstrip("0") + " IST"
+        date_label_str = f"{call_date.strftime('%b %d, %Y')} at {time_label}"
+    else:
+        date_label_str = call_date.strftime("%b %d, %Y")
 
     desc = (
         "hi you have a call scheduled with\\n"
+        f"Kylas URL - {_esc(kylas_url)}\\n"
         f"Name - {_esc(contact_name)}\\n"
+        f"Date & Time - {_esc(date_label_str)}\\n"
+        f"Owner - {_esc(owner_email or '(unassigned)')}\\n"
         f"Email - {_esc(contact_email)}\\n"
         f"Phone No. - {_esc(contact_phone)}\\n"
         f"Company - {_esc(company_name)}\\n"
@@ -52,22 +88,24 @@ def _build_ical(
     )
     summary = _esc(f"Call: {contact_name}" + (f" ({company_name})" if company_name else ""))
 
-    recipients = sorted({owner_email.lower(), ADMIN_EMAIL.lower()})
+    base = {ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()}
+    if owner_email:
+        base.add(owner_email.lower())
+    recipients = sorted(base)
     attendee_lines = "\r\n".join(
         "ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;"
         f"PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:{em}"
         for em in recipients
     )
 
-    parts = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//Kylas Sync//EN",
-        "METHOD:REQUEST",
+    parts = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Kylas Sync//EN", "METHOD:REQUEST"]
+    if vtimezone:
+        parts.append(vtimezone)
+    parts += [
         "BEGIN:VEVENT",
         f"UID:{uid}",
-        f"DTSTART;VALUE=DATE:{dt_s}",
-        f"DTEND;VALUE=DATE:{dt_e}",
+        dtstart_line,
+        dtend_line,
         f"SUMMARY:{summary}",
         f"DESCRIPTION:{desc}",
         f"ORGANIZER;CN=Kylas Sync:mailto:{organizer_email}",
@@ -90,9 +128,11 @@ def send_invite(
     remarks: str,
     call_date: date,
     owner_email: str,
+    kylas_url: str = "",
+    call_time: str = "",
 ) -> bool:
     """
-    Send a calendar invite to owner_email + ayush@enout.in.
+    Send a calendar invite to owner_email + ayush@enout.in + vedant@enout.in.
     Reads SMTP_USER / SMTP_PASS from the environment.
     Returns True on success.
     """
@@ -102,10 +142,12 @@ def send_invite(
         print("[CalendarInvite] SMTP not configured — skipping invite")
         return False
     if not owner_email:
-        print(f"[CalendarInvite] No owner email for {contact_name!r} — skipping")
-        return False
+        print(f"[CalendarInvite] No owner email for {contact_name!r} — sending to admin only")
 
-    recipients = sorted({owner_email.lower(), ADMIN_EMAIL.lower()})
+    base_recipients = {ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()}
+    if owner_email:
+        base_recipients.add(owner_email.lower())
+    recipients = sorted(base_recipients)
     cal_str    = _build_ical(
         contact_id=contact_id,
         contact_name=contact_name,
@@ -116,19 +158,29 @@ def send_invite(
         call_date=call_date,
         owner_email=owner_email,
         organizer_email=smtp_user,
+        kylas_url=kylas_url,
+        call_time=call_time,
     )
 
-    date_label = call_date.strftime("%b %d, %Y")
-    subject    = f"Call Scheduled: {contact_name}" + (f" ({company_name})" if company_name else "")
-    subject   += f" — {date_label}"
+    if call_time:
+        t = datetime.strptime(call_time, "%H:%M:%S")
+        time_label = t.strftime("%I:%M %p").lstrip("0") + " IST"
+        date_label = f"{call_date.strftime('%b %d, %Y')} at {time_label}"
+    else:
+        date_label = call_date.strftime("%b %d, %Y")
+
+    subject = f"Call Scheduled: {contact_name}" + (f" ({company_name})" if company_name else "")
+    subject += f" — {date_label}"
 
     body_text = (
         f"A call has been scheduled.\n\n"
         f"Name:    {contact_name}\n"
-        f"Email:   {contact_email}\n"
-        f"Phone:   {contact_phone}\n"
         f"Company: {company_name}\n"
         f"Date:    {date_label}\n"
+        f"Owner:   {owner_email or '(unassigned)'}\n"
+        f"Email:   {contact_email}\n"
+        f"Phone:   {contact_phone}\n"
+        f"Kylas:   {kylas_url}\n"
         f"Remarks: {remarks}\n\n"
         "Accept the calendar invitation to block your calendar."
     )
@@ -152,7 +204,7 @@ def send_invite(
             s.login(smtp_user, smtp_pass)
             s.sendmail(smtp_user, recipients, msg.as_string())
         print(f"[CalendarInvite] Sent → {contact_name!r} on {date_label}, "
-              f"recipients: {', '.join(recipients)}")
+              f"recipients: {', '.join(recipients)}")  # date_label already includes time if present
         return True
     except Exception as exc:
         print(f"[CalendarInvite] ERROR for {contact_name!r}: {exc}")

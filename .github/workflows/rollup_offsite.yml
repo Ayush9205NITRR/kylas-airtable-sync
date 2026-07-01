@@ -33,6 +33,10 @@ on:
         description: 'Company multi-select field display name'
         required: false
         default: 'Offsite Timeline (BD - New)'
+      company_cf_key:
+        description: 'Company field cf_key (company fields are not API-discoverable on this tenant)'
+        required: false
+        default: 'cfOffsiteTimelineBdNew'
 
 jobs:
   rollup:
@@ -61,19 +65,25 @@ jobs:
           elif [ "$MODE" = "inspect" ]; then
             python scripts/rollup_offsite_timeline.py --inspect --company-field "$FIELD_NAME"
           else
+            ARGS="--company-field \"$FIELD_NAME\" --company-cf-key \"$COMPANY_CF_KEY\""
+            if [ -n "$TARGET_COMPANY_ID" ]; then
+              ARGS="$ARGS --target-company-id $TARGET_COMPANY_ID"
+            fi
             if [ "$DRY_RUN" = "true" ]; then
-              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME" --company-field "$FIELD_NAME" --dry-run
+              eval python scripts/rollup_offsite_timeline.py $ARGS --dry-run
             else
-              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME" --company-field "$FIELD_NAME"
+              eval python scripts/rollup_offsite_timeline.py $ARGS
             fi
           fi
         env:
           MODE:                     ${{ github.event.inputs.mode }}
           COMPANY_ID:               ${{ github.event.inputs.company_id }}
+          TARGET_COMPANY_ID:        ${{ github.event.inputs.company_id }}
           VIEW_NAME:                ${{ github.event.inputs.view_name }}
           DRY_RUN:                  ${{ github.event.inputs.dry_run }}
           OPTIONS:                  ${{ github.event.inputs.options }}
           FIELD_NAME:               ${{ github.event.inputs.field_name }}
+          COMPANY_CF_KEY:           ${{ github.event.inputs.company_cf_key }}
           KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
           AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}

@@ -1,9 +1,6 @@
-name: Sync - 6:30 PM IST
+name: Kylas-Airtable Sync (Manual)
 
 on:
-  schedule:
-    # 6:30 PM IST = 13:00 UTC, Mon–Fri
-    - cron: '0 13 * * 1-5'
   workflow_dispatch:
     inputs:
       full_sync:
@@ -16,9 +13,9 @@ on:
         default: ''
 
 jobs:
-  sync:
+  run-sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -29,20 +26,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Sync team from Kylas
-        run: python scripts/sync_team.py
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-
-      - name: Run sync
+      - name: Run Sync Script
         run: |
           ARGS="--slot=full_day"
           if [ -n "${{ github.event.inputs.since_date }}" ]; then
             ARGS="$ARGS --since=${{ github.event.inputs.since_date }}"
-          elif [ "${{ github.event.inputs.full_sync }}" = "true" ]; then
-            ARGS="$ARGS --full-sync"
+          elif [ "${{ github.event.inputs.full_sync }}" != "true" ]; then
+            ARGS="$ARGS --since=$(date -u -d '26 hours ago' '+%Y-%m-%d')"
           fi
-          python run_sync.py $ARGS
+          python3 run_sync.py $ARGS
         env:
           KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
@@ -50,14 +42,3 @@ jobs:
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
           SMTP_USER:                ${{ secrets.SMTP_USER }}
           SMTP_PASS:                ${{ secrets.SMTP_PASS }}
-
-      - name: Rollup Offsite Timeline (Contact → Company)
-        run: |
-          python scripts/rollup_offsite_timeline.py \
-            --company-field "Offsite Timeline (BD - New)" \
-            --company-cf-key "cfOffsiteTimelineBdNew"
-        env:
-          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
-          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
-          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
-          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
