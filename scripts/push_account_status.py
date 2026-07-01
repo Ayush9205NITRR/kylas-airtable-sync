@@ -139,7 +139,7 @@ def main():
 
         # Raw-value diagnostic: find a company with cfAccountStatus already set
         # and print the exact JSON Kylas stores so we know the correct write format.
-        _PROBE_KEYS = ["cfAccountStatus", "cfLastCalledAtDate"]
+        _PROBE_KEYS = ["cfAccountHealthBd", "cfLastCalledAtDate"]
         print("\n[push] Probing raw stored values for target CF keys...")
         try:
             r = kylas._request(
@@ -176,20 +176,20 @@ def main():
     # ── Discover Kylas custom-field keys by display name ──────────────────────
     print("[push] Discovering Kylas company custom field keys...")
 
-    status_key = args.status_key or kylas.cf_key_for_display("company", "Account Status")
+    status_key = args.status_key or kylas.cf_key_for_display("company", "Account Health (BD)")
     lc_key     = args.lc_key     or kylas.cf_key_for_display("company", "Last Called AT - Date")
 
-    # Convention-based fallback: "Account Status" → cfAccountStatus
+    # Convention-based fallback: "Account Health (BD)" → cfAccountHealthBd
     if not status_key:
-        guess = _guess_cf_key("Account Status")
-        print(f"[push]   'Account Status' not found via API — trying convention guess: {guess!r}")
+        guess = _guess_cf_key("Account Health (BD)")
+        print(f"[push]   'Account Health (BD)' not found via API — trying convention guess: {guess!r}")
         status_key = guess
     if not lc_key:
         guess = _guess_cf_key("Last Called AT - Date")
         print(f"[push]   'Last Called AT - Date' not found via API — trying convention guess: {guess!r}")
         lc_key = guess
 
-    print(f"[push]   Account Status key   → {status_key!r}")
+    print(f"[push]   Account Health (BD) key → {status_key!r}")
     print(f"[push]   Last Called Date key  → {lc_key!r}")
     print(f"[push]   (override with --status-key / --lc-key if these are wrong)")
 

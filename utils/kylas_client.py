@@ -47,7 +47,7 @@ class KylasClient:
         })
         self._delay = 0.12       # min seconds between request starts (global)
         self._max_retries = 5    # automatic retries on HTTP 429 (rate limit)
-        self._pick_style = {}    # cf_key -> dropdown encoding that worked ("id"/"idobj"/"idname")
+        self._pick_style = {"cfAccountHealthBd": "idname"}    # cf_key -> dropdown encoding that worked ("id"/"idobj"/"idname")
         self._pace_lock = threading.Lock()   # serialises slot assignment across threads
         self._next_call_at = 0.0             # monotonic time of the next allowed request
 
