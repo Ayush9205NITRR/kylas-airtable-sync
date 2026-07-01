@@ -1019,6 +1019,11 @@ class KylasClient:
                 return True
             if s in ("false", "no", "n", "0", "unchecked", "off", ""):
                 return False
+        if isinstance(value, str):
+            import re as _re
+            s = value.strip()
+            if _re.match(r'^\d{4}-\d{2}-\d{2}$', s):
+                return s + "T00:00:00.000Z"
         return value
 
     def _format_fields(self, fields: dict, defs: dict) -> dict:
