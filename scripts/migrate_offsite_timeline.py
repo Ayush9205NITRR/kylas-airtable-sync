@@ -127,7 +127,7 @@ def main():
             skipped_match += 1
             continue
 
-        new_val = {'name': src_name, 'id': dst_option_id}
+        new_val = [{'name': src_name, 'id': dst_option_id}]
         print(f"  {name} (ID {cid}): {dst_val!r} -> {new_val!r}")
         if args.dry_run:
             continue
