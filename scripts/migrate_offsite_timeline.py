@@ -26,24 +26,12 @@ load_dotenv()
 
 from utils.kylas_client import KylasClient
 
-SRC_LABEL = "Offsite Timeline"
-DST_LABEL = "Offsite Timeline (BD - New)"
-
-
-def _resolve_field_keys(kylas: KylasClient, debug: bool = False) -> dict:
-    """Map company field display name (lowercased) -> customFieldValues key."""
-    mapping = {}
-    for fld in kylas.list_entity_fields("company"):
-        # Kylas may use different keys depending on endpoint version
-        label = (fld.get("displayName") or fld.get("display_name") or
-                 fld.get("label") or fld.get("fieldLabel") or "").strip()
-        key   = (fld.get("name") or fld.get("fieldName") or
-                 fld.get("id") or fld.get("fieldId") or "").strip()
-        if debug:
-            print(f"    field keys={list(fld.keys())} label={label!r} key={key!r}")
-        if label and key:
-            mapping[label.lower()] = key
-    return mapping
+def _scan_cf_keys(companies: list) -> set:
+    """Collect every customFieldValues key seen across all company records."""
+    keys = set()
+    for co in companies:
+        keys.update((co.get("customFieldValues") or {}).keys())
+    return keys
 
 
 def main():
@@ -60,26 +48,6 @@ def main():
 
     kylas = KylasClient()
 
-    print("Resolving custom field keys from Kylas...")
-    field_map = _resolve_field_keys(kylas, debug=args.list_fields)
-
-    if args.list_fields:
-        print(f"\nAll {len(field_map)} company fields found:")
-        for label, key in sorted(field_map.items()):
-            print(f"  {label!r:50} -> {key}")
-        sys.exit(0)
-
-    src_key = field_map.get(SRC_LABEL.lower())
-    dst_key = field_map.get(DST_LABEL.lower())
-
-    print(f"  {SRC_LABEL!r:35} -> {src_key or '(NOT FOUND)'}")
-    print(f"  {DST_LABEL!r:35} -> {dst_key or '(NOT FOUND)'}\n")
-
-    if not src_key or not dst_key:
-        print("ERROR: could not resolve one or both field keys.")
-        print("Run with --list-fields to see all available field labels.")
-        sys.exit(1)
-
     if args.company_id:
         companies = [kylas.get_company(args.company_id)]
         print(f"Fetched company {args.company_id}")
@@ -87,6 +55,36 @@ def main():
         print("Fetching all companies from Kylas...")
         companies = kylas.get_companies()
         print(f"Fetched {len(companies)} companies")
+
+    # Discover custom field keys from real records (entities/company/fields is unreliable)
+    all_cf_keys = _scan_cf_keys(companies)
+    offsite_keys = sorted(k for k in all_cf_keys if "offsite" in k.lower())
+
+    if args.list_fields:
+        print(f"\nAll custom field keys found across {len(companies)} companies:")
+        for k in sorted(all_cf_keys):
+            print(f"  {k}")
+        print(f"\nOffsite-related keys ({len(offsite_keys)}):")
+        for k in offsite_keys:
+            print(f"  {k}")
+        sys.exit(0)
+
+    if len(offsite_keys) < 2:
+        print(f"ERROR: expected 2 offsite keys, found {len(offsite_keys)}: {offsite_keys}")
+        print("Run with --list-fields to inspect available keys.")
+        sys.exit(1)
+
+    # Heuristic: shorter key = source ("Offsite Timeline"),
+    # longer / containing 'bd' or 'new' = destination ("Offsite Timeline (BD - New)")
+    offsite_keys_sorted = sorted(offsite_keys, key=lambda k: (len(k), k))
+    src_key = offsite_keys_sorted[0]
+    dst_key = next(
+        (k for k in offsite_keys if any(x in k.lower() for x in ("bd", "new"))),
+        offsite_keys_sorted[-1],
+    )
+
+    print(f"\n  Source : {src_key}")
+    print(f"  Dest   : {dst_key}\n")
 
     migrated = 0
     skipped_empty = 0
