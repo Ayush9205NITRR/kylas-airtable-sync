@@ -352,6 +352,11 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
         ct = client.get_contact(target_contact_id)
         co = ct.get("company")
         co_id = co.get("id") if isinstance(co, dict) else co
+        # Diagnostic: dump the contact's custom field values so we can see
+        # exactly what key/format the offsite timeline is stored under.
+        import json as _json
+        print(f"[DIAG] contact {target_contact_id} customFieldValues:")
+        print("  " + _json.dumps(ct.get("customFieldValues") or {}, ensure_ascii=False))
         if not co_id:
             print(f"Contact {target_contact_id} has no linked company — nothing to roll up.")
             return
@@ -431,6 +436,9 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
 
         co_id    = int(co_id_str)
         contacts = client.get_contacts_by_company(co_id)
+        if target_company_id or target_contact_id:
+            print(f"[DIAG] get_contacts_by_company({co_id}) returned {len(contacts)} contacts: "
+                  f"{[c.get('id') for c in contacts]}")
 
         # Collect contact offsite-timeline labels for this company.
         contact_labels = set()
