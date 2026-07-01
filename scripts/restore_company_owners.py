@@ -164,7 +164,9 @@ def main():
         if _norm(cur_name) == _norm(want_name):
             continue                     # owner intact
         want_uid = (email_to_uid.get(s["owner_email"])
-                    or name_to_uid.get(_norm(want_name)))
+                    or name_to_uid.get(_norm(want_name))
+                    # some snapshots hold an email in the owner-name column
+                    or (email_to_uid.get(_norm(want_name)) if "@" in want_name else None))
         mismatches.append((co_id, co.get("name", ""), cur_uid, cur_name,
                            want_name, s["owner_email"], want_uid))
 
