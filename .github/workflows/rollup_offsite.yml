@@ -65,15 +65,20 @@ jobs:
           elif [ "$MODE" = "inspect" ]; then
             python scripts/rollup_offsite_timeline.py --inspect --company-field "$FIELD_NAME"
           else
+            ARGS="--company-field \"$FIELD_NAME\" --company-cf-key \"$COMPANY_CF_KEY\""
+            if [ -n "$TARGET_COMPANY_ID" ]; then
+              ARGS="$ARGS --target-company-id $TARGET_COMPANY_ID"
+            fi
             if [ "$DRY_RUN" = "true" ]; then
-              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME" --company-field "$FIELD_NAME" --company-cf-key "$COMPANY_CF_KEY" --dry-run
+              eval python scripts/rollup_offsite_timeline.py $ARGS --dry-run
             else
-              python scripts/rollup_offsite_timeline.py --view "$VIEW_NAME" --company-field "$FIELD_NAME" --company-cf-key "$COMPANY_CF_KEY"
+              eval python scripts/rollup_offsite_timeline.py $ARGS
             fi
           fi
         env:
           MODE:                     ${{ github.event.inputs.mode }}
           COMPANY_ID:               ${{ github.event.inputs.company_id }}
+          TARGET_COMPANY_ID:        ${{ github.event.inputs.company_id }}
           VIEW_NAME:                ${{ github.event.inputs.view_name }}
           DRY_RUN:                  ${{ github.event.inputs.dry_run }}
           OPTIONS:                  ${{ github.event.inputs.options }}

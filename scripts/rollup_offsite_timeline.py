@@ -336,7 +336,7 @@ def _discover(client: KylasClient, company_id: int, labels_str: str):
 
 
 def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
-        inspect: bool, company_cf_key_arg: str = None):
+        inspect: bool, company_cf_key_arg: str = None, target_company_id: int = None):
     load_dotenv()
     company_base = os.environ.get("AIRTABLE_COMPANY_BASE_ID") or os.environ["AIRTABLE_BASE_ID"]
     client = KylasClient()
@@ -389,13 +389,20 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
     print(f"Label map      : {ct_labels}")
     print()
 
-    # Fetch all companies where "Last Called AT - Date" is filled.
-    from pyairtable import Api as AirtableApi  # lazy — not needed in discover/inspect paths
-    print("Reading Company List (filter: Last Called At (Contacts) not empty)...")
-    api     = AirtableApi(os.environ["AIRTABLE_PAT"])
-    table   = api.table(company_base, "Company List")
-    records = table.all(formula="NOT({Last Called At (Contacts)} = '')")
-    print(f"Found {len(records)} companies with Last Called At (Contacts) set{' (DRY RUN)' if dry_run else ''}\n")
+    # Single-company mode: bypass Airtable, hit Kylas directly.
+    if target_company_id:
+        co = client.get_company(target_company_id)
+        co_name = co.get("name") or str(target_company_id)
+        records = [{"fields": {"Kylas Company Id": str(target_company_id),
+                               "Company Name": co_name}}]
+        print(f"Single-company mode: {co_name} (id={target_company_id})\n")
+    else:
+        from pyairtable import Api as AirtableApi  # lazy
+        print("Reading Company List (filter: Last Called At (Contacts) not empty)...")
+        api     = AirtableApi(os.environ["AIRTABLE_PAT"])
+        table   = api.table(company_base, "Company List")
+        records = table.all(formula="NOT({Last Called At (Contacts)} = '')")
+        print(f"Found {len(records)} companies with Last Called At (Contacts) set{' (DRY RUN)' if dry_run else ''}\n")
 
     tallies = {"updated": 0, "unchanged": 0, "failed": 0, "skipped": 0}
 
@@ -423,8 +430,8 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
                 try:
                     ct_full = client.get_contact(ct["id"])
                     raw = (ct_full.get("customFieldValues") or {}).get(contact_cf_key)
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"    [WARN] get_contact({ct['id']}) failed: {e}")
             if raw is None:
                 continue
             # SINGLE_PICKLIST: raw may be a dict {'name': ..., 'id': ...} or an int id.
@@ -493,6 +500,8 @@ if __name__ == "__main__":
                         help="Kylas company id to inspect (required for --discover)")
     parser.add_argument("--company-cf-key", default=None,
                         help="Override: explicit cf_key for the company multi-select field")
+    parser.add_argument("--target-company-id", type=int, default=None,
+                        help="Test with a single Kylas company ID (bypasses Airtable filter)")
     parser.add_argument("--labels", default="Jan - Mar,Apr - Jun,Jul - Sep,Oct - Dec",
                         help="Comma-separated option labels in creation order (used by --discover)")
     parser.add_argument("--company-field", default="Offsite Timeline (BD - New)",
@@ -516,4 +525,5 @@ if __name__ == "__main__":
         contact_field=args.contact_field,
         inspect=args.inspect,
         company_cf_key_arg=args.company_cf_key,
+        target_company_id=args.target_company_id,
     )
