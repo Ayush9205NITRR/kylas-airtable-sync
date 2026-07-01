@@ -1031,25 +1031,53 @@ class KylasClient:
     def _cf_candidates(self, key: str, value, defs: dict) -> list:
         """Value encodings to try for one field, best first.
 
-        For a resolved dropdown id we don't know whether Kylas wants the bare
-        id, {"id": id}, or {"id": id, "name": label} — so isolation tries each.
-        Non-dropdown values yield just themselves.
+        PICK_LIST: tries id / {"id"} / {"id","name"} (integer-ID styles), then
+        falls back to raw string labels and list-wrapped forms in case Kylas
+        needs the label directly or a single-element list (like multi-select).
+        DATE-looking strings: tries bare date then full ISO-8601 variants.
+        Non-dropdown/non-date values yield just themselves.
         """
+        import re as _re
         defn = (defs or {}).get(key)
-        if not defn or isinstance(value, bool):
+        ftype = (defn or {}).get("type", "")
+        if isinstance(value, bool):
             return [value]
-        is_pick = defn.get("type", "") in self._PICKLIST_TYPES or defn.get("options")
+
+        # ── PICK_LIST ─────────────────────────────────────────────────────────
+        is_pick = ftype in self._PICKLIST_TYPES or (defn or {}).get("options")
         oid = value.get("id") if isinstance(value, dict) else (
             value if isinstance(value, int) else None)
-        if not is_pick or oid is None:
-            return [value]
-        label = (defn.get("labels") or {}).get(oid)
-        by_style = {"id": oid, "idobj": {"id": oid}}
-        if label:
-            by_style["idname"] = {"id": oid, "name": label}
-        pref  = self._pick_style.get(key, "id")          # try the proven style first
-        order = [pref] + [s for s in ("id", "idobj", "idname") if s != pref]
-        return [by_style[s] for s in order if s in by_style]
+        if is_pick and oid is not None:
+            label = ((defn or {}).get("labels") or {}).get(oid)
+            by_style = {"id": oid, "idobj": {"id": oid}}
+            if label:
+                by_style["idname"] = {"id": oid, "name": label}
+            pref  = self._pick_style.get(key, "id")
+            order = [pref] + [s for s in ("id", "idobj", "idname") if s != pref]
+            candidates = [by_style[s] for s in order if s in by_style]
+            # Fallback: raw string labels (bypasses option-ID lookup entirely)
+            if label:
+                candidates.append(label)
+                candidates.append(label.lower())
+            # Fallback: list-wrapped (single-select may need [{id,name}] shape)
+            candidates.append([oid])
+            if label:
+                candidates.append([{"id": oid, "name": label}])
+            candidates.append([{"id": oid}])
+            return candidates
+
+        # ── DATE string ───────────────────────────────────────────────────────
+        if isinstance(value, str):
+            s = value.strip()
+            if _re.match(r'^\d{4}-\d{2}-\d{2}$', s):
+                return [
+                    s,
+                    s + "T00:00:00.000Z",
+                    s + "T00:00:00",
+                    s + "T00:00:00.000+05:30",
+                ]
+
+        return [value]
 
     @staticmethod
     def _short_err(exc) -> str:

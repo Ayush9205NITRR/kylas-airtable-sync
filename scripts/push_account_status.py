@@ -139,7 +139,7 @@ def main():
                     company = detail.get("data", detail) if isinstance(detail, dict) else {}
                     cfv     = company.get("customFieldValues") or {}
                     for probe_key in _PROBE_KEYS:
-                        if found[probe_key] is None and probe_key in cfv and cfv[probe_key] is not None:
+                        if found[probe_key] is None and probe_key in cfv:
                             found[probe_key] = (co_id, cfv[probe_key])
                 except Exception as exc:
                     print(f"[push]   company {co_id}: fetch error — {exc}")
