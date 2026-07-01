@@ -1,0 +1,57 @@
+name: Daily Account Status → Kylas
+
+# Runs after the 6:30 PM IST sync (which computes fresh health from all contacts).
+# Pushes Account Status + Last Called AT-Date to companies whose contacts were
+# called in the last 2 days — incremental, minimises API calls.
+
+on:
+  schedule:
+    # 7:00 PM IST = 13:30 UTC, Mon–Fri (30 min after the 6:30 PM sync)
+    - cron: '30 13 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      since_date:
+        description: 'Push companies with last_called >= DATE (YYYY-MM-DD). Leave blank = last 2 days.'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry run — print what would be pushed, no API writes'
+        type: boolean
+        default: false
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Push Account Status + Last Called Date to Kylas
+        env:
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+        run: |
+          if [ -n "${{ github.event.inputs.since_date }}" ]; then
+            SINCE="${{ github.event.inputs.since_date }}"
+          else
+            # Default: companies with calls in the last 2 days
+            SINCE=$(date -u -d '2 days ago' '+%Y-%m-%d' 2>/dev/null \
+                    || date -u -v-2d '+%Y-%m-%d')
+          fi
+
+          FLAGS="--since $SINCE"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            FLAGS="$FLAGS --dry-run"
+          fi
+
+          echo "Pushing companies with last_called >= $SINCE"
+          python scripts/push_account_status.py $FLAGS
