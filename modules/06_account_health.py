@@ -72,31 +72,33 @@ _ACTIVE_STAGES = {
     "Follow-up (1)",
     "Follow-up (2)",
     "Follow-up (3)",
-    "Discovery Call No-Show",
-    "Reschedule Pending",
 }
 
-# Subset of _ACTIVE_STAGES — contacts specifically in "Could Not Connect"
 _CNC_STAGES = {
     "CNC (Could Not Connect) - 1",
     "CNC (Could Not Connect) - 2",
     "Followup - CNC",
 }
 
-# Connected — needs push from MQL/Activation → Discovery Call
 _MQL_ACTION_STAGES = {
     "MQL (Marketing Qualified Lead)",
     "Activation",
 }
 
-# Hot pipeline — live SQL / Discovery Call / advanced stages
-_HOT_STAGES = {
-    "SQL (Sales Qualified Lead)",
+_DCB_STAGES = {
     "Discovery Call Booked",
-    "Offsite Delayed",
-    "Discovery Call Done - Awaiting Client Inputs",
+    "Reschedule Pending",
     "Closing Loops - Low Value",
-    "Connect Later",
+    "Discovery Call No-Show",
+    "Discovery Call Done - Awaiting Client Inputs",
+}
+
+_SQL_STAGES = {
+    "SQL (Sales Qualified Lead)",
+}
+
+_OFFSITE_STAGES = {
+    "Offsite Delayed",
 }
 
 
@@ -149,12 +151,12 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
 
         e = by_co.setdefault(co_id, {
             "total": 0, "ytbm": 0, "active": 0,
-            "cnc": 0,
-            "mql": 0, "hot": 0,
+            "cnc": 0, "mql": 0,
+            "sql": 0, "dcb": 0, "offsite": 0,
             "terminal": 0, "noi": 0,
             "called": 0, "called_apr19": 0, "last_called": "",
-            "claimed_by": "",       # email of rep who called most recently since Apr 19
-            "_claimed_date": "",    # internal: date of that call for comparison
+            "claimed_by": "",
+            "_claimed_date": "",
         })
         e["total"] += 1
 
@@ -170,8 +172,12 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
                 e["cnc"] += 1
         elif stage in _MQL_ACTION_STAGES:
             e["mql"] += 1
-        elif stage in _HOT_STAGES:
-            e["hot"] += 1
+        elif stage in _SQL_STAGES:
+            e["sql"] += 1
+        elif stage in _DCB_STAGES:
+            e["dcb"] += 1
+        elif stage in _OFFSITE_STAGES:
+            e["offsite"] += 1
         # else: unmapped stage → counted in total only
 
         if lc:
@@ -189,13 +195,15 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         term = e["terminal"]
         noi  = e["noi"]
 
-        # Status — priority order matters
+        # Status — priority order: Exhausted > Offsite Delayed > SQL > Discovery Call Stage > MQL > Active > Fresh
         if noi >= 2 or (t > 0 and term >= t):
             e["status"] = "Exhausted"
-        elif noi == 1 or (t > 0 and term / t >= 0.7):
-            e["status"] = "Near Exhausted"
-        elif e["hot"] > 0:
-            e["status"] = "Hot Pipeline"
+        elif e["offsite"] > 0:
+            e["status"] = "Offsite Delayed"
+        elif e["sql"] > 0:
+            e["status"] = "SQL"
+        elif e["dcb"] > 0:
+            e["status"] = "Discovery Call Stage"
         elif e["mql"] > 0:
             e["status"] = "MQL - Action Needed"
         elif e["active"] > 0 or e["called"] > 0:
@@ -203,11 +211,10 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         else:
             e["status"] = "Fresh"
 
-        # connected = mql + hot  (summary "warm/hot" count for existing column)
+        # hot = sql + dcb + offsite combined (keeps existing Airtable "Hot POCs" column working)
+        e["hot"] = e["sql"] + e["dcb"] + e["offsite"]
         e["connected"] = e["mql"] + e["hot"]
 
-        # An account is "properly exhausted" when it has pipeline value
-        # OR tried 3+ CNC contacts OR has 3+ NOI rejections
         e["is_exhausted"] = bool(
             e["mql"] > 0 or e["hot"] > 0 or
             e["cnc"] >= 3 or e["noi"] >= 3
@@ -346,21 +353,21 @@ _SEC   = 'style="font-size:14px;font-weight:bold;margin:22px 0 4px;color:#333;"'
 _BODY  = ('style="font-family:Arial,sans-serif;color:#333;'
           'max-width:760px;margin:0 auto;padding:24px 20px;"')
 _BADGE = {
-    # Internal account status (kept for backward compat / internal use)
-    "Exhausted":                    "background:#d32f2f;color:#fff;",
-    "Near Exhausted":               "background:#f57c00;color:#fff;",
-    "Hot Pipeline":                 "background:#1976d2;color:#fff;",
-    "MQL - Action Needed":          "background:#7b1fa2;color:#fff;",
-    "Active":                       "background:#388e3c;color:#fff;",
-    "Fresh":                        "background:#888;color:#fff;",
-    # Status of Reachout values
-    "Stale":                        "background:#9e9e9e;color:#fff;",
-    "Tapped – Exhausted":           "background:#d32f2f;color:#fff;",
-    "Tapped – Near Exhausted":      "background:#f57c00;color:#fff;",
-    "Tapped – Hot Pipeline":        "background:#1976d2;color:#fff;",
-    "Tapped – MQL - Action Needed": "background:#7b1fa2;color:#fff;",
-    "Tapped – Active":              "background:#388e3c;color:#fff;",
-    "Tapped – Fresh":               "background:#aaa;color:#fff;",
+    "Exhausted":                        "background:#d32f2f;color:#fff;",
+    "Offsite Delayed":                  "background:#e65100;color:#fff;",
+    "SQL":                              "background:#1565c0;color:#fff;",
+    "Discovery Call Stage":             "background:#00838f;color:#fff;",
+    "MQL - Action Needed":              "background:#7b1fa2;color:#fff;",
+    "Active":                           "background:#388e3c;color:#fff;",
+    "Fresh":                            "background:#888;color:#fff;",
+    "Stale":                            "background:#9e9e9e;color:#fff;",
+    "Tapped – Exhausted":               "background:#d32f2f;color:#fff;",
+    "Tapped – Offsite Delayed":         "background:#e65100;color:#fff;",
+    "Tapped – SQL":                     "background:#1565c0;color:#fff;",
+    "Tapped – Discovery Call Stage":    "background:#00838f;color:#fff;",
+    "Tapped – MQL - Action Needed":     "background:#7b1fa2;color:#fff;",
+    "Tapped – Active":                  "background:#388e3c;color:#fff;",
+    "Tapped – Fresh":                   "background:#aaa;color:#fff;",
 }
 
 
@@ -409,12 +416,13 @@ def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
         sor = e.get("status_of_reachout", "Stale")
         sor_groups.setdefault(sor, []).append(co_id)
 
-    total_stale  = len(sor_groups.get("Stale", []))
-    total_t_act  = len(sor_groups.get("Tapped – Active", []))
-    total_t_mql  = len(sor_groups.get("Tapped – MQL - Action Needed", []))
-    total_t_hot  = len(sor_groups.get("Tapped – Hot Pipeline", []))
-    total_t_near = len(sor_groups.get("Tapped – Near Exhausted", []))
-    total_t_ex   = len(sor_groups.get("Tapped – Exhausted", []))
+    total_stale   = len(sor_groups.get("Stale", []))
+    total_t_act   = len(sor_groups.get("Tapped – Active", []))
+    total_t_mql   = len(sor_groups.get("Tapped – MQL - Action Needed", []))
+    total_t_dcb   = len(sor_groups.get("Tapped – Discovery Call Stage", []))
+    total_t_sql   = len(sor_groups.get("Tapped – SQL", []))
+    total_t_off   = len(sor_groups.get("Tapped – Offsite Delayed", []))
+    total_t_ex    = len(sor_groups.get("Tapped – Exhausted", []))
 
     summary = (
         '<table style="border-collapse:collapse;margin:12px 0 20px;"><tr>'
@@ -427,8 +435,9 @@ def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
                 ("Stale",                        total_stale),
                 ("Tapped – Active",              total_t_act),
                 ("Tapped – MQL - Action Needed", total_t_mql),
-                ("Tapped – Hot Pipeline",        total_t_hot),
-                ("Tapped – Near Exhausted",      total_t_near),
+                ("Tapped – Discovery Call Stage",total_t_dcb),
+                ("Tapped – SQL",                 total_t_sql),
+                ("Tapped – Offsite Delayed",     total_t_off),
                 ("Tapped – Exhausted",           total_t_ex),
             ]
         )
@@ -488,30 +497,75 @@ def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
             + _mk_table(hdr, rows)
         )
 
-    # ── Tapped – Near Exhausted ───────────────────────────────────────────────
-    t_near_cos = sorted(sor_groups.get("Tapped – Near Exhausted", []),
-                        key=lambda c: health[c]["noi"], reverse=True)[:15]
-    if t_near_cos:
-        note = f" (top {len(t_near_cos)} of {total_t_near})" if total_t_near > len(t_near_cos) else ""
+    # ── Tapped – Offsite Delayed ──────────────────────────────────────────────
+    t_off_cos = sorted(sor_groups.get("Tapped – Offsite Delayed", []),
+                       key=lambda c: health[c]["offsite"], reverse=True)[:15]
+    if t_off_cos:
+        note = f" (top {len(t_off_cos)} of {total_t_off})" if total_t_off > len(t_off_cos) else ""
         hdr = (f'<th {_TH}>Company</th><th {_TH}>Claimed By</th>'
-               f'<th {_TH}>Total</th><th {_TH}>NOI</th>'
-               f'<th {_TH}>Terminal</th><th {_TH}>YtBM</th><th {_TH}>Last Call</th>')
+               f'<th {_TH}>Offsite</th><th {_TH}>SQL</th><th {_TH}>Last Call</th>')
         rows = "".join(
             f'<tr>'
             f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
             f'<td {_TD}>{_tr(health[c].get("claimed_by", "—"), 28)}</td>'
-            f'<td {_TDR}>{health[c]["total"]}</td>'
-            f'<td {_TDR} style="color:#f57c00;font-weight:bold;">{health[c]["noi"]}</td>'
-            f'<td {_TDR}>{health[c]["terminal"]}</td>'
-            f'<td {_TDR}>{health[c]["ytbm"]}</td>'
+            f'<td {_TDR} style="color:#e65100;font-weight:bold;">{health[c]["offsite"]}</td>'
+            f'<td {_TDR}>{health[c]["sql"]}</td>'
             f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
             f'</tr>'
-            for c in t_near_cos
+            for c in t_off_cos
         )
         sections += (
-            f'<p {_SEC}>🟠 Tapped – Near Exhausted ({total_t_near} accounts{note})</p>'
+            f'<p {_SEC}>🟠 Tapped – Offsite Delayed ({total_t_off} accounts{note})</p>'
             f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
-            f'1 NOI or ≥70% terminal — monitor closely</p>'
+            f'Offsite stage — follow up and reschedule</p>'
+            + _mk_table(hdr, rows)
+        )
+
+    # ── Tapped – SQL ──────────────────────────────────────────────────────────
+    t_sql_cos = sorted(sor_groups.get("Tapped – SQL", []),
+                       key=lambda c: health[c]["sql"], reverse=True)[:15]
+    if t_sql_cos:
+        note = f" (top {len(t_sql_cos)} of {total_t_sql})" if total_t_sql > len(t_sql_cos) else ""
+        hdr = (f'<th {_TH}>Company</th><th {_TH}>Claimed By</th>'
+               f'<th {_TH}>SQL</th><th {_TH}>DCB</th><th {_TH}>Last Call</th>')
+        rows = "".join(
+            f'<tr>'
+            f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
+            f'<td {_TD}>{_tr(health[c].get("claimed_by", "—"), 28)}</td>'
+            f'<td {_TDR} style="color:#1565c0;font-weight:bold;">{health[c]["sql"]}</td>'
+            f'<td {_TDR}>{health[c]["dcb"]}</td>'
+            f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
+            f'</tr>'
+            for c in t_sql_cos
+        )
+        sections += (
+            f'<p {_SEC}>🔵 Tapped – SQL ({total_t_sql} accounts{note})</p>'
+            f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
+            f'Sales Qualified — push to Discovery Call / Offsite</p>'
+            + _mk_table(hdr, rows)
+        )
+
+    # ── Tapped – Discovery Call Stage ─────────────────────────────────────────
+    t_dcb_cos = sorted(sor_groups.get("Tapped – Discovery Call Stage", []),
+                       key=lambda c: health[c]["dcb"], reverse=True)[:15]
+    if t_dcb_cos:
+        note = f" (top {len(t_dcb_cos)} of {total_t_dcb})" if total_t_dcb > len(t_dcb_cos) else ""
+        hdr = (f'<th {_TH}>Company</th><th {_TH}>Claimed By</th>'
+               f'<th {_TH}>DCB</th><th {_TH}>MQL</th><th {_TH}>Last Call</th>')
+        rows = "".join(
+            f'<tr>'
+            f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
+            f'<td {_TD}>{_tr(health[c].get("claimed_by", "—"), 28)}</td>'
+            f'<td {_TDR} style="color:#00838f;font-weight:bold;">{health[c]["dcb"]}</td>'
+            f'<td {_TDR}>{health[c]["mql"]}</td>'
+            f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
+            f'</tr>'
+            for c in t_dcb_cos
+        )
+        sections += (
+            f'<p {_SEC}>🩵 Tapped – Discovery Call Stage ({total_t_dcb} accounts{note})</p>'
+            f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
+            f'Discovery Call scheduled / done — push to SQL or Offsite</p>'
             + _mk_table(hdr, rows)
         )
 
@@ -521,14 +575,12 @@ def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
     if t_mql_cos:
         note = f" (top {len(t_mql_cos)} of {total_t_mql})" if total_t_mql > len(t_mql_cos) else ""
         hdr = (f'<th {_TH}>Company</th><th {_TH}>Claimed By</th>'
-               f'<th {_TH}>MQL</th><th {_TH}>Hot</th>'
-               f'<th {_TH}>Active</th><th {_TH}>Last Call</th>')
+               f'<th {_TH}>MQL</th><th {_TH}>Active</th><th {_TH}>Last Call</th>')
         rows = "".join(
             f'<tr>'
             f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
             f'<td {_TD}>{_tr(health[c].get("claimed_by", "—"), 28)}</td>'
             f'<td {_TDR} style="color:#7b1fa2;font-weight:bold;">{health[c]["mql"]}</td>'
-            f'<td {_TDR}>{health[c]["hot"]}</td>'
             f'<td {_TDR}>{health[c]["active"]}</td>'
             f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
             f'</tr>'
@@ -541,31 +593,7 @@ def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
             + _mk_table(hdr, rows)
         )
 
-    # ── Tapped – Hot Pipeline ─────────────────────────────────────────────────
-    t_hot_cos = sorted(sor_groups.get("Tapped – Hot Pipeline", []),
-                       key=lambda c: health[c]["hot"], reverse=True)[:10]
-    if t_hot_cos:
-        note = f" (top {len(t_hot_cos)} of {total_t_hot})" if total_t_hot > len(t_hot_cos) else ""
-        hdr = (f'<th {_TH}>Company</th><th {_TH}>Claimed By</th>'
-               f'<th {_TH}>Hot</th><th {_TH}>MQL</th><th {_TH}>Last Call</th>')
-        rows = "".join(
-            f'<tr>'
-            f'<td {_TD}>{_tr(_name_of(c, tbl_cache), 38)}</td>'
-            f'<td {_TD}>{_tr(health[c].get("claimed_by", "—"), 28)}</td>'
-            f'<td {_TDR} style="color:#1976d2;font-weight:bold;">{health[c]["hot"]}</td>'
-            f'<td {_TDR}>{health[c]["mql"]}</td>'
-            f'<td {_TD}>{health[c]["last_called"] or "—"}</td>'
-            f'</tr>'
-            for c in t_hot_cos
-        )
-        sections += (
-            f'<p {_SEC}>🔵 Tapped – Hot Pipeline ({total_t_hot} accounts{note})</p>'
-            f'<p style="font-size:12px;color:#666;margin:0 0 6px;">'
-            f'Live opportunities — SQL / Discovery Call / Offsite</p>'
-            + _mk_table(hdr, rows)
-        )
-
-    if not (stale_cos or t_ex_cos or t_near_cos or t_mql_cos or t_hot_cos):
+    if not (stale_cos or t_ex_cos or t_off_cos or t_sql_cos or t_dcb_cos or t_mql_cos):
         sections += '<p style="color:#555;">All accounts look healthy — no action needed.</p>'
 
     today      = date.today()
@@ -619,8 +647,8 @@ def _build_poc_email(first_name: str,
             for c in accounts
         )
 
-    _pri = {"Fresh": 0, "Active": 1, "Near Exhausted": 2,
-            "Exhausted": 3, "Hot Pipeline": 4, "MQL - Action Needed": 5}
+    _pri = {"Fresh": 0, "Active": 1, "MQL - Action Needed": 2,
+            "Discovery Call Stage": 3, "SQL": 4, "Offsite Delayed": 5, "Exhausted": 6}
 
     sections = ""
 
@@ -797,7 +825,7 @@ def run(kylas=None, send_email: bool = True) -> dict:
 
     counts = {s: sum(1 for e in health.values() if e["status"] == s)
               for s in ("Fresh", "Active", "MQL - Action Needed",
-                        "Hot Pipeline", "Near Exhausted", "Exhausted")}
+                        "Discovery Call Stage", "SQL", "Offsite Delayed", "Exhausted")}
     needs_re = sum(1 for e in health.values() if e["needs_reassign"])
     print(f"[Account Health] {len(health)} companies  |  " +
           "  ".join(f"{s.split()[0]}={v}" for s, v in counts.items()) +
