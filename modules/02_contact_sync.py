@@ -170,7 +170,6 @@ def run(test_mode: bool = False, test_id: int = None,
     bd_daily       = {}
     account_activity = {}
     today_iso      = date.today().isoformat()
-    _dbg = {"upd_today": 0, "has_stage": 0, "called_today": 0, "counted": 0}
 
     try:
         cached = airtable.build_cache("Kylas Contact Id")
@@ -245,13 +244,6 @@ def run(test_mode: bool = False, test_id: int = None,
                 _cf          = ct.get("customFieldValues") or {}
                 called_today = (_parse_call_date(_cf.get("cfLastCalledAt")) == today_iso)
 
-                if os.environ.get("BD_DEBUG") and (ct.get("updatedAt") or "").startswith(today_iso):
-                    _dbg["upd_today"]    += 1
-                    _dbg["has_stage"]    += 1 if new_stage else 0
-                    _dbg["called_today"] += 1 if called_today else 0
-                    if new_stage and called_today:
-                        _dbg["counted"] += 1
-
                 if bool(new_stage) and called_today:
                     cats = _classify_bd(new_stage)
                     bd   = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})
@@ -315,18 +307,9 @@ def run(test_mode: bool = False, test_id: int = None,
         logger.finish(log_id, created, updated, failed)
         print(f"[Contacts] Done -> created={created} updated={updated} pre-cutoff={pre_cutoff} failed={failed} cal_invites={cal_sent}")
 
-        total_bd = sum(v for m in bd_daily.values() for v in m.values())
-        print(f"[Contacts] BD daily: {total_bd} stage transitions across {len(bd_daily)} owner(s)")
-        print(f"[Contacts] Account activity: {len(account_activity)} companies with stage moves today")
-
-        if os.environ.get("BD_DEBUG"):
-            print(f"[BD DEBUG] today={today_iso}  of contacts updated today: "
-                  f"upd_today={_dbg['upd_today']}  has_stage={_dbg['has_stage']}  "
-                  f"called_today={_dbg['called_today']}  counted={_dbg['counted']}")
-            for o, m in sorted(bd_daily.items(), key=lambda x: -x[1].get("attempted", 0)):
-                print(f"[BD DEBUG] {o}: attempted={m.get('attempted',0)} "
-                      f"connected={m.get('connected',0)} dcb={m.get('dcb',0)} "
-                      f"sql={m.get('sql',0)} mql={m.get('mql',0)}")
+        total_bd = sum(m.get("attempted", 0) for m in bd_daily.values())
+        print(f"[Contacts] BD daily: {total_bd} contacts worked today across {len(bd_daily)} owner(s)")
+        print(f"[Contacts] Account activity: {len(account_activity)} companies worked today")
 
     except Exception as e:
         logger.fail(log_id, str(e))

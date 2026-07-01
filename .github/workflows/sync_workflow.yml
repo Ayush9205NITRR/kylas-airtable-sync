@@ -49,4 +49,3 @@ jobs:
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
           SMTP_USER:                ${{ secrets.SMTP_USER }}
           SMTP_PASS:                ${{ secrets.SMTP_PASS }}
-          BD_DEBUG:                 ${{ github.event.inputs.no_email }}
