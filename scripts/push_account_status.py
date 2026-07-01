@@ -129,6 +129,7 @@ def main():
             unchanged += 1
             continue
 
+        print(f"[debug] Company {co_id} status={status!r} lc={lc!r} → fields={fields}")
         try:
             result = kylas.update_company_fields(int(co_id), fields, dry_run=args.dry_run)
         except Exception as exc:

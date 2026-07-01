@@ -1020,7 +1020,8 @@ class KylasClient:
         try:
             self._put(f"{path}/{entity_id}", body)
             return "updated"
-        except Exception:
+        except Exception as _fast_exc:
+            print(f"[debug] _put_fields: fast-path PUT failed for {path}/{entity_id} — {_fast_exc!s}")
             pass  # isolate below to find the offending field(s)
 
         # Does the record round-trip unchanged at all?
@@ -1052,6 +1053,7 @@ class KylasClient:
                                                  else "idobj" if isinstance(cand, dict) else "id")
                     break
                 except Exception as exc:
+                    print(f"[debug] _put_fields: key={key!r} cand={cand!r} full_error={exc!s}")
                     err = self._short_err(exc)
             if err is not None:
                 rejected[key] = err
