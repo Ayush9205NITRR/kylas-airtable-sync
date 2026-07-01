@@ -66,6 +66,8 @@ def main():
                       help="Only companies where last_called >= DATE (YYYY-MM-DD)")
     mode.add_argument("--list-fields", action="store_true",
                       help="List all discoverable company cf keys and exit")
+    mode.add_argument("--probe-company", metavar="ID", type=int,
+                      help="GET a specific company and dump its raw customFieldValues then exit")
     parser.add_argument("--status-key", metavar="cfXxx",
                         help="Kylas cf key for 'Account Status' (overrides auto-discovery)")
     parser.add_argument("--lc-key", metavar="cfXxx",
@@ -75,9 +77,9 @@ def main():
     args = parser.parse_args()
 
     if (args.test is None and not args.all and args.since is None
-            and not args.list_fields):
+            and not args.list_fields and args.probe_company is None):
         parser.print_help()
-        print("\nERROR: specify --test, --all, --since DATE, or --list-fields")
+        print("\nERROR: specify --test, --all, --since DATE, --list-fields, or --probe-company ID")
         sys.exit(1)
 
     from dotenv import load_dotenv
@@ -86,6 +88,23 @@ def main():
     from utils.kylas_client import KylasClient
 
     kylas = KylasClient()
+
+    # ── --probe-company: dump raw customFieldValues for one company and exit ──
+    if args.probe_company:
+        import json as _json
+        co_id = args.probe_company
+        print(f"[probe] GETting company {co_id}...")
+        raw = kylas._get(f"companies/{co_id}")
+        body = raw.get("data", raw) if isinstance(raw, dict) else {}
+        cfv = body.get("customFieldValues") or {}
+        print(f"[probe] customFieldValues ({len(cfv)} keys):")
+        for k, v in sorted(cfv.items()):
+            print(f"  {k}: {_json.dumps(v)}")
+        print(f"\n[probe] Top-level fields:")
+        for tf in ("name", "type", "industry", "numberOfEmployees", "pipeline"):
+            if tf in body:
+                print(f"  [{tf}]: {_json.dumps(body[tf])}")
+        return
 
     # ── --list-fields: dump all discoverable company cf keys and exit ─────────
     if args.list_fields:

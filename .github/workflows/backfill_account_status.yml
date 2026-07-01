@@ -23,6 +23,10 @@ on:
         description: 'Dry run — print what would be pushed, no API writes'
         type: boolean
         default: false
+      probe_company:
+        description: 'GET a single company by ID and dump its raw customFieldValues (for debugging field format)'
+        required: false
+        default: ''
 
 jobs:
   backfill:
@@ -45,6 +49,10 @@ jobs:
           AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
         run: |
+          if [ -n "${{ github.event.inputs.probe_company }}" ]; then
+            python scripts/push_account_status.py --probe-company ${{ github.event.inputs.probe_company }}
+            exit 0
+          fi
           if [ "${{ github.event.inputs.list_fields }}" = "true" ]; then
             python scripts/push_account_status.py --list-fields
             exit 0
