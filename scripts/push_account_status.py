@@ -117,6 +117,41 @@ def main():
                 opts    = defs.get(k, {}).get("options") or {}
                 opt_str = f"  options={list(opts.keys())[:5]}" if opts else ""
                 print(f"  {k:<40} '{display}'  [{ftype}]{opt_str}")
+
+        # Raw-value diagnostic: find a company with cfAccountStatus already set
+        # and print the exact JSON Kylas stores so we know the correct write format.
+        _PROBE_KEYS = ["cfAccountStatus", "cfLastCalledAtDate"]
+        print("\n[push] Probing raw stored values for target CF keys...")
+        try:
+            r = kylas._request(
+                "POST", "search/company",
+                params={"page": 0, "size": 50, "sort": "updatedAt,desc"},
+                json={"fields": ["id", "customFieldValues"], "jsonRule": None},
+            )
+            kylas._raise_for_status(r)
+            found = {k: None for k in _PROBE_KEYS}
+            for rec in r.json().get("content", []):
+                co_id = rec.get("id")
+                if not co_id or all(v is not None for v in found.values()):
+                    break
+                try:
+                    detail  = kylas._get(f"companies/{co_id}")
+                    company = detail.get("data", detail) if isinstance(detail, dict) else {}
+                    cfv     = company.get("customFieldValues") or {}
+                    for probe_key in _PROBE_KEYS:
+                        if found[probe_key] is None and probe_key in cfv and cfv[probe_key] is not None:
+                            found[probe_key] = (co_id, cfv[probe_key])
+                except Exception as exc:
+                    print(f"[push]   company {co_id}: fetch error — {exc}")
+            for probe_key in _PROBE_KEYS:
+                if found[probe_key]:
+                    co_id, raw = found[probe_key]
+                    print(f"[push]   {probe_key}: company={co_id}  raw={raw!r}  type={type(raw).__name__}")
+                else:
+                    print(f"[push]   {probe_key}: no existing value found in last 50 companies")
+        except Exception as exc:
+            print(f"[push]   raw-value probe failed: {exc}")
+
         return
 
     # ── Discover Kylas custom-field keys by display name ──────────────────────
