@@ -170,6 +170,8 @@ def run(test_mode: bool = False, test_id: int = None,
     bd_daily       = {}
     account_activity = {}
     today_iso      = date.today().isoformat()
+    _dbg = {"upd_today": 0, "has_stage": 0, "owner_update": 0, "called_today": 0, "all3": 0}
+    _dbg_samples = []
 
     try:
         cached = airtable.build_cache("Kylas Contact Id")
@@ -245,6 +247,21 @@ def run(test_mode: bool = False, test_id: int = None,
                 owner_update = bool(_ob_id and _ub_id and _ob_id == _ub_id)
                 called_today = (_parse_call_date(_cf.get("cfLastCalledAt")) == today_iso)
 
+                if os.environ.get("BD_DEBUG") and (ct.get("updatedAt") or "").startswith(today_iso):
+                    _dbg["upd_today"]    += 1
+                    _dbg["has_stage"]    += 1 if new_stage else 0
+                    _dbg["owner_update"] += 1 if owner_update else 0
+                    _dbg["called_today"] += 1 if called_today else 0
+                    if new_stage and owner_update and called_today:
+                        _dbg["all3"] += 1
+                    if len(_dbg_samples) < 8:
+                        _dbg_samples.append(
+                            f"id={ct.get('id')} owner={owner!r} ob={_ob_id} ub={_ub_id} "
+                            f"lastcalled={_cf.get('cfLastCalledAt')!r} "
+                            f"parsed={_parse_call_date(_cf.get('cfLastCalledAt'))!r} "
+                            f"stage={new_stage!r}"
+                        )
+
                 if bool(new_stage) and owner_update and called_today:
                     cats = _classify_bd(new_stage)
                     bd   = bd_daily.setdefault(owner, {k: 0 for k in BD_KEYS})
@@ -311,6 +328,14 @@ def run(test_mode: bool = False, test_id: int = None,
         total_bd = sum(v for m in bd_daily.values() for v in m.values())
         print(f"[Contacts] BD daily: {total_bd} stage transitions across {len(bd_daily)} owner(s)")
         print(f"[Contacts] Account activity: {len(account_activity)} companies with stage moves today")
+
+        if os.environ.get("BD_DEBUG"):
+            print(f"[BD DEBUG] today={today_iso}  of contacts updated today: "
+                  f"upd_today={_dbg['upd_today']}  has_stage={_dbg['has_stage']}  "
+                  f"owner_update={_dbg['owner_update']}  called_today={_dbg['called_today']}  "
+                  f"all3={_dbg['all3']}")
+            for s in _dbg_samples:
+                print(f"[BD DEBUG] {s}")
 
     except Exception as e:
         logger.fail(log_id, str(e))
