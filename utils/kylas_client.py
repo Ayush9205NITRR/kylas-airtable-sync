@@ -1067,14 +1067,15 @@ class KylasClient:
             return candidates
 
         # ── DATE string ───────────────────────────────────────────────────────
+        # ISO datetime is first because bare "YYYY-MM-DD" is rejected by Kylas.
         if isinstance(value, str):
             s = value.strip()
             if _re.match(r'^\d{4}-\d{2}-\d{2}$', s):
                 return [
-                    s,
                     s + "T00:00:00.000Z",
                     s + "T00:00:00",
                     s + "T00:00:00.000+05:30",
+                    s,
                 ]
 
         return [value]
