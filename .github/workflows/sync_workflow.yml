@@ -11,6 +11,10 @@ on:
         description: 'Fetch records updated on/after this date (YYYY-MM-DD). Overrides full_sync.'
         required: false
         default: ''
+      no_email:
+        description: 'Compute + write BD stats but do NOT send the BD email (preview numbers in logs)'
+        required: false
+        default: 'false'
 
 jobs:
   run-sync:
@@ -33,6 +37,9 @@ jobs:
             ARGS="$ARGS --since=${{ github.event.inputs.since_date }}"
           elif [ "${{ github.event.inputs.full_sync }}" != "true" ]; then
             ARGS="$ARGS --since=$(date -u -d '26 hours ago' '+%Y-%m-%d')"
+          fi
+          if [ "${{ github.event.inputs.no_email }}" = "true" ]; then
+            ARGS="$ARGS --no-email"
           fi
           python3 run_sync.py $ARGS
         env:

@@ -23,6 +23,9 @@ def main():
     parser.add_argument("--since", metavar="ISO_DATE",
                         help="Fetch records updated on/after this date, e.g. 2026-06-01 or 2026-06-01T00:00:00Z "
                              "(overrides --full-sync and the default 72h window)")
+    parser.add_argument("--no-email", action="store_true",
+                        help="Run the full sync + write BD Daily Stats, but skip the BD email "
+                             "(use to preview computed numbers in the logs before going live)")
     args = parser.parse_args()
 
     from dotenv import load_dotenv
@@ -112,7 +115,11 @@ def main():
     print(f"[run_sync] BD enriched metrics for {len(bd_enriched)} owner(s)\n")
 
     print("\n" + "=" * 40 + "\nMODULE 4: Email Alert\n" + "=" * 40)
-    _load("04_email_alert.py").send_alert(stats, args.slot, bd_enriched=bd_enriched)
+    if args.no_email:
+        print("[run_sync] --no-email: skipping BD email. Per-owner numbers above "
+              "(MODULE 5) reflect the computed snapshot.")
+    else:
+        _load("04_email_alert.py").send_alert(stats, args.slot, bd_enriched=bd_enriched)
 
     # Account health: update Status of Reachout + POC stats on every sync
     print("\n" + "=" * 40 + "\nMODULE 6: Account Health\n" + "=" * 40)
