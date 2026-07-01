@@ -1,0 +1,47 @@
+name: Migrate Offsite Timeline (run once)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (preview only, no writes)'
+        type: boolean
+        default: true
+      company_id:
+        description: 'Optional: migrate a single Kylas company ID'
+        required: false
+        default: ''
+      list_fields:
+        description: 'List all company field labels from Kylas and exit (for debugging)'
+        type: boolean
+        default: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run migration
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ -n "${{ github.event.inputs.company_id }}" ]; then
+            ARGS="$ARGS --id ${{ github.event.inputs.company_id }}"
+          fi
+          if [ "${{ github.event.inputs.list_fields }}" = "true" ]; then
+            ARGS="$ARGS --list-fields"
+          fi
+          python scripts/migrate_offsite_timeline.py $ARGS
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}

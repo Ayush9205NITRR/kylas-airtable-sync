@@ -1,38 +1,44 @@
-name: Kylas-Airtable Sync
+name: Kylas-Airtable Sync (Manual)
 
 on:
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: '0 13 * * 1-5' # 13:00 UTC (6:30 PM IST) on weekdays
   workflow_dispatch:
     inputs:
-      is_test_run:
-        description: 'Run as Test (Dry Run)'
-        type: boolean
-        default: true
+      full_sync:
+        description: 'Fetch all records (no time filter)'
+        required: false
+        default: 'false'
+      since_date:
+        description: 'Fetch records updated on/after this date (YYYY-MM-DD). Overrides full_sync.'
+        required: false
+        default: ''
 
 jobs:
   run-sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Run Sync Script
+        run: |
+          ARGS="--slot=full_day"
+          if [ -n "${{ github.event.inputs.since_date }}" ]; then
+            ARGS="$ARGS --since=${{ github.event.inputs.since_date }}"
+          elif [ "${{ github.event.inputs.full_sync }}" != "true" ]; then
+            ARGS="$ARGS --since=$(date -u -d '26 hours ago' '+%Y-%m-%d')"
+          fi
+          python3 run_sync.py $ARGS
         env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          TEST_MODE: ${{ github.event.inputs.is_test_run }} # Pass the input as an environment variable
-        run: python3 run_sync.py
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+          SMTP_USER:                ${{ secrets.SMTP_USER }}
+          SMTP_PASS:                ${{ secrets.SMTP_PASS }}
