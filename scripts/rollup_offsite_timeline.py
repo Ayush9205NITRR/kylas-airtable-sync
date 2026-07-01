@@ -72,7 +72,7 @@ def _inspect(client: KylasClient, company_field: str, contact_field: str):
         print("  Create it first with: python scripts/create_offsite_field.py")
 
     # Contact single-select field.
-    ct_key = client.cf_key_for_display("contact", contact_field) or "cfOffsiteTimelineBdNew"
+    ct_key = client.cf_key_for_display("contact", contact_field) or "cfOffsiteTimeline"
     ct_defn = client.get_custom_field_defs("contact").get(ct_key, {})
     print(f"\nContact field '{contact_field}'")
     print(f"  cf_key : {ct_key}")
@@ -380,7 +380,7 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
         sys.exit(1)
 
     # Resolve contact field key + build id->label map.
-    contact_cf_key = client.cf_key_for_display("contact", contact_field) or "cfOffsiteTimelineBdNew"
+    contact_cf_key = client.cf_key_for_display("contact", contact_field) or "cfOffsiteTimeline"
     ct_defs        = client.get_custom_field_defs("contact")
     ct_labels      = dict((ct_defs.get(contact_cf_key) or {}).get("labels") or {})
 
@@ -497,7 +497,7 @@ if __name__ == "__main__":
                         help="Comma-separated option labels in creation order (used by --discover)")
     parser.add_argument("--company-field", default="Offsite Timeline (BD - New)",
                         help="Display name of the company multi-select field in Kylas")
-    parser.add_argument("--contact-field", default="Offsite Timeline (BD - New)",
+    parser.add_argument("--contact-field", default="Offsite Timeline",
                         help="Display name of the contact single-select field in Kylas")
     args = parser.parse_args()
 
