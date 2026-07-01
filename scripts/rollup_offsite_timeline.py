@@ -72,7 +72,7 @@ def _inspect(client: KylasClient, company_field: str, contact_field: str):
         print("  Create it first with: python scripts/create_offsite_field.py")
 
     # Contact single-select field.
-    ct_key = client.cf_key_for_display("contact", contact_field) or "cfOffsiteTimeline"
+    ct_key = client.cf_key_for_display("contact", contact_field) or "cfOffsiteTimelineBdNew"
     ct_defn = client.get_custom_field_defs("contact").get(ct_key, {})
     print(f"\nContact field '{contact_field}'")
     print(f"  cf_key : {ct_key}")
@@ -380,7 +380,7 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
         sys.exit(1)
 
     # Resolve contact field key + build id->label map.
-    contact_cf_key = client.cf_key_for_display("contact", contact_field) or "cfOffsiteTimeline"
+    contact_cf_key = client.cf_key_for_display("contact", contact_field) or "cfOffsiteTimelineBdNew"
     ct_defs        = client.get_custom_field_defs("contact")
     ct_labels      = dict((ct_defs.get(contact_cf_key) or {}).get("labels") or {})
 
@@ -412,8 +412,8 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
         co_id    = int(co_id_str)
         contacts = client.get_contacts_by_company(co_id)
 
-        # Collect the union of contact offsite-timeline labels for this company.
-        label_set = set()
+        # Collect contact offsite-timeline labels for this company.
+        contact_labels = set()
         for ct in contacts:
             raw = (ct.get("customFieldValues") or {}).get(contact_cf_key)
             # Contacts may only have the key when fetched in full detail;
@@ -427,20 +427,50 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
                     pass
             if raw is None:
                 continue
-            # MULTI_PICKLIST: raw may be a list of ints or {"id":...} dicts.
-            for oid in client._as_id_set(raw):
-                lbl = ct_labels.get(oid)
+            # SINGLE_PICKLIST: raw may be a dict {'name': ..., 'id': ...} or an int id.
+            if isinstance(raw, dict):
+                lbl = raw.get("name")
                 if lbl:
-                    label_set.add(lbl)
+                    contact_labels.add(lbl)
+            else:
+                # Fallback: treat as numeric id and look up in label map.
+                try:
+                    oid = int(raw)
+                    lbl = ct_labels.get(oid)
+                    if lbl:
+                        contact_labels.add(lbl)
+                except (ValueError, TypeError):
+                    pass
 
-        if not label_set:
-            print(f"  [SKIP] '{co_name}' (id={co_id}) — no contact offsite timeline values")
+        # Fetch company's current cfOffsiteTimelineBdNew value to diff against.
+        company_names: set = set()
+        try:
+            co_full = client.get_company(co_id)
+            co_raw  = (co_full.get("customFieldValues") or {}).get(company_cf_key)
+            # Multi-select: list of dicts like [{'name': 'Jul - Sep', 'id': 258139}] or None.
+            if isinstance(co_raw, list):
+                for item in co_raw:
+                    if isinstance(item, dict):
+                        n = item.get("name")
+                        if n:
+                            company_names.add(n)
+        except Exception as exc:
+            print(f"  [WARN] could not fetch company {co_id} from Kylas: {exc}")
+
+        # Only propagate labels the company doesn't already have.
+        to_add = contact_labels - company_names
+
+        print(f"  '{co_name}' (id={co_id}) contact_labels={sorted(contact_labels)} "
+              f"company_has={sorted(company_names)} diff={sorted(to_add)}")
+
+        if not to_add:
+            print(f"  [SKIP] '{co_name}' (id={co_id}) — no new labels to add")
             tallies["skipped"] += 1
             continue
 
         result = client.merge_company_multiselect(co_id, company_cf_key,
-                                                  list(label_set), dry_run=dry_run)
-        print(f"  '{co_name}' (id={co_id}) labels={sorted(label_set)} -> {result}")
+                                                  list(to_add), dry_run=dry_run)
+        print(f"  '{co_name}' (id={co_id}) diff={sorted(to_add)} -> {result}")
         tallies[result] = tallies.get(result, 0) + 1
 
     print(f"\n{'[DRY RUN] ' if dry_run else ''}Done")
@@ -467,7 +497,7 @@ if __name__ == "__main__":
                         help="Comma-separated option labels in creation order (used by --discover)")
     parser.add_argument("--company-field", default="Offsite Timeline (BD - New)",
                         help="Display name of the company multi-select field in Kylas")
-    parser.add_argument("--contact-field", default="Offsite Timeline",
+    parser.add_argument("--contact-field", default="Offsite Timeline (BD - New)",
                         help="Display name of the contact single-select field in Kylas")
     args = parser.parse_args()
 
