@@ -69,6 +69,9 @@ def main():
                       help="List all discoverable company cf keys and exit")
     mode.add_argument("--probe-company", metavar="ID", type=int,
                       help="GET a specific company and dump its raw customFieldValues then exit")
+    mode.add_argument("--probe-contacts", metavar="NAME",
+                      help="Dump raw pipeline-stage values for all contacts of companies "
+                           "whose name contains NAME (case-insensitive), plus computed status")
     parser.add_argument("--status-key", metavar="cfXxx",
                         help="Kylas cf key for 'Account Status' (overrides auto-discovery)")
     parser.add_argument("--lc-key", metavar="cfXxx",
@@ -78,9 +81,11 @@ def main():
     args = parser.parse_args()
 
     if (args.test is None and not args.all and args.since is None
-            and not args.list_fields and args.probe_company is None):
+            and not args.list_fields and args.probe_company is None
+            and args.probe_contacts is None):
         parser.print_help()
-        print("\nERROR: specify --test, --all, --since DATE, --list-fields, or --probe-company ID")
+        print("\nERROR: specify --test, --all, --since DATE, --list-fields, "
+              "--probe-company ID, or --probe-contacts NAME")
         sys.exit(1)
 
     from dotenv import load_dotenv
@@ -109,6 +114,65 @@ def main():
         for tf in ("ownerId", "ownedBy", "createdBy", "updatedBy"):
             print(f"  [{tf}]: {_json.dumps(body.get(tf))}")
         print(f"\n[probe] All top-level keys: {sorted(body.keys())}")
+        return
+
+    # ── --probe-contacts: raw stage values for one company's contacts ─────────
+    if args.probe_contacts:
+        from utils.bd_metrics import contact_stage
+        needle = args.probe_contacts.strip().lower()
+        print(f"[probe] Fetching all contacts (looking for company name ~ {needle!r})...")
+        contacts = kylas._search_all(
+            "contact",
+            fields=["id", "company", "ownedBy", "updatedAt", "customFieldValues"],
+        )
+        print(f"[probe] {len(contacts)} contacts fetched")
+
+        # Global stage-shape stats: how many contacts have non-dict / nameless stages?
+        odd_shapes = {}
+        for ct in contacts:
+            psd = (ct.get("customFieldValues") or {}).get("cfPipelineStageBd")
+            if psd is None:
+                continue
+            if isinstance(psd, dict) and psd.get("name"):
+                continue
+            key = repr(psd)[:60]
+            odd_shapes[key] = odd_shapes.get(key, 0) + 1
+        if odd_shapes:
+            print(f"\n[probe] Contacts with NON-standard stage shapes (not dict-with-name): "
+                  f"{sum(odd_shapes.values())}")
+            for k, v in sorted(odd_shapes.items(), key=lambda kv: -kv[1])[:20]:
+                print(f"  {v:>5} x {k}")
+        else:
+            print("\n[probe] All stage values are dict-with-name — no odd shapes")
+
+        matches = []
+        for ct in contacts:
+            co = ct.get("company")
+            co_name = co.get("name", "") if isinstance(co, dict) else ""
+            if needle in str(co_name).lower():
+                matches.append(ct)
+        print(f"\n[probe] {len(matches)} contacts matched company name ~ {needle!r}")
+
+        import json as _json
+        for ct in matches:
+            cf  = ct.get("customFieldValues") or {}
+            co  = ct.get("company") or {}
+            raw = cf.get("cfPipelineStageBd")
+            stg = contact_stage(ct)
+            print(f"\n  contact {ct.get('id')}  company={co.get('name') if isinstance(co, dict) else co}"
+                  f" (id={co.get('id') if isinstance(co, dict) else co})")
+            print(f"    raw cfPipelineStageBd = {_json.dumps(raw)}")
+            print(f"    contact_stage()       = {stg!r}")
+            print(f"    cfLastCalledAt        = {cf.get('cfLastCalledAt')!r}")
+
+        if matches:
+            ah = _load_module("06_account_health.py")
+            sub_health = ah.compute_health(matches)
+            for co_id, e in sub_health.items():
+                print(f"\n[probe] computed health for company {co_id}:")
+                for k in ("total", "ytbm", "active", "mql", "sql", "dcb",
+                          "offsite", "terminal", "noi", "called", "last_called", "status"):
+                    print(f"    {k:<12} = {e.get(k)!r}")
         return
 
     # ── --list-fields: dump all discoverable company cf keys and exit ─────────

@@ -27,6 +27,10 @@ on:
         description: 'GET a single company by ID and dump its raw customFieldValues (for debugging field format)'
         required: false
         default: ''
+      probe_contacts:
+        description: 'Dump raw pipeline-stage values for contacts of companies matching this name (debug stage bucketing)'
+        required: false
+        default: ''
       restore_mode:
         description: 'Owner restore: "scan" = read-only mismatch report; "restore" = fix owners (needs restore_from_owner_id; honors dry_run)'
         required: false
@@ -71,6 +75,10 @@ jobs:
           fi
           if [ -n "${{ github.event.inputs.probe_company }}" ]; then
             python scripts/push_account_status.py --probe-company ${{ github.event.inputs.probe_company }}
+            exit 0
+          fi
+          if [ -n "${{ github.event.inputs.probe_contacts }}" ]; then
+            python scripts/push_account_status.py --probe-contacts "${{ github.event.inputs.probe_contacts }}"
             exit 0
           fi
           if [ "${{ github.event.inputs.list_fields }}" = "true" ]; then
