@@ -118,9 +118,17 @@ def main():
 
     # ── --probe-contacts: raw stage values for one company's contacts ─────────
     if args.probe_contacts:
-        from utils.bd_metrics import contact_stage
+        from utils.bd_metrics import contact_stage, refresh_stage_map
+        refresh_stage_map(kylas)
         needle = args.probe_contacts.strip().lower()
-        print(f"[probe] Fetching all contacts (looking for company name ~ {needle!r})...")
+        print(f"[probe] Finding companies whose name contains {needle!r}...")
+        companies = kylas._search_all("company", fields=["id", "name"])
+        target_ids = {str(c.get("id")) for c in companies
+                      if needle in str(c.get("name", "")).lower()}
+        for c in companies:
+            if str(c.get("id")) in target_ids:
+                print(f"[probe]   company {c.get('id')}: {c.get('name')!r}")
+        print(f"[probe] Fetching all contacts...")
         contacts = kylas._search_all(
             "contact",
             fields=["id", "company", "ownedBy", "updatedAt", "customFieldValues"],
@@ -128,6 +136,7 @@ def main():
         print(f"[probe] {len(contacts)} contacts fetched")
 
         # Global stage-shape stats: how many contacts have non-dict / nameless stages?
+        from utils.bd_metrics import _PIPELINE_STAGE
         odd_shapes = {}
         for ct in contacts:
             psd = (ct.get("customFieldValues") or {}).get("cfPipelineStageBd")
@@ -136,22 +145,39 @@ def main():
             if isinstance(psd, dict) and psd.get("name"):
                 continue
             key = repr(psd)[:60]
-            odd_shapes[key] = odd_shapes.get(key, 0) + 1
+            cnt, exemplar = odd_shapes.get(key, (0, ct.get("id")))
+            odd_shapes[key] = (cnt + 1, exemplar)
         if odd_shapes:
             print(f"\n[probe] Contacts with NON-standard stage shapes (not dict-with-name): "
-                  f"{sum(odd_shapes.values())}")
-            for k, v in sorted(odd_shapes.items(), key=lambda kv: -kv[1])[:20]:
-                print(f"  {v:>5} x {k}")
+                  f"{sum(c for c, _ in odd_shapes.values())}")
+            for k, (v, exemplar) in sorted(odd_shapes.items(), key=lambda kv: -kv[1][0])[:25]:
+                try:
+                    mapped = _PIPELINE_STAGE.get(int(k), "!! UNMAPPED !!")
+                except (TypeError, ValueError):
+                    mapped = "(non-numeric)"
+                print(f"  {v:>5} x {k}  -> {mapped}")
+                if mapped == "!! UNMAPPED !!" and exemplar:
+                    # Detail GET returns the stage as dict-with-name — resolve the label.
+                    try:
+                        det = kylas._get(f"contacts/{exemplar}")
+                        det = det.get("data", det)
+                        dv  = (det.get("customFieldValues") or {}).get("cfPipelineStageBd")
+                        print(f"          exemplar contact {exemplar} detail value: {dv!r}")
+                    except Exception as exc:
+                        print(f"          exemplar fetch failed: {exc}")
         else:
             print("\n[probe] All stage values are dict-with-name — no odd shapes")
 
         matches = []
         for ct in contacts:
             co = ct.get("company")
-            co_name = co.get("name", "") if isinstance(co, dict) else ""
-            if needle in str(co_name).lower():
+            if isinstance(co, dict):
+                co_id, co_name = str(co.get("id", "")), str(co.get("name", ""))
+            else:
+                co_id, co_name = str(co) if co is not None else "", ""
+            if co_id in target_ids or (co_name and needle in co_name.lower()):
                 matches.append(ct)
-        print(f"\n[probe] {len(matches)} contacts matched company name ~ {needle!r}")
+        print(f"\n[probe] {len(matches)} contacts matched company ~ {needle!r}")
 
         import json as _json
         for ct in matches:
@@ -268,6 +294,9 @@ def main():
         sys.exit(1)
 
     # ── Fetch contacts + compute health ───────────────────────────────────────
+    from utils.bd_metrics import refresh_stage_map
+    refresh_stage_map(kylas)   # bare-id stages must resolve or they bucket nowhere
+
     print("[push] Fetching all contacts from Kylas...")
     contacts = kylas._search_all(
         "contact",

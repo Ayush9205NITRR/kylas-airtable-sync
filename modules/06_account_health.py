@@ -818,6 +818,9 @@ def run(kylas=None, send_email: bool = True) -> dict:
     except Exception as _e:
         print(f"[Account Health] WARNING: user email fetch failed ({_e}) — using team.json")
 
+    from utils.bd_metrics import refresh_stage_map
+    refresh_stage_map(kylas)   # bare-id stages must resolve or they bucket nowhere
+
     print("[Account Health] Fetching all contacts from Kylas...")
     contacts = kylas._search_all(
         "contact",

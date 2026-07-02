@@ -58,13 +58,52 @@ ACTIVATION_STAGES = {"Activation"}
 ATTEMPTED_EXCLUDE = {"Yet to Be Mined", ""}
 
 
+def refresh_stage_map(kylas) -> int:
+    """Merge the live contact Pipeline Stage picklist into _PIPELINE_STAGE.
+
+    The contact search API returns bare option ids for most contacts, so any
+    id missing from the static map silently resolves to no stage (and the
+    company falls through to Active/Fresh in account health). Pulling the
+    live picklist means new/renamed options keep resolving. Returns how many
+    ids were added; safe no-op on API failure.
+    """
+    added = 0
+    try:
+        defs = kylas.get_custom_field_defs("contact")
+        key  = "cfPipelineStageBd"
+        if key not in defs:
+            key = kylas.cf_key_for_display("contact", "Pipeline Stage - BD") or key
+        labels = (defs.get(key) or {}).get("labels") or {}
+        for oid, label in labels.items():
+            try:
+                oid = int(oid)
+            except (TypeError, ValueError):
+                continue
+            if oid not in _PIPELINE_STAGE and str(label).strip():
+                _PIPELINE_STAGE[oid] = str(label).strip()
+                added += 1
+        if added:
+            print(f"[bd_metrics] stage map: +{added} option id(s) from live picklist")
+    except Exception as exc:
+        print(f"[bd_metrics] WARN: live stage-picklist fetch failed ({exc}) — using static map")
+    return added
+
+
 def contact_stage(raw: dict) -> str:
     """Resolve pipeline stage ID/object to a name string."""
     psd = (raw.get("customFieldValues") or {}).get("cfPipelineStageBd")
     if isinstance(psd, dict):
-        return psd.get("name", "")
+        name = psd.get("name", "")
+        if name:
+            return name
+        psd = psd.get("id")           # id-only dict → fall through to map lookup
+        if psd is None:
+            return ""
     if psd is not None:
-        return _PIPELINE_STAGE.get(int(psd), str(psd))
+        try:
+            return _PIPELINE_STAGE.get(int(psd), str(psd))
+        except (TypeError, ValueError):
+            return str(psd)
     return ""
 
 
