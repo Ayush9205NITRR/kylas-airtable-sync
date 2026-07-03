@@ -18,14 +18,15 @@ Airtable column mapping (what gets written where):
   Account Status         computed (see below)   Health label for filtering
   Needs Re-assign        YtBM>0 AND called=0    Has untouched POCs, nobody called since Apr 19
 
-Account Status logic:
+Account Status logic (best POC stage wins across all POCs):
 ─────────────────────────────────────────────────────────────────────────────
-  Exhausted          — NOI count ≥ 2 OR all contacts are terminal
-  Near Exhausted     — NOI count = 1 OR ≥ 70% contacts are terminal
-  Hot Pipeline       — has SQL / Discovery Call / Offsite contacts
-  MQL - Action Needed— has MQL / Activation contacts (no Hot yet)
-  Active             — has CNC / Follow-up contacts being worked
-  Fresh              — no contact has ever been called (cfLastCalledAt empty)
+  Offsite Delayed    — any POC at Offsite Delayed stage (highest priority)
+  SQL                — any POC at SQL stage
+  Discovery Call Stage— any POC at DCB / Reschedule / Closing Loops stages
+  MQL - Action Needed— any POC at MQL / Activation (no higher stage)
+  Active             — any POC at CNC / Follow-up stages, or has been called
+  Exhausted          — no positive pipeline POC AND (NOI ≥ 2 OR all terminal)
+  Fresh              — no contact has ever been called (lowest priority)
 
 Re-assignment logic (Needs Re-assign = true when):
   • Account has YtBM POCs (untouched contacts exist)  AND
@@ -195,10 +196,9 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         term = e["terminal"]
         noi  = e["noi"]
 
-        # Status — priority order: Exhausted > Offsite Delayed > SQL > Discovery Call Stage > MQL > Active > Fresh
-        if noi >= 2 or (t > 0 and term >= t):
-            e["status"] = "Exhausted"
-        elif e["offsite"] > 0:
+        # Status — best POC stage wins; Exhausted only when no positive pipeline POC remains.
+        # Priority: Offsite Delayed > SQL > Discovery Call Stage > MQL > Active > Exhausted > Fresh
+        if e["offsite"] > 0:
             e["status"] = "Offsite Delayed"
         elif e["sql"] > 0:
             e["status"] = "SQL"
@@ -206,7 +206,11 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
             e["status"] = "Discovery Call Stage"
         elif e["mql"] > 0:
             e["status"] = "MQL - Action Needed"
-        elif e["active"] > 0 or e["called"] > 0:
+        elif e["active"] > 0:
+            e["status"] = "Active"
+        elif noi >= 2 or (t > 0 and term >= t):
+            e["status"] = "Exhausted"
+        elif e["called"] > 0:
             e["status"] = "Active"
         else:
             e["status"] = "Fresh"
@@ -813,6 +817,9 @@ def run(kylas=None, send_email: bool = True) -> dict:
         user_email_map.update(api_emails)
     except Exception as _e:
         print(f"[Account Health] WARNING: user email fetch failed ({_e}) — using team.json")
+
+    from utils.bd_metrics import refresh_stage_map
+    refresh_stage_map(kylas)   # bare-id stages must resolve or they bucket nowhere
 
     print("[Account Health] Fetching all contacts from Kylas...")
     contacts = kylas._search_all(

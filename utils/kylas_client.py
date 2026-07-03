@@ -47,7 +47,7 @@ class KylasClient:
         })
         self._delay = 0.12       # min seconds between request starts (global)
         self._max_retries = 5    # automatic retries on HTTP 429 (rate limit)
-        self._pick_style = {}    # cf_key -> dropdown encoding that worked ("id"/"idobj"/"idname")
+        self._pick_style = {"cfAccountHealthBd": "idname"}    # cf_key -> dropdown encoding that worked ("id"/"idobj"/"idname")
         self._pace_lock = threading.Lock()   # serialises slot assignment across threads
         self._next_call_at = 0.0             # monotonic time of the next allowed request
 
@@ -107,11 +107,14 @@ class KylasClient:
             return
         try:
             j = r.json()
-            detail = (j.get("message") or j.get("error") or j.get("errorMessage")
-                      or j.get("detail") or str(j)) if isinstance(j, dict) else str(j)
+            msg = (j.get("message") or j.get("error") or j.get("errorMessage")
+                   or j.get("detail") or "") if isinstance(j, dict) else ""
+            # Include full JSON so field-level errors (fieldErrors, code, etc.) are visible
+            full = str(j)
+            detail = (f"{msg} | full={full}" if msg and full != f"'{msg}'" else full or msg)
         except Exception:
             detail = r.text or ""
-        detail = " ".join(str(detail).split())[:500]
+        detail = " ".join(str(detail).split())[:800]
         raise requests.HTTPError(
             f"{r.status_code} {r.reason} for url: {r.url}"
             + (f" — {detail}" if detail else ""),
@@ -606,6 +609,25 @@ class KylasClient:
         return {k: v for k, v in body.items()
                 if k not in KylasClient._READONLY_PUT_FIELDS}
 
+    @staticmethod
+    def _owner_id_from_body(body: dict):
+        """Extract the owner user id from a fetched entity body.
+
+        The detail GET may expose the owner as top-level ownerId, or only as
+        ownedBy {id, name} — check both. Returns None if neither is present.
+        A PUT body without an owner makes Kylas silently reassign the record
+        to the API user, so callers MUST re-add this to the PUT body.
+        """
+        oid = body.get("ownerId")
+        if oid:
+            return oid
+        ob = body.get("ownedBy")
+        if isinstance(ob, dict):
+            return ob.get("id")
+        if isinstance(ob, (int, str)) and str(ob).strip():
+            return ob
+        return None
+
     def _without_owner_keys(self, fields: dict, entity: str) -> dict:
         """Strip ownedBy/ownerId from a field-push map (owner isn't writable here).
 
@@ -907,12 +929,14 @@ class KylasClient:
                   f"current={sorted(current_ids)} add={added} result={sorted_ids}")
             return "updated"
 
-        # Build the PUT body from the RAW GET response (mirrors
-        # update_company_custom_field): change ONLY this custom field, leaving
-        # every other field — including ownedBy/owner — exactly as Kylas
-        # returned it. Using _clean_for_put here strips ownedBy and resets the
-        # company owner to the API user, which must never happen.
-        base = dict(body)
+        # Build PUT body from the GET response, stripping read-only/audit fields
+        # but keeping the owner so Kylas doesn't reset it to the API user.
+        # (The owner is additionally re-asserted via the dedicated endpoint
+        # after the PUT — Kylas ignores owner fields in the PUT body.)
+        base = self._clean_for_put(body)
+        _oid = self._owner_id_from_body(body)
+        if _oid:
+            base["ownerId"] = _oid
         base_cfv = dict(base.get("customFieldValues") or {})
 
         # Build {id, name} objects — matches the shape GET returns (and PUT requires).
@@ -929,7 +953,15 @@ class KylasClient:
             base["customFieldValues"] = base_cfv
             try:
                 self._put(f"companies/{company_id}", base)
+                # Kylas ignores ownerId in the PUT body and reassigns the
+                # record to the API user — re-assert via the owner endpoint.
+                if _oid and not self.update_company_owner(int(company_id), int(_oid)):
+                    raise SystemExit(
+                        f"OWNER RE-ASSERT FAILED on company {company_id} "
+                        f"(uid {_oid}); aborting run to protect owners.")
                 return "updated"
+            except SystemExit:
+                raise
             except Exception as exc:
                 if attempt < 2:
                     print(f"  [Kylas] multi-select attempt {attempt + 1} failed for {cf_key} "
@@ -978,7 +1010,14 @@ class KylasClient:
         the isolation cost. Boolean -> a real bool. Anything unmatched / other
         types pass through, so isolation can still surface a genuine problem.
         """
-        if not defn or value is None:
+        if value is None:
+            return value
+        if isinstance(value, str):
+            import re as _re
+            _s = value.strip()
+            if _re.match(r'^\d{4}-\d{2}-\d{2}$', _s):
+                value = _s + "T00:00:00.000Z"
+        if not defn:
             return value
         if isinstance(value, list):          # a single-select may arrive as a 1-item list
             value = value[0] if value else ""
@@ -1017,32 +1056,61 @@ class KylasClient:
             return fields
         out = dict(fields)
         for k in list(out):
-            if self._is_custom_key(k) and k in defs:
-                out[k] = self._format_cf_value(k, defs[k], out[k])
+            if self._is_custom_key(k):
+                out[k] = self._format_cf_value(k, defs.get(k), out[k])
         return out
 
     def _cf_candidates(self, key: str, value, defs: dict) -> list:
         """Value encodings to try for one field, best first.
 
-        For a resolved dropdown id we don't know whether Kylas wants the bare
-        id, {"id": id}, or {"id": id, "name": label} — so isolation tries each.
-        Non-dropdown values yield just themselves.
+        PICK_LIST: tries id / {"id"} / {"id","name"} (integer-ID styles), then
+        falls back to raw string labels and list-wrapped forms in case Kylas
+        needs the label directly or a single-element list (like multi-select).
+        DATE-looking strings: tries bare date then full ISO-8601 variants.
+        Non-dropdown/non-date values yield just themselves.
         """
+        import re as _re
         defn = (defs or {}).get(key)
-        if not defn or isinstance(value, bool):
+        ftype = (defn or {}).get("type", "")
+        if isinstance(value, bool):
             return [value]
-        is_pick = defn.get("type", "") in self._PICKLIST_TYPES or defn.get("options")
+
+        # ── PICK_LIST ─────────────────────────────────────────────────────────
+        is_pick = ftype in self._PICKLIST_TYPES or (defn or {}).get("options")
         oid = value.get("id") if isinstance(value, dict) else (
             value if isinstance(value, int) else None)
-        if not is_pick or oid is None:
-            return [value]
-        label = (defn.get("labels") or {}).get(oid)
-        by_style = {"id": oid, "idobj": {"id": oid}}
-        if label:
-            by_style["idname"] = {"id": oid, "name": label}
-        pref  = self._pick_style.get(key, "id")          # try the proven style first
-        order = [pref] + [s for s in ("id", "idobj", "idname") if s != pref]
-        return [by_style[s] for s in order if s in by_style]
+        if is_pick and oid is not None:
+            label = ((defn or {}).get("labels") or {}).get(oid)
+            by_style = {"id": oid, "idobj": {"id": oid}}
+            if label:
+                by_style["idname"] = {"id": oid, "name": label}
+            pref  = self._pick_style.get(key, "id")
+            order = [pref] + [s for s in ("id", "idobj", "idname") if s != pref]
+            candidates = [by_style[s] for s in order if s in by_style]
+            # Fallback: raw string labels (bypasses option-ID lookup entirely)
+            if label:
+                candidates.append(label)
+                candidates.append(label.lower())
+            # Fallback: list-wrapped (single-select may need [{id,name}] shape)
+            candidates.append([oid])
+            if label:
+                candidates.append([{"id": oid, "name": label}])
+            candidates.append([{"id": oid}])
+            return candidates
+
+        # ── DATE string ───────────────────────────────────────────────────────
+        # ISO datetime is first because bare "YYYY-MM-DD" is rejected by Kylas.
+        if isinstance(value, str):
+            s = value.strip()
+            if _re.match(r'^\d{4}-\d{2}-\d{2}$', s):
+                return [
+                    s + "T00:00:00.000Z",
+                    s + "T00:00:00",
+                    s + "T00:00:00.000+05:30",
+                    s,
+                ]
+
+        return [value]
 
     @staticmethod
     def _short_err(exc) -> str:
@@ -1078,7 +1146,8 @@ class KylasClient:
         try:
             self._put(f"{path}/{entity_id}", body)
             return "updated"
-        except Exception:
+        except Exception as _fast_exc:
+            print(f"[Kylas] _put_fields: fast-path PUT failed for {path}/{entity_id} — {_fast_exc!s}")
             pass  # isolate below to find the offending field(s)
 
         # Does the record round-trip unchanged at all?
@@ -1110,9 +1179,26 @@ class KylasClient:
                                                  else "idobj" if isinstance(cand, dict) else "id")
                     break
                 except Exception as exc:
+                    print(f"[Kylas] _put_fields: key={key!r} cand={cand!r} full_error={exc!s}")
                     err = self._short_err(exc)
             if err is not None:
-                rejected[key] = err
+                # Last resort: PATCH with just this one custom field (avoids full-body validation)
+                if self._is_custom_key(key):
+                    for cand in candidates[:3]:
+                        try:
+                            self._patch(f"{path}/{entity_id}",
+                                        {"customFieldValues": {key: cand}})
+                            good_cfv = dict(good.get("customFieldValues") or {})
+                            good_cfv[key] = cand
+                            good["customFieldValues"] = good_cfv
+                            applied.append(key)
+                            print(f"[Kylas] _put_fields: key={key!r} PATCH succeeded cand={cand!r}")
+                            err = None
+                            break
+                        except Exception as patch_exc:
+                            print(f"[Kylas] _put_fields: key={key!r} PATCH cand={cand!r} — {patch_exc!s}")
+                if err is not None:
+                    rejected[key] = err
         if rejected:
             detail = ", ".join(f"{k} [{v}]" for k, v in rejected.items())
             print(f"[Kylas] {path}/{entity_id}: Kylas rejected {detail}"
@@ -1138,8 +1224,53 @@ class KylasClient:
         except Exception as exc:
             print(f"[Kylas] ERROR fetching company {company_id}: {exc}")
             return "failed"
-        return self._put_fields("companies", company_id,
-                                self._clean_for_put(body), fields, dry_run, defs)
+        base = self._clean_for_put(body)
+        owner_before = self._owner_id_from_body(body)
+        if owner_before:
+            base["ownerId"] = owner_before
+        result = self._put_fields("companies", company_id, base, fields, dry_run, defs)
+
+        # Kylas IGNORES ownerId in the full company PUT body and reassigns the
+        # record to the API user (verified live 2026-07-01). The dedicated
+        # owner endpoint is the only mechanism it honors, so re-assert the
+        # owner after ANY non-dry PUT attempt ("failed" still round-trips the
+        # base body, which also resets the owner). A failed re-assert aborts
+        # the run — better stopped than silently reassigning records.
+        if result != "unchanged" and not dry_run and owner_before:
+            if not self.update_company_owner(int(company_id), int(owner_before)):
+                raise SystemExit(
+                    f"OWNER RE-ASSERT FAILED on company {company_id} "
+                    f"(uid {owner_before}); aborting run to protect owners.")
+
+        # Owner tripwire: verify the first few live updates (and every 100th
+        # thereafter) did not change the record owner. If one did, restore it
+        # via the dedicated owner endpoint and ABORT the whole run — a silent
+        # mass owner-reassignment is far worse than a stopped backfill.
+        # SystemExit deliberately bypasses callers' per-record `except Exception`.
+        if result == "updated" and not dry_run:
+            n = getattr(self, "_owner_checks_done", 0)
+            self._owner_checks_done = n + 1
+            if n < 3 or n % 100 == 0:
+                try:
+                    after = self._get(f"companies/{company_id}")
+                    after = after.get("data", after)
+                    owner_after = self._owner_id_from_body(after)
+                except Exception as exc:
+                    print(f"  [owner-check] company {company_id}: verify GET failed ({exc})")
+                    owner_after = owner_before   # can't verify; don't false-alarm
+                if owner_before and str(owner_after) != str(owner_before):
+                    print(f"  [owner-check] company {company_id}: OWNER CHANGED "
+                          f"{owner_before} -> {owner_after}; restoring original")
+                    try:
+                        self.update_company_owner(int(company_id), int(owner_before))
+                    except Exception as exc:
+                        print(f"  [owner-check] restore failed: {exc}")
+                    raise SystemExit(
+                        f"OWNER TRIPWIRE: field PUT on company {company_id} changed the "
+                        f"owner ({owner_before} -> {owner_after}). Owner restored; run "
+                        f"ABORTED before touching more records.")
+                print(f"  [owner-check] company {company_id}: owner preserved (uid {owner_before})")
+        return result
 
     def update_contact_fields(self, contact_id: int, fields: dict,
                               contact_data: dict = None, dry_run: bool = False) -> str:

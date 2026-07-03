@@ -23,11 +23,27 @@ on:
         description: 'Dry run — print what would be pushed, no API writes'
         type: boolean
         default: false
+      probe_company:
+        description: 'GET a single company by ID and dump its raw customFieldValues (for debugging field format)'
+        required: false
+        default: ''
+      probe_contacts:
+        description: 'Dump raw pipeline-stage values for contacts of companies matching this name (debug stage bucketing)'
+        required: false
+        default: ''
+      restore_mode:
+        description: 'Owner restore: "scan" = read-only mismatch report; "restore" = fix owners (needs restore_from_owner_id; honors dry_run)'
+        required: false
+        default: ''
+      restore_from_owner_id:
+        description: 'With restore_mode=restore: only fix companies currently owned by this uid (take from scan histogram)'
+        required: false
+        default: ''
 
 jobs:
   backfill:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
@@ -45,6 +61,26 @@ jobs:
           AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
         run: |
+          if [ "${{ github.event.inputs.restore_mode }}" = "scan" ]; then
+            python scripts/restore_company_owners.py --scan
+            exit 0
+          fi
+          if [ "${{ github.event.inputs.restore_mode }}" = "restore" ]; then
+            FLAGS="--restore --from-owner-id ${{ github.event.inputs.restore_from_owner_id }}"
+            if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+              FLAGS="$FLAGS --dry-run"
+            fi
+            python scripts/restore_company_owners.py $FLAGS
+            exit 0
+          fi
+          if [ -n "${{ github.event.inputs.probe_company }}" ]; then
+            python scripts/push_account_status.py --probe-company ${{ github.event.inputs.probe_company }}
+            exit 0
+          fi
+          if [ -n "${{ github.event.inputs.probe_contacts }}" ]; then
+            python scripts/push_account_status.py --probe-contacts "${{ github.event.inputs.probe_contacts }}"
+            exit 0
+          fi
           if [ "${{ github.event.inputs.list_fields }}" = "true" ]; then
             python scripts/push_account_status.py --list-fields
             exit 0

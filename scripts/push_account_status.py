@@ -43,13 +43,14 @@ def _load_module(filename: str):
 
 
 def _guess_cf_key(display_name: str) -> str:
-    """Convention-based cf key guess: 'Account Status' → 'cfAccountStatus'."""
+    """Convention-based cf key guess: 'Account Health (BD)' → 'cfAccountHealthBd'."""
     import re
     words = re.split(r"[\s\-_/]+", display_name.strip())
-    if not words:
+    # Strip non-alphanumeric before capitalizing so "(BD)" → "BD" → "Bd", not "(bd)" → "bd"
+    clean = [re.sub(r"[^a-zA-Z0-9]", "", w) for w in words if re.sub(r"[^a-zA-Z0-9]", "", w)]
+    if not clean:
         return ""
-    camel = words[0].lower() + "".join(w.capitalize() for w in words[1:])
-    camel = re.sub(r"[^a-zA-Z0-9]", "", camel)
+    camel = clean[0].lower() + "".join(w.capitalize() for w in clean[1:])
     return "cf" + camel[0].upper() + camel[1:] if camel else ""
 
 
@@ -66,6 +67,11 @@ def main():
                       help="Only companies where last_called >= DATE (YYYY-MM-DD)")
     mode.add_argument("--list-fields", action="store_true",
                       help="List all discoverable company cf keys and exit")
+    mode.add_argument("--probe-company", metavar="ID", type=int,
+                      help="GET a specific company and dump its raw customFieldValues then exit")
+    mode.add_argument("--probe-contacts", metavar="NAME",
+                      help="Dump raw pipeline-stage values for all contacts of companies "
+                           "whose name contains NAME (case-insensitive), plus computed status")
     parser.add_argument("--status-key", metavar="cfXxx",
                         help="Kylas cf key for 'Account Status' (overrides auto-discovery)")
     parser.add_argument("--lc-key", metavar="cfXxx",
@@ -75,9 +81,11 @@ def main():
     args = parser.parse_args()
 
     if (args.test is None and not args.all and args.since is None
-            and not args.list_fields):
+            and not args.list_fields and args.probe_company is None
+            and args.probe_contacts is None):
         parser.print_help()
-        print("\nERROR: specify --test, --all, --since DATE, or --list-fields")
+        print("\nERROR: specify --test, --all, --since DATE, --list-fields, "
+              "--probe-company ID, or --probe-contacts NAME")
         sys.exit(1)
 
     from dotenv import load_dotenv
@@ -86,6 +94,112 @@ def main():
     from utils.kylas_client import KylasClient
 
     kylas = KylasClient()
+
+    # ── --probe-company: dump raw customFieldValues for one company and exit ──
+    if args.probe_company:
+        import json as _json
+        co_id = args.probe_company
+        print(f"[probe] GETting company {co_id}...")
+        raw = kylas._get(f"companies/{co_id}")
+        body = raw.get("data", raw) if isinstance(raw, dict) else {}
+        cfv = body.get("customFieldValues") or {}
+        print(f"[probe] customFieldValues ({len(cfv)} keys):")
+        for k, v in sorted(cfv.items()):
+            print(f"  {k}: {_json.dumps(v)}")
+        print(f"\n[probe] Top-level fields:")
+        for tf in ("name", "type", "industry", "numberOfEmployees", "pipeline"):
+            if tf in body:
+                print(f"  [{tf}]: {_json.dumps(body[tf])}")
+        print(f"\n[probe] Owner-related fields:")
+        for tf in ("ownerId", "ownedBy", "createdBy", "updatedBy"):
+            print(f"  [{tf}]: {_json.dumps(body.get(tf))}")
+        print(f"\n[probe] All top-level keys: {sorted(body.keys())}")
+        return
+
+    # ── --probe-contacts: raw stage values for one company's contacts ─────────
+    if args.probe_contacts:
+        from utils.bd_metrics import contact_stage, refresh_stage_map
+        refresh_stage_map(kylas)
+        needle = args.probe_contacts.strip().lower()
+        print(f"[probe] Finding companies whose name contains {needle!r}...")
+        companies = kylas._search_all("company", fields=["id", "name"])
+        target_ids = {str(c.get("id")) for c in companies
+                      if needle in str(c.get("name", "")).lower()}
+        for c in companies:
+            if str(c.get("id")) in target_ids:
+                print(f"[probe]   company {c.get('id')}: {c.get('name')!r}")
+        print(f"[probe] Fetching all contacts...")
+        contacts = kylas._search_all(
+            "contact",
+            fields=["id", "company", "ownedBy", "updatedAt", "customFieldValues"],
+        )
+        print(f"[probe] {len(contacts)} contacts fetched")
+
+        # Global stage-shape stats: how many contacts have non-dict / nameless stages?
+        from utils.bd_metrics import _PIPELINE_STAGE
+        odd_shapes = {}
+        for ct in contacts:
+            psd = (ct.get("customFieldValues") or {}).get("cfPipelineStageBd")
+            if psd is None:
+                continue
+            if isinstance(psd, dict) and psd.get("name"):
+                continue
+            key = repr(psd)[:60]
+            cnt, exemplar = odd_shapes.get(key, (0, ct.get("id")))
+            odd_shapes[key] = (cnt + 1, exemplar)
+        if odd_shapes:
+            print(f"\n[probe] Contacts with NON-standard stage shapes (not dict-with-name): "
+                  f"{sum(c for c, _ in odd_shapes.values())}")
+            for k, (v, exemplar) in sorted(odd_shapes.items(), key=lambda kv: -kv[1][0])[:25]:
+                try:
+                    mapped = _PIPELINE_STAGE.get(int(k), "!! UNMAPPED !!")
+                except (TypeError, ValueError):
+                    mapped = "(non-numeric)"
+                print(f"  {v:>5} x {k}  -> {mapped}")
+                if mapped == "!! UNMAPPED !!" and exemplar:
+                    # Detail GET returns the stage as dict-with-name — resolve the label.
+                    try:
+                        det = kylas._get(f"contacts/{exemplar}")
+                        det = det.get("data", det)
+                        dv  = (det.get("customFieldValues") or {}).get("cfPipelineStageBd")
+                        print(f"          exemplar contact {exemplar} detail value: {dv!r}")
+                    except Exception as exc:
+                        print(f"          exemplar fetch failed: {exc}")
+        else:
+            print("\n[probe] All stage values are dict-with-name — no odd shapes")
+
+        matches = []
+        for ct in contacts:
+            co = ct.get("company")
+            if isinstance(co, dict):
+                co_id, co_name = str(co.get("id", "")), str(co.get("name", ""))
+            else:
+                co_id, co_name = str(co) if co is not None else "", ""
+            if co_id in target_ids or (co_name and needle in co_name.lower()):
+                matches.append(ct)
+        print(f"\n[probe] {len(matches)} contacts matched company ~ {needle!r}")
+
+        import json as _json
+        for ct in matches:
+            cf  = ct.get("customFieldValues") or {}
+            co  = ct.get("company") or {}
+            raw = cf.get("cfPipelineStageBd")
+            stg = contact_stage(ct)
+            print(f"\n  contact {ct.get('id')}  company={co.get('name') if isinstance(co, dict) else co}"
+                  f" (id={co.get('id') if isinstance(co, dict) else co})")
+            print(f"    raw cfPipelineStageBd = {_json.dumps(raw)}")
+            print(f"    contact_stage()       = {stg!r}")
+            print(f"    cfLastCalledAt        = {cf.get('cfLastCalledAt')!r}")
+
+        if matches:
+            ah = _load_module("06_account_health.py")
+            sub_health = ah.compute_health(matches)
+            for co_id, e in sub_health.items():
+                print(f"\n[probe] computed health for company {co_id}:")
+                for k in ("total", "ytbm", "active", "mql", "sql", "dcb",
+                          "offsite", "terminal", "noi", "called", "last_called", "status"):
+                    print(f"    {k:<12} = {e.get(k)!r}")
+        return
 
     # ── --list-fields: dump all discoverable company cf keys and exit ─────────
     if args.list_fields:
@@ -117,25 +231,60 @@ def main():
                 opts    = defs.get(k, {}).get("options") or {}
                 opt_str = f"  options={list(opts.keys())[:5]}" if opts else ""
                 print(f"  {k:<40} '{display}'  [{ftype}]{opt_str}")
+
+        # Raw-value diagnostic: find a company with cfAccountStatus already set
+        # and print the exact JSON Kylas stores so we know the correct write format.
+        _PROBE_KEYS = ["cfAccountHealthBd", "cfLastCalledAtDate"]
+        print("\n[push] Probing raw stored values for target CF keys...")
+        try:
+            r = kylas._request(
+                "POST", "search/company",
+                params={"page": 0, "size": 50, "sort": "updatedAt,desc"},
+                json={"fields": ["id", "customFieldValues"], "jsonRule": None},
+            )
+            kylas._raise_for_status(r)
+            found = {k: None for k in _PROBE_KEYS}
+            for rec in r.json().get("content", []):
+                co_id = rec.get("id")
+                if not co_id or all(v is not None for v in found.values()):
+                    break
+                try:
+                    detail  = kylas._get(f"companies/{co_id}")
+                    company = detail.get("data", detail) if isinstance(detail, dict) else {}
+                    cfv     = company.get("customFieldValues") or {}
+                    for probe_key in _PROBE_KEYS:
+                        if found[probe_key] is None and probe_key in cfv:
+                            found[probe_key] = (co_id, cfv[probe_key])
+                except Exception as exc:
+                    print(f"[push]   company {co_id}: fetch error — {exc}")
+            for probe_key in _PROBE_KEYS:
+                if found[probe_key]:
+                    co_id, raw = found[probe_key]
+                    print(f"[push]   {probe_key}: company={co_id}  raw={raw!r}  type={type(raw).__name__}")
+                else:
+                    print(f"[push]   {probe_key}: no existing value found in last 50 companies")
+        except Exception as exc:
+            print(f"[push]   raw-value probe failed: {exc}")
+
         return
 
     # ── Discover Kylas custom-field keys by display name ──────────────────────
     print("[push] Discovering Kylas company custom field keys...")
 
-    status_key = args.status_key or kylas.cf_key_for_display("company", "Account Status")
+    status_key = args.status_key or kylas.cf_key_for_display("company", "Account Health (BD)")
     lc_key     = args.lc_key     or kylas.cf_key_for_display("company", "Last Called AT - Date")
 
-    # Convention-based fallback: "Account Status" → cfAccountStatus
+    # Convention-based fallback: "Account Health (BD)" → cfAccountHealthBd
     if not status_key:
-        guess = _guess_cf_key("Account Status")
-        print(f"[push]   'Account Status' not found via API — trying convention guess: {guess!r}")
+        guess = _guess_cf_key("Account Health (BD)")
+        print(f"[push]   'Account Health (BD)' not found via API — trying convention guess: {guess!r}")
         status_key = guess
     if not lc_key:
         guess = _guess_cf_key("Last Called AT - Date")
         print(f"[push]   'Last Called AT - Date' not found via API — trying convention guess: {guess!r}")
         lc_key = guess
 
-    print(f"[push]   Account Status key   → {status_key!r}")
+    print(f"[push]   Account Health (BD) key → {status_key!r}")
     print(f"[push]   Last Called Date key  → {lc_key!r}")
     print(f"[push]   (override with --status-key / --lc-key if these are wrong)")
 
@@ -145,6 +294,9 @@ def main():
         sys.exit(1)
 
     # ── Fetch contacts + compute health ───────────────────────────────────────
+    from utils.bd_metrics import refresh_stage_map
+    refresh_stage_map(kylas)   # bare-id stages must resolve or they bucket nowhere
+
     print("[push] Fetching all contacts from Kylas...")
     contacts = kylas._search_all(
         "contact",
