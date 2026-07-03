@@ -346,25 +346,6 @@ def main():
             unchanged += 1
             continue
 
-        print(f"[debug] Company {co_id} status={status!r} lc={lc!r} → fields={fields}")
-
-        # In test mode: dump the raw company body to diagnose value format issues.
-        if args.test is not None:
-            try:
-                import json as _json
-                _raw = kylas._get(f"companies/{int(co_id)}")
-                _body = _raw.get("data", _raw) if isinstance(_raw, dict) else {}
-                _cfv  = _body.get("customFieldValues") or {}
-                print(f"[debug] company {co_id} customFieldValues (raw GET):")
-                for _k, _v in sorted(_cfv.items()):
-                    print(f"  {_k}: {_json.dumps(_v)}")
-                # Also print top-level field shapes that might relate to status
-                for _tf in ("name", "type", "industry", "numberOfEmployees"):
-                    if _tf in _body:
-                        print(f"  [{_tf}]: {_json.dumps(_body[_tf])}")
-            except Exception as _dbg_exc:
-                print(f"[debug] body dump failed: {_dbg_exc}")
-
         try:
             result = kylas.update_company_fields(int(co_id), fields, dry_run=args.dry_run)
         except Exception as exc:

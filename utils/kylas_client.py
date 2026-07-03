@@ -803,14 +803,6 @@ class KylasClient:
         # Supplement from layout endpoint — authoritative source for tenants
         # where /entities returns no picklist data or missing display names.
         layout_defs = self._field_defs_from_layout(entity)
-        # DEBUG: show what the layout actually returns for key fields BEFORE picklist override
-        for _dbg_key in ("cfAccountStatus", "cfLastCalledAtDate"):
-            if _dbg_key in layout_defs:
-                _d = layout_defs[_dbg_key]
-                print(f"[debug] layout {entity}/{_dbg_key}: type={_d.get('type')!r} "
-                      f"display={_d.get('displayName')!r} options={_d.get('options')}")
-            else:
-                print(f"[debug] layout {entity}/{_dbg_key}: NOT FOUND in layout endpoints")
         for key, ldef in layout_defs.items():
             existing = defs.get(key)
             if existing is None:
@@ -1153,7 +1145,7 @@ class KylasClient:
             self._put(f"{path}/{entity_id}", body)
             return "updated"
         except Exception as _fast_exc:
-            print(f"[debug] _put_fields: fast-path PUT failed for {path}/{entity_id} — {_fast_exc!s}")
+            print(f"[Kylas] _put_fields: fast-path PUT failed for {path}/{entity_id} — {_fast_exc!s}")
             pass  # isolate below to find the offending field(s)
 
         # Does the record round-trip unchanged at all?
@@ -1185,7 +1177,7 @@ class KylasClient:
                                                  else "idobj" if isinstance(cand, dict) else "id")
                     break
                 except Exception as exc:
-                    print(f"[debug] _put_fields: key={key!r} cand={cand!r} full_error={exc!s}")
+                    print(f"[Kylas] _put_fields: key={key!r} cand={cand!r} full_error={exc!s}")
                     err = self._short_err(exc)
             if err is not None:
                 # Last resort: PATCH with just this one custom field (avoids full-body validation)
@@ -1198,11 +1190,11 @@ class KylasClient:
                             good_cfv[key] = cand
                             good["customFieldValues"] = good_cfv
                             applied.append(key)
-                            print(f"[debug] _put_fields: key={key!r} PATCH succeeded cand={cand!r}")
+                            print(f"[Kylas] _put_fields: key={key!r} PATCH succeeded cand={cand!r}")
                             err = None
                             break
                         except Exception as patch_exc:
-                            print(f"[debug] _put_fields: key={key!r} PATCH cand={cand!r} — {patch_exc!s}")
+                            print(f"[Kylas] _put_fields: key={key!r} PATCH cand={cand!r} — {patch_exc!s}")
                 if err is not None:
                     rejected[key] = err
         if rejected:
