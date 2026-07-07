@@ -21,6 +21,7 @@ Airtable column mapping (what gets written where):
 Account Status logic (best POC stage wins across all POCs):
 ─────────────────────────────────────────────────────────────────────────────
   Offsite Delayed    — any POC at Offsite Delayed stage (highest priority)
+  Offsite Done       — any POC at Offsite Done stage
   SQL                — any POC at SQL stage
   Discovery Call Stage— any POC at DCB / Reschedule / Closing Loops stages
   MQL - Action Needed— any POC at MQL / Activation (no higher stage)
@@ -102,6 +103,11 @@ _OFFSITE_STAGES = {
     "Offsite Delayed",
 }
 
+_OFFSITE_DONE_STAGES = {
+    "Offsite Done",
+    "Offsite Done (Late Reachout)",
+}
+
 
 def _parse_lc(raw: str) -> str:
     """Parse cfLastCalledAt value → ISO date "YYYY-MM-DD". Returns "" on failure."""
@@ -153,7 +159,7 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         e = by_co.setdefault(co_id, {
             "total": 0, "ytbm": 0, "active": 0,
             "cnc": 0, "mql": 0,
-            "sql": 0, "dcb": 0, "offsite": 0,
+            "sql": 0, "dcb": 0, "offsite": 0, "offsite_done": 0,
             "terminal": 0, "noi": 0,
             "called": 0, "called_apr19": 0, "last_called": "",
             "claimed_by": "",
@@ -179,6 +185,8 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
             e["dcb"] += 1
         elif stage in _OFFSITE_STAGES:
             e["offsite"] += 1
+        elif stage in _OFFSITE_DONE_STAGES or stage.startswith("Offsite Done"):
+            e["offsite_done"] += 1   # covers future variants like "(Late Reachout)"
         # else: unmapped stage → counted in total only
 
         if lc:
@@ -197,9 +205,11 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         noi  = e["noi"]
 
         # Status — best POC stage wins; Exhausted only when no positive pipeline POC remains.
-        # Priority: Offsite Delayed > SQL > Discovery Call Stage > MQL > Active > Exhausted > Fresh
+        # Priority: Offsite Delayed > Offsite Done > SQL > Discovery Call Stage > MQL > Active > Exhausted > Fresh
         if e["offsite"] > 0:
             e["status"] = "Offsite Delayed"
+        elif e["offsite_done"] > 0:
+            e["status"] = "Offsite Done"
         elif e["sql"] > 0:
             e["status"] = "SQL"
         elif e["dcb"] > 0:
@@ -215,8 +225,8 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         else:
             e["status"] = "Fresh"
 
-        # hot = sql + dcb + offsite combined (keeps existing Airtable "Hot POCs" column working)
-        e["hot"] = e["sql"] + e["dcb"] + e["offsite"]
+        # hot = sql + dcb + offsite stages combined (keeps existing Airtable "Hot POCs" column working)
+        e["hot"] = e["sql"] + e["dcb"] + e["offsite"] + e["offsite_done"]
         e["connected"] = e["mql"] + e["hot"]
 
         e["is_exhausted"] = bool(
@@ -359,6 +369,7 @@ _BODY  = ('style="font-family:Arial,sans-serif;color:#333;'
 _BADGE = {
     "Exhausted":                        "background:#d32f2f;color:#fff;",
     "Offsite Delayed":                  "background:#e65100;color:#fff;",
+    "Offsite Done":                     "background:#2e7d32;color:#fff;",
     "SQL":                              "background:#1565c0;color:#fff;",
     "Discovery Call Stage":             "background:#00838f;color:#fff;",
     "MQL - Action Needed":              "background:#7b1fa2;color:#fff;",
@@ -367,6 +378,7 @@ _BADGE = {
     "Stale":                            "background:#9e9e9e;color:#fff;",
     "Tapped – Exhausted":               "background:#d32f2f;color:#fff;",
     "Tapped – Offsite Delayed":         "background:#e65100;color:#fff;",
+    "Tapped – Offsite Done":            "background:#2e7d32;color:#fff;",
     "Tapped – SQL":                     "background:#1565c0;color:#fff;",
     "Tapped – Discovery Call Stage":    "background:#00838f;color:#fff;",
     "Tapped – MQL - Action Needed":     "background:#7b1fa2;color:#fff;",
@@ -425,6 +437,7 @@ def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
     total_t_mql   = len(sor_groups.get("Tapped – MQL - Action Needed", []))
     total_t_dcb   = len(sor_groups.get("Tapped – Discovery Call Stage", []))
     total_t_sql   = len(sor_groups.get("Tapped – SQL", []))
+    total_t_offd  = len(sor_groups.get("Tapped – Offsite Done", []))
     total_t_off   = len(sor_groups.get("Tapped – Offsite Delayed", []))
     total_t_ex    = len(sor_groups.get("Tapped – Exhausted", []))
 
@@ -441,6 +454,7 @@ def _build_email(health: dict, tbl_cache: dict, friendly: str) -> str:
                 ("Tapped – MQL - Action Needed", total_t_mql),
                 ("Tapped – Discovery Call Stage",total_t_dcb),
                 ("Tapped – SQL",                 total_t_sql),
+                ("Tapped – Offsite Done",        total_t_offd),
                 ("Tapped – Offsite Delayed",     total_t_off),
                 ("Tapped – Exhausted",           total_t_ex),
             ]
@@ -652,7 +666,8 @@ def _build_poc_email(first_name: str,
         )
 
     _pri = {"Fresh": 0, "Active": 1, "MQL - Action Needed": 2,
-            "Discovery Call Stage": 3, "SQL": 4, "Offsite Delayed": 5, "Exhausted": 6}
+            "Discovery Call Stage": 3, "SQL": 4, "Offsite Done": 5,
+            "Offsite Delayed": 6, "Exhausted": 7}
 
     sections = ""
 
@@ -832,7 +847,8 @@ def run(kylas=None, send_email: bool = True) -> dict:
 
     counts = {s: sum(1 for e in health.values() if e["status"] == s)
               for s in ("Fresh", "Active", "MQL - Action Needed",
-                        "Discovery Call Stage", "SQL", "Offsite Delayed", "Exhausted")}
+                        "Discovery Call Stage", "SQL", "Offsite Done",
+                        "Offsite Delayed", "Exhausted")}
     needs_re = sum(1 for e in health.values() if e["needs_reassign"])
     print(f"[Account Health] {len(health)} companies  |  " +
           "  ".join(f"{s.split()[0]}={v}" for s, v in counts.items()) +
