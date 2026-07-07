@@ -41,6 +41,7 @@ CONNECTED_STAGES = {
     "Follow-up (3)",
     "Discovery Call Booked",
     "Offsite Done",
+    "Offsite Done (Late Reachout)",
 }
 
 DCB_STAGES = {
@@ -48,6 +49,7 @@ DCB_STAGES = {
     "Discovery Call Booked",
     "Offsite Delayed",
     "Offsite Done",
+    "Offsite Done (Late Reachout)",
     "Discovery Call No-Show",
     "Reschedule Pending",
     "Closing Loops - Low Value",

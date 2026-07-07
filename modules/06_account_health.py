@@ -105,6 +105,7 @@ _OFFSITE_STAGES = {
 
 _OFFSITE_DONE_STAGES = {
     "Offsite Done",
+    "Offsite Done (Late Reachout)",
 }
 
 
@@ -184,8 +185,8 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
             e["dcb"] += 1
         elif stage in _OFFSITE_STAGES:
             e["offsite"] += 1
-        elif stage in _OFFSITE_DONE_STAGES:
-            e["offsite_done"] += 1
+        elif stage in _OFFSITE_DONE_STAGES or stage.startswith("Offsite Done"):
+            e["offsite_done"] += 1   # covers future variants like "(Late Reachout)"
         # else: unmapped stage → counted in total only
 
         if lc:
