@@ -126,17 +126,79 @@ class KylasClient:
         self._raise_for_status(r)
         return r.json()
 
+    def _updated_before_rule(self, entity: str, cursor_iso: str, pick=None):
+        """Return (jsonRule rule, candidate_index) filtering updatedAt <= cursor.
+
+        Kylas's search result window is capped (~10k rows), so deep fetches
+        re-anchor with an upper-bound filter. The accepted operator shape is
+        undocumented — try candidates and validate live: the filtered head row
+        must actually satisfy the bound (a silently-ignored filter returns the
+        global newest row, which is newer than the cursor, and fails the check).
+        `pick` short-circuits to the shape that already worked this run.
+        """
+        try:
+            ems = int(datetime.fromisoformat(
+                cursor_iso.replace("Z", "+00:00")).timestamp() * 1000)
+        except Exception:
+            ems = None
+        cands = [
+            {"id": "updatedAt", "field": "updatedAt", "type": "date",
+             "operator": "between", "value": ["1970-01-01T00:00:00.000Z", cursor_iso]},
+            {"id": "updatedAt", "field": "updatedAt", "type": "date",
+             "operator": "less_or_equal", "value": cursor_iso},
+            {"id": "updatedAt", "field": "updatedAt", "type": "date",
+             "operator": "less", "value": cursor_iso},
+            {"id": "updatedAt", "field": "updatedAt", "type": "date",
+             "operator": "before", "value": cursor_iso},
+        ]
+        if ems:
+            cands += [
+                {"id": "updatedAt", "field": "updatedAt", "type": "date",
+                 "operator": "between", "value": [0, ems]},
+                {"id": "updatedAt", "field": "updatedAt", "type": "date",
+                 "operator": "less", "value": ems},
+            ]
+        order = ([pick] + [i for i in range(len(cands)) if i != pick]
+                 if isinstance(pick, int) else range(len(cands)))
+        for i in order:
+            rule = cands[i]
+            try:
+                r = self._request(
+                    "POST", f"search/{entity}",
+                    params={"page": 0, "size": 5, "sort": "updatedAt,desc"},
+                    json={"fields": ["id", "updatedAt"],
+                          "jsonRule": {"condition": "AND", "rules": [rule]}},
+                    timeout=30,
+                )
+                if not r.ok:
+                    continue
+                content = r.json().get("content", [])
+                if not content:
+                    continue
+                head = str(content[0].get("updatedAt", ""))
+                if head and head <= cursor_iso:
+                    return rule, i
+            except Exception:
+                continue
+        return None, None
+
     def _search_all(self, entity: str, fields: list, since: str = None) -> List[dict]:
         """
         Fetch all records of `entity` from Kylas.
 
+        Kylas's search endpoint serves at most ~10,000 rows per query
+        (page*size window cap), regardless of totalElements. When a fetch
+        exhausts its window with records remaining, this re-queries with a
+        validated updatedAt-upper-bound filter anchored at the oldest row
+        seen, de-duplicating by id, until the full set is retrieved. If no
+        filter shape validates, it warns LOUDLY instead of silently
+        returning partial data.
+
         since (ISO string, e.g. "2026-06-03T12:00:00Z"):
             Stop fetching once we see records with updatedAt < since.
-            Records are returned sorted updatedAt DESC, so the first record
-            older than the cutoff means all subsequent pages are also older.
-            Use for daily incremental syncs (~72 hours window) — drastically
-            reduces API calls when only a small fraction was updated recently.
-            Pass None for a full sync (initial import / after a gap).
+            Records are sorted updatedAt DESC, so the first record older
+            than the cutoff ends the fetch — daily incremental syncs
+            typically finish within the first window.
         """
         cutoff = None
         if since:
@@ -144,44 +206,92 @@ class KylasClient:
             if cutoff.tzinfo is None:
                 cutoff = cutoff.replace(tzinfo=timezone.utc)
 
-        records, page = [], 0
-        while True:
-            r = self._request(
-                "POST", f"search/{entity}",
-                params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
-                json={"fields": fields, "jsonRule": None},
-                timeout=60,
-            )
-            r.raise_for_status()
-            resp    = r.json()
-            content = resp.get("content", [])
+        records: list = []
+        seen: set = set()
+        cursor = None            # window upper bound (ISO updatedAt)
+        rule_pick = None         # validated filter shape index, discovered once
+        grand_total = None       # unfiltered totalElements (window 1)
+        windows = 0
 
-            if cutoff:
-                kept, stop = [], False
+        while True:
+            windows += 1
+            rule = None
+            if cursor is not None:
+                rule, rule_pick = self._updated_before_rule(entity, cursor, rule_pick)
+                if rule is None:
+                    print(f"  [Kylas] WARNING: {entity} search window cap hit at "
+                          f"{len(records)}/{grand_total} and no updatedAt filter "
+                          f"was accepted — results are INCOMPLETE")
+                    break
+
+            page, stop, win_rows, win_total, win_min_upd = 0, False, 0, None, None
+            win_start_count = len(records)
+            while True:
+                r = self._request(
+                    "POST", f"search/{entity}",
+                    params={"page": page, "size": PAGE_SIZE, "sort": "updatedAt,desc"},
+                    json={"fields": fields,
+                          "jsonRule": ({"condition": "AND", "rules": [rule]}
+                                       if rule else None)},
+                    timeout=60,
+                )
+                r.raise_for_status()
+                resp    = r.json()
+                content = resp.get("content", [])
+                if win_total is None:
+                    win_total = resp.get("totalElements")
+                    if grand_total is None:
+                        grand_total = win_total
+
                 for item in content:
+                    win_rows += 1
                     upd = item.get("updatedAt", "")
                     if upd:
+                        win_min_upd = upd if win_min_upd is None else min(win_min_upd, upd)
+                    if cutoff and upd:
                         try:
                             item_dt = datetime.fromisoformat(upd.replace("Z", "+00:00"))
                             if item_dt.tzinfo is None:
                                 item_dt = item_dt.replace(tzinfo=timezone.utc)
                             if item_dt < cutoff:
                                 stop = True
-                                break   # all following records on this & later pages are older
+                                break   # everything after this is older still
                         except (ValueError, TypeError):
                             pass
-                    kept.append(item)
-                records.extend(kept)
+                    iid = item.get("id")
+                    if iid is not None and iid in seen:
+                        continue    # window-boundary overlap
+                    if iid is not None:
+                        seen.add(iid)
+                    records.append(item)
+
                 if stop:
-                    print(f"  [{entity}] incremental stop at page {page} — {len(records)} records since cutoff")
+                    print(f"  [{entity}] incremental stop at page {page} — "
+                          f"{len(records)} records since cutoff")
                     break
-            else:
-                records.extend(content)
+                if not content or page >= resp.get("totalPages", 1) - 1:
+                    break
+                page += 1
 
-            if page >= resp.get("totalPages", 1) - 1 or not content:
+            if stop:
                 break
-            page += 1
+            # Window exhausted. More data behind the cap?
+            win_capped = (isinstance(win_total, int) and win_rows < win_total)
+            if not win_capped or not win_min_upd:
+                break
+            if len(records) == win_start_count:
+                print(f"  [Kylas] WARNING: {entity} window at cursor {cursor!r} added no "
+                      f"new records ({len(records)}/{grand_total}) — stopping to avoid a loop")
+                break
+            if windows > 100:    # safety valve — never loop forever
+                print(f"  [Kylas] WARNING: {entity} window fetch aborted after "
+                      f"{windows} windows at {len(records)} records")
+                break
+            cursor = win_min_upd
 
+        if windows > 1 and not cutoff:
+            print(f"  [{entity}] fetched {len(records)} records across {windows} "
+                  f"window(s) (search cap is ~10k/query; total reported {grand_total})")
         return records
 
     def get_companies(self, since: str = None) -> List[dict]:

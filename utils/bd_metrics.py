@@ -63,15 +63,18 @@ ATTEMPTED_EXCLUDE = {"Yet to Be Mined", ""}
 
 
 def refresh_stage_map(kylas) -> int:
-    """Merge the live contact Pipeline Stage picklist into _PIPELINE_STAGE.
+    """Sync _PIPELINE_STAGE with the live contact Pipeline Stage picklist.
 
-    The contact search API returns bare option ids for most contacts, so any
-    id missing from the static map silently resolves to no stage (and the
-    company falls through to Active/Fresh in account health). Pulling the
-    live picklist means new/renamed options keep resolving. Returns how many
-    ids were added; safe no-op on API failure.
+    The contact search API returns bare option ids for most contacts, so the
+    id -> label map decides every stage bucket. The live picklist is the
+    AUTHORITY: it both adds missing ids and OVERRIDES wrong static labels
+    (a hardcoded 2870484 -> "SQL" that is really "Disqualified - Wrong POC"
+    silently corrupted account health until this override existed). Static
+    entries survive only for retired ids the live picklist no longer returns
+    (e.g. 2862830, the original SQL option). Returns how many ids were
+    added or corrected; safe no-op on API failure.
     """
-    added = 0
+    changed = 0
     try:
         defs = kylas.get_custom_field_defs("contact")
         key  = "cfPipelineStageBd"
@@ -83,14 +86,21 @@ def refresh_stage_map(kylas) -> int:
                 oid = int(oid)
             except (TypeError, ValueError):
                 continue
-            if oid not in _PIPELINE_STAGE and str(label).strip():
-                _PIPELINE_STAGE[oid] = str(label).strip()
-                added += 1
-        if added:
-            print(f"[bd_metrics] stage map: +{added} option id(s) from live picklist")
+            label = str(label).strip()
+            if not label:
+                continue
+            old = _PIPELINE_STAGE.get(oid)
+            if old is None:
+                _PIPELINE_STAGE[oid] = label
+                changed += 1
+                print(f"[bd_metrics] stage map: +{oid} -> {label!r} (from live picklist)")
+            elif old != label:
+                _PIPELINE_STAGE[oid] = label
+                changed += 1
+                print(f"[bd_metrics] stage map: CORRECTED {oid}: {old!r} -> {label!r}")
     except Exception as exc:
         print(f"[bd_metrics] WARN: live stage-picklist fetch failed ({exc}) — using static map")
-    return added
+    return changed
 
 
 def contact_stage(raw: dict) -> str:
