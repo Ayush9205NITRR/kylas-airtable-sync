@@ -65,20 +65,24 @@ _TERMINAL_STAGES = {
     "Not a Decision Maker (NDM)",
     "Disqualified - Wrong POC",
     "POC - Organisation - Changed",
+    "POC - Organization - Changed",   # live picklist spelling (z)
 }
 
 _ACTIVE_STAGES = {
     "CNC (Could Not Connect) - 1",
     "CNC (Could Not Connect) - 2",
+    "CNC (Could Not Connect) - 3",
     "Followup - CNC",
     "Follow-up (1)",
     "Follow-up (2)",
     "Follow-up (3)",
+    "Connect Later",
 }
 
 _CNC_STAGES = {
     "CNC (Could Not Connect) - 1",
     "CNC (Could Not Connect) - 2",
+    "CNC (Could Not Connect) - 3",
     "Followup - CNC",
 }
 
