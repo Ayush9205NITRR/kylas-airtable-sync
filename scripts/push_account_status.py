@@ -134,6 +134,16 @@ def main():
             fields=["id", "company", "ownedBy", "updatedAt", "customFieldValues"],
         )
         print(f"[probe] {len(contacts)} contacts fetched")
+        try:
+            r = kylas._request("POST", "search/contact", params={"page": 0, "size": 1},
+                               json={"fields": ["id"], "jsonRule": None})
+            kylas._raise_for_status(r)
+            total = r.json().get("totalElements")
+            print(f"[probe] search reports totalElements={total}"
+                  + ("  !! MORE THAN FETCHED — search pagination cap !!"
+                     if isinstance(total, int) and total > len(contacts) else ""))
+        except Exception as exc:
+            print(f"[probe] totalElements check failed: {exc}")
 
         # Global stage-shape stats: how many contacts have non-dict / nameless stages?
         from utils.bd_metrics import _PIPELINE_STAGE
@@ -190,6 +200,16 @@ def main():
             print(f"    raw cfPipelineStageBd = {_json.dumps(raw)}")
             print(f"    contact_stage()       = {stg!r}")
             print(f"    cfLastCalledAt        = {cf.get('cfLastCalledAt')!r}")
+            # Detail GET returns the stage as the UI shows it — verify the map.
+            try:
+                det = kylas._get(f"contacts/{ct.get('id')}")
+                det = det.get("data", det)
+                dv  = (det.get("customFieldValues") or {}).get("cfPipelineStageBd")
+                dname = dv.get("name") if isinstance(dv, dict) else dv
+                match = "OK" if str(dname) == str(stg) else "!! MISMATCH vs map !!"
+                print(f"    detail GET stage      = {dv!r}  [{match}]")
+            except Exception as exc:
+                print(f"    detail GET failed: {exc}")
 
         if matches:
             ah = _load_module("06_account_health.py")
