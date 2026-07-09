@@ -12,6 +12,8 @@ from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from utils.redact import mask_emails
+
 ADMIN_EMAIL   = "ayush@enout.in"
 VEDANT_EMAIL  = "vedant@enout.in"
 
@@ -204,7 +206,7 @@ def send_invite(
             s.login(smtp_user, smtp_pass)
             s.sendmail(smtp_user, recipients, msg.as_string())
         print(f"[CalendarInvite] Sent → {contact_name!r} on {date_label}, "
-              f"recipients: {', '.join(recipients)}")  # date_label already includes time if present
+              f"recipients: {mask_emails(recipients)}")  # date_label already includes time if present
         return True
     except Exception as exc:
         print(f"[CalendarInvite] ERROR for {contact_name!r}: {exc}")

@@ -29,6 +29,8 @@ from email.mime.text import MIMEText
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from utils.redact import mask_emails
+
 TEAM_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
 
 # Display order + label mapping for the hot stages
@@ -273,7 +275,7 @@ def run(to_override: list = None):
             s.login(smtp_user, smtp_pass)
             s.sendmail(smtp_user, to_list, msg.as_string())
         total = sum(len(v) for v in groups.values())
-        print(f"[Hot Pipeline] Sent → {', '.join(to_list)}  ({total} company rows)")
+        print(f"[Hot Pipeline] Sent → {mask_emails(to_list)}  ({total} company rows)")
     except Exception as exc:
         print(f"[Hot Pipeline] WARNING: send failed — {exc}")
 

@@ -34,6 +34,8 @@ from email.mime.text import MIMEText
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from utils.redact import mask_emails
+
 TEAM_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
 
 # ── HTML styling ────────────────────────────────────────────────────────────
@@ -369,8 +371,8 @@ def run(to_override: list = None, dry_run: bool = False):
 
     if dry_run:
         print(f"[Deal Rot] DRY RUN — no email sent")
-        print(f"[Deal Rot]   To: {', '.join(to_list)}")
-        print(f"[Deal Rot]   CC ({len(cc_list)} owners): {', '.join(cc_list) or '(none)'}")
+        print(f"[Deal Rot]   To: {mask_emails(to_list)}")
+        print(f"[Deal Rot]   CC ({len(cc_list)} owners): {mask_emails(cc_list) or '(none)'}")
         return
 
     friendly = _friendly_date()
@@ -390,8 +392,8 @@ def run(to_override: list = None, dry_run: bool = False):
             s.ehlo(); s.starttls()
             s.login(smtp_user, smtp_pass)
             s.sendmail(smtp_user, to_list + cc_list, msg.as_string())
-        cc_s = f"  (cc: {', '.join(cc_list)})" if cc_list else ""
-        print(f"[Deal Rot] Sent → {', '.join(to_list)}{cc_s}")
+        cc_s = f"  (cc: {mask_emails(cc_list)})" if cc_list else ""
+        print(f"[Deal Rot] Sent → {mask_emails(to_list)}{cc_s}")
     except Exception as exc:
         print(f"[Deal Rot] WARNING: send failed — {exc}")
 

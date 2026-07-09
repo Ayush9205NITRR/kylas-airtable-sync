@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.kylas_client import KylasClient
 from utils.airtable_client import AirtableClient
+from utils.redact import mask_email
 
 
 def _records_from_view(table_name: str, base_id: str, view: str) -> list:
@@ -94,13 +95,13 @@ def run(view: str, base: str = "crm", dry_run: bool = False) -> dict:
             user_id = kylas.find_user_id_by_email(owner_email)
             if user_id:
                 email_to_uid[owner_email] = user_id  # cache for subsequent records
-                print(f"  [INFO] Found {owner_email} via direct search → uid:{user_id}")
+                print(f"  [INFO] Found {mask_email(owner_email)} via direct search → uid:{user_id}")
             else:
-                print(f"  [SKIP] '{co_name}' — {owner_email} not found in Kylas (new user not yet active?)")
+                print(f"  [SKIP] '{co_name}' — {mask_email(owner_email)} not found in Kylas (new user not yet active?)")
                 continue
 
         if dry_run:
-            print(f"  [DRY] '{co_name}' (co:{kylas_co_id}) → {owner_email} (uid:{user_id})")
+            print(f"  [DRY] '{co_name}' (co:{kylas_co_id}) → {mask_email(owner_email)} (uid:{user_id})")
             # Still fetch contacts to show count
             contacts = kylas.get_contacts_by_company(int(kylas_co_id))
             print(f"         would also update {len(contacts)} contact(s)")
@@ -112,7 +113,7 @@ def run(view: str, base: str = "crm", dry_run: bool = False) -> dict:
         ok = kylas.update_company_owner(int(kylas_co_id), user_id)
         if ok:
             co_ok += 1
-            print(f"  [OK] Company '{co_name}' → {owner_email}")
+            print(f"  [OK] Company '{co_name}' → {mask_email(owner_email)}")
         else:
             co_fail += 1
             print(f"  [FAIL] Company '{co_name}' owner update failed")

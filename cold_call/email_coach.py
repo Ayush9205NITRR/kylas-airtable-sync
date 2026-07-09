@@ -23,6 +23,30 @@ from cold_call import config
 
 TEAM_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
 
+
+# ── Redaction (cold_call keeps its own dependency-free copy — see utils/redact.py;
+# Actions logs may be public, so never print a raw email address) ──────────────
+def mask_email(addr: str) -> str:
+    """muskan@enout.in -> 'mu***@enout.in'. Non-emails returned unchanged."""
+    addr = (addr or "").strip()
+    if "@" not in addr:
+        return addr
+    local, _, domain = addr.partition("@")
+    if len(local) <= 2:
+        masked = "***"
+    else:
+        masked = local[:2] + "***"
+    return f"{masked}@{domain}"
+
+
+def mask_emails(value) -> str:
+    """Mask a list of emails or a comma-separated string; return joined string."""
+    if value is None:
+        return ""
+    items = value if isinstance(value, (list, tuple, set)) else str(value).split(",")
+    return ", ".join(mask_email(str(x).strip()) for x in items if str(x).strip())
+
+
 # Section -> (label, max points), in display order.
 _SECTIONS = [
     ("hook", "Hook", 25),
@@ -165,7 +189,7 @@ def send_coaching_email(bd_name: str, bd_email: str, calls_today: list) -> bool:
     subject = (f"Your call coaching — {date.today().strftime('%d %b')} "
                f"({len(calls_today)} calls, avg {int(avg_total)}/100)")
     _send_smtp(bd_email, subject, build_email_html(bd_name, calls_today))
-    print(f"[email] Sent coaching email → {bd_name} <{bd_email}>")
+    print(f"[email] Sent coaching email → {bd_name} <{mask_email(bd_email)}>")
     return True
 
 
@@ -204,4 +228,4 @@ if __name__ == "__main__":
         else:
             subject = "Your call coaching — sample (2 calls, avg 66/100)"
             _send_smtp(args.to, subject, html)
-            print(f"[email] Sample sent → {args.to}")
+            print(f"[email] Sample sent → {mask_email(args.to)}")
