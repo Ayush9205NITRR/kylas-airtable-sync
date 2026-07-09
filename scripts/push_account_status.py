@@ -348,6 +348,43 @@ def main():
     if args.dry_run:
         print("[push] (no Kylas writes — remove --dry-run to apply)")
 
+    # ── Bulk prefetch: one windowed company search instead of one GET per     ──
+    # ── company. Companies whose stored values already match are skipped     ──
+    # ── with ZERO api calls — the dominant Actions-minutes cost of a sweep.  ──
+    prefetch = {}
+    if len(company_ids) > 200:
+        print("[push] Prefetching current company values for skip-if-same...")
+        try:
+            for co in kylas._search_all("company", fields=["id", "customFieldValues"]):
+                prefetch[str(co.get("id"))] = co.get("customFieldValues") or {}
+            print(f"[push] {len(prefetch)} companies prefetched")
+        except Exception as exc:
+            print(f"[push] WARN: prefetch failed ({exc}) — using per-company GETs")
+            prefetch = {}
+
+    defs_company = kylas.get_custom_field_defs("company")
+    _st_options  = (defs_company.get(status_key) or {}).get("options") or {}  # label_lower -> id
+
+    def _stored_matches(cfv: dict, status: str, lc: str) -> bool:
+        """True when the prefetched values already carry status + lc (no write needed)."""
+        if status_key:
+            want_id = _st_options.get(str(status).strip().lower())
+            got = cfv.get(status_key)
+            if isinstance(got, dict):
+                if not (str(got.get("name", "")).strip() == status
+                        or (want_id is not None and got.get("id") == want_id)):
+                    return False
+            elif got is None:
+                return False
+            else:
+                s = str(got).strip()
+                if not (s == str(want_id) or s.lower() == str(status).strip().lower()):
+                    return False
+        if lc_key and lc:
+            if str(cfv.get(lc_key) or "") != lc + "T00:00:00.000Z":
+                return False
+        return True
+
     # ── Push to Kylas ─────────────────────────────────────────────────────────
     pushed = unchanged = failed = 0
 
@@ -365,6 +402,12 @@ def main():
         if not fields:
             unchanged += 1
             continue
+
+        if prefetch:
+            cfv = prefetch.get(str(co_id))
+            if cfv is not None and _stored_matches(cfv, status, lc):
+                unchanged += 1
+                continue
 
         try:
             result = kylas.update_company_fields(int(co_id), fields, dry_run=args.dry_run)
