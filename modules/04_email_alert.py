@@ -30,6 +30,8 @@ from email.mime.text import MIMEText
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from utils.redact import mask_email, mask_emails
+
 TEAM_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
 
 METRICS = ["attempted", "connected", "dcb", "sql"]
@@ -632,9 +634,9 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
         for addr in demo_recipients:
             try:
                 _send(smtp_user, smtp_pass, addr, subject, body, [])
-                print(f"[Email] Demo sent → {addr}")
+                print(f"[Email] Demo sent → {mask_email(addr)}")
             except Exception as exc:
-                print(f"[Email] WARNING demo {addr}: {exc}")
+                print(f"[Email] WARNING demo {mask_email(addr)}: {exc}")
         return
 
     # Normal mode — send to each BD member
@@ -666,10 +668,10 @@ def send_alert(stats: dict, slot: str = "test", bd_enriched: dict = None,
         eff_cc = [a for a in cc_list if a.lower() != email.lower()]
         try:
             _send(smtp_user, smtp_pass, email, subject, body, eff_cc)
-            cc_s = f"  (cc: {', '.join(eff_cc)})" if eff_cc else ""
-            print(f"[Email] Sent → {name} <{email}>{cc_s}")
+            cc_s = f"  (cc: {mask_emails(eff_cc)})" if eff_cc else ""
+            print(f"[Email] Sent → {name} <{mask_email(email)}>{cc_s}")
         except Exception as exc:
-            print(f"[Email] WARNING: {name} <{email}> — {exc}")
+            print(f"[Email] WARNING: {name} <{mask_email(email)}> — {exc}")
 
 
 def _fallback_stats(member_name: str, stats: dict, module: str) -> dict:

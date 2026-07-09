@@ -21,6 +21,8 @@ from email.mime.text import MIMEText
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from utils.redact import mask_email, mask_emails
+
 TEAM_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
 
 METRICS = ["attempted", "connected", "dcb", "sql"]
@@ -194,8 +196,8 @@ def send_report(period: str):
                 srv.ehlo(); srv.starttls()
                 srv.login(smtp_user, smtp_pass)
                 srv.sendmail(smtp_user, [email] + eff_cc, msg.as_string())
-            cc_s = f"  (cc: {', '.join(eff_cc)})" if eff_cc else ""
-            print(f"[{period.title()} Report] Sent → {name} <{email}>{cc_s}")
+            cc_s = f"  (cc: {mask_emails(eff_cc)})" if eff_cc else ""
+            print(f"[{period.title()} Report] Sent → {name} <{mask_email(email)}>{cc_s}")
         except Exception as exc:
             print(f"[{period.title()} Report] WARNING: could not send to {name} — {exc}")
 
