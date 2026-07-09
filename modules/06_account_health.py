@@ -54,6 +54,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.kylas_client import KylasClient
 from utils.airtable_client import AirtableClient
 from utils.bd_metrics import contact_stage
+from utils.redact import mask_email, mask_emails
 
 TEAM_PATH       = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
 FM_PATH         = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "field_map.json")
@@ -803,10 +804,10 @@ def _send_poc_emails(health: dict, tbl_cache: dict, cfg: dict,
                 s.ehlo(); s.starttls()
                 s.login(smtp_user, smtp_pass)
                 s.sendmail(smtp_user, [email] + eff_cc, msg.as_string())
-            print(f"[Account Health] POC email → {name} <{email}> "
+            print(f"[Account Health] POC email → {mask_email(name)} <{mask_email(email)}> "
                   f"({len(stale_cos)} stale + {len(tapped_cos)} tapped-unexhausted)")
         except Exception as exc:
-            print(f"[Account Health] WARNING: POC email failed for {email} — {exc}")
+            print(f"[Account Health] WARNING: POC email failed for {mask_email(email)} — {exc}")
 
 
 def run(kylas=None, send_email: bool = True) -> dict:
@@ -916,7 +917,7 @@ def run(kylas=None, send_email: bool = True) -> dict:
             s.ehlo(); s.starttls()
             s.login(smtp_user, smtp_pass)
             s.sendmail(smtp_user, recipients, msg.as_string())
-        print(f"[Account Health] Weekly digest sent → {', '.join(recipients)}")
+        print(f"[Account Health] Weekly digest sent → {mask_emails(recipients)}")
     except Exception as exc:
         print(f"[Account Health] WARNING: email send failed — {exc}")
 
