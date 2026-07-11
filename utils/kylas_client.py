@@ -379,14 +379,11 @@ class KylasClient:
 
     def create_note(self, entity_type: str, entity_id, text: str) -> dict:
         """
-        Create a note attached to an entity (e.g. entity_type='DEAL') via
-        POST /notes.
+        Create a note attached to an entity (e.g. entity_type='DEAL').
 
-        Body: {"description": <html>, "relations": [{"entityType": ENTITY,
-        "entityId": <int>}]} — the same description + relations[{entityType,
-        entityId}] shape get_all_notes() reads back. <html> is `text`
-        HTML-escaped and wrapped in a single <p>...</p>, with line breaks
-        preserved as <br>.
+        Tries the /notes/relation create patterns (POST /notes plain 404s on
+        this tenant). <html> is `text` HTML-escaped and wrapped in a single
+        <p>...</p>, with line breaks preserved as <br>.
 
         Uses the same session/auth as every other call (KylasClient.session,
         via self._request so pacing + 429 backoff apply). Never raises: this
@@ -399,33 +396,41 @@ class KylasClient:
         try:
             normalized = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
             html_body  = "<p>" + self._html_escape(normalized).replace("\n", "<br>") + "</p>"
-            body = {
-                "description": html_body,
-                "relations": [{"entityType": str(entity_type).upper(),
-                               "entityId": int(entity_id)}],
-            }
+            etype = str(entity_type).upper()
+            eid   = int(entity_id)
         except Exception as exc:
             return {"ok": False, "status": 0, "id": None, "error": f"bad input: {exc}"[:300]}
 
-        try:
-            r = self._request("POST", "notes", json=body)
-        except Exception as exc:
-            return {"ok": False, "status": 0, "id": None, "error": str(exc)[:300]}
-
-        if not r.ok:
-            detail = (r.text or "").strip()
-            error = f"{r.status_code} {r.reason}: {detail}" if detail else f"{r.status_code} {r.reason}"
-            return {"ok": False, "status": r.status_code, "id": None, "error": error[:300]}
-
-        note_id = None
-        try:
-            data = r.json() if r.content else {}
-            data = data.get("data", data) if isinstance(data, dict) else data
-            if isinstance(data, dict):
-                note_id = data.get("id")
-        except Exception:
-            pass
-        return {"ok": True, "status": r.status_code, "id": note_id, "error": ""}
+        # This tenant's notes API is quirky: reads work via POST /notes/search,
+        # and POST /notes (create) returns 404. Try the /notes/relation create
+        # patterns and an entity-scoped fallback; return on the first 2xx and
+        # report which endpoint worked. If all fail, surface every attempt's
+        # status so the next fix is obvious.
+        candidates = [
+            ("notes/relation", {"description": html_body, "targetEntityType": etype, "targetEntityId": eid}),
+            ("notes/relation", {"description": html_body, "relations": [{"entityType": etype, "entityId": eid}]}),
+            (f"{etype.lower()}s/{eid}/notes", {"description": html_body}),
+        ]
+        attempts = []
+        for path, body in candidates:
+            try:
+                r = self._request("POST", path, json=body)
+            except Exception as exc:
+                attempts.append(f"{path}:EXC {str(exc)[:60]}")
+                continue
+            if r.ok:
+                note_id = None
+                try:
+                    data = r.json() if r.content else {}
+                    data = data.get("data", data) if isinstance(data, dict) else data
+                    if isinstance(data, dict):
+                        note_id = data.get("id")
+                except Exception:
+                    pass
+                return {"ok": True, "status": r.status_code, "id": note_id,
+                        "error": "", "endpoint": path}
+            attempts.append(f"{path}->{r.status_code} {(r.text or '').strip()[:90]}")
+        return {"ok": False, "status": 0, "id": None, "error": " | ".join(attempts)[:300]}
 
     def get_user_email(self, user_id) -> str:
         """
