@@ -216,10 +216,15 @@ def main():
         if unresolved:
             print(f"\n[restore] WARNING: {len(unresolved)} snapshot owners could not be "
                   f"resolved to a Kylas uid — fix team.json or Kylas users before --restore")
-        print("\n[restore] Scan complete (read-only). To restore, re-run with:")
-        if hist:
-            top_uid = hist.most_common(1)[0][0][0]
-            print(f"  --restore --from-owner-id {top_uid} --dry-run   (then without --dry-run)")
+        # Final compact summary — always lands in the log tail.
+        print("\n[restore] ===== SUMMARY =====")
+        print(f"[restore] companies currently owned by API user (Enout): {len(api_owned)}"
+              f"  (auto-restorable={len(restorable)}, orphan={len(orphan)})")
+        print(f"[restore] full Enout-owned list (id | name | RESTORABLE→uid / ORPHAN):")
+        for co_id, nm, in_snap, tgt, wn in api_owned:
+            tag = f"RESTORABLE->{tgt}" if tgt else "ORPHAN(no known BD owner)"
+            print(f"[restore]   {co_id} | {nm[:45]:<45} | {tag}")
+        print("[restore] Scan complete (read-only).")
         return
 
     # ── Restore ───────────────────────────────────────────────────────────────
