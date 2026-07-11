@@ -429,8 +429,8 @@ class KylasClient:
                     pass
                 return {"ok": True, "status": r.status_code, "id": note_id,
                         "error": "", "endpoint": path}
-            attempts.append(f"{path}->{r.status_code} {(r.text or '').strip()[:90]}")
-        return {"ok": False, "status": 0, "id": None, "error": " | ".join(attempts)[:300]}
+            attempts.append(f"{path}->{r.status_code} {(r.text or '').strip()[:450]}")
+        return {"ok": False, "status": 0, "id": None, "error": " || ".join(attempts)[:1400]}
 
     def get_user_email(self, user_id) -> str:
         """
