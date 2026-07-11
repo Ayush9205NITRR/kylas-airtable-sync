@@ -84,6 +84,7 @@ def test_request_gives_up_after_max_retries():
 
 def test_update_company_fields_cleans_body():
     client = KylasClient()
+    client.update_company_owner = lambda *a, **k: True  # re-assert is a no-op in tests
     full = {
         "id": 123, "name": "Acme", "recordActions": {}, "ownedBy": {"id": 9},
         "updatedAt": "x", "industry": {"id": 1, "name": "IT"},
@@ -150,10 +151,11 @@ def test_raise_for_status_surfaces_body():
 
 def test_object_field_from_scalar_is_skipped():
     client = KylasClient()
+    client.update_company_owner = lambda *a, **k: True
     # numberOfEmployees is an object in Kylas; mapping a scalar onto it must be
     # skipped (not corrupt the body), while the custom field still applies.
     full = {
-        "id": 9, "name": "Acme",
+        "id": 9, "name": "Acme", "ownedBy": {"id": 9},
         "numberOfEmployees": {"id": 83, "name": "50-99"},
         "customFieldValues": {},
     }
@@ -171,7 +173,9 @@ def test_object_field_from_scalar_is_skipped():
 def test_failing_field_is_isolated_and_good_ones_kept():
     import requests
     client = KylasClient()
+    client.update_company_owner = lambda *a, **k: True
     client._get = lambda path, params=None: {"data": {"id": 7, "name": "Acme",
+                                                      "ownedBy": {"id": 9},
                                                       "customFieldValues": {}}}
 
     puts = []
@@ -202,7 +206,9 @@ def test_failing_field_is_isolated_and_good_ones_kept():
 def test_all_fields_fail_returns_failed():
     import requests
     client = KylasClient()
+    client.update_company_owner = lambda *a, **k: True
     client._get = lambda path, params=None: {"data": {"id": 8, "name": "Acme",
+                                                      "ownedBy": {"id": 9},
                                                       "customFieldValues": {}}}
 
     def fake_put(path, body):
@@ -235,9 +241,13 @@ def test_custom_field_defs_parsed_from_endpoint():
     print("PASS custom field defs parsed (dropdown options + types) and cached")
 
 
-def test_field_put_excludes_owner():
-    # The field PUT must never carry ownedBy — owner is assigned separately.
+def test_field_put_excludes_ownedby_keeps_ownerid():
+    # The field PUT must never carry the ownedBy *object* (Kylas rejects it),
+    # but does carry a bare ownerId (Kylas ignores it; the real owner guard is
+    # the dedicated /owner re-assert after the PUT).
     client = KylasClient()
+    reasserted = {"uid": None}
+    client.update_company_owner = lambda cid, uid: reasserted.update(uid=uid) or True
     client.get_custom_field_defs = lambda e: {}
     client._get = lambda path, params=None: {"data": {
         "id": 5, "name": "Acme", "ownedBy": {"id": 99, "name": "Mayra"},
@@ -246,9 +256,29 @@ def test_field_put_excludes_owner():
     client._put = lambda path, body: put.update(body) or {}
     res = client.update_company_fields(5, {"cfSourceOfData": "LinkedIn"})
     assert res == "updated", res
-    assert "ownedBy" not in put and "ownerId" not in put, put
+    assert "ownedBy" not in put, put                  # object form is rejected by Kylas
+    assert put.get("ownerId") == 99, put              # bare id retained (harmless)
+    assert reasserted["uid"] == 99, reasserted        # owner re-asserted via endpoint
     assert put["customFieldValues"]["cfSourceOfData"] == "LinkedIn", put
-    print("PASS field PUT excludes owner (handled by dedicated endpoint)")
+    print("PASS field PUT drops ownedBy, keeps ownerId, re-asserts owner")
+
+
+def test_ownerless_company_is_not_written():
+    # A company with no owner on record must NOT be PUT: a full-body PUT makes
+    # Kylas assign it to the API user (Enout Super Admin). It is skipped instead.
+    client = KylasClient()
+    client.get_custom_field_defs = lambda e: {}
+    client._get = lambda path, params=None: {"data": {
+        "id": 42, "name": "Ownerless Co", "ownedBy": None,
+        "customFieldValues": {}}}
+    issued = {"put": False}
+    client._put = lambda path, body: issued.update(put=True) or {}
+    # If it wrote, this stub would flip; if it tried to re-assert, it'd error.
+    client.update_company_owner = lambda *a, **k: (_ for _ in ()).throw(
+        AssertionError("must not touch owner on an ownerless company"))
+    res = client.update_company_fields(42, {"cfAccountHealthBd": "Active"})
+    assert res == "unchanged" and not issued["put"], (res, issued)
+    print("PASS ownerless company skipped (no PUT, never assigned the API user)")
 
 
 def test_pace_rate_gate_holds_across_threads():
@@ -281,10 +311,11 @@ def test_pace_rate_gate_holds_across_threads():
 def test_dropdown_encoding_cached_after_first_isolation():
     import requests
     client = KylasClient()
+    client.update_company_owner = lambda *a, **k: True
     client.get_custom_field_defs = lambda e: {
         "cfX": {"type": "PICK_LIST", "options": {"a": 111}, "labels": {111: "A"}}}
     client._get = lambda path, params=None: {"data": {
-        "id": 1, "name": "Co", "customFieldValues": {}}}
+        "id": 1, "name": "Co", "ownedBy": {"id": 9}, "customFieldValues": {}}}
     puts = []
 
     def fake_put(path, body):
@@ -311,10 +342,12 @@ def test_company_dropdown_via_config_with_shape_fallback():
     client = KylasClient()
     # API returns no field defs for company; the config picklist map must
     # supply cfOffsiteTimeline's options (Jan - Mar -> 257199).
+    client.update_company_owner = lambda *a, **k: True
     def fake_get(path, params=None):
         if path.startswith("entities/"):
             return {"content": []}
-        return {"data": {"id": 1, "name": "Acme", "customFieldValues": {}}}
+        return {"data": {"id": 1, "name": "Acme", "ownedBy": {"id": 9},
+                         "customFieldValues": {}}}
     client._get = fake_get
 
     puts = []
@@ -340,7 +373,9 @@ def test_dropdown_label_and_boolean_coerced_on_write():
         "cfBooleanPostLink": {"type": "TOGGLE", "options": {}},
         "cfSourceOfData":    {"type": "TEXT_FIELD", "options": {}},
     }
+    client.update_company_owner = lambda *a, **k: True
     client._get = lambda path, params=None: {"data": {"id": 1, "name": "Acme",
+                                                      "ownedBy": {"id": 9},
                                                       "customFieldValues": {}}}
     put_body = {}
     client._put = lambda path, body: put_body.update(body) or {}
@@ -362,6 +397,7 @@ if __name__ == "__main__":
     test_request_retries_on_429()
     test_request_gives_up_after_max_retries()
     test_update_company_fields_cleans_body()
+    test_ownerless_company_is_not_written()
     test_update_contact_fields_coerces_company_id()
     test_owner_key_in_field_map_is_skipped()
     test_raise_for_status_surfaces_body()
@@ -369,7 +405,7 @@ if __name__ == "__main__":
     test_failing_field_is_isolated_and_good_ones_kept()
     test_all_fields_fail_returns_failed()
     test_custom_field_defs_parsed_from_endpoint()
-    test_field_put_excludes_owner()
+    test_field_put_excludes_ownedby_keeps_ownerid()
     test_pace_rate_gate_holds_across_threads()
     test_dropdown_encoding_cached_after_first_isolation()
     test_company_dropdown_via_config_with_shape_fallback()
