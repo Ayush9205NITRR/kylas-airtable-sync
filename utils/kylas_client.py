@@ -407,9 +407,12 @@ class KylasClient:
         # report which endpoint worked. If all fail, surface every attempt's
         # status so the next fix is obvious.
         candidates = [
-            ("notes/relation", {"description": html_body, "targetEntityType": etype, "targetEntityId": eid}),
-            ("notes/relation", {"description": html_body, "relations": [{"entityType": etype, "entityId": eid}]}),
-            (f"{etype.lower()}s/{eid}/notes", {"description": html_body}),
+            ("notes/relation", {"sourceEntity": {"description": html_body},
+                                "targetEntityType": etype, "targetEntityId": eid}),
+            ("notes/relation", {"sourceEntity": {"entityType": "NOTE", "description": html_body},
+                                "targetEntityType": etype, "targetEntityId": eid}),
+            ("notes/relation", {"sourceEntity": {"note": html_body},
+                                "targetEntityType": etype, "targetEntityId": eid}),
         ]
         attempts = []
         for path, body in candidates:
