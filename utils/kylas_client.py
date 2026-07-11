@@ -587,19 +587,32 @@ class KylasClient:
         """
         Set a single custom-field value on a company via full GET + PUT.
 
-        Mirrors the update_company_owner fallback: fetch the full record and
-        PUT it back unchanged except for the one customFieldValues key, so
-        every other field — including ownedBy/owner — is left exactly as
-        Kylas returned it.
+        Kylas IGNORES ownedBy/ownerId in a full-body PUT and reassigns the
+        record to the API user, so the owner is captured before the PUT and
+        re-asserted afterward via the dedicated owner endpoint. Ownerless
+        companies are skipped (a PUT would silently give them the API user).
         """
         try:
             body = self._get(f"companies/{company_id}")
             body = body.get("data", body)
-            cf = dict(body.get("customFieldValues") or {})
+            owner_before = self._owner_id_from_body(body)
+            if not owner_before:
+                print(f"  [Kylas] company {company_id}: no owner on record — "
+                      f"SKIPPED {field_key!r} update (a PUT would assign it to the API user)")
+                return False
+            base = self._clean_for_put(body)
+            base["ownerId"] = owner_before
+            cf = dict(base.get("customFieldValues") or {})
             cf[field_key] = value
-            body["customFieldValues"] = cf
-            self._put(f"companies/{company_id}", body)
+            base["customFieldValues"] = cf
+            self._put(f"companies/{company_id}", base)
+            if not self.update_company_owner(int(company_id), int(owner_before)):
+                raise SystemExit(
+                    f"OWNER RE-ASSERT FAILED on company {company_id} "
+                    f"(uid {owner_before}); aborting to protect owners.")
             return True
+        except SystemExit:
+            raise
         except Exception as exc:
             print(f"[Kylas] ERROR updating company {company_id} custom field {field_key!r}: {exc}")
             return False
@@ -1039,12 +1052,21 @@ class KylasClient:
                   f"current={sorted(current_ids)} add={added} result={sorted_ids}")
             return "updated"
 
+        # Never PUT an ownerless company: with no owner to re-assert, the full
+        # body PUT would make Kylas assign it to the API user (Enout Super
+        # Admin) silently. Skip instead.
+        _oid = self._owner_id_from_body(body)
+        if not _oid:
+            self._ownerless_skipped = getattr(self, "_ownerless_skipped", 0) + 1
+            if self._ownerless_skipped <= 25:
+                print(f"  [Kylas] company {company_id}: no owner on record — "
+                      f"SKIPPED {cf_key} update (a PUT would assign it to the API user)")
+            return "unchanged"
+
         # Build PUT body from the GET response, stripping read-only/audit fields
         # but keeping the owner so Kylas doesn't reset it to the API user.
         base = self._clean_for_put(body)
-        _oid = self._owner_id_from_body(body)
-        if _oid:
-            base["ownerId"] = _oid
+        base["ownerId"] = _oid
         base_cfv = dict(base.get("customFieldValues") or {})
 
         # Build {id, name} objects — matches the shape GET returns (and PUT requires).
@@ -1334,8 +1356,18 @@ class KylasClient:
             return "failed"
         base = self._clean_for_put(body)
         owner_before = self._owner_id_from_body(body)
-        if owner_before:
-            base["ownerId"] = owner_before
+        if not owner_before:
+            # No owner on the record. A full-body PUT makes Kylas silently
+            # assign the company to the API user (Enout Super Admin), and with
+            # no owner_before the re-assert + tripwire below are both skipped —
+            # so the company would gain an owner it never had. Never write an
+            # ownerless company; account health on it is low-value anyway.
+            self._ownerless_skipped = getattr(self, "_ownerless_skipped", 0) + 1
+            if self._ownerless_skipped <= 25:
+                print(f"  [Kylas] company {company_id}: no owner on record — "
+                      f"SKIPPED (a field PUT would assign it to the API user)")
+            return "unchanged"
+        base["ownerId"] = owner_before
         result = self._put_fields("companies", company_id, base, fields, dry_run, defs)
 
         # Kylas IGNORES ownerId in the full company PUT body and reassigns the
