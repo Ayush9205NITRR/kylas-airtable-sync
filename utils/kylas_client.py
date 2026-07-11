@@ -365,6 +365,68 @@ class KylasClient:
                 break
         return out
 
+    @staticmethod
+    def _html_escape(text: str) -> str:
+        """Escape &, <, >, and quotes so free text is safe to embed in HTML."""
+        if not text:
+            return ""
+        return (str(text)
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace('"', "&quot;")
+                .replace("'", "&#39;"))
+
+    def create_note(self, entity_type: str, entity_id, text: str) -> dict:
+        """
+        Create a note attached to an entity (e.g. entity_type='DEAL') via
+        POST /notes.
+
+        Body: {"description": <html>, "relations": [{"entityType": ENTITY,
+        "entityId": <int>}]} — the same description + relations[{entityType,
+        entityId}] shape get_all_notes() reads back. <html> is `text`
+        HTML-escaped and wrapped in a single <p>...</p>, with line breaks
+        preserved as <br>.
+
+        Uses the same session/auth as every other call (KylasClient.session,
+        via self._request so pacing + 429 backoff apply). Never raises: this
+        tenant's notes API is quirky, so a failure must be surfaced (status +
+        truncated body) to diagnose the right payload/endpoint rather than
+        being swallowed by an exception.
+
+        Returns {"ok": bool, "status": int, "id": <note id or None>, "error": <str or "">}.
+        """
+        try:
+            normalized = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
+            html_body  = "<p>" + self._html_escape(normalized).replace("\n", "<br>") + "</p>"
+            body = {
+                "description": html_body,
+                "relations": [{"entityType": str(entity_type).upper(),
+                               "entityId": int(entity_id)}],
+            }
+        except Exception as exc:
+            return {"ok": False, "status": 0, "id": None, "error": f"bad input: {exc}"[:300]}
+
+        try:
+            r = self._request("POST", "notes", json=body)
+        except Exception as exc:
+            return {"ok": False, "status": 0, "id": None, "error": str(exc)[:300]}
+
+        if not r.ok:
+            detail = (r.text or "").strip()
+            error = f"{r.status_code} {r.reason}: {detail}" if detail else f"{r.status_code} {r.reason}"
+            return {"ok": False, "status": r.status_code, "id": None, "error": error[:300]}
+
+        note_id = None
+        try:
+            data = r.json() if r.content else {}
+            data = data.get("data", data) if isinstance(data, dict) else data
+            if isinstance(data, dict):
+                note_id = data.get("id")
+        except Exception:
+            pass
+        return {"ok": True, "status": r.status_code, "id": note_id, "error": ""}
+
     def get_user_email(self, user_id) -> str:
         """
         Fetch a single user's email via GET /users/{id}.

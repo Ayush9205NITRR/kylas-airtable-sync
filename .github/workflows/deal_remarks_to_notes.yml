@@ -1,0 +1,44 @@
+name: Deal Remarks -> Notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'probe = create ONE note + verify; dry_run = list eligible deals, write nothing; run = real run over all eligible deals'
+        type: choice
+        options: [probe, dry_run, run]
+        default: probe
+      limit:
+        description: 'With run: cap the number of notes created (blank = no cap)'
+        required: false
+        default: ''
+
+jobs:
+  deal-remarks-to-notes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Copy Deal cfRemarks into Notes
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.mode }}" = "probe" ]; then
+            ARGS="--probe"
+          elif [ "${{ github.event.inputs.mode }}" = "dry_run" ]; then
+            ARGS="--dry-run"
+          else
+            ARGS=""
+          fi
+          if [ -n "${{ github.event.inputs.limit }}" ]; then
+            ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
+          fi
+          python scripts/deal_remarks_to_notes.py $ARGS
