@@ -147,6 +147,9 @@ def main():
     print(f"[restore] {len(companies)} companies fetched")
 
     # ── Compare current owner vs snapshot ─────────────────────────────────────
+    API_USER_UID = 74725     # Enout Super Admin — the account any ownerless PUT lands on
+    api_owned = []           # (co_id, name, in_snapshot, resolvable_target_uid, target_name)
+
     mismatches = []      # (co_id, co_name, cur_uid, cur_name, want_name, want_email, want_uid)
     no_snapshot = 0
     for co in companies:
@@ -154,6 +157,18 @@ def main():
         ob = co.get("ownedBy") or {}
         cur_uid  = ob.get("id") if isinstance(ob, dict) else None
         cur_name = (ob.get("name") if isinstance(ob, dict) else str(ob or "")) or ""
+
+        # Census: every company CURRENTLY owned by the API user, snapshot or not.
+        if str(cur_uid) == str(API_USER_UID):
+            s2 = snap.get(str(co_id)) or {}
+            wn = s2.get("owner_name", "")
+            tgt = None
+            if wn and wn.lower() != "unassigned" and _norm(wn) != _norm(cur_name):
+                tgt = (email_to_uid.get(s2.get("owner_email", ""))
+                       or name_to_uid.get(_norm(wn))
+                       or (email_to_uid.get(_norm(wn)) if "@" in wn else None))
+            api_owned.append((co_id, co.get("name", ""), bool(s2), tgt, wn))
+
         s = snap.get(str(co_id))
         if not s:
             no_snapshot += 1
@@ -178,6 +193,20 @@ def main():
     for (uid, name), cnt in hist.most_common(10):
         print(f"  uid={uid:<10} {name:<30} {cnt} companies")
 
+    # ── Census of companies CURRENTLY owned by the API user (the real damage) ──
+    restorable = [a for a in api_owned if a[3]]
+    orphan     = [a for a in api_owned if not a[3]]
+    print(f"\n[restore] {len(api_owned)} companies CURRENTLY owned by the API user "
+          f"(Enout Super Admin, uid {API_USER_UID}):")
+    print(f"[restore]   {len(restorable)} have a known prior BD owner in the snapshot "
+          f"(auto-restorable)")
+    print(f"[restore]   {len(orphan)} have NO restorable owner "
+          f"(new/ownerless imports — need a manual owner decision)")
+    if orphan:
+        print("[restore]   orphan (currently Enout, no snapshot owner) — first 40:")
+        for co_id, nm, in_snap, _t, _wn in orphan[:40]:
+            print(f"      {co_id} | {nm[:45]:<45} | in_snapshot={in_snap}")
+
     if args.scan:
         print("\n[restore] Detail (company_id | company | current_owner -> snapshot_owner [target_uid]):")
         for co_id, co_name, cur_uid, cur_name, want_name, want_email, want_uid in mismatches:
@@ -187,10 +216,15 @@ def main():
         if unresolved:
             print(f"\n[restore] WARNING: {len(unresolved)} snapshot owners could not be "
                   f"resolved to a Kylas uid — fix team.json or Kylas users before --restore")
-        print("\n[restore] Scan complete (read-only). To restore, re-run with:")
-        if hist:
-            top_uid = hist.most_common(1)[0][0][0]
-            print(f"  --restore --from-owner-id {top_uid} --dry-run   (then without --dry-run)")
+        # Final compact summary — always lands in the log tail.
+        print("\n[restore] ===== SUMMARY =====")
+        print(f"[restore] companies currently owned by API user (Enout): {len(api_owned)}"
+              f"  (auto-restorable={len(restorable)}, orphan={len(orphan)})")
+        print(f"[restore] full Enout-owned list (id | name | RESTORABLE→uid / ORPHAN):")
+        for co_id, nm, in_snap, tgt, wn in api_owned:
+            tag = f"RESTORABLE->{tgt}" if tgt else "ORPHAN(no known BD owner)"
+            print(f"[restore]   {co_id} | {nm[:45]:<45} | {tag}")
+        print("[restore] Scan complete (read-only).")
         return
 
     # ── Restore ───────────────────────────────────────────────────────────────
