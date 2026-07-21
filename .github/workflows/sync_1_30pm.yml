@@ -14,6 +14,11 @@ on:
         description: 'Fetch records updated on/after this date (YYYY-MM-DD). Overrides full_sync.'
         required: false
         default: ''
+      probe_members:
+        description: 'Diagnostic: print the resolved BD member list (Airtable BD Members + team.json merge) and exit. Read-only, no sync/email runs.'
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   sync:
@@ -29,12 +34,22 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Probe resolved BD member list
+        if: ${{ github.event.inputs.probe_members == 'true' }}
+        run: python modules/04_email_alert.py --list-members
+        env:
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+
       - name: Sync team from Kylas
+        if: ${{ github.event.inputs.probe_members != 'true' }}
         run: python scripts/sync_team.py
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
 
       - name: Run sync
+        if: ${{ github.event.inputs.probe_members != 'true' }}
         run: |
           ARGS="--slot=first_half"
           if [ -n "${{ github.event.inputs.since_date }}" ]; then

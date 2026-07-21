@@ -692,8 +692,19 @@ if __name__ == "__main__":
     parser.add_argument("--member", metavar="NAME",
                         help="With --demo: render this member's REAL stats for today "
                              "(read from BD Daily Stats) instead of hardcoded sample data")
+    parser.add_argument("--list-members", action="store_true",
+                        help="Read-only: print the resolved BD member list "
+                             "(Airtable 'BD Members' + team.json bd_team merge) and exit. "
+                             "No email is sent.")
     args = parser.parse_args()
     from dotenv import load_dotenv; load_dotenv()
+
+    if args.list_members:
+        members = _load_bd_members()
+        print(f"[probe] {len(members)} resolved BD member(s):")
+        for m in members:
+            print(f"  {m.get('name', ''):<20} {m.get('email', '')}")
+        raise SystemExit(0)
 
     if args.demo and args.member:
         owner, bd = _read_member_eod(args.member)
