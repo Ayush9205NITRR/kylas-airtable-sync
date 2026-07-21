@@ -163,6 +163,29 @@ def main():
         print("[sync_team] ERROR: KYLAS_API_KEY not set")
         sys.exit(2)
 
+    probe = os.environ.get("SYNC_TEAM_PROBE", "").strip().lower()
+    if probe:
+        members = _fetch_all_members(api_key)
+        hits = [m for m in members
+                if probe in (m.get("name") or f"{m.get('firstName','')} {m.get('lastName','')}").lower()]
+        print(f"[probe] {len(hits)} member(s) matching {probe!r}")
+        for m in hits:
+            uid = m.get("id")
+            print(f"[probe] raw list record for uid {uid}: {json.dumps(m, default=str)}")
+            profs = _fetch_profiles(api_key, [uid])
+            print(f"[probe] resolved profile for uid {uid}: {profs.get(str(uid))!r}")
+            try:
+                r = requests.get(f"{KYLAS_BASE}/users/{uid}",
+                                  headers={"api-key": api_key, "Content-Type": "application/json"},
+                                  timeout=30)
+                r.raise_for_status()
+                detail = r.json()
+                detail = detail.get("data", detail) if isinstance(detail, dict) else detail
+                print(f"[probe] full /users/{uid} detail: {json.dumps(detail, default=str)}")
+            except Exception as e:
+                print(f"[probe] /users/{uid} detail fetch failed: {e}")
+        return
+
     members = _fetch_all_members(api_key)
     if not members:
         print("[sync_team] ERROR: could not fetch any team members from Kylas")
