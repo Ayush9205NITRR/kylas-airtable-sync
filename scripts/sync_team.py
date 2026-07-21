@@ -116,14 +116,40 @@ def _fetch_profiles(api_key: str, user_ids: list) -> dict:
     return profiles
 
 
+def _is_demand_generation(m: dict) -> bool:
+    """True if a Kylas user/member record marks them as Demand Generation.
+
+    Checked via TEAM membership (teams[].name) — the organisational grouping
+    Kylas actually uses for "who's a BD caller" — not the permission profile
+    (profileId / profile.name). A user's permission profile is independent of
+    their team: e.g. Anjali Athya's profileId resolves to "Access Type
+    Manager" (an elevated permissions tier) while her teams entry is
+    "Demand Generation", so a profile-name-only check silently missed her and
+    she never got added to bd_team (no section in any daily BD report). The
+    profile-name check is kept as a secondary signal for older payload shapes
+    that may carry the label there instead of/in addition to teams.
+    """
+    teams = m.get("teams") or []
+    if isinstance(teams, list):
+        for t in teams:
+            tname = t.get("name") if isinstance(t, dict) else str(t)
+            if tname and "demand generation" in tname.lower():
+                return True
+    profile_obj = m.get("profile") or {}
+    profile_name = (
+        profile_obj.get("name") if isinstance(profile_obj, dict) else str(profile_obj)
+    ) or m.get("profileName") or ""
+    return "demand generation" in profile_name.lower()
+
+
 def _extract(members: list) -> tuple:
     """Return (users_by_id, emails_by_name, dg_names) from raw member list.
 
-    dg_names is the set of full names whose Kylas profile is "Demand Generation".
+    dg_names is the set of full names on Kylas's "Demand Generation" team.
     """
     users_by_id: dict  = {}   # str(id) → name
     emails_by_name: dict = {} # name → email
-    dg_names: set = set()     # names with "Demand Generation" profile
+    dg_names: set = set()     # names on the Demand Generation team
 
     for m in members:
         uid = m.get("id")
@@ -142,12 +168,7 @@ def _extract(members: list) -> tuple:
                 email = (first.get("value") or first.get("email")
                          or (first if isinstance(first, str) else ""))
 
-        # Profile field: may be an object {id, name} or a plain string
-        profile_obj = m.get("profile") or {}
-        profile_name = (
-            profile_obj.get("name") if isinstance(profile_obj, dict) else str(profile_obj)
-        ) or m.get("profileName") or ""
-        if "demand generation" in profile_name.lower():
+        if _is_demand_generation(m):
             dg_names.add(name)
 
         users_by_id[str(uid)] = name
@@ -192,14 +213,12 @@ def main():
         sys.exit(2)
 
     new_users, new_emails, dg_names = _extract(members)
-
-    # The list endpoints omit the profile, so dg_names is usually empty here.
-    # Fetch each user's detail record to find who has the Demand Generation
-    # profile (these are the BD callers who should receive the daily email).
-    profiles = _fetch_profiles(api_key, list(new_users.keys()))
-    for uid, name in new_users.items():
-        if "demand generation" in (profiles.get(uid, "") or "").lower():
-            dg_names.add(name)
+    # _extract already detects Demand Generation via team membership, which
+    # the /users list endpoint returns directly (teams[].name) — no per-user
+    # detail fetch needed. (The permission profile, e.g. profileId resolving
+    # to "Access Type Manager", is a different, unreliable signal: it missed
+    # Anjali Athya even though her team is Demand Generation — see
+    # _is_demand_generation's docstring.)
 
     print(f"[sync_team] {len(new_users)} users, {len(new_emails)} with emails, "
           f"{len(dg_names)} Demand Generation")
