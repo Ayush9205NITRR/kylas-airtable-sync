@@ -1,0 +1,14 @@
+{
+  "name": "cold-email-automation",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "send": "node sender/gmail-send.js"
+  },
+  "dependencies": {
+    "googleapis": "^140.0.0"
+  }
+}
