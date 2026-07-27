@@ -346,11 +346,24 @@ def main():
         # POCs never gets an entry at all and its Account Health stayed blank
         # forever. Mark those "Not Mined" — deliberately distinct from "Fresh",
         # which means POCs exist but none has ever been called.
-        no_pocs = [cid for cid in prefetch if cid not in health]
-        for cid in no_pocs:
-            health[cid] = {"status": "Not Mined", "last_called": ""}
-        if no_pocs:
-            print(f"[push] {len(no_pocs)} companies have no POCs → 'Not Mined'")
+        #
+        # Guarded on the dropdown actually having the option: writing a value
+        # Kylas doesn't know would fail for EVERY such company, and a failed
+        # field still round-trips the base body (plus an owner re-assert), so
+        # an unguarded pass would burn thousands of pointless writes.
+        _ah_opts = ((kylas.get_custom_field_defs("company").get(status_key) or {})
+                    .get("options") or {})
+        if status_key and "not mined" not in _ah_opts:
+            print("[push] 'Not Mined' pass SKIPPED — the Account Health (BD) dropdown "
+                  "has no 'Not Mined' option yet. Add it in Kylas (Customizations → "
+                  "Fields → Company → Account Health (BD)), then put its id in "
+                  "config/kylas_picklists.json.")
+        else:
+            no_pocs = [cid for cid in prefetch if cid not in health]
+            for cid in no_pocs:
+                health[cid] = {"status": "Not Mined", "last_called": ""}
+            if no_pocs:
+                print(f"[push] {len(no_pocs)} companies have no POCs → 'Not Mined'")
 
     # ── Apply filters ─────────────────────────────────────────────────────────
     if args.since:
