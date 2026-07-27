@@ -249,7 +249,7 @@ def main():
                 display = keys.get(k) or defs.get(k, {}).get("displayName") or k
                 ftype   = defs.get(k, {}).get("type", "")
                 opts    = defs.get(k, {}).get("options") or {}
-                opt_str = f"  options={list(opts.keys())[:5]}" if opts else ""
+                opt_str = f"  options={opts}" if opts else ""   # full label→id map
                 print(f"  {k:<40} '{display}'  [{ftype}]{opt_str}")
 
         # Raw-value diagnostic: find a company with cfAccountStatus already set
@@ -328,6 +328,43 @@ def main():
     health = ah.compute_health(contacts)
     print(f"[push] {len(health)} companies with computed health data")
 
+    # ── Full company list — powers the "Not Mined" pass AND the skip-if-same ──
+    # ── prefetch further down (one windowed search, reused twice).           ──
+    prefetch = {}
+    if args.all:
+        print("[push] Fetching full company list...")
+        try:
+            for co in kylas._search_all("company", fields=["id", "customFieldValues"]):
+                prefetch[str(co.get("id"))] = co.get("customFieldValues") or {}
+            print(f"[push] {len(prefetch)} companies fetched")
+        except Exception as exc:
+            print(f"[push] WARN: company fetch failed ({exc}) — falling back to "
+                  f"per-company GETs and skipping the Not Mined pass")
+            prefetch = {}
+
+        # compute_health() groups CONTACTS by company, so a company with zero
+        # POCs never gets an entry at all and its Account Health stayed blank
+        # forever. Mark those "Not Mined" — deliberately distinct from "Fresh",
+        # which means POCs exist but none has ever been called.
+        #
+        # Guarded on the dropdown actually having the option: writing a value
+        # Kylas doesn't know would fail for EVERY such company, and a failed
+        # field still round-trips the base body (plus an owner re-assert), so
+        # an unguarded pass would burn thousands of pointless writes.
+        _ah_opts = ((kylas.get_custom_field_defs("company").get(status_key) or {})
+                    .get("options") or {})
+        if status_key and "not mined" not in _ah_opts:
+            print("[push] 'Not Mined' pass SKIPPED — the Account Health (BD) dropdown "
+                  "has no 'Not Mined' option yet. Add it in Kylas (Customizations → "
+                  "Fields → Company → Account Health (BD)), then put its id in "
+                  "config/kylas_picklists.json.")
+        else:
+            no_pocs = [cid for cid in prefetch if cid not in health]
+            for cid in no_pocs:
+                health[cid] = {"status": "Not Mined", "last_called": ""}
+            if no_pocs:
+                print(f"[push] {len(no_pocs)} companies have no POCs → 'Not Mined'")
+
     # ── Apply filters ─────────────────────────────────────────────────────────
     if args.since:
         since_date = args.since.strip()[:10]
@@ -351,8 +388,8 @@ def main():
     # ── Bulk prefetch: one windowed company search instead of one GET per     ──
     # ── company. Companies whose stored values already match are skipped     ──
     # ── with ZERO api calls — the dominant Actions-minutes cost of a sweep.  ──
-    prefetch = {}
-    if len(company_ids) > 200:
+    # (--all already fetched this above; only --since needs it here.)
+    if not prefetch and len(company_ids) > 200:
         print("[push] Prefetching current company values for skip-if-same...")
         try:
             for co in kylas._search_all("company", fields=["id", "customFieldValues"]):

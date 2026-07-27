@@ -29,6 +29,11 @@ Account Status logic (best POC stage wins across all POCs):
   Exhausted          — no positive pipeline POC AND (NOI ≥ 2 OR all terminal)
   Fresh              — no contact has ever been called (lowest priority)
 
+Not Mined is NOT assigned here: compute_health() groups CONTACTS by company,
+so a company with zero POCs never gets an entry at all. push_account_status.py
+(--all mode) fills those in as "Not Mined" from the full company list. Keep
+the distinction — Fresh = POCs exist but none called; Not Mined = no POCs yet.
+
 Re-assignment logic (Needs Re-assign = true when):
   • Account has YtBM POCs (untouched contacts exist)  AND
   • Called Since Apr 19 = 0  (nobody has called this account since Apr 19)
@@ -380,6 +385,7 @@ _BADGE = {
     "MQL - Action Needed":              "background:#7b1fa2;color:#fff;",
     "Active":                           "background:#388e3c;color:#fff;",
     "Fresh":                            "background:#888;color:#fff;",
+    "Not Mined":                        "background:#607d8b;color:#fff;",
     "Stale":                            "background:#9e9e9e;color:#fff;",
     "Tapped – Exhausted":               "background:#d32f2f;color:#fff;",
     "Tapped – Offsite Delayed":         "background:#e65100;color:#fff;",
@@ -670,7 +676,7 @@ def _build_poc_email(first_name: str,
             for c in accounts
         )
 
-    _pri = {"Fresh": 0, "Active": 1, "MQL - Action Needed": 2,
+    _pri = {"Not Mined": -1, "Fresh": 0, "Active": 1, "MQL - Action Needed": 2,
             "Discovery Call Stage": 3, "SQL": 4, "Offsite Done": 5,
             "Offsite Delayed": 6, "Exhausted": 7}
 

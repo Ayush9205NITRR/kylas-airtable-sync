@@ -30,15 +30,23 @@ _COMPANY_DEFS = {
 
 
 def _make_client(current_ids: list):
-    """Return a KylasClient with stubbed _get/_put and the given current ids."""
+    """Return a KylasClient with stubbed _get/_put and the given current ids.
+
+    The stubbed company carries an owner: merge_company_multiselect refuses to
+    PUT an ownerless company (Kylas would silently reassign it to the API user),
+    so an owner-less fixture would exercise the skip path, not the merge logic.
+    update_company_owner is stubbed since the real one would hit the network.
+    """
     client = KylasClient()
     # Stub get_custom_field_defs so it returns our test defs (cached immediately).
     client._cf_defs_cache = {"company": _COMPANY_DEFS}
 
     cfv = {CF_KEY: current_ids} if current_ids is not None else {}
     client._get = lambda path, params=None: {
-        "data": {"id": 1, "name": "TestCo", "customFieldValues": cfv}
+        "data": {"id": 1, "name": "TestCo", "ownedBy": {"id": 9, "name": "Test BD"},
+                 "customFieldValues": cfv}
     }
+    client.update_company_owner = lambda *a, **k: True
     return client
 
 
@@ -99,6 +107,22 @@ def test_dedup_labels_no_duplicate_ids():
 # ---------------------------------------------------------------------------
 # Unmapped label: skip it; if no new ids → unchanged, no PUT.
 # ---------------------------------------------------------------------------
+def test_ownerless_company_is_not_put():
+    # A company with no owner must NOT be PUT: Kylas silently reassigns any
+    # ownerless full-body PUT to the API user (Enout Super Admin).
+    client = _make_client([101])
+    client._get = lambda path, params=None: {
+        "data": {"id": 1, "name": "Ownerless Co", "ownedBy": None,
+                 "customFieldValues": {CF_KEY: [101]}}
+    }
+    client.update_company_owner = lambda *a, **k: (_ for _ in ()).throw(
+        AssertionError("must not touch owner on an ownerless company"))
+    calls  = _capture_put(client)
+    result = client.merge_company_multiselect(1, CF_KEY, ["Apr - Jun"])
+    assert result == "unchanged", result
+    assert calls == [], "Expected no PUT for an ownerless company"
+
+
 def test_unmapped_label_unchanged_no_put():
     client = _make_client([101])
     calls  = _capture_put(client)
