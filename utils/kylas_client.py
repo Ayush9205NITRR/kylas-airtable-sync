@@ -277,6 +277,16 @@ class KylasClient:
                 break
             # Window exhausted. More data behind the cap?
             win_capped = (isinstance(win_total, int) and win_rows < win_total)
+            if win_capped and not win_min_upd:
+                # Can't advance the cursor: the rows carry no updatedAt, almost
+                # always because the caller omitted it from `fields`. Silently
+                # returning the first ~10k here once truncated a full company
+                # sweep to 10,000 of 17,644 records, so make it LOUD.
+                print(f"  [Kylas] WARNING: {entity} search hit the window cap at "
+                      f"{len(records)}/{win_total} but no row carried updatedAt — "
+                      f"add 'updatedAt' to fields= so paging past the cap works. "
+                      f"RESULTS ARE INCOMPLETE.")
+                break
             if not win_capped or not win_min_upd:
                 break
             if len(records) == win_start_count:

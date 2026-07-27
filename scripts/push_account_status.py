@@ -334,7 +334,7 @@ def main():
     if args.all:
         print("[push] Fetching full company list...")
         try:
-            for co in kylas._search_all("company", fields=["id", "customFieldValues"]):
+            for co in kylas._search_all("company", fields=["id", "customFieldValues", "updatedAt"]):
                 prefetch[str(co.get("id"))] = co.get("customFieldValues") or {}
             print(f"[push] {len(prefetch)} companies fetched")
         except Exception as exc:
@@ -392,7 +392,7 @@ def main():
     if not prefetch and len(company_ids) > 200:
         print("[push] Prefetching current company values for skip-if-same...")
         try:
-            for co in kylas._search_all("company", fields=["id", "customFieldValues"]):
+            for co in kylas._search_all("company", fields=["id", "customFieldValues", "updatedAt"]):
                 prefetch[str(co.get("id"))] = co.get("customFieldValues") or {}
             print(f"[push] {len(prefetch)} companies prefetched")
         except Exception as exc:
