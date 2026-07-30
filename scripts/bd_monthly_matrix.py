@@ -105,13 +105,48 @@ def _parse_lc(raw: str) -> str:
         return ""
 
 
-def _owner_name(ct: dict) -> str:
-    ob = ct.get("ownedBy") or {}
+def _owner_name(ct: dict, user_map: dict = None) -> str:
+    """Resolve a contact's BD owner name.
+
+    Mirrors modules/02_contact_sync.py: the contact SEARCH API usually returns
+    a bare `ownerId` rather than a populated `ownedBy` dict (same pattern as
+    pipeline stages coming back as bare option ids). Without the ownerId
+    fallback every contact resolves to "Unassigned" and the whole per-rep
+    split collapses into one row.
+    """
+    ob = ct.get("ownedBy")
     if isinstance(ob, dict):
-        return (ob.get("name")
-                or f"{ob.get('firstName', '')} {ob.get('lastName', '')}".strip()
-                or "Unassigned")
-    return str(ob) if ob else "Unassigned"
+        name = (ob.get("name")
+                or f"{ob.get('firstName', '')} {ob.get('lastName', '')}".strip())
+        if name:
+            return name
+    oid = ct.get("ownerId") or (ob if isinstance(ob, (int, float)) else None)
+    if oid and user_map:
+        name = user_map.get(str(int(oid))) or user_map.get(int(oid))
+        if name:
+            return name
+    return "Unassigned"
+
+
+def _build_user_map(kylas) -> dict:
+    """{str(uid): name} from team.json plus the live Kylas user list."""
+    umap = {}
+    tp = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                      "config", "team.json")
+    try:
+        import json
+        with open(tp) as fh:
+            for uid, name in (json.load(fh).get("kylas_users") or {}).items():
+                umap[str(uid)] = name
+    except Exception as exc:
+        print(f"[matrix] WARN: team.json users unusable ({exc})")
+    try:
+        for uid, name in (kylas.get_users() or {}).items():
+            umap.setdefault(str(uid), name)
+    except Exception as exc:
+        print(f"[matrix] WARN: live user list unavailable ({exc})")
+    print(f"[matrix] {len(umap)} Kylas users mapped for owner resolution")
+    return umap
 
 
 def build_matrix(kylas) -> tuple:
@@ -123,10 +158,16 @@ def build_matrix(kylas) -> tuple:
     connected_n = {_norm(s) for s in CONNECTED_STAGES}
     exclude_n   = {_norm(s) for s in ATTEMPTED_EXCLUDE}
 
+    user_map = _build_user_map(kylas)
+
     print("[matrix] Fetching contacts from Kylas...")
+    # ownerId is REQUIRED: the search API returns it instead of a populated
+    # ownedBy dict, and without it every row collapses to "Unassigned".
+    # updatedAt is REQUIRED too: _search_all pages past the ~10k search cap
+    # using it as a cursor, so omitting it silently truncates to 10,000.
     contacts = kylas._search_all(
         "contact",
-        fields=["id", "ownedBy", "updatedAt", "customFieldValues"],
+        fields=["id", "ownedBy", "ownerId", "updatedAt", "customFieldValues"],
     )
     print(f"[matrix] {len(contacts)} contacts fetched")
 
@@ -140,7 +181,7 @@ def build_matrix(kylas) -> tuple:
             continue
         month = lc[:7]                     # YYYY-MM
         stage = _norm(contact_stage(ct))
-        cell  = grid[(_owner_name(ct), month)]
+        cell  = grid[(_owner_name(ct, user_map), month)]
 
         if stage and stage not in exclude_n:
             cell["Call Attempted"] += 1
