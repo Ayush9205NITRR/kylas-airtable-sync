@@ -274,17 +274,93 @@ def push_to_airtable(grid: dict) -> None:
           f"skipped={tally['skipped']}")
 
 
+def diagnose(kylas) -> None:
+    """Explain the SQL count: where every SQL-ish contact actually sits.
+
+    Read-only. Answers the three ways SQL can look 'too low':
+      1. contacts whose stage IS SQL but have no Last Called date (excluded)
+      2. contacts that WERE SQL and have since moved further down the pipeline
+         (only the CURRENT stage is stored, so they no longer count as SQL)
+      3. a stage id that used to be mislabelled SQL in the static map
+    """
+    from collections import Counter
+    from utils.bd_metrics import refresh_stage_map, contact_stage, _PIPELINE_STAGE
+    refresh_stage_map(kylas)
+
+    contacts = kylas._search_all(
+        "contact", fields=["id", "ownedBy", "ownerId", "updatedAt", "customFieldValues"])
+    print(f"\n[diag] {len(contacts)} contacts fetched\n")
+
+    by_stage, by_stage_lc, sql_month, raw_ids = Counter(), Counter(), Counter(), Counter()
+    for ct in contacts:
+        cf    = ct.get("customFieldValues") or {}
+        stage = contact_stage(ct) or "(no stage)"
+        lc    = _parse_lc(cf.get("cfLastCalledAt", ""))
+        by_stage[stage] += 1
+        if lc:
+            by_stage_lc[stage] += 1
+        if _norm(stage) == _norm("SQL (Sales Qualified Lead)"):
+            sql_month[lc[:7] if lc else "(NO LAST CALLED DATE)"] += 1
+            rv = cf.get("cfPipelineStageBd")
+            raw_ids[rv.get("id") if isinstance(rv, dict) else rv] += 1
+
+    print("[diag] Every stage — total vs. those WITH a Last Called date:")
+    print(f"    {'stage':<46}{'total':>7}{'with LC':>9}{'no LC':>7}")
+    for stage, n in by_stage.most_common():
+        w = by_stage_lc[stage]
+        print(f"    {stage:<46}{n:>7}{w:>9}{n - w:>7}")
+
+    tot = by_stage[ "SQL (Sales Qualified Lead)" ]
+    wlc = by_stage_lc["SQL (Sales Qualified Lead)"]
+    print(f"\n[diag] Contacts CURRENTLY at 'SQL (Sales Qualified Lead)': {tot}")
+    print(f"[diag]   with a Last Called date (counted in the matrix): {wlc}")
+    print(f"[diag]   WITHOUT one (excluded by the empty-date rule)  : {tot - wlc}")
+    print("[diag] SQL by month:")
+    for m, n in sorted(sql_month.items(), reverse=True):
+        print(f"      {m:<26}{n:>6}")
+    print(f"[diag] raw option id(s) behind those SQL contacts: {dict(raw_ids)}")
+
+    print("\n[diag] Stages a contact may have moved to AFTER being SQL — a contact")
+    print("[diag] here was likely an SQL earlier, but only its CURRENT stage is stored,")
+    print("[diag] so it no longer counts toward SQL:")
+    post = ["Offsite Delayed", "Offsite Done (Late Reachout)", "Offsite Done",
+            "Discovery Call Booked", "Discovery Call Done - Awaiting Client Inputs",
+            "Closing Loops - Low Value", "Discovery Call No-Show", "Reschedule Pending"]
+    carry = 0
+    for s in post:
+        if by_stage.get(s):
+            carry += by_stage_lc[s]
+            print(f"      {s:<46}{by_stage[s]:>7}{by_stage_lc[s]:>9}")
+    print(f"[diag] → {carry} such contacts have a Last Called date. If 'SQL' is meant as")
+    print(f"[diag]   'reached SQL at some point', the figure is nearer {wlc + carry}, not {wlc}.")
+
+    print("\n[diag] Option ids the live picklist maps to an SQL-looking label:")
+    for oid, label in sorted(_PIPELINE_STAGE.items()):
+        if "sql" in str(label).lower() or "qualified" in str(label).lower():
+            print(f"      {oid}  {label!r}")
+    print("[diag] NOTE: id 2870484 was previously mislabelled 'SQL (Sales Qualified Lead)'")
+    print("[diag] in the static map; the live picklist says 'Disqualified - Wrong POC'.")
+    print("[diag] Any historical SQL figure built before that correction was inflated by it.")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Build the BD monthly matrix in Airtable")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print the table only; write nothing to Airtable")
+    ap.add_argument("--diagnose", action="store_true",
+                    help="Read-only: explain where the SQL counts come from, then exit")
     args = ap.parse_args()
 
     from dotenv import load_dotenv
     load_dotenv()
     from utils.kylas_client import KylasClient
 
-    grid, _ = build_matrix(KylasClient())
+    kylas = KylasClient()
+    if args.diagnose:
+        diagnose(kylas)
+        return
+
+    grid, _ = build_matrix(kylas)
     print_table(grid)
     if args.dry_run:
         print("[matrix] DRY RUN — nothing written to Airtable")
