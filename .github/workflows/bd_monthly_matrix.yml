@@ -15,6 +15,10 @@ on:
         description: 'Print the table only — write nothing to Airtable'
         type: boolean
         default: false
+      diagnose:
+        description: 'Read-only: explain where the SQL counts come from (stage breakdown, missing last-called dates) and exit'
+        type: boolean
+        default: false
 
 jobs:
   matrix:
@@ -33,7 +37,9 @@ jobs:
       - name: Build BD monthly matrix
         run: |
           ARGS=""
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          if [ "${{ github.event.inputs.diagnose }}" = "true" ]; then
+            ARGS="--diagnose"
+          elif [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             ARGS="--dry-run"
           fi
           python scripts/bd_monthly_matrix.py $ARGS
