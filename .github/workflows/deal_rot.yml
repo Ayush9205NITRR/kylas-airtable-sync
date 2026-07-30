@@ -11,6 +11,10 @@ on:
         description: 'Resolve recipients + owners and print them, but do not send the email'
         required: false
         default: 'false'
+      list_stages:
+        description: 'Read-only: print deal pipeline stages in order (+ counts on live deals) and exit. No email.'
+        required: false
+        default: 'false'
 
 jobs:
   deal-rot:
@@ -28,6 +32,10 @@ jobs:
 
       - name: Run deal rotting alert
         run: |
+          if [ "${{ github.event.inputs.list_stages }}" = "true" ]; then
+            python modules/08_deal_rot.py --list-stages
+            exit 0
+          fi
           ARGS=""
           if [ -n "${{ github.event.inputs.to }}" ]; then
             ARGS="--to ${{ github.event.inputs.to }}"

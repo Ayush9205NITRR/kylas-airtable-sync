@@ -106,6 +106,13 @@
       "keshav@enout.in"
     ],
     "cc_owner": true,
+    "_alert_stages_comment": "Explicit allow-list of pipeline stages that trigger a rot alert: the stages BEYOND 'Discovery Call Scheduled'. Kylas exposes no stage ordering via API, so this is spelled out rather than computed. Names must match Kylas exactly (case-insensitive). Stages in neither this nor terminal_stages are reported as UNKNOWN at run time.",
+    "alert_stages": [
+      "Detailed Itinerary",
+      "Location & Logistics",
+      "Itinerary Locked",
+      "Internal Handover"
+    ],
     "terminal_stages": [
       "Discovery Call",
       "Event Executed",
