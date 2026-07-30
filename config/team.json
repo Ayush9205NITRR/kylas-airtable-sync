@@ -106,11 +106,37 @@
       "keshav@enout.in"
     ],
     "cc_owner": true,
-    "_alert_stages_comment": "Explicit allow-list of pipeline stages that trigger a rot alert: the stages BEYOND 'Discovery Call Scheduled'. Kylas exposes no stage ordering via API, so this is spelled out rather than computed. Names must match Kylas exactly (case-insensitive). Stages in neither this nor terminal_stages are reported as UNKNOWN at run time.",
-    "alert_stages": [
-      "Detailed Itinerary",
-      "Location & Logistics",
+    "_alert_stages_comment": "Explicit allow-list of pipeline stages that trigger a rot alert: every stage BEYOND 'Discovery Call Scheduled' that is not terminal. Kylas exposes no stage ordering via API (the /pipelines endpoints 400/404), so the order is recorded in _pipeline_order below and the allow-list is spelled out rather than computed. Names must match Kylas exactly (case-insensitive). Stages in neither this nor terminal_stages are reported as UNKNOWN at run time. NOTE: the DMM stages, Venue Locked and Production hold 0 deals today but are included so deals moving into them still alert.",
+    "_pipeline_order": [
+      "Discovery Call Scheduled",
+      "DMM To Be Shared",
+      "DMM Walkthrough",
+      "DMM Re-work",
       "Itinerary Locked",
+      "Location & Logistics",
+      "Venue Locked",
+      "Detailed Itinerary",
+      "Production",
+      "Internal Handover",
+      "Event Executed",
+      "Won",
+      "Closed Lost",
+      "Closed Unqualified",
+      "Closed - Offsite Delayed"
+    ],
+    "_excluded_stages_comment": "Non-terminal stages deliberately NOT alerted. Listed explicitly so the UNKNOWN-stage warning stays meaningful: it then fires only for stages nobody has classified yet, instead of naming this one every single run.",
+    "excluded_stages": [
+      "Discovery Call Scheduled"
+    ],
+    "alert_stages": [
+      "DMM To Be Shared",
+      "DMM Walkthrough",
+      "DMM Re-work",
+      "Itinerary Locked",
+      "Location & Logistics",
+      "Venue Locked",
+      "Detailed Itinerary",
+      "Production",
       "Internal Handover"
     ],
     "terminal_stages": [
