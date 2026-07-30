@@ -15,9 +15,19 @@ was added recently the deal is treated as alive. So:
     last_activity = max(Updated At, latest note createdAt)
     rotting       = open deal AND (today - last_activity) >= idle_days
 
-Stages listed in deal_rot.terminal_stages are skipped (e.g. Discovery Call,
-Event Executed, Closed - Offsite Delayed, Won, Closed Unqualified, Closed
-Lost); every other / middle stage is checked for rotting.
+Which stages are alerted
+────────────────────────
+deal_rot.alert_stages is an explicit allow-list of pipeline stages to check
+(currently the stages *beyond* "Discovery Call Scheduled": Detailed
+Itinerary, Location & Logistics, Itinerary Locked, Internal Handover).
+Kylas exposes no pipeline-stage ordering via its API, so "above stage X"
+cannot be computed — it is spelled out instead.
+
+If alert_stages is absent/empty the module falls back to the older
+behaviour: alert on everything except deal_rot.terminal_stages (Event
+Executed, Won, Closed *). Any stage seen on live deals that appears in
+NEITHER list is reported as UNKNOWN at run time, so a stage added in Kylas
+later cannot silently drop out of the alert.
 
 Alert table:  Deal Name | Owner | Pipeline Stage | Idle (days) | Last Comment
 Recipients:   team.json deal_rot.recipients  (+ each deal owner as CC)
@@ -163,12 +173,41 @@ def _read_deals(kylas) -> list:
     return out
 
 
-def _find_rotten(deals: list, idle_days: int, terminal: list) -> list:
+def _is_alerting(stage: str, alert_stages: list, terminal: list) -> bool:
+    """True when this pipeline stage is in scope for rot alerting.
+
+    alert_stages (allow-list) wins when configured; otherwise fall back to
+    "anything that isn't terminal". Case-insensitive on both paths.
+    """
+    s = (stage or "").strip().lower()
+    if not s:
+        return False
+    if alert_stages:
+        return s in {a.strip().lower() for a in alert_stages}
+    return not _is_terminal(stage, terminal)
+
+
+def _find_rotten(deals: list, idle_days: int, terminal: list,
+                 alert_stages: list = None) -> list:
     """Return rotten deals sorted by idle days descending."""
     now    = datetime.now(timezone.utc)
+    alert_stages = alert_stages or []
     rotten = []
+
+    # Surface stages that are in neither list — a stage added in Kylas after
+    # this was configured would otherwise be silently dropped from alerting.
+    if alert_stages:
+        known = {a.strip().lower() for a in alert_stages} | {t.strip().lower() for t in terminal}
+        unknown = sorted({d["stage"] for d in deals
+                          if d["stage"] and d["stage"].strip().lower() not in known
+                          and not _is_terminal(d["stage"], terminal)})
+        if unknown:
+            print(f"[Deal Rot] NOTE: {len(unknown)} stage(s) on live deals are in neither "
+                  f"alert_stages nor terminal_stages, so they are NOT alerted: {unknown}. "
+                  f"Add them to deal_rot.alert_stages in team.json if they should be.")
+
     for d in deals:
-        if _is_terminal(d["stage"], terminal):
+        if not _is_alerting(d["stage"], alert_stages, terminal):
             continue
         upd = _parse_dt(d["updated"])
         lat = _parse_dt(d.get("latest_activity", ""))
@@ -342,8 +381,14 @@ def run(to_override: list = None, dry_run: bool = False):
         print("[Deal Rot] Disabled in config — skipping")
         return
 
-    idle_days = int(dr.get("idle_days", 2))
-    terminal  = dr.get("terminal_stages", [])
+    idle_days    = int(dr.get("idle_days", 2))
+    terminal     = dr.get("terminal_stages", [])
+    alert_stages = dr.get("alert_stages", [])
+    if alert_stages:
+        print(f"[Deal Rot] Alerting only on stages: {alert_stages}")
+    else:
+        print(f"[Deal Rot] No alert_stages configured — alerting on all "
+              f"non-terminal stages (terminal: {terminal})")
 
     from utils.kylas_client import KylasClient
     kylas = KylasClient()
@@ -355,7 +400,7 @@ def run(to_override: list = None, dry_run: bool = False):
         print(f"[Deal Rot] WARNING: could not read deals — {exc}")
         return
 
-    rotten = _find_rotten(deals, idle_days, terminal)
+    rotten = _find_rotten(deals, idle_days, terminal, alert_stages)
     print(f"[Deal Rot] {len(rotten)} rotting (idle >= {idle_days}d)")
 
     _attach_notes(rotten, kylas)
