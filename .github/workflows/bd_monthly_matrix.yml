@@ -1,0 +1,43 @@
+name: BD Monthly Matrix → Airtable
+
+# Builds the "BD Monthly Matrix" Airtable table: one row per BD rep per month
+# (month = month of the contact's Last Called date; contacts with no last-called
+# date are excluded). Creates the table on first run, then upserts by
+# "<rep> | YYYY-MM" so re-runs refresh counts instead of duplicating rows.
+
+on:
+  schedule:
+    # 8:00 PM IST = 14:30 UTC, Mon–Fri (after the 7 PM account-status sweep)
+    - cron: '30 14 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the table only — write nothing to Airtable'
+        type: boolean
+        default: false
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build BD monthly matrix
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          python scripts/bd_monthly_matrix.py $ARGS
+        env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
