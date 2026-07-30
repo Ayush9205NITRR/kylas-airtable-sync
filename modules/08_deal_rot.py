@@ -398,12 +398,76 @@ def run(to_override: list = None, dry_run: bool = False):
         print(f"[Deal Rot] WARNING: send failed — {exc}")
 
 
+def list_stages():
+    """Read-only: print each Kylas deal pipeline's stages IN ORDER, plus the
+    stages actually present on open deals. Used to define which stages count
+    as 'above' a given stage for rot alerting — order must come from Kylas,
+    never from guessing at names."""
+    import sys as _sys, os as _os
+    _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+    from utils.kylas_client import KylasClient
+    kylas = KylasClient()
+
+    print("[stages] Fetching deal pipelines from Kylas...")
+    seen_any = False
+    for path in ("pipelines", "pipelines/deal", "entities/deal/pipelines"):
+        try:
+            resp = kylas._get(path, {"page": 0, "size": 100})
+        except Exception as exc:
+            print(f"[stages]   {path} -> {exc}")
+            continue
+        items = resp.get("content") or resp.get("data") or []
+        if not isinstance(items, list) or not items:
+            print(f"[stages]   {path} -> no list payload")
+            continue
+        seen_any = True
+        print(f"[stages] via /{path}: {len(items)} pipeline(s)")
+        for p in items:
+            pid, pname = p.get("id"), p.get("name", "?")
+            print(f"\n[stages] pipeline {pid}: {pname!r}")
+            stages = p.get("stages") or p.get("pipelineStages")
+            if not stages:
+                for sp in (f"pipelines/{pid}/stages", f"pipelines/{pid}"):
+                    try:
+                        sr = kylas._get(sp)
+                        stages = (sr.get("content") or sr.get("data") or
+                                  (sr.get("data", {}) or {}).get("stages") or sr.get("stages"))
+                        if stages:
+                            break
+                    except Exception:
+                        continue
+            for i, s in enumerate(stages or [], 1):
+                if not isinstance(s, dict):
+                    print(f"    {i:>2}. {s}")
+                    continue
+                print(f"    {i:>2}. id={s.get('id')}  {s.get('name')!r}  "
+                      f"sortOrder={s.get('sortOrder', s.get('displayOrder', '?'))}  "
+                      f"type={s.get('type', s.get('stageType', ''))}")
+        break
+    if not seen_any:
+        print("[stages] WARNING: no pipeline endpoint returned data")
+
+    # Ground truth: what stages do OPEN deals actually sit in right now?
+    print("\n[stages] Distinct stages on current deals (with counts):")
+    from collections import Counter
+    deals = _read_deals(kylas)
+    c = Counter(d["stage"] for d in deals)
+    for name, n in c.most_common():
+        print(f"    {n:>5}  {name!r}")
+    print(f"[stages] {len(deals)} deals total")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--to", nargs="+", metavar="EMAIL",
                         help="Override recipients (default: team.json deal_rot.recipients)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Resolve recipients + owners and print them, but do not send the email")
+    parser.add_argument("--list-stages", action="store_true",
+                        help="Read-only: print deal pipeline stages in order and exit (no email)")
     args = parser.parse_args()
     from dotenv import load_dotenv; load_dotenv()
+    if args.list_stages:
+        list_stages()
+        raise SystemExit(0)
     run(to_override=args.to, dry_run=args.dry_run)
