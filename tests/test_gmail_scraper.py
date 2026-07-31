@@ -9,7 +9,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from gmail_scraper import config, parse
+from gmail_scraper import config, parse, search_terms
 
 
 def _msg(internal_date, subject=None, frm=None, to=None, cc=None,
@@ -162,6 +162,28 @@ class TestQueryBuilding(unittest.TestCase):
         self.assertIn(" OR ", by_name["Offsite"])
         self.assertTrue(by_name["Offsite"].endswith("in:anywhere"))
 
+    def test_bare_name_is_quoted_and_scoped(self):
+        self.assertEqual(config.build_query("Offsite DMC"),
+                         '"Offsite DMC" in:anywhere')
+        self.assertEqual(config.build_query("Acme Travels Pvt Ltd"),
+                         '"Acme Travels Pvt Ltd" in:anywhere')
+
+    def test_gmail_syntax_passes_through_untouched(self):
+        for raw in ('from:sales@dmc.com has:attachment',
+                    '"Offsite" OR "Outing"',
+                    'subject:quote -label:spam',
+                    '(offsite AND goa)'):
+            self.assertEqual(config.build_query(raw), raw)
+
+    def test_scope_can_be_overridden_or_dropped(self):
+        self.assertEqual(config.build_query("Offsite", scope="in:inbox"),
+                         '"Offsite" in:inbox')
+        self.assertEqual(config.build_query("Offsite", scope=""), '"Offsite"')
+
+    def test_blank_term_yields_no_query(self):
+        self.assertEqual(config.build_query("   "), "")
+        self.assertEqual(config.build_query(None), "")
+
     def test_explicit_query_is_used_verbatim(self):
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             "_tmp_categories.json")
@@ -177,6 +199,90 @@ class TestQueryBuilding(unittest.TestCase):
         finally:
             config.CATEGORIES_FILE = original
             os.remove(path)
+
+
+class TestSearchTermsTable(unittest.TestCase):
+    """The Airtable rows -> search terms mapping, with _fetch_rows stubbed."""
+
+    def _rows(self, *field_dicts):
+        return [{"id": f"rec{i}", "fields": f} for i, f in enumerate(field_dicts)]
+
+    def _with_rows(self, rows):
+        original = search_terms._fetch_rows
+        search_terms._fetch_rows = lambda: rows
+        self.addCleanup(lambda: setattr(search_terms, "_fetch_rows", original))
+        return search_terms.from_airtable()
+
+    def test_bare_name_row(self):
+        out = self._with_rows(self._rows({"Search Term": "Acme Travels",
+                                          "Active": True}))
+        self.assertEqual(out, [{"name": "Acme Travels",
+                                "query": '"Acme Travels" in:anywhere'}])
+
+    def test_inactive_rows_are_ignored(self):
+        out = self._with_rows(self._rows(
+            {"Search Term": "On", "Active": True},
+            {"Search Term": "Off", "Active": False},
+        ))
+        self.assertEqual([t["name"] for t in out], ["On"])
+
+    def test_missing_active_column_defaults_to_on(self):
+        out = self._with_rows(self._rows({"Search Term": "No checkbox here"}))
+        self.assertEqual(len(out), 1)
+
+    def test_blank_and_whitespace_rows_are_skipped(self):
+        out = self._with_rows(self._rows({"Search Term": "   "}, {"Notes": "x"}))
+        self.assertEqual(out, [])
+
+    def test_category_and_scope_overrides(self):
+        out = self._with_rows(self._rows({
+            "Search Term": "Goa DMC", "Category": "Offsite DMC",
+            "Scope": "in:inbox", "Active": True,
+        }))
+        self.assertEqual(out, [{"name": "Offsite DMC",
+                                "query": '"Goa DMC" in:inbox'}])
+
+    def test_renamed_term_column_still_works(self):
+        out = self._with_rows(self._rows({"Name": "Fallback column"}))
+        self.assertEqual(out[0]["name"], "Fallback column")
+
+
+class TestAttachmentRefs(unittest.TestCase):
+    def test_refs_carry_ids_needed_to_download(self):
+        thread = {"id": "t1", "messages": [
+            _msg(T1, parts=[{"filename": "quote.pdf",
+                             "mimeType": "application/pdf",
+                             "body": {"attachmentId": "att1", "size": 1234}}]),
+            _msg(T2, parts=[{"parts": [
+                {"filename": "itinerary.xlsx",
+                 "mimeType": "application/vnd.ms-excel",
+                 "body": {"attachmentId": "att2", "size": 99}},
+            ]}]),
+        ]}
+        thread["messages"][0]["id"] = "m1"
+        thread["messages"][1]["id"] = "m2"
+        refs = parse.attachment_refs(thread)
+        self.assertEqual([r["filename"] for r in refs],
+                         ["quote.pdf", "itinerary.xlsx"])
+        self.assertEqual(refs[0]["message_id"], "m1")
+        self.assertEqual(refs[0]["attachment_id"], "att1")
+        self.assertEqual(refs[0]["mime_type"], "application/pdf")
+        self.assertEqual(refs[1]["message_id"], "m2")
+
+    def test_inline_parts_without_attachment_id_are_excluded(self):
+        thread = {"id": "t1", "messages": [
+            _msg(T1, parts=[{"filename": "signature.png",
+                             "body": {"size": 400}}]),
+        ]}
+        self.assertEqual(parse.attachment_refs(thread), [])
+
+    def test_defaults_to_octet_stream_when_mime_missing(self):
+        thread = {"id": "t1", "messages": [
+            _msg(T1, parts=[{"filename": "x.bin",
+                             "body": {"attachmentId": "a", "size": 1}}]),
+        ]}
+        self.assertEqual(parse.attachment_refs(thread)[0]["mime_type"],
+                         "application/octet-stream")
 
 
 if __name__ == "__main__":

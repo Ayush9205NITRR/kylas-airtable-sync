@@ -50,8 +50,13 @@ def _request(method: str, payload: dict) -> dict:
 
 
 def upsert(records: list) -> dict:
-    """Upsert rows on Thread ID. Returns {'created': n, 'updated': n}."""
+    """Upsert rows on Thread ID.
+
+    Returns {'created': n, 'updated': n, 'by_key': {thread_id: record}} — the
+    record ids come back so attachments can be uploaded onto them afterwards.
+    """
     created = updated = 0
+    by_key = {}
     for i in range(0, len(records), BATCH_SIZE):
         chunk = records[i:i + BATCH_SIZE]
         payload = {
@@ -66,4 +71,8 @@ def upsert(records: list) -> dict:
         resp = _request("PATCH", payload)
         created += len(resp.get("createdRecords", []))
         updated += len(resp.get("updatedRecords", []))
-    return {"created": created, "updated": updated}
+        for record in resp.get("records", []):
+            key = record.get("fields", {}).get(config.KEY_FIELD)
+            if key:
+                by_key[key] = record
+    return {"created": created, "updated": updated, "by_key": by_key}

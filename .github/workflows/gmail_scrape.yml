@@ -6,12 +6,16 @@ on:
     - cron: '30 1 * * *'
   workflow_dispatch:
     inputs:
+      term:
+        description: 'Search this name directly, ignoring the Search Terms table'
+        required: false
+        default: ''
       category:
-        description: 'Only this category, e.g. Offsite DMC (blank = all)'
+        description: 'Only this term/category from the Search Terms table (blank = all)'
         required: false
         default: ''
       query:
-        description: 'Raw Gmail query, overrides the category config'
+        description: 'Raw Gmail query, used verbatim'
         required: false
         default: ''
       since:
@@ -19,9 +23,13 @@ on:
         required: false
         default: ''
       limit:
-        description: 'Process at most N threads (blank = all)'
+        description: 'Process at most N threads — use 5 for a test run (blank = all)'
         required: false
         default: ''
+      no_attachments:
+        description: 'Skip uploading attachment files (true/false)'
+        required: false
+        default: 'false'
       dry_run:
         description: 'Print only, write nothing to Airtable (true/false)'
         required: false
@@ -46,18 +54,22 @@ jobs:
         # a category name or Gmail query can contain quotes and spaces.
         run: |
           ARGS=()
+          if [ -n "$IN_TERM" ];     then ARGS+=(--term "$IN_TERM"); fi
           if [ -n "$IN_CATEGORY" ]; then ARGS+=(--category "$IN_CATEGORY"); fi
           if [ -n "$IN_QUERY" ];    then ARGS+=(--query "$IN_QUERY"); fi
           if [ -n "$IN_SINCE" ];    then ARGS+=(--since "$IN_SINCE"); fi
           if [ -n "$IN_LIMIT" ];    then ARGS+=(--limit "$IN_LIMIT"); fi
-          if [ "$IN_DRY_RUN" = "true" ]; then ARGS+=(--dry-run); fi
+          if [ "$IN_NO_ATTACH" = "true" ]; then ARGS+=(--no-attachments); fi
+          if [ "$IN_DRY_RUN" = "true" ];   then ARGS+=(--dry-run); fi
           python -m gmail_scraper.pipeline "${ARGS[@]}"
         env:
-          IN_CATEGORY: ${{ github.event.inputs.category }}
-          IN_QUERY:    ${{ github.event.inputs.query }}
-          IN_SINCE:    ${{ github.event.inputs.since }}
-          IN_LIMIT:    ${{ github.event.inputs.limit }}
-          IN_DRY_RUN:  ${{ github.event.inputs.dry_run }}
+          IN_TERM:      ${{ github.event.inputs.term }}
+          IN_CATEGORY:  ${{ github.event.inputs.category }}
+          IN_QUERY:     ${{ github.event.inputs.query }}
+          IN_SINCE:     ${{ github.event.inputs.since }}
+          IN_LIMIT:     ${{ github.event.inputs.limit }}
+          IN_NO_ATTACH: ${{ github.event.inputs.no_attachments }}
+          IN_DRY_RUN:   ${{ github.event.inputs.dry_run }}
           GMAIL_USER:              ${{ secrets.GMAIL_USER }}
           GMAIL_CLIENT_ID:         ${{ secrets.GMAIL_CLIENT_ID }}
           GMAIL_CLIENT_SECRET:     ${{ secrets.GMAIL_CLIENT_SECRET }}

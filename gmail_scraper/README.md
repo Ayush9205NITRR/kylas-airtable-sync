@@ -15,6 +15,7 @@ then writes **one Airtable row per email thread** with:
 | `First Email Date` | Earliest message, IST |
 | `Last Email Date` | Latest message, IST |
 | `Attachments` | Attachment filenames across the thread, comma-separated |
+| `Files` | The actual attachment files, uploaded so they're downloadable from the record |
 | `Attachment Count` / `Message Count` | Counts |
 | `Snippet` | Gmail's preview of the opening message |
 | `Gmail Link` | Direct link back to the thread |
@@ -67,18 +68,21 @@ The scope is `gmail.readonly` — the scraper cannot send, modify, or delete mai
 - An **Airtable PAT** with `data.records:read`, `data.records:write`,
   `schema.bases:read` and `schema.bases:write` on the target base
   (`AIRTABLE_PAT` — the repo already uses this).
-- A **base id** for where the threads should live: `GMAIL_AIRTABLE_BASE_ID`.
-  Use a dedicated base so scraped mail never mixes with the Kylas CRM data.
-  (If unset it falls back to `AIRTABLE_BASE_ID`.)
+- The base defaults to `appNjXRYNAQ2Nuiah` and the thread table to
+  `tblyXn5UDBAxTbWYZ`; override with `GMAIL_AIRTABLE_BASE_ID` /
+  `GMAIL_TABLE_NAME` (a table id or a name both work).
 
-Create the table and its fields:
+Create the tables and fields:
 
 ```bash
 python scripts/setup_gmail_airtable.py
 ```
 
-Idempotent — re-run it any time you add a field. Or run the **Gmail Scraper -
-Airtable Setup** workflow from the Actions tab.
+This adds the scraped columns plus the `Files` attachment field to the thread
+table, and creates the `Search Terms` control table. It only ever **adds** —
+existing tables, fields and rows are untouched. Idempotent, so re-run it any
+time. Or run the **Gmail Scraper - Airtable Setup** workflow from the Actions
+tab.
 
 ### 3. Environment variables
 
@@ -88,62 +92,89 @@ GMAIL_CLIENT_ID=...                # from auth_setup
 GMAIL_CLIENT_SECRET=...
 GMAIL_REFRESH_TOKEN=...
 AIRTABLE_PAT=pat...
-GMAIL_AIRTABLE_BASE_ID=app...
-# optional
+# optional — these have working defaults
+GMAIL_AIRTABLE_BASE_ID=appNjXRYNAQ2Nuiah
+GMAIL_TABLE_NAME=tblyXn5UDBAxTbWYZ
+GMAIL_SEARCH_TERMS_TABLE=Search Terms
+GMAIL_DEFAULT_SCOPE=in:anywhere    # scope appended to a bare name
 GMAIL_LOOKBACK_DAYS=180            # default window when --since is omitted
-GMAIL_MAX_THREADS=500              # per-category safety cap
-GMAIL_TABLE_NAME=Email Threads
+GMAIL_MAX_THREADS=500              # per-term safety cap
+GMAIL_ATTACHMENT_FIELD=Files
+GMAIL_MAX_ATTACHMENT_MB=5          # Airtable's own per-file upload limit
+GMAIL_MAX_ATTACHMENTS_PER_THREAD=10
 ```
 
 Same names as GitHub Secrets for the scheduled workflow.
 
 ---
 
-## Categories
+## Search terms — you control these, in Airtable
 
-Keywords live in [`config/email_categories.json`](../config/email_categories.json)
-so you can add categories without touching code:
+The **`Search Terms`** table is the control panel. Add a row, type a name, tick
+`Active`. That's it — the next run searches for it. No code change, no deploy.
 
-```json
-{
-  "default_scope": "in:anywhere",
-  "categories": [
-    { "name": "Offsite DMC", "keywords": ["Offsite DMC"] },
-    { "name": "Offsite",     "keywords": ["offsite", "team outing"] },
-    { "name": "Raw query",   "query": "from:dmc@example.com has:attachment in:anywhere" }
-  ]
-}
-```
+| Search Term | Active | Category | Scope | Notes |
+|---|---|---|---|---|
+| `Offsite DMC` | ✅ | | | matched as an exact phrase |
+| `Acme Travels Pvt Ltd` | ✅ | `Vendors` | | filed under "Vendors" |
+| `Goa DMC` | ✅ | | `in:inbox` | skips Spam/Trash for this row only |
+| `Old campaign` | ⬜ | | | ignored while unticked |
 
-- `keywords` are OR'd and quoted, then suffixed with `default_scope` →
-  `("offsite" OR "team outing") in:anywhere`
-- `query` (if given) is passed to Gmail verbatim — full search syntax works:
-  `from:`, `to:`, `has:attachment`, `label:`, `subject:`, `-exclude`
-- **Order = priority.** A thread matching both "Offsite DMC" and "Offsite" is
-  filed under `Offsite DMC` (listed first) and lists both in `All Categories`.
+Only `Search Term` is required. `Category` defaults to the term itself; `Scope`
+defaults to `in:anywhere`.
 
-`in:anywhere` includes Spam and Trash — that's Gmail's behaviour, and it's what
-your example query asked for. Drop it from `default_scope` to search only the
-normal mailbox.
+**Plain names are all you need.** `Acme Travels` becomes `"Acme Travels"
+in:anywhere` — quoted, so it matches the whole phrase rather than any email
+containing "acme" or "travels". If you *do* type Gmail syntax
+(`from:sales@dmc.com has:attachment`, `"Offsite" OR "Outing"`, `subject:quote
+-label:spam`), it's detected and passed through untouched — same box, no second
+field to learn.
+
+Unticking `Active` stops a term without deleting it, so the rows it already
+produced stay put.
+
+**Priority:** rows are read top to bottom. A thread matching both `Offsite DMC`
+and `Offsite` is filed under whichever is higher, with both listed in
+`All Categories`.
+
+`in:anywhere` includes Spam and Trash — Gmail's behaviour, and what your
+original query asked for. Set `Scope` on a row, or `GMAIL_DEFAULT_SCOPE`
+globally, to change that.
+
+[`config/email_categories.json`](../config/email_categories.json) is the
+fallback, used only when the Airtable table is unreachable or has no active
+rows, so a fresh checkout still runs.
 
 ## Running it
 
 ```bash
-# everything in the config, last 180 days, written to Airtable
+# test run: first 5 threads only, nothing written
+python -m gmail_scraper.pipeline --limit 5 --dry-run
+
+# same 5, written to Airtable with attachments
+python -m gmail_scraper.pipeline --limit 5
+
+# the full set, last 180 days
 python -m gmail_scraper.pipeline
 
-# see what would land, without writing
-python -m gmail_scraper.pipeline --dry-run --limit 20
-
-# one category, all time
+# one term from the table, all time
 python -m gmail_scraper.pipeline --category "Offsite DMC" --since all
 
-# a one-off query that isn't in the config
-python -m gmail_scraper.pipeline --query 'Offsite DMC in:anywhere' \
-    --category-name "Offsite DMC" --since 1y
+# a name that isn't in the table yet
+python -m gmail_scraper.pipeline --term "Acme Travels" --since 1y
 
-# dump to JSON as well
+# raw Gmail query, verbatim
+python -m gmail_scraper.pipeline --query 'from:sales@dmc.com has:attachment'
+
+# skip file uploads (filenames still recorded), or dump to JSON
+python -m gmail_scraper.pipeline --no-attachments
 python -m gmail_scraper.pipeline --dry-run --json /tmp/threads.json
+```
+
+Check what terms would run, without touching Gmail:
+
+```bash
+python -m gmail_scraper.search_terms
 ```
 
 Check auth on its own:
@@ -155,11 +186,26 @@ python -m gmail_scraper.gmail_client    # prints the mailbox + a per-category th
 Scheduled run: `.github/workflows/gmail_scrape.yml`, 7:00 AM IST daily, plus
 manual dispatch with the same options as flags.
 
+## Attachments
+
+Real files land in the `Files` column, downloadable straight from the record.
+The scraper pulls the bytes from Gmail and pushes them through Airtable's
+content-upload API — no public URL or intermediate hosting needed.
+
+Two caps, both adjustable:
+
+- **5 MB per file** (`GMAIL_MAX_ATTACHMENT_MB`) — Airtable's own upload limit,
+  so raising it past 5 won't help. Oversized files are skipped, but their names
+  still appear in the `Attachments` text column and `Gmail Link` reaches the
+  original mail.
+- **10 files per thread** (`GMAIL_MAX_ATTACHMENTS_PER_THREAD`) — stops one
+  40-attachment thread stalling a run.
+
+Re-runs only upload filenames the record doesn't already have, so nothing
+duplicates. `--no-attachments` records names only.
+
 ## Notes & limits
 
-- **Attachments are stored as filenames**, not files. Uploading the actual
-  binaries into an Airtable attachment field means hosting each file at a public
-  URL first — worth doing only if you actually need the files in Airtable.
 - Gmail's date operators (`newer_than:`, `after:`) are **day-granular**, so
   `--since` can't be finer than a day.
 - Re-running is cheap and safe: the upsert keys on `Thread ID`, so an active

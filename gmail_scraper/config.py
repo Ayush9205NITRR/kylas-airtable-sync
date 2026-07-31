@@ -44,9 +44,14 @@ DEFAULT_LOOKBACK_DAYS = int(os.environ.get("GMAIL_LOOKBACK_DAYS", "180"))
 # Safety valve so a broad keyword can't pull the whole mailbox in one run.
 MAX_THREADS_PER_CATEGORY = int(os.environ.get("GMAIL_MAX_THREADS", "500"))
 
-# ── Categories ─────────────────────────────────────────────────────────────────
-# Keyword -> category definitions live in config/email_categories.json so new
-# categories can be added without touching code.
+# ── Search terms / categories ──────────────────────────────────────────────────
+# Search terms are edited in Airtable (the `Search Terms` table) — add a row,
+# type a name, done. No code change, no redeploy. The JSON file below is the
+# fallback for when that table is unreachable or empty.
+SEARCH_TERMS_TABLE = os.environ.get("GMAIL_SEARCH_TERMS_TABLE", "Search Terms")
+# Appended to a bare name to make it a Gmail query: "Acme Travels" in:anywhere
+DEFAULT_SCOPE = os.environ.get("GMAIL_DEFAULT_SCOPE", "in:anywhere")
+
 CATEGORIES_FILE = os.environ.get(
     "GMAIL_CATEGORIES_FILE",
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -55,33 +60,76 @@ CATEGORIES_FILE = os.environ.get(
 
 # ── Airtable ───────────────────────────────────────────────────────────────────
 AIRTABLE_TOKEN = os.environ.get("AIRTABLE_PAT") or os.environ.get("AIRTABLE_TOKEN", "")
-# Own base by preference so scraped mail never lands in the Kylas CRM base.
+# Defaults to the base the scraper was set up against; override per environment.
 AIRTABLE_BASE_ID = (
     os.environ.get("GMAIL_AIRTABLE_BASE_ID")
-    or os.environ.get("AIRTABLE_BASE_ID", "")
+    or os.environ.get("AIRTABLE_BASE_ID")
+    or "appNjXRYNAQ2Nuiah"
 )
-TABLE_NAME = os.environ.get("GMAIL_TABLE_NAME", "Email Threads")
+# A table id (tbl...) or a table name both work in the REST path. The id is used
+# by default so a rename in the UI can't break the sync.
+TABLE_NAME = os.environ.get("GMAIL_TABLE_NAME", "tblyXn5UDBAxTbWYZ")
 
 # Dedup / upsert key. One Airtable row per Gmail thread.
 KEY_FIELD = "Thread ID"
+
+# ── Attachments ────────────────────────────────────────────────────────────────
+# Real files are uploaded into this attachment field via Airtable's content API,
+# so they're downloadable straight from the record.
+ATTACHMENT_FIELD = os.environ.get("GMAIL_ATTACHMENT_FIELD", "Files")
+# Airtable's upload endpoint rejects anything over 5 MB. Oversized files are
+# skipped and named in the `Attachments` text column instead.
+MAX_ATTACHMENT_MB = float(os.environ.get("GMAIL_MAX_ATTACHMENT_MB", "5"))
+# Per-thread cap so one 40-attachment thread can't stall a run.
+MAX_ATTACHMENTS_PER_THREAD = int(os.environ.get("GMAIL_MAX_ATTACHMENTS_PER_THREAD", "10"))
 
 
 def now_ist_iso() -> str:
     return datetime.now(IST).isoformat(timespec="seconds")
 
 
+def build_query(term: str, scope: str = None) -> str:
+    """Turn whatever the user typed into a Gmail search query.
+
+    A bare name — ``Offsite DMC``, ``Acme Travels`` — is quoted and scoped, so
+    it matches the phrase anywhere in the mailbox. If the text already contains
+    Gmail search syntax (``from:``, ``has:``, ``OR``, ``-``…) it is passed
+    through untouched, which lets a power user drop a full query into the same
+    box without a second field.
+    """
+    term = (term or "").strip()
+    if not term:
+        return ""
+    scope = DEFAULT_SCOPE if scope is None else scope.strip()
+
+    operators = ("from:", "to:", "cc:", "bcc:", "subject:", "label:", "has:",
+                 "in:", "filename:", "list:", "after:", "before:", "newer_than:",
+                 "older_than:", "is:", "category:")
+    lowered = term.lower()
+    looks_like_query = (
+        any(op in lowered for op in operators)
+        or " or " in lowered
+        or term.startswith(("(", '"', "-"))
+    )
+    if looks_like_query:
+        return term
+    query = f'"{term}"'
+    return f"{query} {scope}".strip() if scope else query
+
+
 def load_categories() -> list:
     """Read config/email_categories.json -> [{'name', 'query'}, ...].
 
-    A category may specify either an explicit ``query`` (raw Gmail search
-    syntax, used as-is) or a list of ``keywords`` which get OR'd together and
-    combined with the file's ``default_scope`` (``in:anywhere`` by default).
-    Order matters: when a thread matches several categories the first one wins.
+    The JSON file is the fallback source for search terms; the primary one is
+    the `Search Terms` table in Airtable (see search_terms.py). A category may
+    specify either an explicit ``query`` (raw Gmail syntax, used as-is) or a
+    list of ``keywords`` OR'd together and combined with ``default_scope``.
+    Order matters: when a thread matches several, the first one wins.
     """
     with open(CATEGORIES_FILE, encoding="utf-8") as fh:
         data = json.load(fh)
 
-    scope = data.get("default_scope", "in:anywhere").strip()
+    scope = data.get("default_scope", DEFAULT_SCOPE).strip()
     out = []
     for entry in data.get("categories", []):
         name = entry.get("name", "").strip()

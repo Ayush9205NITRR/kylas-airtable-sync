@@ -68,6 +68,39 @@ def attachment_names(payload: dict) -> list:
     return found
 
 
+def attachment_refs(thread: dict) -> list:
+    """Everything needed to actually download each attachment in a thread.
+
+    Returns [{'message_id', 'attachment_id', 'filename', 'mime_type', 'size'}].
+    Only parts with an attachmentId are included — those are the ones
+    `users.messages.attachments.get` can fetch.
+    """
+    refs, seen = [], set()
+
+    def walk(message_id, part):
+        filename = (part.get("filename") or "").strip()
+        body = part.get("body", {}) or {}
+        attachment_id = body.get("attachmentId")
+        if filename and attachment_id:
+            key = (filename, body.get("size", 0))
+            if key not in seen:
+                seen.add(key)
+                refs.append({
+                    "message_id": message_id,
+                    "attachment_id": attachment_id,
+                    "filename": filename,
+                    "mime_type": part.get("mimeType") or "application/octet-stream",
+                    "size": int(body.get("size", 0) or 0),
+                })
+        for sub in part.get("parts", []) or []:
+            walk(message_id, sub)
+
+    for msg in sorted(thread.get("messages", []),
+                      key=lambda m: int(m.get("internalDate", 0))):
+        walk(msg.get("id", ""), msg.get("payload", {}))
+    return refs
+
+
 def _ist(ms: int) -> datetime:
     return datetime.fromtimestamp(int(ms) / 1000, tz=config.IST)
 

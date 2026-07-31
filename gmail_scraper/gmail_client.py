@@ -109,6 +109,14 @@ def search_thread_ids(query: str, max_threads: int = None) -> list:
     return ids[:max_threads]
 
 
+def download_attachment(message_id: str, attachment_id: str) -> bytes:
+    """Raw bytes of one attachment (Gmail returns base64url-encoded data)."""
+    import base64
+    resp = _execute(_service().users().messages().attachments().get(
+        userId="me", messageId=message_id, id=attachment_id))
+    return base64.urlsafe_b64decode(resp.get("data", ""))
+
+
 def get_thread(thread_id: str) -> dict:
     """Full thread payload.
 

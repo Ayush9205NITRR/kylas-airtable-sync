@@ -1,14 +1,16 @@
 """
 Gmail -> Airtable thread scraper.
 
-For every category in config/email_categories.json, run its Gmail search, pull
+Search terms come from the `Search Terms` table in Airtable — add a row, type a
+name, and the next run picks it up. For each term, run the Gmail search, pull
 each matching thread, flatten it (subject / sender / CC / first + last date /
-attachments) and upsert into Airtable keyed on Thread ID.
+attachments) and upsert into Airtable keyed on Thread ID. Attachments are
+uploaded as real files so they're downloadable from the record.
 
-    python -m gmail_scraper.pipeline                       # all categories, default lookback
-    python -m gmail_scraper.pipeline --category "Offsite DMC"
-    python -m gmail_scraper.pipeline --query 'Offsite DMC in:anywhere' --category-name "Offsite DMC"
-    python -m gmail_scraper.pipeline --since 2025-01-01 --dry-run
+    python -m gmail_scraper.pipeline --limit 5 --dry-run   # look first
+    python -m gmail_scraper.pipeline --limit 5             # first 5, for real
+    python -m gmail_scraper.pipeline                        # everything
+    python -m gmail_scraper.pipeline --term "Acme Travels" --since all
 """
 import argparse
 import json
@@ -19,90 +21,132 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
 
-from gmail_scraper import airtable_store, config, gmail_client, parse
+from gmail_scraper import (airtable_store, attachments, config, gmail_client,
+                           parse, search_terms)
 
 
-def build_categories(args) -> list:
-    """Resolve the run's categories from --query, --category or the JSON file."""
+def build_terms(args) -> list:
+    """Resolve this run's search terms from --term, --query, or the sources."""
     if args.query:
         return [{"name": args.category_name or "Ad hoc", "query": args.query}]
 
-    categories = config.load_categories()
-    if not categories:
-        raise RuntimeError(f"No categories defined in {config.CATEGORIES_FILE}")
+    if args.term:
+        return [{"name": args.category_name or t, "query": config.build_query(t)}
+                for t in args.term]
+
+    terms = search_terms.load(args.terms_from)
+    if not terms:
+        raise RuntimeError(
+            "No search terms found. Add rows to the Airtable "
+            f"'{config.SEARCH_TERMS_TABLE}' table, or edit {config.CATEGORIES_FILE}."
+        )
     if args.category:
         wanted = {c.lower() for c in args.category}
-        categories = [c for c in categories if c["name"].lower() in wanted]
-        if not categories:
+        filtered = [t for t in terms if t["name"].lower() in wanted]
+        if not filtered:
             raise RuntimeError(
-                f"No category matched {args.category!r}. Available: "
-                + ", ".join(c["name"] for c in config.load_categories())
-            )
-    return categories
+                f"No term matched {args.category!r}. Available: "
+                + ", ".join(t["name"] for t in terms))
+        return filtered
+    return terms
 
 
-def collect(categories: list, since: str, limit: int, mailbox: str) -> list:
-    """Search each category and build one record per unique thread.
+def collect(terms: list, since: str, limit: int, mailbox: str) -> list:
+    """Search each term and build one entry per unique thread.
 
-    A thread matching several categories is filed under the first one (config
-    order = priority) but keeps the full list in `All Categories`.
+    A thread matching several terms is filed under the first one (list order =
+    priority) but keeps the full list in `All Categories`.
     """
     date_clause = config.since_clause(since)
-    matches = {}   # thread_id -> [category names, in priority order]
+    matches = {}   # thread_id -> [term names, in priority order]
     order = []     # thread ids, first-seen order
 
-    for cat in categories:
-        query = f"{cat['query']} {date_clause}".strip()
+    for term in terms:
+        query = f"{term['query']} {date_clause}".strip()
         ids = gmail_client.search_thread_ids(query)
-        print(f"[search] {cat['name']:<16} {query!r} -> {len(ids)} thread(s)")
+        print(f"[search] {term['name']:<24} {query!r} -> {len(ids)} thread(s)")
         for tid in ids:
             if tid not in matches:
                 matches[tid] = []
                 order.append(tid)
-            if cat["name"] not in matches[tid]:
-                matches[tid].append(cat["name"])
+            if term["name"] not in matches[tid]:
+                matches[tid].append(term["name"])
 
     if limit:
+        if len(order) > limit:
+            print(f"[limit] {len(order)} threads matched — taking the first {limit}")
         order = order[:limit]
 
-    records = []
+    out = []
     for n, tid in enumerate(order, 1):
         thread = gmail_client.get_thread(tid)
         record = parse.thread_to_record(
-            thread,
-            category=matches[tid][0],
-            all_categories=matches[tid],
-            mailbox=mailbox,
-        )
+            thread, category=matches[tid][0], all_categories=matches[tid],
+            mailbox=mailbox)
         if not record:
             continue
-        records.append(record)
+        out.append({"record": record, "refs": parse.attachment_refs(thread)})
         if n % 25 == 0 or n == len(order):
             print(f"[fetch] {n}/{len(order)} threads")
-    return records
+    return out
+
+
+def push_attachments(items: list, by_key: dict) -> int:
+    """Upload each thread's attachments onto its (now existing) Airtable record."""
+    total = 0
+    for item in items:
+        refs = item["refs"]
+        if not refs:
+            continue
+        record = by_key.get(item["record"][config.KEY_FIELD])
+        if not record:
+            print(f"[attach]   ! no record id for thread "
+                  f"{item['record'][config.KEY_FIELD]} — skipping its files")
+            continue
+        # Attachments accumulate in the field, so on a re-run only send what
+        # isn't already there.
+        already = attachments.existing_filenames(record)
+        pending = [r for r in refs if r["filename"] not in already]
+        if not pending:
+            continue
+        result = attachments.upload_for_thread(
+            record["id"], pending, subject=item["record"].get("Subject", ""))
+        total += result["uploaded"]
+    return total
 
 
 def main() -> int:
     load_dotenv()
     ap = argparse.ArgumentParser(description="Scrape Gmail threads into Airtable")
+    ap.add_argument("--term", action="append",
+                    help="Search this name directly, skipping the term tables "
+                         "(repeatable).")
     ap.add_argument("--category", action="append",
-                    help="Only this category (repeatable). Default: all in the JSON config.")
+                    help="Only run this term/category from the configured list "
+                         "(repeatable).")
     ap.add_argument("--query",
-                    help="Raw Gmail search query, bypassing the category config.")
+                    help="Raw Gmail search query, used verbatim.")
     ap.add_argument("--category-name",
-                    help="Category label to file --query results under.")
+                    help="Category label to file --query/--term results under.")
+    ap.add_argument("--terms-from", choices=["auto", "airtable", "config"],
+                    default="auto",
+                    help="Where search terms come from. Default: Airtable, "
+                         "falling back to the JSON file.")
     ap.add_argument("--since", default="",
                     help="30d / 6m / 1y / YYYY-MM-DD / all. "
                          f"Default: last {config.DEFAULT_LOOKBACK_DAYS} days.")
     ap.add_argument("--limit", type=int, default=0,
-                    help="Process at most N threads (after dedup).")
+                    help="Process at most N threads (after dedup). Use --limit 5 "
+                         "for a quick test run.")
+    ap.add_argument("--no-attachments", action="store_true",
+                    help="Skip uploading attachment files (names still recorded).")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print what would be written; touch nothing in Airtable.")
     ap.add_argument("--json", dest="json_out",
                     help="Also dump the collected records to this JSON file.")
     args = ap.parse_args()
 
-    categories = build_categories(args)
+    terms = build_terms(args)
 
     mailbox = gmail_client.whoami()
     print(f"[auth] mailbox: {mailbox}")
@@ -110,7 +154,8 @@ def main() -> int:
         print(f"[auth] WARNING: GMAIL_USER is {config.GMAIL_USER!r} but the "
               f"credentials resolve to {mailbox!r} — scraping {mailbox!r}.")
 
-    records = collect(categories, args.since, args.limit, mailbox)
+    items = collect(terms, args.since, args.limit, mailbox)
+    records = [i["record"] for i in items]
     print(f"[collect] {len(records)} unique thread(s)")
 
     if args.json_out:
@@ -136,6 +181,13 @@ def main() -> int:
     result = airtable_store.upsert(records)
     print(f"[airtable] created {result['created']}, updated {result['updated']} "
           f"in {config.TABLE_NAME}")
+
+    if args.no_attachments:
+        print("[attach] skipped (--no-attachments)")
+    else:
+        uploaded = push_attachments(items, result["by_key"])
+        print(f"[attach] {uploaded} file(s) uploaded to "
+              f"'{config.ATTACHMENT_FIELD}'")
     return 0
 
 
