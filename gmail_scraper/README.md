@@ -108,6 +108,76 @@ Same names as GitHub Secrets for the scheduled workflow.
 
 ---
 
+## Schema design — and how uniqueness works
+
+### The decision that drives everything: one row per *thread*, not per message
+
+A "Proposal" conversation is 8 back-and-forth mails. Store one row per message
+and you get 8 near-identical rows, and columns like *First Email Date* and *Last
+Email Date* stop meaning anything — every row would have the same value in both.
+So the grain is the **conversation**, and the columns you asked for follow
+naturally:
+
+| Column | Grain | Taken from |
+|---|---|---|
+| `Subject`, `Sender Email` | the **first** message | who opened the thread |
+| `First Email Date` | earliest message | when it started |
+| `Last Email Date` | latest message | when it last moved |
+| `CC Emails`, `To Emails` | **union across all messages** | everyone involved |
+| `Attachments`, `Files` | union across all messages | everything exchanged |
+
+That's why CC is a union: someone looped in on reply 4 is a participant of the
+conversation, even though they're absent from message 1.
+
+### The uniqueness key
+
+`Thread ID` (Gmail's `thread.id`) is the primary field and the upsert key. It's
+stable — the same conversation keeps its id forever, and new replies land in the
+same thread rather than creating a new one. Two things dedupe against it:
+
+**Within a run** — a thread matching both `proposal` *and* `cost sheet` is
+collected once, not twice, and lists both in `All Categories`. The local script
+prints this so you can see it:
+
+```
+[dedup] 14 hit(s) -> 11 unique thread(s) (3 matched more than one keyword)
+```
+
+**Across runs** — the write is an Airtable *upsert* keyed on `Thread ID`, so
+re-running never adds a second copy. It refreshes the row instead: new
+`Last Email Date`, higher `Message Count`, any new CCs. You'll see it in the
+output:
+
+```
+[airtable] created 3 new row(s), updated 8 existing row(s)
+```
+
+`updated 8` is the proof — those 8 were already there and were not duplicated.
+
+### Why not dedupe on subject?
+
+Because half your inbox says "Proposal" and "Re: Proposal", from different
+vendors, about different deals. Subject is display text, not identity. Sender +
+subject is better but still collides (same DMC, two proposals) and breaks the
+moment someone edits the subject line mid-thread.
+
+There's also a `First Message ID` column holding the RFC 822 `Message-ID` of the
+opening mail. That one is globally unique and identical in **every** mailbox
+that received the mail, whereas a Gmail thread id is per-account. You don't need
+it today; you will the day you scrape a second mailbox and need to tell "same
+conversation" from "different account, coincidental id".
+
+### The two tables
+
+**Thread table** (`tblyXn5UDBAxTbWYZ`) — one row per conversation, fields as
+listed at the top of this README. `Thread ID` must be the primary field, since
+that's what the upsert merges on.
+
+**`Search Terms`** — the control panel, described below.
+
+Both are created by `python scripts/setup_gmail_airtable.py`, which only ever
+*adds*: existing tables, fields and rows are never modified or deleted.
+
 ## Search terms — you control these, in Airtable
 
 The **`Search Terms`** table is the control panel. Add a row, type a name, tick
@@ -145,7 +215,38 @@ globally, to change that.
 fallback, used only when the Airtable table is unreachable or has no active
 rows, so a fresh checkout still runs.
 
-## Running it
+## Running it locally
+
+One command does everything — auth check, schema, then the scrape:
+
+```bash
+pip install -r gmail_scraper/requirements.txt
+cp .env.example .env          # fill in the Gmail + Airtable values
+python run_gmail_local.py
+```
+
+It runs three steps and **stops at the first failure**, so you always know what
+broke:
+
+```
+STEP 1/3  credentials, granted scopes, and the three Gmail calls the scraper makes
+STEP 2/3  create/verify the Airtable tables and fields (only ever adds)
+STEP 3/3  search "proposal" and "cost sheet", show the first 5, ask before writing
+```
+
+Nothing is written until you confirm. Useful variants:
+
+```bash
+python run_gmail_local.py --check-only                     # just step 1
+python run_gmail_local.py --dry-run                        # look, never write
+python run_gmail_local.py --keywords "proposal,cost sheet,quotation"
+python run_gmail_local.py --limit 20 --since 1y --yes
+python run_gmail_local.py --use-airtable-terms             # terms from Airtable
+```
+
+### The underlying module
+
+`run_gmail_local.py` is a wrapper; the pipeline is usable directly:
 
 ```bash
 # test run: first 5 threads only, nothing written

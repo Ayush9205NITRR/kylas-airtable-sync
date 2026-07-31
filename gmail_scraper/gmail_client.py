@@ -13,6 +13,8 @@ import os
 import sys
 import time
 
+import requests
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from gmail_scraper import config
@@ -85,6 +87,24 @@ def _execute(request):
                 continue
             raise
     raise RuntimeError("Gmail request failed after 5 attempts")
+
+
+def granted_scopes() -> list:
+    """Scopes Google actually granted this token — not the ones we asked for.
+
+    Requesting a scope and holding it are different things: an OAuth consent
+    where the user unticked a box, or a service account whose domain-wide
+    delegation lists different scopes, both yield a token that authenticates
+    fine and then 403s on the first real call. This asks Google directly.
+    """
+    creds = _credentials()
+    from google.auth.transport.requests import Request
+    creds.refresh(Request())
+    r = requests.get("https://oauth2.googleapis.com/tokeninfo",
+                     params={"access_token": creds.token}, timeout=30)
+    if r.status_code >= 400:
+        raise RuntimeError(f"tokeninfo {r.status_code}: {r.text[:200]}")
+    return (r.json().get("scope") or "").split()
 
 
 def whoami() -> str:

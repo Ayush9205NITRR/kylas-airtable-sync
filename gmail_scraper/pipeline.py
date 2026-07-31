@@ -51,19 +51,24 @@ def build_terms(args) -> list:
     return terms
 
 
-def collect(terms: list, since: str, limit: int, mailbox: str) -> list:
+def collect(terms: list, since: str, limit: int, mailbox: str,
+            stats: dict = None) -> list:
     """Search each term and build one entry per unique thread.
 
-    A thread matching several terms is filed under the first one (list order =
-    priority) but keeps the full list in `All Categories`.
+    Uniqueness is the Gmail thread id: a conversation that matches several
+    terms is collected **once**, filed under the first term (list order =
+    priority), with every match listed in `All Categories`. Pass `stats` to
+    receive {'raw_hits', 'unique'} for reporting.
     """
     date_clause = config.since_clause(since)
     matches = {}   # thread_id -> [term names, in priority order]
     order = []     # thread ids, first-seen order
+    raw_hits = 0
 
     for term in terms:
         query = f"{term['query']} {date_clause}".strip()
         ids = gmail_client.search_thread_ids(query)
+        raw_hits += len(ids)
         print(f"[search] {term['name']:<24} {query!r} -> {len(ids)} thread(s)")
         for tid in ids:
             if tid not in matches:
@@ -71,6 +76,13 @@ def collect(terms: list, since: str, limit: int, mailbox: str) -> list:
                 order.append(tid)
             if term["name"] not in matches[tid]:
                 matches[tid].append(term["name"])
+
+    if raw_hits > len(order):
+        print(f"[dedup] {raw_hits} hit(s) -> {len(order)} unique thread(s) "
+              f"({raw_hits - len(order)} matched more than one keyword)")
+    if stats is not None:
+        stats["raw_hits"] = raw_hits
+        stats["unique"] = len(order)
 
     if limit:
         if len(order) > limit:

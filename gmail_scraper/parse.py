@@ -140,6 +140,11 @@ def thread_to_record(thread: dict, category: str, all_categories=None,
 
     return {
         config.KEY_FIELD: thread_id,
+        # RFC 822 Message-ID of the opening mail: globally unique and identical
+        # in every mailbox that received it, unlike the Gmail thread id which is
+        # per-account. Useful if you ever scrape a second mailbox and need to
+        # tell "same conversation" from "same thread id, different account".
+        "First Message ID": header(first, "Message-ID"),
         "Category": category,
         "All Categories": ", ".join(all_categories or [category]),
         "Subject": clean_subject(header(first, "Subject")) or "(no subject)",

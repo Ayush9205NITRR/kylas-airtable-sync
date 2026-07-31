@@ -46,7 +46,13 @@ DATETIME = {"type": "dateTime", "options": {
 # Thread ID first => Airtable makes it the primary field, which is what the
 # upsert (fieldsToMergeOn) keys on.
 FIELDS = [
-    {"name": config.KEY_FIELD, "type": T},
+    {"name": config.KEY_FIELD, "type": T,
+     "description": "Gmail thread id — the uniqueness key. One row per "
+                    "conversation; re-runs update this row instead of adding "
+                    "another."},
+    {"name": "First Message ID", "type": T,
+     "description": "RFC 822 Message-ID of the opening mail. Globally unique "
+                    "across mailboxes, unlike the per-account thread id."},
     {"name": "Category", "type": T},
     {"name": "All Categories", "type": T},
     {"name": "Subject", "type": T},

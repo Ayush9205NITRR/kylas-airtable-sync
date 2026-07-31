@@ -177,8 +177,10 @@ def check_terms():
 # ── 4. Gmail ───────────────────────────────────────────────────────────────────
 
 def check_gmail(terms):
-    print("\n[4/4] Gmail")
-    from gmail_scraper import gmail_client
+    print("\n[4/4] Gmail — auth, scope, and the three calls the scraper makes")
+    from gmail_scraper import gmail_client, parse
+
+    # -- does the token authenticate at all --------------------------------
     try:
         mailbox = gmail_client.whoami()
     except Exception as exc:                          # noqa: BLE001
@@ -193,28 +195,87 @@ def check_gmail(terms):
         return False
     report(PASS, "Gmail auth", f"authenticated as {mailbox}")
 
+    # -- does it hold the scope, per Google, not per our request -----------
+    needed = "https://www.googleapis.com/auth/gmail.readonly"
+    try:
+        scopes = gmail_client.granted_scopes()
+    except Exception as exc:                          # noqa: BLE001
+        report(WARN, "Granted scopes",
+               f"could not read tokeninfo ({str(exc)[:120]}) — relying on the "
+               "live calls below instead")
+    else:
+        broader = [s for s in scopes if s in (
+            "https://mail.google.com/",
+            "https://www.googleapis.com/auth/gmail.modify")]
+        if needed in scopes:
+            report(PASS, "Granted scopes", "gmail.readonly held")
+        elif broader:
+            report(PASS, "Granted scopes",
+                   f"{broader[0]} held (covers read access)")
+        else:
+            report(FAIL, "Granted scopes",
+                   "gmail.readonly NOT granted — token has: "
+                   + (", ".join(s.rsplit("/", 1)[-1] for s in scopes) or "none")
+                   + ". Revoke at https://myaccount.google.com/permissions and "
+                     "re-run `python -m gmail_scraper.auth_setup`.")
+            return False
+
     if config.GMAIL_USER and mailbox.lower() != config.GMAIL_USER.lower():
         report(WARN, "Mailbox",
                f"GMAIL_USER is {config.GMAIL_USER} but the token resolves to "
                f"{mailbox} — {mailbox} is what gets scraped")
 
+    # -- exercise each call the scraper actually depends on -----------------
     ok = True
     date_clause = config.since_clause("")
+    probe_thread_id = None
+
     for term in terms[:5]:
         query = f"{term['query']} {date_clause}".strip()
         try:
             found = gmail_client.search_thread_ids(query, max_threads=5)
         except Exception as exc:                      # noqa: BLE001
-            report(FAIL, f"Search '{term['name']}'", str(exc)[:200])
+            report(FAIL, f"threads.list '{term['name']}'", str(exc)[:200])
             ok = False
             continue
         if found:
             report(PASS, f"Search '{term['name']}'",
                    f"{len(found)}+ thread(s) match")
+            probe_thread_id = probe_thread_id or found[0]
         else:
             report(WARN, f"Search '{term['name']}'",
                    f"0 threads in the last {config.DEFAULT_LOOKBACK_DAYS} days — "
                    "widen with --since all if that's unexpected")
+
+    if not probe_thread_id:
+        report(WARN, "threads.get / attachments.get",
+               "no matching thread to probe with — searches returned nothing")
+        return ok
+
+    try:
+        thread = gmail_client.get_thread(probe_thread_id)
+    except Exception as exc:                          # noqa: BLE001
+        report(FAIL, "threads.get (read a full message)", str(exc)[:200])
+        return False
+    report(PASS, "threads.get (read a full message)",
+           f"{len(thread.get('messages', []))} message(s) in the probe thread")
+
+    refs = parse.attachment_refs(thread)
+    if not refs:
+        report(WARN, "attachments.get (download a file)",
+               "the probe thread has no attachments — untested. Re-run once a "
+               "matching mail has one, or trust the scope check above.")
+        return ok
+
+    try:
+        data = gmail_client.download_attachment(refs[0]["message_id"],
+                                                refs[0]["attachment_id"])
+    except Exception as exc:                          # noqa: BLE001
+        report(FAIL, "attachments.get (download a file)", str(exc)[:200])
+        return False
+    report(PASS, "attachments.get (download a file)",
+           f"{refs[0]['filename']} — {len(data) / 1024:.0f} KB downloaded "
+           "(discarded, this is a probe)")
     return ok
 
 

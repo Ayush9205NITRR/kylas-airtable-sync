@@ -13,8 +13,10 @@ from gmail_scraper import config, parse, search_terms
 
 
 def _msg(internal_date, subject=None, frm=None, to=None, cc=None,
-         parts=None, snippet=""):
+         parts=None, snippet="", message_id=None):
     headers = []
+    if message_id is not None:
+        headers.append({"name": "Message-ID", "value": message_id})
     if subject is not None:
         headers.append({"name": "Subject", "value": subject})
     if frm is not None:
@@ -123,6 +125,14 @@ class TestThreadToRecord(unittest.TestCase):
         self.assertEqual(self.record["Attachments"], "quote.pdf")
         self.assertEqual(self.record["Attachment Count"], 1)
         self.assertEqual(self.record["Message Count"], 2)
+
+    def test_first_message_id_comes_from_the_opening_mail(self):
+        thread = {"id": "t9", "messages": [
+            _msg(T2, frm="b@x.com", message_id="<reply@mail.gmail.com>"),
+            _msg(T1, frm="a@x.com", message_id="<original@mail.gmail.com>"),
+        ]}
+        rec = parse.thread_to_record(thread, "X")
+        self.assertEqual(rec["First Message ID"], "<original@mail.gmail.com>")
 
     def test_key_and_categories(self):
         self.assertEqual(self.record[config.KEY_FIELD], "thread123")
