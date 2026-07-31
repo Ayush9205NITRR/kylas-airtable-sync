@@ -1,0 +1,69 @@
+name: Gmail Threads -> Airtable
+
+on:
+  schedule:
+    # 7:00 AM IST = 01:30 UTC, daily.
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+    inputs:
+      category:
+        description: 'Only this category, e.g. Offsite DMC (blank = all)'
+        required: false
+        default: ''
+      query:
+        description: 'Raw Gmail query, overrides the category config'
+        required: false
+        default: ''
+      since:
+        description: '30d / 6m / 1y / YYYY-MM-DD / all (blank = default lookback)'
+        required: false
+        default: ''
+      limit:
+        description: 'Process at most N threads (blank = all)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Print only, write nothing to Airtable (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r gmail_scraper/requirements.txt
+
+      - name: Scrape Gmail into Airtable
+        # Inputs go through env vars, never interpolated into the shell command —
+        # a category name or Gmail query can contain quotes and spaces.
+        run: |
+          ARGS=()
+          if [ -n "$IN_CATEGORY" ]; then ARGS+=(--category "$IN_CATEGORY"); fi
+          if [ -n "$IN_QUERY" ];    then ARGS+=(--query "$IN_QUERY"); fi
+          if [ -n "$IN_SINCE" ];    then ARGS+=(--since "$IN_SINCE"); fi
+          if [ -n "$IN_LIMIT" ];    then ARGS+=(--limit "$IN_LIMIT"); fi
+          if [ "$IN_DRY_RUN" = "true" ]; then ARGS+=(--dry-run); fi
+          python -m gmail_scraper.pipeline "${ARGS[@]}"
+        env:
+          IN_CATEGORY: ${{ github.event.inputs.category }}
+          IN_QUERY:    ${{ github.event.inputs.query }}
+          IN_SINCE:    ${{ github.event.inputs.since }}
+          IN_LIMIT:    ${{ github.event.inputs.limit }}
+          IN_DRY_RUN:  ${{ github.event.inputs.dry_run }}
+          GMAIL_USER:              ${{ secrets.GMAIL_USER }}
+          GMAIL_CLIENT_ID:         ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET:     ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN:     ${{ secrets.GMAIL_REFRESH_TOKEN }}
+          # Only used if the OAuth vars above are absent (service account +
+          # domain-wide delegation).
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          AIRTABLE_PAT:            ${{ secrets.AIRTABLE_PAT }}
+          GMAIL_AIRTABLE_BASE_ID:  ${{ secrets.GMAIL_AIRTABLE_BASE_ID }}

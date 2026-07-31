@@ -1,0 +1,24 @@
+name: Gmail Scraper - Airtable Setup
+
+# One-shot (re-runnable) creation of the `Email Threads` table + fields.
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r gmail_scraper/requirements.txt
+
+      - name: Create / update the Email Threads table
+        run: python scripts/setup_gmail_airtable.py
+        env:
+          AIRTABLE_PAT:           ${{ secrets.AIRTABLE_PAT }}
+          GMAIL_AIRTABLE_BASE_ID: ${{ secrets.GMAIL_AIRTABLE_BASE_ID }}

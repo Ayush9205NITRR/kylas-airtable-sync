@@ -1,0 +1,9 @@
+# Gmail -> Airtable thread scraper. Kept separate from the root
+# requirements.txt so the Kylas sync's dependency set stays untouched.
+requests==2.31.0
+python-dotenv==1.0.1
+google-api-python-client==2.179.0
+google-auth==2.40.3
+# Only needed for the one-time `python -m gmail_scraper.auth_setup` run;
+# harmless in CI.
+google-auth-oauthlib==1.2.1

@@ -1,0 +1,18 @@
+{
+  "_comment": "Category definitions for gmail_scraper. Each entry is either an explicit `query` (raw Gmail search syntax) or a list of `keywords` that get OR'd together and suffixed with default_scope. Order = priority: a thread matching several categories is filed under the first one listed.",
+  "default_scope": "in:anywhere",
+  "categories": [
+    {
+      "name": "Offsite DMC",
+      "keywords": ["Offsite DMC"]
+    },
+    {
+      "name": "Offsite",
+      "keywords": ["offsite", "team offsite", "team outing"]
+    },
+    {
+      "name": "MICE",
+      "keywords": ["MICE", "incentive travel", "conference travel"]
+    }
+  ]
+}

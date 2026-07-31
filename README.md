@@ -8,6 +8,12 @@ Automated sync from Kylas CRM to Airtable, running twice daily via GitHub Action
 > coaching summary. See [`cold_call/README.md`](cold_call/README.md). It runs
 > independently of the Kylas sync (own deps in `cold_call/requirements.txt`, own
 > Airtable base via `COLD_CALL_AIRTABLE_BASE_ID`).
+>
+> **And:** the **Gmail Thread Scraper** (`gmail_scraper/`) — searches a Gmail
+> mailbox by keyword (e.g. `Offsite DMC in:anywhere`) and writes one Airtable row
+> per thread with subject, sender, CC list, first/last email date and attachment
+> names. See [`gmail_scraper/README.md`](gmail_scraper/README.md). Also
+> independent (own deps, own base via `GMAIL_AIRTABLE_BASE_ID`).
 
 ## Setup
 
