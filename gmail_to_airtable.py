@@ -142,15 +142,39 @@ def gmail_service():
             auth_url, _ = flow.authorization_url(
                 access_type="offline", prompt="consent",
                 include_granted_scopes="true")
-            print("\n  Send this URL to the mailbox owner:\n")
-            print(f"  {auth_url}\n")
-            print("  They should open it, sign in, click Allow. The page will "
-                  "then fail to load (localhost) — that's expected.")
-            print("  They copy the FULL url from their address bar and send it "
-                  "back to you.\n")
-            response = input("  Paste that URL here: ").strip()
+
+            # These URLs run to ~900 characters. Copying one out of a wrapped
+            # terminal reliably corrupts it — selection picks up the wrap
+            # points — and Google answers a mangled query string with a bare
+            # "400. Malformed request" that looks like an auth failure but
+            # isn't. Writing to a file sidesteps the terminal entirely.
+            link_file = "AUTH_LINK.txt"
+            with open(link_file, "w", encoding="utf-8") as fh:
+                fh.write(auth_url + "\n")
+
+            print(f"\n  Wrote the authorisation link to:  {link_file}")
+            print("  Open that file, copy the ONE line inside it, and send it "
+                  "to the mailbox owner.")
+            print("  (Copy from the file, not from this terminal — terminal "
+                  "line-wrapping corrupts the link.)\n")
+            print("  They open it, sign in, click Allow. The page then fails "
+                  "to load with a 'localhost refused to connect' error —")
+            print("  that failure is the expected, successful outcome.\n")
+            print("  They copy the FULL url from their address bar at that "
+                  "error page and send it back to you.")
+            print("  It must contain  code=4/...  — if it says "
+                  "accounts.google.com, they haven't clicked Allow yet.\n")
+
+            response = input("  Paste that redirect URL here: ").strip()
+            if "code=" not in response:
+                die("That URL has no ?code= in it, so it isn't the redirect.",
+                    "It looks like the consent page instead. They need to "
+                    "click Allow FIRST, let the page fail to load, then copy "
+                    "the localhost URL from the address bar.")
             flow.fetch_token(authorization_response=response)
             creds = flow.credentials
+            if os.path.exists(link_file):
+                os.remove(link_file)
         else:
             print("  opening a browser so you can grant read-only access...")
             creds = flow.run_local_server(port=0, access_type="offline",
