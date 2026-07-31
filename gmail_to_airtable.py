@@ -83,6 +83,7 @@ META = "https://api.airtable.com/v0/meta/bases"
 TRANSIENT = (429, 500, 502, 503)
 
 _service = None
+_manual_auth = False   # set from --manual; someone else's browser will grant consent
 
 
 def rule(title):
@@ -124,10 +125,37 @@ def gmail_service():
                 "Google Cloud Console -> Credentials -> OAuth client ID -> "
                 "Desktop app -> download the JSON and save it here.")
         from google_auth_oauthlib.flow import InstalledAppFlow
-        print("  opening a browser so you can grant read-only access...")
         flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
-        creds = flow.run_local_server(port=0, access_type="offline",
-                                      prompt="consent")
+
+        if _manual_auth:
+            # run_local_server() needs the browser that clicks "Allow" to be
+            # able to reach back to a server on THIS machine's localhost. That
+            # only works if you are the one clicking Allow. If someone else
+            # (a different mailbox owner, on a different machine) has to grant
+            # consent, their browser's "localhost" is THEIR machine, not this
+            # one — the callback would just fail to connect. So instead: print
+            # a URL, they open it and click Allow on their own machine, their
+            # browser then tries (and fails) to load localhost — that failure
+            # is expected — and they copy the full URL from their address bar
+            # back to whoever is running this script.
+            flow.redirect_uri = "http://localhost:1/"
+            auth_url, _ = flow.authorization_url(
+                access_type="offline", prompt="consent",
+                include_granted_scopes="true")
+            print("\n  Send this URL to the mailbox owner:\n")
+            print(f"  {auth_url}\n")
+            print("  They should open it, sign in, click Allow. The page will "
+                  "then fail to load (localhost) — that's expected.")
+            print("  They copy the FULL url from their address bar and send it "
+                  "back to you.\n")
+            response = input("  Paste that URL here: ").strip()
+            flow.fetch_token(authorization_response=response)
+            creds = flow.credentials
+        else:
+            print("  opening a browser so you can grant read-only access...")
+            creds = flow.run_local_server(port=0, access_type="offline",
+                                          prompt="consent")
+
         with open(TOKEN_FILE, "w", encoding="utf-8") as fh:
             fh.write(creds.to_json())
         print(f"  saved {TOKEN_FILE} — you won't be asked again")
@@ -566,7 +594,17 @@ def main():
     ap.add_argument("--no-attachments", action="store_true",
                     help="Record filenames but don't upload the files.")
     ap.add_argument("--check-only", action="store_true", help="Stop after step 1.")
+    ap.add_argument("--manual", action="store_true",
+                    help="Headless OAuth: print a URL for someone ELSE to open "
+                         "and approve on their own machine (e.g. authorising a "
+                         "mailbox that isn't yours), then paste back the "
+                         "redirect URL they send you. Use this whenever the "
+                         "person granting consent isn't the person running "
+                         "this script.")
     args = ap.parse_args()
+
+    global _manual_auth
+    _manual_auth = args.manual
 
     try:
         from dotenv import load_dotenv       # optional convenience
