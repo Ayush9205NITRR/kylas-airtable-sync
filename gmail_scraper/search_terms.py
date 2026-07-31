@@ -109,7 +109,7 @@ def load(source: str = "auto") -> list:
                   f"'{config.SEARCH_TERMS_TABLE}'")
             return terms
         message = f"'{config.SEARCH_TERMS_TABLE}' has no active rows"
-    except (LookupError, RuntimeError) as exc:
+    except (LookupError, RuntimeError, requests.RequestException) as exc:
         message = str(exc)
 
     if source == "airtable":
