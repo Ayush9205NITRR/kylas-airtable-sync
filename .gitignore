@@ -3,6 +3,12 @@ __pycache__/
 *.pyo
 *.pyd
 .env
+
+# Google OAuth credentials — never commit these
+client_secret.json
+token.json
+service_account.json
+
 *.egg-info/
 dist/
 build/
