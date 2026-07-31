@@ -138,7 +138,12 @@ def gmail_service():
             # browser then tries (and fails) to load localhost — that failure
             # is expected — and they copy the full URL from their address bar
             # back to whoever is running this script.
-            flow.redirect_uri = "http://localhost:1/"
+            # Port 8080, not a low port: Chrome refuses to navigate to ports on
+            # its blocked list (1, 7, 21, 22, 25 ...) with ERR_UNSAFE_PORT, and
+            # would never reach the address bar we need them to copy from.
+            # Google allows any loopback port for "Desktop app" clients, so no
+            # redirect URI needs registering.
+            flow.redirect_uri = "http://localhost:8080/"
             auth_url, _ = flow.authorization_url(
                 access_type="offline", prompt="consent",
                 include_granted_scopes="true")
@@ -154,23 +159,29 @@ def gmail_service():
 
             print(f"\n  Wrote the authorisation link to:  {link_file}")
             print("  Open that file, copy the ONE line inside it, and send it "
-                  "to the mailbox owner.")
-            print("  (Copy from the file, not from this terminal — terminal "
-                  "line-wrapping corrupts the link.)\n")
-            print("  They open it, sign in, click Allow. The page then fails "
-                  "to load with a 'localhost refused to connect' error —")
-            print("  that failure is the expected, successful outcome.\n")
-            print("  They copy the FULL url from their address bar at that "
-                  "error page and send it back to you.")
-            print("  It must contain  code=4/...  — if it says "
-                  "accounts.google.com, they haven't clicked Allow yet.\n")
+                  "to the mailbox owner.\n")
+            print("  Tell them, in this order:")
+            print("    1. Open the link, sign in, click ALLOW.")
+            print("    2. The next page fails: 'localhost refused to connect'.")
+            print("       That failure IS the success — do not go back.")
+            print("    3. Copy the url from the address bar of THAT error page.")
+            print("       It starts with  http://localhost:8080/?...code=4/...\n")
+            print("  The link is single-use. If they reload it, go back, or")
+            print("  send you an accounts.google.com url, it is spent — Google")
+            print("  answers '400. Malformed request'. Just re-run this to get")
+            print("  a fresh one; nothing is broken.\n")
 
             response = input("  Paste that redirect URL here: ").strip()
+            if "accounts.google.com" in response and "code=" not in response:
+                die("That's the Google consent page, not the redirect.",
+                    "They need to click ALLOW first, let the next page fail to "
+                    "load, and copy the localhost:8080 url from there. Re-run "
+                    "with --manual for a fresh link — the one they used is "
+                    "now spent.")
             if "code=" not in response:
                 die("That URL has no ?code= in it, so it isn't the redirect.",
-                    "It looks like the consent page instead. They need to "
-                    "click Allow FIRST, let the page fail to load, then copy "
-                    "the localhost URL from the address bar.")
+                    "The url you want starts with http://localhost:8080/ and "
+                    "contains code=4/...")
             flow.fetch_token(authorization_response=response)
             creds = flow.credentials
             if os.path.exists(link_file):
