@@ -1,0 +1,35 @@
+name: Runner Probe (diagnostic)
+
+# Minimal isolation test for "The job was not acquired by Runner of type hosted".
+# Each job does nothing but echo, so if one fails to start it is purely a runner
+# ALLOCATION problem, not the repo's code, dependencies or secrets.
+#
+# Reading the result:
+#   all three fail        -> hosted runners unavailable for the whole account
+#   only ubuntu-latest    -> the 'ubuntu-latest' label/image is the problem;
+#                            pin the other workflows to the label that worked
+#   all three succeed     -> allocation has recovered; re-run the real jobs
+#
+# Safe to delete once the incident is resolved.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  latest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: echo "ubuntu-latest acquired a runner at $(date -u)"
+
+  u2404:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - run: echo "ubuntu-24.04 acquired a runner at $(date -u)"
+
+  u2204:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - run: echo "ubuntu-22.04 acquired a runner at $(date -u)"
