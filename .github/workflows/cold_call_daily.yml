@@ -1,9 +1,14 @@
 name: Cold Call Analysis - Daily
 
 on:
-  schedule:
-    # 8:30 PM IST = 15:00 UTC, Mon-Sat. Emails go out as files finish processing.
-    - cron: '0 15 * * 1-6'
+  # SCHEDULE DISABLED (2026-08-06) to stay inside the free GitHub Actions
+  # allowance. This job averaged ~25.5 min/run x 26 days = ~660 min/month, the
+  # second-largest consumer; without it the repo sits at ~1,740 min/month,
+  # under the 2,000/month included with GitHub Free for private repos.
+  # Still fully runnable on demand below (Actions -> "Cold Call Analysis -
+  # Daily" -> Run workflow). To re-enable, uncomment the two lines:
+  #   schedule:
+  #     - cron: '0 15 * * 1-6'   # 8:30 PM IST, Mon-Sat
   workflow_dispatch:
     inputs:
       date:
