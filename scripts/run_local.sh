@@ -8,7 +8,7 @@
 # concurrently doubles the request rate, triggers far more 429 throttling and
 # typically finishes SLOWER than running them one after another.
 #
-# Usage:
+# Usage — no setup needed, the first run builds .venv and installs deps itself:
 #   ./scripts/run_local.sh              # matrix + account status
 #   ./scripts/run_local.sh matrix       # just the BD monthly matrix (~2 min)
 #   ./scripts/run_local.sh status       # just the account health sweep (~10-25 min)
@@ -24,16 +24,35 @@ cd "$(dirname "$0")/.."
 
 mkdir -p logs
 
-# Prefer the venv interpreter so this works from cron, where PATH is minimal
-# and an activated shell environment does not exist.
-if   [ -x ".venv/bin/python3" ]; then PY=".venv/bin/python3"
-elif command -v python3 >/dev/null 2>&1; then PY="python3"
-else echo "ERROR: python3 not found. Run: python3 -m venv .venv && .venv/bin/python3 -m pip install -r requirements.txt"; exit 1
+# Build the venv on first run so there is no separate setup step. macOS ships
+# python3 but no `python`/`pip` on PATH, which is why `pip install -r ...`
+# fails there with "command not found" — `python3 -m pip` always works.
+if [ ! -x ".venv/bin/python3" ]; then
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "ERROR: python3 not found. On a Mac install it with: brew install python3"
+    exit 1
+  fi
+  echo "First run: creating .venv and installing dependencies (~1 min)..."
+  python3 -m venv .venv || { echo "ERROR: could not create .venv"; exit 1; }
+  .venv/bin/python3 -m pip install --quiet --upgrade pip
+  .venv/bin/python3 -m pip install --quiet -r requirements.txt \
+    || { echo "ERROR: dependency install failed"; exit 1; }
+  echo "Setup done."
 fi
+# Address the venv interpreter directly rather than relying on `activate`, so
+# this also works from cron, where PATH is minimal and no shell profile is read.
+PY=".venv/bin/python3"
 
 if [ ! -f .env ]; then
-  echo "ERROR: .env missing. It must define KYLAS_API_KEY, AIRTABLE_PAT,"
-  echo "       AIRTABLE_BASE_ID and AIRTABLE_COMPANY_BASE_ID."
+  echo "ERROR: .env missing. Create it in $(pwd) with these four lines"
+  echo "       (same values as the GitHub Actions secrets of the same name):"
+  echo ""
+  echo "         KYLAS_API_KEY=..."
+  echo "         AIRTABLE_PAT=..."
+  echo "         AIRTABLE_BASE_ID=..."
+  echo "         AIRTABLE_COMPANY_BASE_ID=..."
+  echo ""
+  echo "       .env is gitignored, so it never gets committed."
   exit 1
 fi
 
