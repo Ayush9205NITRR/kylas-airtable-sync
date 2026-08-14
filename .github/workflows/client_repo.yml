@@ -1,0 +1,53 @@
+name: Client Repository — Venture Split
+
+on:
+  schedule:
+    # Every Monday 8:30 AM IST = 03:00 UTC — after the weekly account-health
+    # digest, so Account Status is fresh when clients are detected.
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Where to read companies from'
+        required: false
+        default: 'airtable'
+        type: choice
+        options: [airtable, kylas]
+      dry_run:
+        description: 'Classify and print the split, write nothing'
+        required: false
+        default: 'false'
+
+jobs:
+  client-repo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build client repository
+        run: |
+          ARGS="--source ${{ github.event.inputs.source || 'airtable' }}"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python modules/09_client_repo.py $ARGS --json client_repo.json
+        env:
+          KYLAS_API_KEY:            ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+
+      - name: Upload classified rows
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-repository
+          path: client_repo.json
+          if-no-files-found: warn

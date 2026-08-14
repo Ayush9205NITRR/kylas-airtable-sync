@@ -1,0 +1,244 @@
+{
+  "_comment": "Sales-intelligence taxonomy for the Enout client repository (modules/09_client_repo.py). Three things live here: (1) client_signals — what makes a company an Enout *client* rather than a prospect; (2) venture_classes — the venture split, evaluated top-down, first match wins; (3) macro_industries — collapses the long tail of raw Kylas industry strings into a small set of buckets you can actually slice a pipeline by. Edit this file rather than the Python: the classifier has no hardcoded taxonomy. Matching is case-insensitive; 'raw' entries match the Kylas industry string exactly (after casefold), 'keywords' match as substrings.",
+  "version": 1,
+
+  "fx": {
+    "_comment": "Units per 1 USD. Used to normalise round sizes so ventures are comparable across currencies. Refresh occasionally.",
+    "INR": 87.0,
+    "EUR": 0.92,
+    "GBP": 0.79,
+    "AED": 3.67,
+    "SGD": 1.35
+  },
+
+  "client_signals": {
+    "_comment": "A company lands in the repository when ANY of these hit. account_status comes from modules/06_account_health.py; contact_stages/deal_stages are the pipeline stages that mean an offsite actually happened.",
+    "account_status": ["Offsite Done"],
+    "contact_stages": ["Offsite Done", "Offsite Done (Late Reachout)"],
+    "deal_stages": ["Won", "Closed Won", "Offsite Done", "Offsite Completed"]
+  },
+
+  "signal_fields": {
+    "_comment": "Candidate source keys for each funding signal, tried in order. Kylas custom-field keys (cfXxx) and Airtable column names can be mixed freely — whichever is present on the record wins. Add your own keys here when you create the fields in Kylas/Airtable; no code change needed. The bare snake_case key at the end of each list is what config/venture_overrides.json writes, so leave it in place.",
+    "round_type":     ["cfRoundType", "cfFundingRound", "cfLatestRound", "Round Type", "Funding Round", "round_type"],
+    "round_size":     ["cfRoundSize", "cfFundingAmount", "cfAmountRaised", "Round Size", "Funding Amount", "round_size"],
+    "funding_date":   ["cfFundingDate", "cfLastRaisedOn", "Funding Date", "Last Raised On", "funding_date"],
+    "investors":      ["cfInvestors", "Investors", "investors"],
+    "employee_count": ["cfEmployeeCount", "cfHeadcount", "Employee Count", "Headcount", "employee_count"]
+  },
+
+  "funding_stages": {
+    "_comment": "Ordered longest-signal-first: 'pre-series a' must be tested before 'series a', and 'series a' before the bare 'seed' fallback. The first entry whose keywords appear in the round-type string wins.",
+    "order": [
+      "Pre-Seed", "Pre-Series A", "Series A", "Series B", "Series C", "Series D",
+      "Series E+", "Growth / PE", "IPO / Public", "Debt", "Grant", "Seed", "Bootstrapped"
+    ],
+    "keywords": {
+      "Pre-Seed":      ["pre-seed", "pre seed", "preseed", "angel", "friends and family", "faf"],
+      "Pre-Series A":  ["pre-series a", "pre series a", "preseries a", "pre-a", "bridge"],
+      "Series A":      ["series a", "series-a", "seriesa"],
+      "Series B":      ["series b", "series-b", "seriesb"],
+      "Series C":      ["series c", "series-c", "seriesc"],
+      "Series D":      ["series d", "series-d", "seriesd"],
+      "Series E+":     ["series e", "series f", "series g", "series h", "late stage"],
+      "Growth / PE":   ["growth", "private equity", "pe round", "buyout", "secondary"],
+      "IPO / Public":  ["ipo", "public market", "listed", "post-ipo"],
+      "Debt":          ["debt", "venture debt", "convertible note", "safe note"],
+      "Grant":         ["grant", "accelerator", "incubator", "yc ", "y combinator"],
+      "Seed":          ["seed"],
+      "Bootstrapped":  ["bootstrap", "self-funded", "self funded", "profitable", "none"]
+    }
+  },
+
+  "venture_classes": {
+    "_comment": "Evaluated top-down; the first rule that matches wins, so keep the most specific classes above the catch-alls. 'funded' marks the classes that count as a funding-raised venture. 'signal' selects the evidence a rule reads: 'funding_field' = an explicit round type/size on the record (strongest), 'text' = keyword match over name + description + batch + source-of-data + industry.",
+    "order": [
+      "Funded Venture", "Listed / Public Company", "Public Sector / Government",
+      "Non-profit / Academic", "MNC / GCC", "Agency / Services Firm",
+      "Enterprise / Large Corporate", "Bootstrapped Startup"
+    ],
+    "rules": {
+      "Funded Venture": {
+        "funded": true,
+        "signal": "funding_field",
+        "keywords": ["funded", "funding", "raised", "series a", "series b", "series c",
+                     "series d", "seed round", "pre-seed", "venture backed", "vc backed",
+                     "startup - funded", "funding batch"],
+        "min_confidence": "Medium"
+      },
+      "Listed / Public Company": {
+        "funded": false,
+        "signal": "text",
+        "keywords": ["nse:", "bse:", "nasdaq", "nyse", "listed company", "publicly listed",
+                     " limited (listed)", "post-ipo", "ipo'd"]
+      },
+      "Public Sector / Government": {
+        "funded": false,
+        "signal": "text",
+        "keywords": ["government", "govt", "ministry of", "municipal", "psu",
+                     "public sector undertaking", "corporation of india", "nagar nigam",
+                     "state bank", "railway", "defence", "bharat "]
+      },
+      "Non-profit / Academic": {
+        "funded": false,
+        "signal": "text",
+        "keywords": ["foundation", "trust", "ngo", "non-profit", "nonprofit", "charitable",
+                     "society", "university", "college", "institute of", "iit ", "iim ",
+                     "school of", "academy"]
+      },
+      "MNC / GCC": {
+        "funded": false,
+        "signal": "text",
+        "keywords": ["gcc", "global capability", "global capability centre", "global capability center",
+                     "captive centre", "captive center", "india development centre", "shared services",
+                     "inc.", "gmbh", "plc", "s.a.", "b.v.", "pte ltd", "pte. ltd"]
+      },
+      "Agency / Services Firm": {
+        "funded": false,
+        "signal": "text",
+        "keywords": ["agency", "consulting", "consultancy", "advisory", "staffing",
+                     "recruitment", "outsourcing", "it services", "system integrator",
+                     "llp", "& associates", "and associates", "partners llp"]
+      },
+      "Enterprise / Large Corporate": {
+        "funded": false,
+        "signal": "text",
+        "keywords": ["enterprise", "group of companies", "industries limited", "conglomerate"],
+        "min_employees": 1000
+      },
+      "Bootstrapped Startup": {
+        "funded": false,
+        "signal": "text",
+        "keywords": ["bootstrapped", "self-funded", "self funded", "profitable startup"]
+      }
+    },
+    "fallback": "Unclassified"
+  },
+
+  "macro_industries": {
+    "_comment": "Buckets are checked in 'order'. For each bucket, 'raw' is matched against the whole industry string (exact, case-insensitive) and 'keywords' as substrings of name + industry + description. Put new Kylas industry values into 'raw' as you meet them — that is the precise, low-risk way to extend this.",
+    "order": [
+      "Software & SaaS",
+      "Financial Services & Fintech",
+      "E-commerce & D2C",
+      "Healthcare & Life Sciences",
+      "Media, Gaming & Entertainment",
+      "Education & EdTech",
+      "Logistics, Mobility & Supply Chain",
+      "Manufacturing & Industrial",
+      "Energy, Climate & Utilities",
+      "Real Estate & Construction",
+      "Retail, FMCG & Consumer",
+      "Travel, Hospitality & Food",
+      "Professional & IT Services",
+      "Telecom & Infrastructure",
+      "Agriculture & AgriTech",
+      "Public Sector & Non-profit"
+    ],
+    "buckets": {
+      "Software & SaaS": {
+        "raw": ["software", "information technology", "computer software", "internet",
+                "saas", "technology", "it", "artificial intelligence", "data & analytics"],
+        "keywords": ["saas", "software", "devtool", "developer tool", "cloud platform",
+                     "api platform", "cybersecurity", "infosec", "machine learning",
+                     "artificial intelligence", " ai ", "analytics platform", "no-code",
+                     "low-code", "crm", "erp software", "b2b software"]
+      },
+      "Financial Services & Fintech": {
+        "raw": ["financial services", "banking", "insurance", "fintech", "capital markets",
+                "investment management", "venture capital & private equity", "accounting"],
+        "keywords": ["fintech", "neobank", "lending", "payments", "payment gateway", "wealth",
+                     "mutual fund", "insurtech", "nbfc", "brokerage", "capital", "bank",
+                     "insurance", "credit", "upi"]
+      },
+      "E-commerce & D2C": {
+        "raw": ["e-commerce", "ecommerce", "internet marketplace", "d2c"],
+        "keywords": ["e-commerce", "ecommerce", "marketplace", "d2c", "direct to consumer",
+                     "online store", "quick commerce", "q-commerce"]
+      },
+      "Healthcare & Life Sciences": {
+        "raw": ["hospital & health care", "healthcare", "pharmaceuticals", "biotechnology",
+                "medical devices", "health, wellness & fitness"],
+        "keywords": ["health", "hospital", "clinic", "pharma", "biotech", "diagnostics",
+                     "medtech", "medical", "wellness", "telemedicine", "life sciences"]
+      },
+      "Media, Gaming & Entertainment": {
+        "raw": ["media production", "entertainment", "broadcast media", "online media",
+                "computer games", "gaming", "music", "publishing"],
+        "keywords": ["gaming", "esports", "streaming", "ott", "studio", "media house",
+                     "entertainment", "content platform", "creator economy", "adtech",
+                     "advertising network"]
+      },
+      "Education & EdTech": {
+        "raw": ["education management", "e-learning", "higher education", "edtech",
+                "professional training & coaching"],
+        "keywords": ["edtech", "e-learning", "elearning", "upskilling", "test prep",
+                     "learning platform", "coaching", "bootcamp"]
+      },
+      "Logistics, Mobility & Supply Chain": {
+        "raw": ["logistics & supply chain", "transportation/trucking/railroad", "airlines/aviation",
+                "maritime", "package/freight delivery", "automotive"],
+        "keywords": ["logistics", "supply chain", "freight", "last mile", "last-mile", "warehousing",
+                     "fleet", "mobility", "ride hailing", "ev ", "electric vehicle", "trucking",
+                     "shipping", "3pl"]
+      },
+      "Manufacturing & Industrial": {
+        "raw": ["mechanical or industrial engineering", "manufacturing", "industrial automation",
+                "machinery", "chemicals", "electrical/electronic manufacturing",
+                "semiconductors", "textiles", "mining & metals"],
+        "keywords": ["manufacturing", "factory", "industrial", "engineering works", "fabrication",
+                     "machinery", "semiconductor", "foundry", "chemicals", "steel", "cement"]
+      },
+      "Energy, Climate & Utilities": {
+        "raw": ["oil & energy", "utilities", "renewables & environment", "renewable energy"],
+        "keywords": ["solar", "renewable", "clean energy", "climate", "carbon", "battery",
+                     "power grid", "oil & gas", "utility", "sustainability"]
+      },
+      "Real Estate & Construction": {
+        "raw": ["real estate", "construction", "architecture & planning",
+                "building materials", "civil engineering"],
+        "keywords": ["real estate", "proptech", "construction", "infra developer", "realty",
+                     "co-working", "coworking", "housing", "builders"]
+      },
+      "Retail, FMCG & Consumer": {
+        "raw": ["retail", "consumer goods", "food & beverages", "apparel & fashion",
+                "cosmetics", "luxury goods & jewelry", "furniture", "wholesale"],
+        "keywords": ["fmcg", "consumer brand", "retail chain", "apparel", "fashion",
+                     "beauty", "personal care", "packaged food", "beverage", "footwear"]
+      },
+      "Travel, Hospitality & Food": {
+        "raw": ["leisure, travel & tourism", "hospitality", "restaurants",
+                "food & beverages service", "events services"],
+        "keywords": ["travel", "tourism", "hotel", "resort", "hospitality", "restaurant",
+                     "cloud kitchen", "cafe", "events company", "traveltech"]
+      },
+      "Professional & IT Services": {
+        "raw": ["information technology & services", "management consulting", "staffing & recruiting",
+                "human resources", "legal services", "marketing & advertising",
+                "outsourcing/offshoring", "business supplies & equipment"],
+        "keywords": ["it services", "consulting", "consultancy", "advisory", "staffing",
+                     "recruitment", "hr services", "law firm", "legal", "marketing agency",
+                     "digital agency", "bpo", "kpo", "gcc"]
+      },
+      "Telecom & Infrastructure": {
+        "raw": ["telecommunications", "wireless", "computer networking",
+                "computer & network security", "data infrastructure"],
+        "keywords": ["telecom", "telco", "5g", "broadband", "isp", "data centre",
+                     "data center", "networking", "fiber"]
+      },
+      "Agriculture & AgriTech": {
+        "raw": ["farming", "agriculture", "dairy", "fishery", "food production"],
+        "keywords": ["agri", "agritech", "farming", "farm", "dairy", "aquaculture",
+                     "crop", "seeds", "agrochemical"]
+      },
+      "Public Sector & Non-profit": {
+        "raw": ["government administration", "non-profit organization management",
+                "civic & social organization", "defense & space", "public policy",
+                "international affairs", "philanthropy"],
+        "keywords": ["government", "public sector", "psu", "non-profit", "nonprofit", "ngo",
+                     "foundation", "charitable trust", "think tank", "defence", "defense"]
+      }
+    },
+    "fallback": "Other / Unclassified"
+  }
+}

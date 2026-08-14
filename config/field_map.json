@@ -93,5 +93,29 @@
     "expectedClosureDate": "Expected Closure Date",
     "createdAt":           "Created At",
     "updatedAt":           "Updated At"
+  },
+  "client_repo": {
+    "id":                 "Kylas Company Id",
+    "name":               "Client Name",
+    "ventureClass":       "Venture Class",
+    "isFunded":           "Funded Venture",
+    "fundingStage":       "Funding Stage",
+    "roundSizeUsd":       "Round Size (USD)",
+    "roundSizeDisplay":   "Round Size",
+    "investors":          "Investors",
+    "fundingDate":        "Funding Date",
+    "employeeCount":      "Employee Count",
+    "macroIndustry":      "Macro Industry",
+    "rawIndustry":        "Industry (Kylas)",
+    "accountStatus":      "Account Status",
+    "owner":              "Owner",
+    "batch":              "Batch",
+    "sourceOfData":       "Source of Data",
+    "clientBasis":        "Client Basis",
+    "ventureConfidence":  "Venture Confidence",
+    "ventureBasis":       "Venture Basis",
+    "industryBasis":      "Industry Basis",
+    "notes":              "Notes",
+    "classifiedAt":       "Classified At"
   }
 }

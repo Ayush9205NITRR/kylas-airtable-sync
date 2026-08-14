@@ -1,0 +1,22 @@
+{
+  "_comment": "Manual curation layer for the client repository. Anything set here wins over the inferred classification and is reported at High confidence — this is where hand-researched funding data goes (Tracxn/Crunchbase/press), since Kylas does not carry it. Key a company by its Kylas company id under by_id (stable, preferred) or by company name under by_name (case-insensitive, use when you only have the name). Recognised keys per entry: venture_class, macro_industry, round_type, round_size, funding_date, investors, employee_count, notes. Only set what you actually know; unset keys fall back to inference. The two entries below are illustrative — delete them once you add real ones.",
+
+  "by_id": {
+    "_example_5381741": {
+      "round_type": "Series B",
+      "round_size": "$22M",
+      "funding_date": "2025-11-04",
+      "investors": "Accel, Blume",
+      "employee_count": 240,
+      "macro_industry": "Software & SaaS",
+      "notes": "Round confirmed from the Nov-2025 press release; headcount from LinkedIn."
+    }
+  },
+
+  "by_name": {
+    "_example acme foundation": {
+      "venture_class": "Non-profit / Academic",
+      "notes": "Registered charitable trust — keep out of the funded-venture cut."
+    }
+  }
+}

@@ -9,6 +9,13 @@ Automated sync from Kylas CRM to Airtable, running twice daily via GitHub Action
 > independently of the Kylas sync (own deps in `cold_call/requirements.txt`, own
 > Airtable base via `COLD_CALL_AIRTABLE_BASE_ID`).
 
+> **And:** the **Client Repository** (`modules/09_client_repo.py`) — sales
+> intelligence on the companies that have actually run an offsite with Enout,
+> split across venture classes (funding-raised ventures, with stage and round
+> size) and macro industries. See
+> [`docs/CLIENT_REPOSITORY.md`](docs/CLIENT_REPOSITORY.md). Runs weekly via
+> `client_repo.yml`; reuses the existing Airtable/Kylas secrets.
+
 ## Setup
 
 ### 1. Install
