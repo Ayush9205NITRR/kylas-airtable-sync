@@ -61,6 +61,15 @@ jobs:
         # Secondary enrichment: never fail the run if this hiccups (rate limits,
         # timeout) — the sync + email above have already completed.
         continue-on-error: true
+        # Must be LESS than the job's timeout-minutes. continue-on-error only
+        # forgives a *step* failure; a *job* timeout kills the job outright and
+        # marks the whole run cancelled. Without this the step ran until the
+        # 60-minute job limit and every run concluded 'cancelled' even though
+        # the sync and emails had succeeded — see run 32047732976, where step 6
+        # finished at 17:09 and this step was killed at 17:53. The rollup gets
+        # the same wall-clock either way; the difference is that the run now
+        # reports the truth and the post-job steps still run.
+        timeout-minutes: 45
         run: |
           python scripts/rollup_offsite_timeline.py \
             --company-field "Offsite Timeline (BD - New)" \
