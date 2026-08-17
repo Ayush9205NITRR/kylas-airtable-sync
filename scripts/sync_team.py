@@ -23,6 +23,38 @@ TEAM_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "
 KYLAS_BASE = "https://api.kylas.io/v1"
 
 
+class _TransientKylasError(RuntimeError):
+    """A Kylas failure worth retrying: throttling, a 5xx, or a network wobble."""
+
+
+def _get_with_retry(url: str, params: dict, headers: dict, attempts: int = 5):
+    """
+    GET with exponential backoff on transient failures.
+
+    Without this, a single bad minute at Kylas surfaced as "no members at
+    all", and main() treats that as fatal (sys.exit(2)) — which took down the
+    whole 1:30/6:30 PM sync, emails included, on 2026-08-17. Kylas was healthy
+    11 hours before and 25 minutes after; only the one request failed.
+
+    401/403 are NOT retried: the key is wrong and waiting will not fix it.
+    """
+    delay = 1.0
+    for attempt in range(1, attempts + 1):
+        try:
+            r = requests.get(url, params=params, headers=headers, timeout=30)
+            if r.status_code == 429 or r.status_code >= 500:
+                raise _TransientKylasError(f"{r.status_code} {r.reason}")
+            r.raise_for_status()
+            return r
+        except (_TransientKylasError, requests.ConnectionError, requests.Timeout) as e:
+            if attempt == attempts:
+                raise
+            print(f"[sync_team] transient {type(e).__name__}: {e} — "
+                  f"retry {attempt}/{attempts - 1} in {delay:.0f}s")
+            time.sleep(delay)
+            delay = min(delay * 2, 16.0)
+
+
 def _fetch_all_members(api_key: str) -> list:
     """
     Paginate through Kylas team-members (falls back to /users).
@@ -34,13 +66,11 @@ def _fetch_all_members(api_key: str) -> list:
         try:
             while True:
                 time.sleep(0.12)
-                r = requests.get(
+                r = _get_with_retry(
                     f"{KYLAS_BASE}/{path}",
                     params={"page": page, "size": 100},
                     headers=headers,
-                    timeout=30,
                 )
-                r.raise_for_status()
                 resp = r.json()
                 content = resp.get("content") or resp.get("data") or []
                 if not isinstance(content, list):

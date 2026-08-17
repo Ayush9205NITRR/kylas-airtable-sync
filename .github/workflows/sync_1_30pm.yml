@@ -44,6 +44,9 @@ jobs:
 
       - name: Sync team from Kylas
         if: ${{ github.event.inputs.probe_members != 'true' }}
+        # Refresh only — see the identical step in sync_6_00pm.yml. A Kylas
+        # hiccup here must not take the sync and its emails down with it.
+        continue-on-error: true
         run: python scripts/sync_team.py
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}

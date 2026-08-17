@@ -30,6 +30,12 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Sync team from Kylas
+        # Refresh only: sync_team.yml already updates config/team.json on its
+        # own daily schedule, so the committed copy is at most hours stale and
+        # the sync below reads it happily either way. Never fail the run on
+        # this — a transient Kylas blip here aborted the entire 6:30 PM sync,
+        # emails included, on 2026-08-17 (exit 2, 22s in, before any real work).
+        continue-on-error: true
         run: python scripts/sync_team.py
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
