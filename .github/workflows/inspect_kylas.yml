@@ -22,6 +22,18 @@ jobs:
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
 
+      - name: Call-log attribution test (WRITES to production)
+        # Deliberately inert: TEST_DEAL_ID is empty, so the script prints
+        # "refusing to write" and exits 0. It only fires once a specific deal
+        # id — nominated by the repo owner — is filled in below, because the
+        # Kylas public API documents no DELETE for call logs and the record it
+        # creates is likely permanent.
+        if: always()
+        run: python scripts/test_call_log_write.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          TEST_DEAL_ID: ""
+
       - name: Probe call-log entities
         # Independent of the dump above: that script is an older diagnostic
         # that exits 1 on a transient Kylas error in its notes probe, which
