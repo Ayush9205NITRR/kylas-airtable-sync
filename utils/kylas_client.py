@@ -574,25 +574,27 @@ class KylasClient:
                     pass
         return out
 
-    def get_all_call_logs(self, max_pages: int = 50, page_size: int = 200) -> List[dict]:
-        """
-        Every call log in the tenant, newest first.
+    def _call_log_page(self, entity_id, entity_type, page, size) -> List[dict]:
+        """One raw page of /call-logs. entityId/entityType are REQUIRED for the
+        endpoint to respond at all, even though it ignores them for filtering:
+        omitting them returns nothing."""
+        try:
+            resp = self._get("call-logs", {"entityId": int(entity_id),
+                                           "entityType": str(entity_type).lower(),
+                                           "page": page, "size": size,
+                                           "sort": "createdAt,desc"})
+        except Exception as exc:
+            print(f"  [Kylas] call-logs page {page} failed: {str(exc)[:160]}")
+            return []
+        rows = resp if isinstance(resp, list) else (
+            resp.get("content") or resp.get("data") or [])
+        return rows if isinstance(rows, list) else []
 
-        There is no server-side per-entity filter that works (see
-        get_call_logs), so the only honest read is "all of them", then group
-        locally by each record's own relatedTo. That is also cheaper than it
-        sounds: one paged sweep instead of a request per deal.
-        """
+    def _sweep_call_logs(self, seed_id, seed_type, max_pages, page_size) -> List[dict]:
         out, seen = [], set()
         for page in range(max_pages):
-            try:
-                resp = self._get("call-logs", {"page": page, "size": page_size,
-                                               "sort": "createdAt,desc"})
-            except Exception:
-                break
-            rows = resp if isinstance(resp, list) else (
-                resp.get("content") or resp.get("data") or [])
-            if not isinstance(rows, list) or not rows:
+            rows = self._call_log_page(seed_id, seed_type, page, page_size)
+            if not rows:
                 break
             fresh = 0
             for r in rows:
@@ -603,12 +605,63 @@ class KylasClient:
                     seen.add(rid)
                 out.append(r)
                 fresh += 1
-            # No new ids means the endpoint is ignoring paging too; stop rather
-            # than spin.
-            if fresh == 0 or (isinstance(resp, dict)
-                              and page >= resp.get("totalPages", 1) - 1):
+            # An endpoint that ignores entity filters cannot be assumed to
+            # honour paging either; no new ids means stop rather than spin.
+            if fresh == 0:
                 break
         return out
+
+    def get_all_call_logs(self, seed_ids, seed_type: str = "deal",
+                          max_pages: int = 50, page_size: int = 200):
+        """
+        Every call log in the tenant, plus proof that it really is every one.
+
+        /call-logs needs entityId+entityType to respond, but ignores them when
+        filtering: it hands back the tenant-wide set whatever entity is named.
+        This leans on that deliberately -- one paged sweep instead of a request
+        per deal -- which is only safe if the behaviour still holds.
+
+        So it sweeps with TWO different seed entities and compares. Identical
+        results mean the filter is genuinely ignored and the set is tenant-wide.
+        Different results mean Kylas has since fixed the filter, and anything
+        summarising all deals from one sweep would silently miss most of them.
+
+        Returns (rows, filter_ignored). A caller that needs completeness must
+        check filter_ignored and fall back to per-entity reads when it is False.
+        """
+        seeds = [s for s in (seed_ids or []) if s][:2]
+        if not seeds:
+            return [], False
+        first = self._sweep_call_logs(seeds[0], seed_type, max_pages, page_size)
+        if len(seeds) < 2:
+            # Nothing to compare against, so completeness cannot be claimed.
+            return first, False
+        second = self._sweep_call_logs(seeds[1], seed_type, max_pages, page_size)
+        ids_a = {r.get("id") for r in first}
+        ids_b = {r.get("id") for r in second}
+        if ids_a and ids_a == ids_b:
+            return first, True
+        # Filter appears to work now: merge what we have and tell the caller
+        # the sweep is not authoritative.
+        merged = list(first)
+        known = set(ids_a)
+        for r in second:
+            if r.get("id") not in known:
+                merged.append(r)
+                known.add(r.get("id"))
+        return merged, False
+
+    def recent_deal_ids(self, n: int = 2) -> List[int]:
+        """A few real deal ids, cheaply — used to seed the call-log sweep."""
+        try:
+            r = self._request("POST", "search/deal",
+                              params={"page": 0, "size": n, "sort": "updatedAt,desc"},
+                              json={"fields": ["id"], "jsonRule": None})
+            self._raise_for_status(r)
+            return [d["id"] for d in r.json().get("content", []) if d.get("id")]
+        except Exception as exc:
+            print(f"  [Kylas] could not fetch seed deal ids: {str(exc)[:160]}")
+            return []
 
     def get_call_logs(self, entity_id, entity_type: str = "deal") -> List[dict]:
         """

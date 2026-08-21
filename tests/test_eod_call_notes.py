@@ -190,3 +190,55 @@ def test_get_call_logs_drops_rows_the_server_wrongly_returned():
     (5, "5s"), (60, "1m00s"), (362, "6m02s"), (367, "6m07s")])
 def test_duration_formatting(secs, expected):
     assert _fmt_duration(secs) == expected
+
+
+# --------------------------------------------- the tenant-wide sweep guard
+#
+# /call-logs needs entityId+entityType to answer but ignores them when
+# filtering, so one sweep returns everything. That is only safe while it holds:
+# if Kylas fixes the filter, a single sweep becomes one deal's calls and an EOD
+# run would silently skip every other deal. get_all_call_logs proves which
+# behaviour is live by sweeping with two seeds and comparing.
+
+class _SweepClient(KylasClient):
+    def __init__(self, by_seed):
+        super().__init__()
+        self._by_seed = by_seed
+        self.pages = []
+
+    def _call_log_page(self, entity_id, entity_type, page, size):
+        self.pages.append((int(entity_id), page))
+        return self._by_seed.get(int(entity_id), []) if page == 0 else []
+
+
+def test_identical_results_from_two_seeds_means_filter_ignored():
+    rows = [{"id": 1}, {"id": 2}]
+    c = _SweepClient({10: list(rows), 20: list(rows)})
+    got, ignored = c.get_all_call_logs([10, 20])
+    assert ignored is True
+    assert {r["id"] for r in got} == {1, 2}
+
+
+def test_differing_results_means_the_filter_works_and_sweep_is_not_trusted():
+    c = _SweepClient({10: [{"id": 1}], 20: [{"id": 2}]})
+    got, ignored = c.get_all_call_logs([10, 20])
+    assert ignored is False
+    assert {r["id"] for r in got} == {1, 2}
+
+
+def test_a_single_seed_cannot_prove_completeness():
+    c = _SweepClient({10: [{"id": 1}]})
+    got, ignored = c.get_all_call_logs([10])
+    assert ignored is False and len(got) == 1
+
+
+def test_no_seeds_returns_nothing_rather_than_guessing():
+    c = _SweepClient({})
+    assert c.get_all_call_logs([]) == ([], False)
+
+
+def test_sweep_stops_when_a_page_repeats_ids():
+    # The endpoint ignores entity filters, so paging cannot be trusted either.
+    c = _SweepClient({10: [{"id": 1}], 20: [{"id": 1}]})
+    c.get_all_call_logs([10, 20])
+    assert max(p for _, p in c.pages) <= 1

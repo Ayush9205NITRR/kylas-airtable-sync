@@ -148,8 +148,19 @@ def main():
     # therefore both wrong and needlessly expensive; asking once and grouping by
     # each record's own relatedTo is correct and costs a single paged read.
     print("  reading call logs...")
-    calls = client.get_all_call_logs()
-    print(f"  {len(calls)} call log(s) in the tenant")
+    seeds = [args.deal] if args.deal else client.recent_deal_ids(2)
+    calls, filter_ignored = client.get_all_call_logs(seeds)
+    print(f"  {len(calls)} call log(s) returned (seeds {seeds})")
+
+    if not args.deal and not filter_ignored:
+        # Two different seeds gave different results, so this sweep is one
+        # deal's calls rather than the tenant's. Summarising every deal from it
+        # would silently skip most of them, so stop instead of writing a
+        # confidently incomplete set of notes.
+        print("  [STOP] /call-logs appears to filter by entity now, so a single")
+        print("         sweep is NOT tenant-wide and most deals would be missed.")
+        print("         Re-run per deal with --deal, or rework the candidate set.")
+        return 1
 
     by_deal = defaultdict(list)
     for c in calls:
