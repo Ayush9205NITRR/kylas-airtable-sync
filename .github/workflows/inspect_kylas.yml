@@ -28,6 +28,18 @@ jobs:
       # them wrote to production. utils/kylas_client.create_call_log carries
       # those findings now, and tests/test_call_log.py pins them.
 
+      - name: EOD call note (DRY RUN — writes nothing)
+        # --deal skips the sweep, so this is a couple of API calls. Dated
+        # 2026-08-21 IST deliberately: that day's calls include Hrithik
+        # Rawat's real one, so the output shows genuine rep attribution
+        # rather than the two admin-key test records from later that night.
+        if: always()
+        run: |
+          python scripts/eod_call_notes.py \
+            --deal 4383813 --date 2026-08-21 --dry-run
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+
       - name: Probe call recency
         # Read-only. Decides how the EOD note finds deals with calls today:
         # if a call bumps the deal's updatedAt, "deals updated today" is a
