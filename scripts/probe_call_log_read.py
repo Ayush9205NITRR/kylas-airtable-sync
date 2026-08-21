@@ -28,7 +28,11 @@ load_dotenv()
 
 BASE = "https://api.kylas.io/v1"
 HEADERS = {"api-key": os.environ["KYLAS_API_KEY"], "Content-Type": "application/json"}
-NAMEY = ("name", "firstname", "lastname", "email", "phone", "description")
+# Any key whose value can identify a person. "originator"/"receiver"/"ivrNumber"
+# are phone numbers that do NOT contain "phone" — they printed verbatim into a
+# public Actions log before this list included them. Add, never remove.
+NAMEY = ("name", "firstname", "lastname", "email", "phone", "description",
+         "originator", "receiver", "ivrnumber", "deviceid", "summary")
 
 
 def mask(key, val):

@@ -34,7 +34,8 @@ BASE = "https://api.kylas.io/v1"
 HEADERS = {"api-key": os.environ["KYLAS_API_KEY"], "Content-Type": "application/json"}
 
 # Keys that identify a PERSON get masked; ids/enums print so we can trace them.
-NAMEY = ("name", "firstname", "lastname", "email", "phone", "description")
+NAMEY = ("name", "firstname", "lastname", "email", "phone", "description",
+         "originator", "receiver", "ivrnumber", "deviceid", "summary")
 
 
 def mask(key, val):

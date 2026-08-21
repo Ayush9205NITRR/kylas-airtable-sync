@@ -42,14 +42,3 @@ jobs:
           CALL_LOG_ID: "43843294"
           TEST_DEAL_ID: "4383813"
 
-      - name: Probe call-log entities
-        # Independent of the dump above: that script is an older diagnostic
-        # that exits 1 on a transient Kylas error in its notes probe, which
-        # would otherwise skip this step entirely (run 32520366563).
-        if: always()
-        # Read-only discovery for the deal call-log feature: which call entity
-        # this tenant has, its fields, and how it links to a deal. Prints schema
-        # with values masked — Actions logs are public while the repo is.
-        run: python scripts/probe_call_logs.py
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
