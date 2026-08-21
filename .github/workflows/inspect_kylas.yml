@@ -6,7 +6,9 @@ on:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # 5 was fine for the field dump alone. The full EOD dry run sweeps every
+    # deal and reads call logs for the open ones, so it needs real headroom.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -22,13 +24,11 @@ jobs:
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
 
-      # The call-log probes that lived here have been removed: they answered
-      # their questions (call logs live at /v1/call-logs/, reads work via
-      # entityId/entityType, and attribution cannot be reassigned) and two of
-      # them wrote to production. utils/kylas_client.create_call_log carries
-      # those findings now, and tests/test_call_log.py pins them.
+      # The call-log and recency probes that lived here are gone: they answered
+      # their questions and are recorded in the commit history and in
+      # eod_call_notes.py's docstring. Two of them wrote to production.
 
-      - name: EOD call note (DRY RUN — writes nothing)
+      - name: EOD note format (DRY RUN — writes nothing)
         # --deal skips the sweep, so this is a couple of API calls. Dated
         # 2026-08-21 IST deliberately: that day's calls include Hrithik
         # Rawat's real one, so the output shows genuine rep attribution
@@ -40,36 +40,13 @@ jobs:
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
 
-      - name: Probe call recency
-        # Read-only. Decides how the EOD note finds deals with calls today:
-        # if a call bumps the deal's updatedAt, "deals updated today" is a
-        # cheap candidate set; if not, per-deal sweeps would be an N+1.
+      - name: EOD full sweep cost (DRY RUN — writes nothing)
+        # Answers the only open question before this can be scheduled: how many
+        # open deals there are, and therefore how many Actions minutes a daily
+        # run would cost. The script prints the true open-deal count and its
+        # estimate BEFORE --max-deals caps the actual scanning, so the number is
+        # real even though only a sample is scanned here.
         if: always()
-        run: python scripts/probe_call_recency.py
+        run: python scripts/eod_call_notes.py --dry-run --max-deals 60
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          PROBE_DEAL_ID: "4383813"
-
-      # Sample run. Writes ONE real call log to deal 4383813 — the deal already
-      # nominated for testing, so nothing clean gets polluted — then lists the
-      # deal's calls back. Set SAMPLE_DEAL_ID to "" to disarm.
-      - name: Sample call log
-        if: always()
-        run: |
-          if [ -z "$SAMPLE_DEAL_ID" ]; then
-            echo "SAMPLE_DEAL_ID empty — skipping."; exit 0
-          fi
-          python scripts/log_call.py \
-            --deal "$SAMPLE_DEAL_ID" \
-            --by "Hritik" \
-            --duration 270 \
-            --outcome connected \
-            --note "SAMPLE RUN — Nov offsite discussed, POC asked for the pricing deck. Not a real call."
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          # Disarmed after run 32524198309 created call log 43843303. Do not
-          # re-arm casually: the sample surfaced that reps already log their
-          # own calls in Kylas with correct attribution, so anything written
-          # here lands next to real data stamped "Enout Super Admin".
-          SAMPLE_DEAL_ID: ""
-
