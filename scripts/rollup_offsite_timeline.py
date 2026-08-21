@@ -50,6 +50,33 @@ def _company_key_from_config(cfg: dict):
     return None
 
 
+def _labels_from_raw(raw, id_to_label: dict) -> set:
+    """Normalise a Kylas picklist value to a set of label strings.
+
+    The offsite-timeline value can arrive in several shapes:
+        dict            {'name': 'Jul - Sep', 'id': 2880426}
+        int id          2880426
+        list of ints    [2880424, 2880425]            (multi-select)
+        list of dicts   [{'name': 'Jul - Sep', ...}]  (multi-select)
+    """
+    out = set()
+    if raw is None:
+        return out
+    for item in (raw if isinstance(raw, list) else [raw]):
+        if isinstance(item, dict):
+            lbl = item.get("name")
+            if lbl:
+                out.add(lbl)
+            continue
+        try:
+            lbl = id_to_label.get(int(item))
+        except (ValueError, TypeError):
+            continue
+        if lbl:
+            out.add(lbl)
+    return out
+
+
 def _inspect(client: KylasClient, company_field: str, contact_field: str):
     """Print resolved keys + option maps for both fields, then exit."""
     print("=" * 60)
@@ -422,6 +449,51 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
         records = table.all(formula="NOT({Last Called At (Contacts)} = '')")
         print(f"Found {len(records)} companies with Last Called At (Contacts) set{' (DRY RUN)' if dry_run else ''}\n")
 
+    # ------------------------------------------------------------------
+    # Bulk prefetch. This loop used to make 2 + N_contacts Kylas calls per
+    # company: get_contacts_by_company(), then a get_contact() for *every*
+    # contact (the list endpoint omits custom fields, so the fallback fired
+    # every time), then a get_company() to read the current value. Across the
+    # whole Company List that is tens of thousands of sequential requests —
+    # which is why this step never finished inside its 45-minute cap and burned
+    # the job's full hour every weekday.
+    #
+    # Both bulk sweeps below already request customFieldValues (see
+    # _CONTACT_FIELDS / _COMPANY_FIELDS in utils/kylas_client.py), so they carry
+    # exactly the data those per-record calls were fetching. Everything in the
+    # loop is then an in-memory lookup and the only requests left are the
+    # writes, which happen solely where there is a real diff.
+    # ------------------------------------------------------------------
+    co_defs   = client.get_custom_field_defs("company")
+    co_labels = dict((co_defs.get(company_cf_key) or {}).get("labels") or {})
+
+    contact_labels_by_company: dict = {}
+    company_labels_by_id: dict = {}
+    single_mode = bool(target_company_id or target_contact_id)
+
+    if not single_mode:
+        print("Prefetching all contacts from Kylas...")
+        all_contacts = client.get_contacts()
+        for ct in all_contacts:
+            key = client._contact_company_id(ct)
+            if not key:
+                continue
+            got = _labels_from_raw(
+                (ct.get("customFieldValues") or {}).get(contact_cf_key), ct_labels)
+            if got:
+                contact_labels_by_company.setdefault(key, set()).update(got)
+        print(f"  {len(all_contacts)} contacts -> "
+              f"{len(contact_labels_by_company)} companies carry timeline labels")
+
+        print("Prefetching all companies from Kylas...")
+        all_companies = client.get_companies()
+        for co in all_companies:
+            cid = _to_id_str(co.get("id"))
+            if cid:
+                company_labels_by_id[cid] = _labels_from_raw(
+                    (co.get("customFieldValues") or {}).get(company_cf_key), co_labels)
+        print(f"  {len(all_companies)} companies cached\n")
+
     tallies = {"updated": 0, "unchanged": 0, "failed": 0, "skipped": 0}
 
     for rec in records:
@@ -434,60 +506,40 @@ def run(view_name: str, dry_run: bool, company_field: str, contact_field: str,
             tallies["skipped"] += 1
             continue
 
-        co_id    = int(co_id_str)
-        contacts = client.get_contacts_by_company(co_id)
-        if target_company_id or target_contact_id:
-            print(f"[DIAG] get_contacts_by_company({co_id}) returned {len(contacts)} contacts: "
-                  f"{[c.get('id') for c in contacts]}")
+        co_id = int(co_id_str)
 
-        # Collect contact offsite-timeline labels for this company.
-        contact_labels = set()
-        for ct in contacts:
-            raw = (ct.get("customFieldValues") or {}).get(contact_cf_key)
-            # Contacts may only have the key when fetched in full detail;
-            # get_contacts_by_company fetches a limited field list, so we
-            # fetch each contact's full record to read custom fields.
-            if raw is None:
-                try:
-                    ct_full = client.get_contact(ct["id"])
-                    raw = (ct_full.get("customFieldValues") or {}).get(contact_cf_key)
-                except Exception as e:
-                    print(f"    [WARN] get_contact({ct['id']}) failed: {e}")
-            if raw is None:
-                continue
-            # The offsite-timeline value can arrive in several shapes:
-            #   dict            {'name': 'Jul - Sep', 'id': 2880426}
-            #   int id          2880426
-            #   list of ints    [2880424, 2880425]            (multi-select)
-            #   list of dicts   [{'name': 'Jul - Sep', ...}]  (multi-select)
-            # Normalise all of them to a set of label strings.
-            for item in (raw if isinstance(raw, list) else [raw]):
-                if isinstance(item, dict):
-                    lbl = item.get("name")
-                    if lbl:
-                        contact_labels.add(lbl)
-                    continue
-                try:
-                    lbl = ct_labels.get(int(item))
-                    if lbl:
-                        contact_labels.add(lbl)
-                except (ValueError, TypeError):
-                    pass
+        if single_mode:
+            # Single-record diagnostic mode: hit Kylas directly, as before.
+            contacts = client.get_contacts_by_company(co_id)
+            print(f"[DIAG] get_contacts_by_company({co_id}) returned "
+                  f"{len(contacts)} contacts: {[c.get('id') for c in contacts]}")
+            contact_labels = set()
+            for ct in contacts:
+                raw = (ct.get("customFieldValues") or {}).get(contact_cf_key)
+                if raw is None:
+                    # The list endpoint fetches a limited field set, so fall
+                    # back to the full record to read custom fields.
+                    try:
+                        raw = (client.get_contact(ct["id"]).get("customFieldValues")
+                               or {}).get(contact_cf_key)
+                    except Exception as e:
+                        print(f"    [WARN] get_contact({ct['id']}) failed: {e}")
+                contact_labels |= _labels_from_raw(raw, ct_labels)
+        else:
+            contact_labels = set(contact_labels_by_company.get(co_id_str, ()))
 
-        # Fetch company's current cfOffsiteTimelineBdNew value to diff against.
-        company_names: set = set()
-        try:
-            co_full = client.get_company(co_id)
-            co_raw  = (co_full.get("customFieldValues") or {}).get(company_cf_key)
-            # Multi-select: list of dicts like [{'name': 'Jul - Sep', 'id': 258139}] or None.
-            if isinstance(co_raw, list):
-                for item in co_raw:
-                    if isinstance(item, dict):
-                        n = item.get("name")
-                        if n:
-                            company_names.add(n)
-        except Exception as exc:
-            print(f"  [WARN] could not fetch company {co_id} from Kylas: {exc}")
+        # The company's current value, to diff against.
+        if single_mode:
+            company_names: set = set()
+            try:
+                co_full = client.get_company(co_id)
+                company_names = _labels_from_raw(
+                    (co_full.get("customFieldValues") or {}).get(company_cf_key),
+                    co_labels)
+            except Exception as exc:
+                print(f"  [WARN] could not fetch company {co_id} from Kylas: {exc}")
+        else:
+            company_names = set(company_labels_by_id.get(co_id_str, ()))
 
         # Only propagate labels the company doesn't already have.
         to_add = contact_labels - company_names

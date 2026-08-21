@@ -18,7 +18,11 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 30 is ~2x the measured cost of a healthy run (sync ~14 min + rollup a few
+    # minutes). It used to be 60 because the rollup could not finish; now that
+    # it can, a job creeping past 30 means something regressed, and the cap
+    # stops that regression from quietly eating the month's Actions minutes.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -63,13 +67,16 @@ jobs:
         continue-on-error: true
         # Must be LESS than the job's timeout-minutes. continue-on-error only
         # forgives a *step* failure; a *job* timeout kills the job outright and
-        # marks the whole run cancelled. Without this the step ran until the
-        # 60-minute job limit and every run concluded 'cancelled' even though
-        # the sync and emails had succeeded — see run 32047732976, where step 6
-        # finished at 17:09 and this step was killed at 17:53. The rollup gets
-        # the same wall-clock either way; the difference is that the run now
-        # reports the truth and the post-job steps still run.
-        timeout-minutes: 45
+        # marks the whole run cancelled.
+        #
+        # This was 45 and hit that cap every single weekday, because the script
+        # made 2 + N_contacts Kylas calls per company and could not get through
+        # the Company List in time — 45 of the job's 60 minutes, ~1,200 Actions
+        # minutes a month, spent on work that never completed. The script now
+        # bulk-prefetches contacts and companies in two sweeps, so a healthy
+        # run is minutes. 15 leaves generous headroom while capping the damage
+        # if that ever regresses.
+        timeout-minutes: 15
         run: |
           python scripts/rollup_offsite_timeline.py \
             --company-field "Offsite Timeline (BD - New)" \
