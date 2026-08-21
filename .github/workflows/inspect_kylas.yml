@@ -28,6 +28,16 @@ jobs:
       # them wrote to production. utils/kylas_client.create_call_log carries
       # those findings now, and tests/test_call_log.py pins them.
 
+      - name: Probe call recency
+        # Read-only. Decides how the EOD note finds deals with calls today:
+        # if a call bumps the deal's updatedAt, "deals updated today" is a
+        # cheap candidate set; if not, per-deal sweeps would be an N+1.
+        if: always()
+        run: python scripts/probe_call_recency.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          PROBE_DEAL_ID: "4383813"
+
       # Sample run. Writes ONE real call log to deal 4383813 — the deal already
       # nominated for testing, so nothing clean gets polluted — then lists the
       # deal's calls back. Set SAMPLE_DEAL_ID to "" to disarm.
