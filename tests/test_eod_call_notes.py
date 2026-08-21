@@ -206,9 +206,9 @@ class _SweepClient(KylasClient):
         self._by_seed = by_seed
         self.pages = []
 
-    def _call_log_page(self, entity_id, entity_type, page, size):
-        self.pages.append((int(entity_id), page))
-        return self._by_seed.get(int(entity_id), []) if page == 0 else []
+    def _sweep_call_logs(self, seed_id, seed_type):
+        self.pages.append((int(seed_id), 0))
+        return self._by_seed.get(int(seed_id), [])
 
 
 def test_identical_results_from_two_seeds_means_filter_ignored():
@@ -237,8 +237,9 @@ def test_no_seeds_returns_nothing_rather_than_guessing():
     assert c.get_all_call_logs([]) == ([], False)
 
 
-def test_sweep_stops_when_a_page_repeats_ids():
-    # The endpoint ignores entity filters, so paging cannot be trusted either.
+def test_each_seed_is_read_exactly_once():
+    # /call-logs 404s on page/size/sort, so there is no paging to do: one read
+    # per seed and no more.
     c = _SweepClient({10: [{"id": 1}], 20: [{"id": 1}]})
     c.get_all_call_logs([10, 20])
-    assert max(p for _, p in c.pages) <= 1
+    assert sorted(s for s, _ in c.pages) == [10, 20]

@@ -574,45 +574,25 @@ class KylasClient:
                     pass
         return out
 
-    def _call_log_page(self, entity_id, entity_type, page, size) -> List[dict]:
-        """One raw page of /call-logs. entityId/entityType are REQUIRED for the
-        endpoint to respond at all, even though it ignores them for filtering:
-        omitting them returns nothing."""
+    def _sweep_call_logs(self, seed_id, seed_type) -> List[dict]:
+        """
+        One /call-logs read. There is no paging: adding page/size/sort 404s the
+        endpoint outright, so entityId + entityType are the ONLY params it
+        accepts, and whatever comes back in that single response is all there
+        is. If this tenant's call volume ever outgrows one response, the missing
+        rows will be silent -- see the truncation warning in get_all_call_logs.
+        """
         try:
-            resp = self._get("call-logs", {"entityId": int(entity_id),
-                                           "entityType": str(entity_type).lower(),
-                                           "page": page, "size": size,
-                                           "sort": "createdAt,desc"})
+            resp = self._get("call-logs", {"entityId": int(seed_id),
+                                           "entityType": str(seed_type).lower()})
         except Exception as exc:
-            print(f"  [Kylas] call-logs page {page} failed: {str(exc)[:160]}")
+            print(f"  [Kylas] call-logs read failed: {str(exc)[:200]}")
             return []
         rows = resp if isinstance(resp, list) else (
             resp.get("content") or resp.get("data") or [])
         return rows if isinstance(rows, list) else []
 
-    def _sweep_call_logs(self, seed_id, seed_type, max_pages, page_size) -> List[dict]:
-        out, seen = [], set()
-        for page in range(max_pages):
-            rows = self._call_log_page(seed_id, seed_type, page, page_size)
-            if not rows:
-                break
-            fresh = 0
-            for r in rows:
-                rid = r.get("id")
-                if rid is not None and rid in seen:
-                    continue
-                if rid is not None:
-                    seen.add(rid)
-                out.append(r)
-                fresh += 1
-            # An endpoint that ignores entity filters cannot be assumed to
-            # honour paging either; no new ids means stop rather than spin.
-            if fresh == 0:
-                break
-        return out
-
-    def get_all_call_logs(self, seed_ids, seed_type: str = "deal",
-                          max_pages: int = 50, page_size: int = 200):
+    def get_all_call_logs(self, seed_ids, seed_type: str = "deal"):
         """
         Every call log in the tenant, plus proof that it really is every one.
 
@@ -632,14 +612,20 @@ class KylasClient:
         seeds = [s for s in (seed_ids or []) if s][:2]
         if not seeds:
             return [], False
-        first = self._sweep_call_logs(seeds[0], seed_type, max_pages, page_size)
+        first = self._sweep_call_logs(seeds[0], seed_type)
         if len(seeds) < 2:
             # Nothing to compare against, so completeness cannot be claimed.
             return first, False
-        second = self._sweep_call_logs(seeds[1], seed_type, max_pages, page_size)
+        second = self._sweep_call_logs(seeds[1], seed_type)
         ids_a = {r.get("id") for r in first}
         ids_b = {r.get("id") for r in second}
         if ids_a and ids_a == ids_b:
+            # No paging exists, so a suspiciously round count probably means
+            # the response was capped and older calls are missing silently.
+            if len(first) in (50, 100, 200, 500, 1000):
+                print(f"  [Kylas] WARNING: exactly {len(first)} call logs returned "
+                      f"and /call-logs supports no paging — the response may be "
+                      f"capped, so older calls could be missing.")
             return first, True
         # Filter appears to work now: merge what we have and tell the caller
         # the sweep is not authoritative.
