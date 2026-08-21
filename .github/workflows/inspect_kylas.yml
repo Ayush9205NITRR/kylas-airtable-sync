@@ -34,6 +34,19 @@ jobs:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
           TEST_DEAL_ID: ""   # disarmed: call log 43843294 already created
 
+      - name: Probe call-log OWNER assignment
+        # Can one admin key set the caller? PATCHes the existing test call log
+        # (recordActions.update was true) with each plausible owner shape.
+        # Creates nothing. 74759 = Hrithik Rawat, seen as createdBy on a real
+        # deal, so a successful patch shows up as a name in the UI.
+        if: always()
+        run: python scripts/probe_call_log_owner.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          CALL_LOG_ID: "43843294"
+          TEST_DEAL_ID: "4383813"
+          TARGET_USER_ID: "74759"
+
       - name: Probe call-log READ shapes
         if: always()
         run: python scripts/probe_call_log_read.py
