@@ -32,7 +32,7 @@ jobs:
         run: python scripts/test_call_log_write.py
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          TEST_DEAL_ID: ""
+          TEST_DEAL_ID: "4383813"   # nominated by the repo owner, 2026-08-21
 
       - name: Probe call-log entities
         # Independent of the dump above: that script is an older diagnostic
