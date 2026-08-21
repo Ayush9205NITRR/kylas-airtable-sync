@@ -12,9 +12,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 os.environ.setdefault("KYLAS_API_KEY", "test:1")
 
 from scripts.eod_call_notes import (  # noqa: E402
-    MARKER, _fmt_duration, _ist_day_bounds, _is_open, _parse_utc,
-    already_noted, build_note,
+    MARKER, _fmt_duration, _ist_day_bounds, _parse_utc, already_noted,
+    build_note,
 )
+from utils.kylas_client import KylasClient  # noqa: E402
 
 DAY = date(2026, 8, 21)
 
@@ -137,23 +138,52 @@ def test_unreadable_notes_returns_none_so_the_caller_can_refuse_to_write():
     assert already_noted(_NotesClient([], boom=True), DAY, 20) is None
 
 
-# ------------------------------------------------------------- deal filtering
+# ------------------------------------------------- grouping calls to deals
+#
+# The /call-logs endpoint ignores entityId/entityType and returns the whole
+# tenant's call logs for any entity asked for. A dry run over 60 deals got the
+# same two call logs for all 60, and those two belong to one deal -- live that
+# would have posted an identical wrong note to every deal. Grouping therefore
+# has to come from each record's own relatedTo, which is what these pin.
 
-@pytest.mark.parametrize("stage", [
-    "Closed Won", "Closed Unqualified", "Closed Lost", "Junk", "Dropped"])
-def test_closed_stages_are_skipped(stage):
-    assert not _is_open({"pipelineStage": {"name": stage}})
+_CALL_ON_4383813 = {
+    "id": 43843294,
+    "relatedTo": [{"id": 5362056, "entity": "contact"},
+                  {"id": 4383813, "entity": "deal"}],
+    "associatedTo": [{"id": 5362056, "entity": "contact"}],
+}
 
 
-@pytest.mark.parametrize("stage", [
-    "DMM Re-Work", "Introductory Call", "Proposal Sent", "Negotiation"])
-def test_live_stages_are_scanned(stage):
-    assert _is_open({"pipelineStage": {"name": stage}})
+def test_relations_finds_the_deal_the_call_actually_names():
+    assert KylasClient.call_log_relations(_CALL_ON_4383813, "deal") == {4383813}
 
 
-def test_deal_with_no_stage_is_treated_as_open():
-    # Better to scan a deal needlessly than to silently miss its calls.
-    assert _is_open({}) and _is_open({"pipelineStage": None})
+def test_relations_does_not_attribute_a_call_to_an_unrelated_deal():
+    assert 4676048 not in KylasClient.call_log_relations(_CALL_ON_4383813, "deal")
+
+
+def test_relations_reads_contacts_from_both_lists():
+    assert KylasClient.call_log_relations(_CALL_ON_4383813, "contact") == {5362056}
+
+
+def test_relations_of_a_call_with_no_links_is_empty():
+    assert KylasClient.call_log_relations({}, "deal") == set()
+
+
+def test_relations_survives_malformed_entries():
+    call = {"relatedTo": [{"entity": "deal"}, {"id": "x", "entity": "deal"},
+                          None, {"id": 7, "entity": "deal"}]}
+    assert KylasClient.call_log_relations(call, "deal") == {7}
+
+
+def test_get_call_logs_drops_rows_the_server_wrongly_returned():
+    # The server hands back everything; the client must keep only the asked-for
+    # deal's own calls.
+    other = {"id": 1, "relatedTo": [{"id": 9999, "entity": "deal"}]}
+    c = KylasClient()
+    c._get = lambda path, params=None: {"content": [_CALL_ON_4383813, other]}
+    rows = c.get_call_logs(4383813, "deal")
+    assert [r["id"] for r in rows] == [43843294]
 
 
 @pytest.mark.parametrize("secs,expected", [

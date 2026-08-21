@@ -149,16 +149,28 @@ def test_http_error_is_returned_not_raised():
 
 
 def test_get_call_logs_uses_entity_id_params():
-    # The documented /call-logs/{id}?relatedToType= 404s on this tenant.
+    # The documented /call-logs/{id}?relatedToType= 404s on this tenant, so the
+    # entityId/entityType form is what gets called -- even though the server
+    # ignores the filter and the client has to re-apply it (below).
     seen = {}
+    row = {"id": 43843294, "relatedTo": [{"id": 4383813, "entity": "deal"}]}
 
     c = KylasClient()
     c._get = lambda path, params=None: seen.update(path=path, params=params) or {
-        "content": [{"id": 43843294}]}
-    rows = c.get_call_logs(4383813, "deal")
-    assert rows == [{"id": 43843294}]
+        "content": [row]}
+    assert c.get_call_logs(4383813, "deal") == [row]
     assert seen["path"] == "call-logs"
     assert seen["params"] == {"entityId": 4383813, "entityType": "deal"}
+
+
+def test_get_call_logs_filters_out_other_deals_calls():
+    # Measured: the server returns the whole tenant's call logs for any
+    # entityId. Without this filter a per-deal read is silently wrong.
+    mine = {"id": 1, "relatedTo": [{"id": 4383813, "entity": "deal"}]}
+    theirs = {"id": 2, "relatedTo": [{"id": 4676048, "entity": "deal"}]}
+    c = KylasClient()
+    c._get = lambda path, params=None: {"content": [mine, theirs]}
+    assert c.get_call_logs(4383813, "deal") == [mine]
 
 
 def test_get_call_logs_swallows_errors():

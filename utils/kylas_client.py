@@ -561,23 +561,86 @@ class KylasClient:
             pass
         return {"ok": True, "status": r.status_code, "id": call_id, "error": ""}
 
+    @staticmethod
+    def call_log_relations(call: dict, entity_type: str) -> set:
+        """Ids of the given entity type this call log is attached to."""
+        want = str(entity_type).lower()
+        out = set()
+        for rel in (call.get("relatedTo") or []) + (call.get("associatedTo") or []):
+            if isinstance(rel, dict) and str(rel.get("entity") or "").lower() == want:
+                try:
+                    out.add(int(rel["id"]))
+                except (KeyError, TypeError, ValueError):
+                    pass
+        return out
+
+    def get_all_call_logs(self, max_pages: int = 50, page_size: int = 200) -> List[dict]:
+        """
+        Every call log in the tenant, newest first.
+
+        There is no server-side per-entity filter that works (see
+        get_call_logs), so the only honest read is "all of them", then group
+        locally by each record's own relatedTo. That is also cheaper than it
+        sounds: one paged sweep instead of a request per deal.
+        """
+        out, seen = [], set()
+        for page in range(max_pages):
+            try:
+                resp = self._get("call-logs", {"page": page, "size": page_size,
+                                               "sort": "createdAt,desc"})
+            except Exception:
+                break
+            rows = resp if isinstance(resp, list) else (
+                resp.get("content") or resp.get("data") or [])
+            if not isinstance(rows, list) or not rows:
+                break
+            fresh = 0
+            for r in rows:
+                rid = r.get("id")
+                if rid is not None and rid in seen:
+                    continue
+                if rid is not None:
+                    seen.add(rid)
+                out.append(r)
+                fresh += 1
+            # No new ids means the endpoint is ignoring paging too; stop rather
+            # than spin.
+            if fresh == 0 or (isinstance(resp, dict)
+                              and page >= resp.get("totalPages", 1) - 1):
+                break
+        return out
+
     def get_call_logs(self, entity_id, entity_type: str = "deal") -> List[dict]:
         """
-        Call logs attached to a deal/contact/lead.
+        Call logs attached to one deal/contact/lead.
 
-        Uses entityId/entityType. The documented
-        GET /call-logs/{id}?relatedToType=... 404s on this tenant with
-        errorCode 02002001 even for a deal that demonstrably has call logs.
+        WARNING, measured on this tenant: the entityId/entityType query params
+        are IGNORED. GET /call-logs?entityId=<x>&entityType=deal returns the
+        same tenant-wide set for every x — a dry run scanning 60 deals produced
+        the identical two call logs for all 60, and those two belong to a
+        single deal. The documented GET /call-logs/{id}?relatedToType=... is no
+        better: it 404s with errorCode 02002001 even for a deal that
+        demonstrably has call logs.
+
+        So the filtering is done here, against each record's own relatedTo /
+        associatedTo. Never trust the server-side filter on this endpoint;
+        callers summarising many deals should use get_all_call_logs() once and
+        group locally rather than calling this per deal.
         """
         try:
-            resp = self._get("call-logs", {"entityId": int(entity_id),
+            eid = int(entity_id)
+        except (TypeError, ValueError):
+            return []
+        try:
+            resp = self._get("call-logs", {"entityId": eid,
                                            "entityType": str(entity_type).lower()})
         except Exception:
             return []
-        if isinstance(resp, list):
-            return resp
-        content = resp.get("content") or resp.get("data") or []
-        return content if isinstance(content, list) else []
+        rows = resp if isinstance(resp, list) else (
+            resp.get("content") or resp.get("data") or [])
+        if not isinstance(rows, list):
+            return []
+        return [r for r in rows if eid in self.call_log_relations(r, entity_type)]
 
     def get_user_email(self, user_id) -> str:
         """
