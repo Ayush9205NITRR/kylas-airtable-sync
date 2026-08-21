@@ -45,5 +45,9 @@ jobs:
             --note "SAMPLE RUN — Nov offsite discussed, POC asked for the pricing deck. Not a real call."
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          SAMPLE_DEAL_ID: "4383813"
+          # Disarmed after run 32524198309 created call log 43843303. Do not
+          # re-arm casually: the sample surfaced that reps already log their
+          # own calls in Kylas with correct attribution, so anything written
+          # here lands next to real data stamped "Enout Super Admin".
+          SAMPLE_DEAL_ID: ""
 

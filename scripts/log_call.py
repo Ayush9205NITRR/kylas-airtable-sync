@@ -65,8 +65,11 @@ def _show(client, deal_id):
         who = (r.get("createdBy") or {}).get("name") or "?"
         notes = r.get("notes") or []
         first = (notes[0].get("description") if notes and isinstance(notes[0], dict) else "") or ""
+        # Unconnected calls carry no duration at all, so don't print "Nones".
+        dur = r.get("duration")
+        dur = f"{dur}s" if dur else "-"
         print(f"  [{r.get('id')}] {r.get('startTime')}  {r.get('callType')}/"
-              f"{r.get('outcome')}  {r.get('duration')}s  logged-by={who}")
+              f"{r.get('outcome')}  {dur}  logged-by={who}")
         if first:
             print(f"        note: {first[:160]}")
     return rows
