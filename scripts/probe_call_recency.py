@@ -76,6 +76,40 @@ def main():
     except Exception as exc:
         print(f"    failed: {exc}")
 
+    # 3. Deals are untouched by a call, so the candidate set must come from the
+    #    contact side. Two possible signals: contact.updatedAt, and the
+    #    cfLastCalledAt custom field bd_monthly_matrix.py already reads.
+    contact_id = int(os.environ.get("PROBE_CONTACT_ID") or 5362056)
+    print(f"\n  contact {contact_id} (related to the calls above):")
+    try:
+        ct = client.get_contact(contact_id)
+        cf = ct.get("customFieldValues") or {}
+        print(f"    updatedAt      : {ct.get('updatedAt')}")
+        print(f"    cfLastCalledAt : {cf.get('cfLastCalledAt')!r}")
+        cc = client.get_call_logs(contact_id, "contact")
+        print(f"    get_call_logs(entityType=contact) -> {len(cc)} row(s)")
+    except Exception as exc:
+        print(f"    failed: {exc}")
+
+    # 4. Size the bulk contact sweep, and how many were called today.
+    today_ist = datetime.now(IST).date().isoformat()
+    print(f"\n  bulk contact sweep (today IST = {today_ist}):")
+    try:
+        contacts = client.get_contacts()
+        called_today, with_lc = 0, 0
+        for c in contacts:
+            lc = str((c.get("customFieldValues") or {}).get("cfLastCalledAt") or "")
+            if lc:
+                with_lc += 1
+                if lc[:10] == today_ist:
+                    called_today += 1
+        print(f"    {len(contacts)} contacts, {with_lc} with cfLastCalledAt, "
+              f"{called_today} called today")
+        print(f"    => per-contact call reads for today "
+              f"= ~{called_today * 0.35:.0f}s of API time")
+    except Exception as exc:
+        print(f"    failed: {exc}")
+
     print("\nDone.")
     return 0
 
