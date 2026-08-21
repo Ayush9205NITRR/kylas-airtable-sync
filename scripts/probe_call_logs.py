@@ -1,15 +1,21 @@
 """
-Read-only probe: does Kylas expose call logs, and what shape do they have?
+Read-only probe of the Kylas Call Log + Webhook APIs against this tenant.
 
-Answers three questions before any call-log feature gets designed:
-  1. Which call-ish entity does this tenant actually have? (probes candidates)
-  2. What fields does it carry — specifically: who called, how long, when?
-  3. How does a call link back to a deal / company / contact?
+The official Postman collection documents both, but a published collection is
+not proof that a given tenant/plan exposes them. This confirms against the real
+tenant before anything is designed on top:
 
-SAFETY: the repo is public right now, so Actions logs are public too. This
-prints field NAMES and TYPES (schema, not data). Values are shown only for
-keys that cannot be personal — ids, timestamps, durations, enums. Every other
-value is masked to a type + length. Never loosen this while the repo is public.
+  GET  /v1/call-logs/{id}?relatedToType=deal   — do call logs exist, what shape?
+  GET  /v1/webhooks                            — are webhooks readable/settable?
+
+Specifically answers the question the create-payload does NOT: which field
+carries WHO made the call. The documented POST body has outcome/startTime/
+duration/callType/phoneNumber/relatedTo/associatedTo but no caller field, so
+attribution has to be read off a real record.
+
+SAFETY: the repo is public, so Actions logs are public. Field names print
+verbatim; string values are masked to type+length. Phone numbers are masked
+to their last 3 digits. Do not loosen this while the repo is public.
 
 Run: python scripts/probe_call_logs.py
 """
@@ -29,32 +35,29 @@ load_dotenv()
 BASE = "https://api.kylas.io/v1"
 HEADERS = {"api-key": os.environ["KYLAS_API_KEY"], "Content-Type": "application/json"}
 
-# Entity names Kylas might file call logs under. Cheap to probe, so cast wide.
-CANDIDATES = [
-    "call", "calls", "call-log", "calllog", "phone-call",
-    "activity", "activities", "task", "meeting", "event", "log",
-]
-
-# Keys whose values cannot identify a person -> safe to print verbatim.
+# Non-identifying keys -> safe to print verbatim. Everything else is masked.
 SAFE_KEYS = {
-    "id", "createdAt", "updatedAt", "calledAt", "startTime", "endTime",
-    "duration", "durationInSeconds", "callDuration", "status", "type",
-    "callType", "direction", "outcome", "callOutcome", "disposition",
-    "entityType", "recordActionType", "totalElements", "totalPages",
-    "dealId", "companyId", "contactId", "relatedToId", "ownerId", "userId",
+    "id", "outcome", "callType", "duration", "startTime", "endTime",
+    "createdAt", "updatedAt", "entity", "entityType", "relatedToType",
+    "active", "requestType", "authenticationType", "events",
+    "ownerId", "createdById", "updatedById", "userId", "tenantId",
+    "totalElements", "totalPages", "recordActionType",
 }
 
 
-def preview(key: str, val):
-    """Value if provably non-identifying, else a masked type descriptor."""
-    if val is None or isinstance(val, bool) or isinstance(val, (int, float)):
-        return val
-    if key in SAFE_KEYS:
+def preview(key, val):
+    if val is None or isinstance(val, (bool, int, float)):
         return val
     if isinstance(val, str):
+        if key in SAFE_KEYS:
+            return val
         if "@" in val:
             return mask_email(val)
+        if key.lower().endswith("phonenumber") or key.lower() == "phone":
+            return f"***{val[-3:]}" if len(val) > 3 else "***"
         return f"<str len={len(val)}>"
+    if key in SAFE_KEYS and isinstance(val, list) and all(isinstance(v, str) for v in val):
+        return val
     if isinstance(val, list):
         return [preview(key, v) for v in val[:2]] + (["..."] if len(val) > 2 else [])
     if isinstance(val, dict):
@@ -62,95 +65,77 @@ def preview(key: str, val):
     return f"<{type(val).__name__}>"
 
 
-def probe_fields(entity: str):
-    """GET /entities/{entity}/fields — the field-definition endpoint."""
+def get(path, params=None):
     try:
-        r = requests.get(f"{BASE}/entities/{entity}/fields",
-                         params={"entityType": entity, "custom-only": "false",
-                                 "page": 0, "size": 200},
-                         headers=HEADERS, timeout=30)
+        r = requests.get(f"{BASE}/{path}", params=params, headers=HEADERS, timeout=30)
     except Exception as e:
         return None, f"EXC {e}"
     if r.status_code != 200:
-        return None, f"HTTP {r.status_code}"
+        return None, f"HTTP {r.status_code} {r.text[:200]}"
     try:
-        body = r.json()
+        return r.json(), "HTTP 200"
     except Exception:
         return None, "non-JSON"
-    items = body if isinstance(body, list) else (body.get("content") or body.get("data") or [])
-    return items, f"HTTP 200 ({len(items)} fields)"
 
 
-def probe_search(entity: str):
-    """POST /search/{entity} — one record, to learn the runtime shape."""
-    try:
-        r = requests.post(f"{BASE}/search/{entity}",
-                          params={"page": 0, "size": 1, "sort": "updatedAt,desc"},
-                          json={"fields": None, "jsonRule": None},
-                          headers=HEADERS, timeout=30)
-    except Exception as e:
-        return None, f"EXC {e}", None
-    if r.status_code != 200:
-        return None, f"HTTP {r.status_code}", None
-    body = r.json()
-    content = body.get("content") or []
-    return content, f"HTTP 200 (totalElements={body.get('totalElements')})", body.get("totalElements")
+def recent_deal_ids(n=12):
+    """Most recently updated deals, to look for one carrying call logs."""
+    r = requests.post(f"{BASE}/search/deal",
+                      params={"page": 0, "size": n, "sort": "updatedAt,desc"},
+                      json={"fields": ["id", "name", "updatedAt"], "jsonRule": None},
+                      headers=HEADERS, timeout=30)
+    r.raise_for_status()
+    return [d.get("id") for d in r.json().get("content", []) if d.get("id")]
 
 
 def main():
     print("=" * 70)
-    print("KYLAS CALL-LOG PROBE  (schema only — values masked, logs are public)")
+    print("KYLAS CALL-LOG + WEBHOOK PROBE  (values masked — logs are public)")
     print("=" * 70)
 
-    found = []
-    print("\n--- 1. Which call-ish entities exist? ---")
-    for ent in CANDIDATES:
-        fields, fmsg = probe_fields(ent)
-        content, smsg, total = probe_search(ent)
-        ok = bool(fields) or content is not None
-        print(f"  {ent:14s} fields={fmsg:28s} search={smsg}")
-        if ok:
-            found.append((ent, fields, content, total))
+    print("\n--- 1. GET /call-logs/{deal_id}?relatedToType=deal ---")
+    ids = recent_deal_ids()
+    print(f"  scanning {len(ids)} most-recently-updated deals\n")
+    found_any = None
+    for did in ids:
+        body, msg = get(f"call-logs/{did}", {"relatedToType": "deal"})
+        rows = []
+        if isinstance(body, list):
+            rows = body
+        elif isinstance(body, dict):
+            rows = body.get("content") or body.get("data") or []
+        print(f"    deal {did}: {msg}  rows={len(rows)}")
+        if rows and found_any is None:
+            found_any = (did, rows)
 
-    if not found:
-        print("\nNo call entity responded. Kylas may not expose call logs on this")
-        print("plan/tenant, or they live under a name not probed. Next step would")
-        print("be the Kylas API docs or support — do not guess a schema.")
-        return
-
-    print("\n--- 2. Field definitions (name -> type) ---")
-    for ent, fields, _, _ in found:
-        if not fields:
-            continue
-        print(f"\n  [{ent}] {len(fields)} fields:")
-        for f in fields:
-            if not isinstance(f, dict):
-                continue
-            name = f.get("name") or f.get("fieldName")
-            disp = f.get("displayName") or ""
-            ftype = f.get("type") or f.get("fieldType") or "?"
-            std = "custom" if str(name).startswith("cf") else "std"
-            print(f"    {str(name):32s} {str(ftype):16s} {std:7s} {disp}")
-
-    print("\n--- 3. Runtime shape of one record (values masked) ---")
-    for ent, _, content, total in found:
-        if not content:
-            print(f"\n  [{ent}] search returned no rows (totalElements={total})")
-            continue
-        rec = content[0]
-        print(f"\n  [{ent}] one record, {len(rec)} keys:")
+    if found_any:
+        did, rows = found_any
+        print(f"\n--- 2. Shape of a real call log (deal {did}) ---")
+        rec = rows[0]
+        print(f"  {len(rec)} keys:")
         print(json.dumps({k: preview(k, v) for k, v in rec.items()},
-                         indent=4, default=str)[:4000])
+                         indent=4, default=str)[:3000])
+        print("\n  ATTRIBUTION — keys that could carry 'who made the call':")
+        who = {k: preview(k, v) for k, v in rec.items()
+               if any(t in k.lower() for t in
+                      ("own", "user", "creat", "updat", "by", "agent", "caller"))}
+        print("  " + json.dumps(who, default=str)[:1200])
+    else:
+        print("\n--- 2. No call logs found on any scanned deal ---")
+        print("  Endpoint reachability is what matters above: HTTP 200 with rows=0")
+        print("  means the API works and the tenant simply has no calls logged yet")
+        print("  (nothing writes them today). A 4xx means it is not available here.")
 
-    print("\n--- 4. Deal / company / contact linkage ---")
-    for ent, _, content, _ in found:
-        if not content:
-            continue
-        rec = content[0]
-        links = {k: preview(k, v) for k, v in rec.items()
-                 if any(t in k.lower() for t in
-                        ("deal", "company", "contact", "relat", "entity", "owner", "assoc"))}
-        print(f"\n  [{ent}] linkage keys: {json.dumps(links, default=str)[:1500]}")
+    print("\n--- 3. GET /webhooks (for DEAL_UPDATED) ---")
+    body, msg = get("webhooks")
+    print(f"  {msg}")
+    if isinstance(body, (list, dict)):
+        hooks = body if isinstance(body, list) else (body.get("content") or body.get("data") or [])
+        print(f"  {len(hooks)} webhook(s) currently registered")
+        for h in hooks[:5]:
+            if isinstance(h, dict):
+                print("    " + json.dumps({k: preview(k, v) for k, v in h.items()},
+                                          default=str)[:600])
 
     print("\nDone.")
 
