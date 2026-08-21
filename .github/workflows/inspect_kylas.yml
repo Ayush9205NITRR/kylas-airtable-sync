@@ -21,3 +21,11 @@ jobs:
         run: python scripts/inspect_kylas.py
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+
+      - name: Probe call-log entities
+        # Read-only discovery for the deal call-log feature: which call entity
+        # this tenant has, its fields, and how it links to a deal. Prints schema
+        # with values masked — Actions logs are public while the repo is.
+        run: python scripts/probe_call_logs.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
