@@ -1,0 +1,177 @@
+"""Unit tests for KylasClient.create_call_log / get_call_logs.
+
+Run: python -m pytest tests/test_call_log.py -q
+"""
+import os
+import sys
+from datetime import datetime, timezone
+
+import pytest
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+os.environ.setdefault("KYLAS_API_KEY", "test:1")
+
+from utils.kylas_client import KylasClient  # noqa: E402
+
+
+class _Resp:
+    def __init__(self, status=201, payload=None, text=""):
+        self.status_code = status
+        self.ok = status < 300
+        self._payload = payload if payload is not None else {"id": 999}
+        self.text = text
+        self.content = b"x"
+
+    def json(self):
+        return self._payload
+
+
+def _client(resp=None, capture=None):
+    c = KylasClient()
+
+    def fake_request(method, path, **kw):
+        if capture is not None:
+            capture.append((method, path, kw.get("json")))
+        return resp or _Resp()
+
+    c._request = fake_request
+    return c
+
+
+def _payload(**over):
+    """Build a call log in dry-run mode and return the payload it would send."""
+    c = KylasClient()
+    kw = dict(deal_id=4383813, made_by="Hritik", duration_seconds=270,
+              note="Nov offsite discussed", dry_run=True)
+    kw.update(over)
+    res = c.create_call_log(**kw)
+    assert res["ok"]
+    return res["payload"]
+
+
+# --------------------------------------------------------------- payload shape
+
+def test_payload_links_the_deal():
+    p = _payload()
+    assert p["relatedTo"]["id"] == 4383813
+    assert p["relatedTo"]["entity"] == "deal"
+
+
+def test_connected_call_carries_duration_as_string():
+    assert _payload()["duration"] == "270"
+
+
+@pytest.mark.parametrize("outcome", ["missed", "rejected", "busy", "no_answer"])
+def test_duration_omitted_when_not_connected(outcome):
+    # Kylas rejects a duration on any outcome other than connected.
+    p = _payload(outcome=outcome, duration_seconds=270)
+    assert "duration" not in p
+    assert p["outcome"] == outcome
+
+
+def test_rep_name_goes_into_the_note():
+    # Kylas will not accept a caller field, so the rep must survive in the note.
+    desc = _payload()["notes"][0]["description"]
+    assert desc.startswith("Call by Hritik | connected | 4m30s")
+    assert "Nov offsite discussed" in desc
+
+
+def test_note_headline_without_duration_when_missed():
+    desc = _payload(outcome="missed", duration_seconds=0)["notes"][0]["description"]
+    assert desc.startswith("Call by Hritik | missed")
+    assert "None" not in desc
+
+
+def test_contacts_and_phone_populate_associated_to():
+    p = _payload(contact_ids=[5362056], phone_number="8489598564")
+    assert p["associatedTo"] == [
+        {"id": 5362056, "entity": "contact", "phoneNumber": "8489598564"}]
+    assert p["relatedTo"]["phoneNumber"] == "8489598564"
+    assert p["phoneNumber"] == "8489598564"
+
+
+def test_no_associated_to_key_when_no_contacts():
+    assert "associatedTo" not in _payload(contact_ids=[])
+
+
+def test_recording_url_becomes_call_recording():
+    p = _payload(recording_url="https://example.com/a/call_42.mp3")
+    assert p["callRecording"] == {"url": "https://example.com/a/call_42.mp3",
+                                 "fileName": "call_42.mp3"}
+
+
+def test_start_time_is_utc_with_millis_and_z():
+    # Kylas renders in the tenant timezone, so we must send UTC, not IST.
+    p = _payload(started_at=datetime(2026, 8, 21, 20, 0, 49, tzinfo=timezone.utc))
+    assert p["startTime"] == "2026-08-21T20:00:49.000Z"
+
+
+def test_naive_start_time_is_treated_as_utc():
+    p = _payload(started_at=datetime(2026, 8, 21, 20, 0, 49))
+    assert p["startTime"] == "2026-08-21T20:00:49.000Z"
+
+
+# ------------------------------------------------------------------ validation
+
+def test_bad_outcome_is_rejected_without_calling_the_api():
+    calls = []
+    res = _client(capture=calls).create_call_log(
+        deal_id=1, made_by="Hritik", outcome="answered")
+    assert not res["ok"] and "outcome must be one of" in res["error"]
+    assert calls == []
+
+
+def test_bad_deal_id_is_rejected_without_calling_the_api():
+    calls = []
+    res = _client(capture=calls).create_call_log(deal_id="not-an-id", made_by="X")
+    assert not res["ok"] and "bad deal_id" in res["error"]
+    assert calls == []
+
+
+def test_missing_rep_falls_back_to_unknown():
+    assert _payload(made_by="")["notes"][0]["description"].startswith("Call by unknown")
+
+
+# ----------------------------------------------------------------- round trips
+
+def test_create_posts_to_call_logs_and_returns_id():
+    calls = []
+    res = _client(capture=calls).create_call_log(
+        deal_id=4383813, made_by="Hritik", duration_seconds=60)
+    assert res["ok"] and res["id"] == 999 and res["status"] == 201
+    assert calls[0][0] == "POST" and calls[0][1] == "call-logs/"
+
+
+def test_http_error_is_returned_not_raised():
+    res = _client(_Resp(status=400, payload={}, text="bad request")).create_call_log(
+        deal_id=1, made_by="Hritik")
+    assert not res["ok"] and res["status"] == 400 and "bad request" in res["error"]
+
+
+def test_get_call_logs_uses_entity_id_params():
+    # The documented /call-logs/{id}?relatedToType= 404s on this tenant.
+    seen = {}
+
+    c = KylasClient()
+    c._get = lambda path, params=None: seen.update(path=path, params=params) or {
+        "content": [{"id": 43843294}]}
+    rows = c.get_call_logs(4383813, "deal")
+    assert rows == [{"id": 43843294}]
+    assert seen["path"] == "call-logs"
+    assert seen["params"] == {"entityId": 4383813, "entityType": "deal"}
+
+
+def test_get_call_logs_swallows_errors():
+    c = KylasClient()
+
+    def boom(path, params=None):
+        raise RuntimeError("429")
+
+    c._get = boom
+    assert c.get_call_logs(1, "deal") == []
+
+
+@pytest.mark.parametrize("secs,expected", [
+    (5, "5s"), (59, "59s"), (60, "1m00s"), (270, "4m30s"), (3600, "60m00s")])
+def test_duration_formatting(secs, expected):
+    assert KylasClient._fmt_duration(secs) == expected

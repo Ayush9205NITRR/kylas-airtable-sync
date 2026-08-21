@@ -445,6 +445,140 @@ class KylasClient:
             attempts.append(f"{path}->{r.status_code} {(r.text or '').strip()[:450]}")
         return {"ok": False, "status": 0, "id": None, "error": " || ".join(attempts)[:1400]}
 
+    # ------------------------------------------------------------------
+    # Call logs.
+    #
+    # Kylas call logs are their own resource at /v1/call-logs/ — not a search
+    # entity and not under /entities/{e}/fields, which is why probing those
+    # shapes for "call"/"calls" returned only 400s.
+    #
+    # ATTRIBUTION, verified against this tenant (call log 43843294):
+    # createdBy, updatedBy and owner are all stamped with the API key's own
+    # user and CANNOT be reassigned. PATCHing owner / ownedBy / ownerId /
+    # createdBy in every shape left updatedAt untouched at its createdAt
+    # value — nothing moved. So a call log written with the tenant admin key
+    # always shows "Logged By: <that admin>" in the UI, whoever actually
+    # called. Until per-rep API keys exist, the real caller can only be
+    # carried in the note text, which is what made_by does below.
+    # ------------------------------------------------------------------
+
+    #: Kylas rejects a duration on any outcome other than "connected".
+    CALL_OUTCOMES = ("connected", "missed", "rejected", "busy", "no_answer")
+
+    @staticmethod
+    def _call_start_time(started_at=None) -> str:
+        """Kylas wants UTC ISO-8601 with milliseconds and a Z suffix.
+
+        It renders in the tenant's timezone, so a UTC 20:00 shows as 1:30 am
+        IST — send UTC and let Kylas localise rather than pre-shifting.
+        """
+        dt = started_at or datetime.now(timezone.utc)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+    @staticmethod
+    def _fmt_duration(seconds) -> str:
+        try:
+            s = int(seconds)
+        except (TypeError, ValueError):
+            return ""
+        return f"{s // 60}m{s % 60:02d}s" if s >= 60 else f"{s}s"
+
+    def create_call_log(self, deal_id, made_by: str, duration_seconds=None,
+                        outcome: str = "connected", call_type: str = "outgoing",
+                        phone_number: str = "", contact_ids=None,
+                        started_at=None, note: str = "",
+                        recording_url: str = "", dry_run: bool = False) -> dict:
+        """
+        Log a call against a deal.
+
+        made_by is the rep who actually called. It is written into the note
+        because Kylas will not accept it as a field (see the note above) — the
+        UI's "Logged By" will still read as the API key's user.
+
+        Never raises, matching create_note: returns
+        {"ok": bool, "status": int, "id": <call log id or None>, "error": str}.
+        """
+        try:
+            did = int(deal_id)
+        except (TypeError, ValueError):
+            return {"ok": False, "status": 0, "id": None,
+                    "error": f"bad deal_id: {deal_id!r}"}
+
+        outcome = str(outcome or "connected").lower()
+        if outcome not in self.CALL_OUTCOMES:
+            return {"ok": False, "status": 0, "id": None,
+                    "error": f"outcome must be one of {self.CALL_OUTCOMES}, got {outcome!r}"}
+
+        rep = str(made_by or "").strip() or "unknown"
+        headline = f"Call by {rep} | {outcome}"
+        if outcome == "connected" and duration_seconds:
+            headline += f" | {self._fmt_duration(duration_seconds)}"
+        description = headline + (f"\n{note.strip()}" if note and note.strip() else "")
+
+        payload = {
+            "outcome":   outcome,
+            "callType":  str(call_type or "outgoing").lower(),
+            "startTime": self._call_start_time(started_at),
+            "notes":     [{"description": description}],
+            "relatedTo": {"id": did, "entity": "deal"},
+        }
+        # Kylas 400s on a duration for a call that never connected.
+        if outcome == "connected" and duration_seconds:
+            payload["duration"] = str(int(duration_seconds))
+        if phone_number:
+            payload["phoneNumber"] = str(phone_number)
+            payload["relatedTo"]["phoneNumber"] = str(phone_number)
+        if contact_ids:
+            payload["associatedTo"] = [
+                {"id": int(c), "entity": "contact",
+                 **({"phoneNumber": str(phone_number)} if phone_number else {})}
+                for c in contact_ids
+            ]
+        if recording_url:
+            payload["callRecording"] = {"url": recording_url,
+                                        "fileName": recording_url.rsplit("/", 1)[-1]}
+
+        if dry_run:
+            return {"ok": True, "status": 0, "id": None, "error": "",
+                    "dry_run": True, "payload": payload}
+
+        try:
+            r = self._request("POST", "call-logs/", json=payload)
+        except Exception as exc:
+            return {"ok": False, "status": 0, "id": None, "error": str(exc)[:300]}
+        if not r.ok:
+            return {"ok": False, "status": r.status_code, "id": None,
+                    "error": (r.text or "").strip()[:400]}
+        call_id = None
+        try:
+            data = r.json() if r.content else {}
+            data = data.get("data", data) if isinstance(data, dict) else data
+            if isinstance(data, dict):
+                call_id = data.get("id")
+        except Exception:
+            pass
+        return {"ok": True, "status": r.status_code, "id": call_id, "error": ""}
+
+    def get_call_logs(self, entity_id, entity_type: str = "deal") -> List[dict]:
+        """
+        Call logs attached to a deal/contact/lead.
+
+        Uses entityId/entityType. The documented
+        GET /call-logs/{id}?relatedToType=... 404s on this tenant with
+        errorCode 02002001 even for a deal that demonstrably has call logs.
+        """
+        try:
+            resp = self._get("call-logs", {"entityId": int(entity_id),
+                                           "entityType": str(entity_type).lower()})
+        except Exception:
+            return []
+        if isinstance(resp, list):
+            return resp
+        content = resp.get("content") or resp.get("data") or []
+        return content if isinstance(content, list) else []
+
     def get_user_email(self, user_id) -> str:
         """
         Fetch a single user's email via GET /users/{id}.

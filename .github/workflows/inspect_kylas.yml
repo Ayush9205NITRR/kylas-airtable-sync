@@ -22,36 +22,28 @@ jobs:
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
 
-      - name: Call-log attribution test (WRITES to production)
-        # Deliberately inert: TEST_DEAL_ID is empty, so the script prints
-        # "refusing to write" and exits 0. It only fires once a specific deal
-        # id — nominated by the repo owner — is filled in below, because the
-        # Kylas public API documents no DELETE for call logs and the record it
-        # creates is likely permanent.
-        if: always()
-        run: python scripts/test_call_log_write.py
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          TEST_DEAL_ID: ""   # disarmed: call log 43843294 already created
+      # The call-log probes that lived here have been removed: they answered
+      # their questions (call logs live at /v1/call-logs/, reads work via
+      # entityId/entityType, and attribution cannot be reassigned) and two of
+      # them wrote to production. utils/kylas_client.create_call_log carries
+      # those findings now, and tests/test_call_log.py pins them.
 
-      - name: Probe call-log OWNER assignment
-        # Can one admin key set the caller? PATCHes the existing test call log
-        # (recordActions.update was true) with each plausible owner shape.
-        # Creates nothing. 74759 = Hrithik Rawat, seen as createdBy on a real
-        # deal, so a successful patch shows up as a name in the UI.
+      # Sample run. Writes ONE real call log to deal 4383813 — the deal already
+      # nominated for testing, so nothing clean gets polluted — then lists the
+      # deal's calls back. Set SAMPLE_DEAL_ID to "" to disarm.
+      - name: Sample call log
         if: always()
-        run: python scripts/probe_call_log_owner.py
+        run: |
+          if [ -z "$SAMPLE_DEAL_ID" ]; then
+            echo "SAMPLE_DEAL_ID empty — skipping."; exit 0
+          fi
+          python scripts/log_call.py \
+            --deal "$SAMPLE_DEAL_ID" \
+            --by "Hritik" \
+            --duration 270 \
+            --outcome connected \
+            --note "SAMPLE RUN — Nov offsite discussed, POC asked for the pricing deck. Not a real call."
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          CALL_LOG_ID: "43843294"
-          TEST_DEAL_ID: "4383813"
-          TARGET_USER_ID: "74759"
-
-      - name: Probe call-log READ shapes
-        if: always()
-        run: python scripts/probe_call_log_read.py
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          CALL_LOG_ID: "43843294"
-          TEST_DEAL_ID: "4383813"
+          SAMPLE_DEAL_ID: "4383813"
 
