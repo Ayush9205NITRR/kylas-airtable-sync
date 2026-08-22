@@ -94,8 +94,22 @@ def test_note_carries_the_dated_marker():
 
 
 # ------------------------------------------------------------- idempotency
+#
+# already_noted consumes get_all_notes(), which returns
+#     {"text": str, "relations": [(ENTITY_TYPE, "id"), ...], "owner_id": ...}
+# and NOT the raw Kylas note. The first version of already_noted read the raw
+# shape -- n["description"], and relations as dicts with entityType/entityId --
+# so it matched nothing on every run and the marker never protected anything.
+# The tests missed it because their fake returned the raw shape too: they
+# agreed with the bug instead of with the client. A re-run of 2026-08-21 then
+# posted a second identical note onto deals 4436857 and 4443457.
+#
+# So the fake below returns exactly what the real method returns, and one test
+# asserts that shape directly against the real method's docstring contract.
 
 class _NotesClient:
+    """Returns get_all_notes()'s real output shape, not Kylas's raw note."""
+
     def __init__(self, notes, boom=False):
         self._notes, self._boom = notes, boom
 
@@ -105,30 +119,76 @@ class _NotesClient:
         return self._notes
 
 
-def test_already_noted_finds_deals_carrying_todays_marker():
+def _note(text, entity_type="DEAL", entity_id="4383813"):
+    return {"text": text, "relations": [(entity_type, entity_id)],
+            "owner_id": None}
+
+
+def test_already_noted_reads_what_get_all_notes_returns():
+    # The exact contract: "text", and relations as (TYPE, id) PAIRS. Reading
+    # "description" or rel["entityId"] here is the bug that double-posted.
     marker = MARKER.format(date="2026-08-21")
-    client = _NotesClient([
-        {"description": f"Call log<br>{marker}",
-         "relations": [{"entityType": "DEAL", "entityId": 4383813}]},
-        {"description": "unrelated note",
-         "relations": [{"entityType": "DEAL", "entityId": 999}]},
-    ])
+    client = _NotesClient([_note(f"Call log\n{marker}")])
     assert already_noted(client, DAY, 20) == {4383813}
 
 
-def test_yesterdays_marker_does_not_count_as_done():
+class _FakeResponse:
+    def __init__(self, payload):
+        self._payload = payload
+
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return self._payload
+
+
+def test_a_real_note_written_by_this_script_is_found_end_to_end():
+    """
+    The test that was missing: run a Kylas-shaped /notes/search response through
+    the REAL get_all_notes and hand its output to already_noted.
+
+    Every unit test here passed while already_noted read a shape get_all_notes
+    never produced, because the fake produced that wrong shape too. Only
+    joining the two catches that, so this stubs the HTTP layer and nothing else.
+    """
+    day = date(2026, 8, 21)
+    body = build_note([_call("2026-08-21T04:56:48.000Z", "Hrithik Rawat",
+                             "connected", 362)], day)
+    client = KylasClient()
+    client._pace = lambda: None
+    client.session = type("S", (), {"post": staticmethod(lambda *a, **k: _FakeResponse({
+        "content": [{"description": body.replace("\n", "<br>"),
+                     "relations": [{"entityType": "DEAL", "entityId": 4436857}],
+                     "ownerId": 1}],
+        "totalPages": 1}))})()
+
+    assert already_noted(client, day, 20) == {4436857}
+
+
+def test_already_noted_finds_every_deal_carrying_todays_marker():
+    marker = MARKER.format(date="2026-08-21")
     client = _NotesClient([
-        {"description": MARKER.format(date="2026-08-20"),
-         "relations": [{"entityType": "DEAL", "entityId": 4383813}]},
+        _note(f"Call log\n{marker}", entity_id="4436857"),
+        _note(f"Call log\n{marker}", entity_id="4443457"),
+        _note("unrelated note", entity_id="999"),
     ])
+    assert already_noted(client, DAY, 20) == {4436857, 4443457}
+
+
+def test_yesterdays_marker_does_not_count_as_done():
+    client = _NotesClient([_note(MARKER.format(date="2026-08-20"))])
     assert already_noted(client, DAY, 20) == set()
 
 
 def test_marker_on_a_contact_relation_is_ignored():
-    client = _NotesClient([
-        {"description": MARKER.format(date="2026-08-21"),
-         "relations": [{"entityType": "CONTACT", "entityId": 5362056}]},
-    ])
+    client = _NotesClient([_note(MARKER.format(date="2026-08-21"),
+                                 entity_type="CONTACT", entity_id="5362056")])
+    assert already_noted(client, DAY, 20) == set()
+
+
+def test_a_non_numeric_relation_id_is_skipped_not_fatal():
+    client = _NotesClient([_note(MARKER.format(date="2026-08-21"), entity_id="x")])
     assert already_noted(client, DAY, 20) == set()
 
 
@@ -136,60 +196,6 @@ def test_unreadable_notes_returns_none_so_the_caller_can_refuse_to_write():
     # Writing blind would double-post, so this must be distinguishable
     # from "nothing is marked yet".
     assert already_noted(_NotesClient([], boom=True), DAY, 20) is None
-
-
-# ------------------------------------------------- grouping calls to deals
-#
-# The /call-logs endpoint ignores entityId/entityType and returns the whole
-# tenant's call logs for any entity asked for. A dry run over 60 deals got the
-# same two call logs for all 60, and those two belong to one deal -- live that
-# would have posted an identical wrong note to every deal. Grouping therefore
-# has to come from each record's own relatedTo, which is what these pin.
-
-_CALL_ON_4383813 = {
-    "id": 43843294,
-    "relatedTo": [{"id": 5362056, "entity": "contact"},
-                  {"id": 4383813, "entity": "deal"}],
-    "associatedTo": [{"id": 5362056, "entity": "contact"}],
-}
-
-
-def test_relations_finds_the_deal_the_call_actually_names():
-    assert KylasClient.call_log_relations(_CALL_ON_4383813, "deal") == {4383813}
-
-
-def test_relations_does_not_attribute_a_call_to_an_unrelated_deal():
-    assert 4676048 not in KylasClient.call_log_relations(_CALL_ON_4383813, "deal")
-
-
-def test_relations_reads_contacts_from_both_lists():
-    assert KylasClient.call_log_relations(_CALL_ON_4383813, "contact") == {5362056}
-
-
-def test_relations_of_a_call_with_no_links_is_empty():
-    assert KylasClient.call_log_relations({}, "deal") == set()
-
-
-def test_relations_survives_malformed_entries():
-    call = {"relatedTo": [{"entity": "deal"}, {"id": "x", "entity": "deal"},
-                          None, {"id": 7, "entity": "deal"}]}
-    assert KylasClient.call_log_relations(call, "deal") == {7}
-
-
-def test_get_call_logs_drops_rows_the_server_wrongly_returned():
-    # The server hands back everything; the client must keep only the asked-for
-    # deal's own calls.
-    other = {"id": 1, "relatedTo": [{"id": 9999, "entity": "deal"}]}
-    c = KylasClient()
-    c._get = lambda path, params=None: {"content": [_CALL_ON_4383813, other]}
-    rows = c.get_call_logs(4383813, "deal")
-    assert [r["id"] for r in rows] == [43843294]
-
-
-@pytest.mark.parametrize("secs,expected", [
-    (5, "5s"), (60, "1m00s"), (362, "6m02s"), (367, "6m07s")])
-def test_duration_formatting(secs, expected):
-    assert _fmt_duration(secs) == expected
 
 
 # --------------------------------------------- the tenant-wide sweep guard

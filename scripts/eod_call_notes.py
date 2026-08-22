@@ -168,7 +168,21 @@ def build_note(calls, day):
 
 
 def already_noted(client, day, max_pages):
-    """Deal ids that already carry today's marker, from one notes sweep."""
+    """
+    Deal ids that already carry today's marker, from one notes sweep.
+
+    get_all_notes returns {"text": str, "relations": [(ENTITY_TYPE, "id"), ...]}
+    -- NOT the raw Kylas note. This read the raw shape ("description", and
+    relations as dicts with entityType/entityId) and so matched nothing, ever:
+    every run believed no deal had been noted yet. It went unnoticed because
+    the days it ran on genuinely had no notes, until a re-run of 2026-08-21
+    posted a second identical note onto deals 4436857 and 4443457.
+
+    The unit tests missed it for the same reason the code had it: their fake
+    client returned the raw shape too, so they were testing the mistake rather
+    than the contract. test_already_noted_reads_what_get_all_notes_returns now
+    pins the real one.
+    """
     marker = MARKER.format(date=day.isoformat())
     done = set()
     try:
@@ -178,12 +192,15 @@ def already_noted(client, day, max_pages):
               f"proceeding could double-post, so nothing will be written.")
         return None
     for n in notes:
-        desc = str(n.get("description") or "")
-        if marker not in desc:
+        if marker not in str(n.get("text") or ""):
             continue
-        for rel in n.get("relations") or []:
-            if str(rel.get("entityType") or "").upper() == "DEAL" and rel.get("entityId"):
-                done.add(int(rel["entityId"]))
+        for entity_type, entity_id in n.get("relations") or []:
+            if str(entity_type).upper() != "DEAL":
+                continue
+            try:
+                done.add(int(entity_id))
+            except (TypeError, ValueError):
+                pass
     return done
 
 
