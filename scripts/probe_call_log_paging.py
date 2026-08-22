@@ -1,33 +1,25 @@
 """
-Find a read shape for /call-logs that returns MORE than the newest ten.
+Which paging parameters does /call-logs actually accept — and together?
 
-Measured on run 32554452867: GET /call-logs?entityId=X&entityType=Y returns the
-same ten records for every X and Y -- ids 43794436..43843303, spanning 20-22 Aug
-only. Contact 5927888's calls of 19 and 20 Aug are NOT among them, though
-GET /call-logs/43734306 reads the 19 Aug one back by its own id without trouble.
-So the records exist and are readable; the listing endpoint just will not list
-them. A summary built on that listing is silently incomplete on every date.
+Run 32554568828 showed `page` alone works (page=100 returned rows page 0 never
+shows) and `size` alone works (size=100 returned 100 rows including the record
+the old sweep could not see). Run 32554777140 then showed that sending BOTH
+404s the endpoint. That is the same 404 an early probe hit when it sent page,
+size and sort together and concluded no paging existed at all.
 
-This probes, read-only, for a shape that is complete:
+So the question is not "is it paged" -- it is which combinations answer, and
+how large a single `size` can go. If size can reach the low thousands, one
+request covers months of calls and paging is moot. If not, `page` alone at ten
+rows a page is the only complete read, and a day's summary has to walk back to
+the day it wants.
 
-  1. the response envelope -- if it carries totalElements/totalPages/last, the
-     listing IS paged and only the parameter names are wrong
-  2. paging parameter spellings (page/size were measured to 404, but not the
-     dozen other names an API might use)
-  3. the documented GET /call-logs/{id}?relatedToType=... against a CONTACT.
-     That was tried once against a DEAL and 404d, which is what you would get
-     if the path segment is always read as a call-log id -- so the contact case
-     has never actually been tested, and reps log against contacts
-  4. POST /search/call-log and friends, the pattern every other Kylas entity in
-     this repo is read through
-  5. date-range filters, the thing an EOD summary actually wants
-
-SAFETY: repo is public, logs are public. Ids, counts, HTTP codes and envelope
-keys print; names, phone numbers and free text are masked.
+SAFETY: repo is public, logs are public. Only ids, counts, HTTP codes and
+row timestamps print.
 """
-import json
 import os
 import sys
+from collections import Counter
+from datetime import timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -38,128 +30,72 @@ load_dotenv()
 
 BASE = "https://api.kylas.io/v1"
 HEADERS = {"api-key": os.environ["KYLAS_API_KEY"], "Content-Type": "application/json"}
+IST = timezone(timedelta(hours=5, minutes=30))
 
-CONTACT = int(os.environ.get("MISSING_CONTACT") or 5927888)
 DEAL = int(os.environ.get("MISSING_DEAL") or 4676048)
 WANT = int(os.environ.get("MISSING_CALL_LOG") or 43734306)
 
-# Baseline: the ten the current sweep can see. Anything that returns an id
-# outside this set is strictly better than what we have.
-BASELINE = set()
 
-
-def rows_of(body):
-    if isinstance(body, list):
-        return body
-    if isinstance(body, dict):
-        for k in ("content", "data", "items", "results"):
-            v = body.get(k)
-            if isinstance(v, list):
-                return v
-    return []
-
-
-def envelope(body):
-    """Top-level keys with scalar values -- paging metadata lives here."""
-    if not isinstance(body, dict):
-        return f"<{type(body).__name__}>"
-    return {k: v for k, v in body.items()
-            if isinstance(v, (int, float, bool)) or v is None}
-
-
-def call(label, method, path, params=None, body=None, show_env=False):
+def get(label, extra):
+    params = {"entityId": DEAL, "entityType": "deal"}
+    params.update(extra)
     try:
-        r = requests.request(method, f"{BASE}/{path}", headers=HEADERS,
-                             params=params, json=body, timeout=30)
+        r = requests.get(f"{BASE}/call-logs", headers=HEADERS, params=params, timeout=60)
     except Exception as e:
-        print(f"  {label:54s} EXC {str(e)[:60]}")
+        print(f"  {label:34s} EXC {str(e)[:50]}")
         return None
     if r.status_code != 200:
-        print(f"  {label:54s} HTTP {r.status_code} {r.text[:90]}")
+        print(f"  {label:34s} HTTP {r.status_code} {r.text[:70]}")
         return None
-    try:
-        data = r.json()
-    except Exception:
-        print(f"  {label:54s} HTTP 200 (unparseable)")
-        return None
-    rows = rows_of(data)
-    ids = {x.get("id") for x in rows if isinstance(x, dict) and x.get("id")}
-    extra = ids - BASELINE if BASELINE else set()
-    flag = ""
-    if WANT in ids:
-        flag = "  <<< HAS THE MISSING RECORD"
-    elif extra:
-        flag = f"  <<< {len(extra)} id(s) the sweep cannot see"
-    print(f"  {label:54s} HTTP 200  {len(rows)} row(s){flag}")
-    if show_env:
-        print(f"       envelope: {json.dumps(envelope(data), default=str)[:300]}")
-    return data
+    body = r.json()
+    rows = body.get("content") or []
+    env = {k: v for k, v in body.items() if not isinstance(v, (list, dict))}
+    times = sorted(str(x.get("startTime") or "") for x in rows if x.get("startTime"))
+    span = f"{times[0][:10]}..{times[-1][:10]}" if times else "-"
+    flag = "  <<< HAS THE MISSING RECORD" if any(x.get("id") == WANT for x in rows) else ""
+    print(f"  {label:34s} HTTP 200  {len(rows):5d} rows  {span}  "
+          f"pages={env.get('totalPages')}{flag}")
+    return rows
 
 
 def main():
-    global BASELINE
-    print("=" * 74)
-    print("CALL-LOG LISTING: PROBE FOR A COMPLETE READ")
-    print("=" * 74)
+    print("=" * 78)
+    print("WHICH PAGING PARAMS DOES /call-logs ACCEPT?")
+    print("=" * 78)
 
-    print("\n[0] baseline + response envelope (does it admit to being paged?)")
-    base = call("GET /call-logs?entityId&entityType", "GET", "call-logs",
-                params={"entityId": DEAL, "entityType": "deal"}, show_env=True)
-    BASELINE = {x.get("id") for x in rows_of(base) if x.get("id")}
-    if isinstance(base, dict):
-        print(f"       all top-level keys: {sorted(base.keys())}")
+    print("\n[A] size alone — how big can one response get?")
+    best = None
+    for n in (10, 50, 100, 200, 500, 1000, 2000, 5000, 10000):
+        rows = get(f"size={n}", {"size": n})
+        if rows is not None and len(rows) >= (best or 0):
+            best = len(rows)
 
-    print("\n[1] paging parameter spellings")
-    for k in ("page", "size", "pageNo", "pageNumber", "pageSize", "perPage",
-              "per_page", "limit", "offset", "start", "count", "max", "top"):
-        for v in (1, 100):
-            call(f"?{k}={v}", "GET", "call-logs",
-                 params={"entityId": DEAL, "entityType": "deal", k: v})
+    print("\n[B] page alone (size defaults to 10)")
+    for n in (0, 1, 2, 5, 50):
+        get(f"page={n}", {"page": n})
 
-    print("\n[2] the documented per-entity read, against a CONTACT this time")
-    for label, path, params in [
-        (f"GET /call-logs/{CONTACT}?relatedToType=contact", f"call-logs/{CONTACT}",
-         {"relatedToType": "contact"}),
-        (f"GET /call-logs/{CONTACT}?relatedToType=CONTACT", f"call-logs/{CONTACT}",
-         {"relatedToType": "CONTACT"}),
-        (f"GET /call-logs/{CONTACT} (no param)", f"call-logs/{CONTACT}", None),
-        (f"GET /call-logs/{DEAL}?relatedToType=deal", f"call-logs/{DEAL}",
-         {"relatedToType": "deal"}),
-    ]:
-        call(label, "GET", path, params=params, show_env=True)
+    print("\n[C] page + size together, the combination that 404d")
+    for p, sz in ((0, 100), (1, 100), (0, 50), (1, 50), (1, 20), (0, 10), (1, 10)):
+        get(f"page={p}&size={sz}", {"page": p, "size": sz})
 
-    print("\n[3] the search pattern every other entity here uses")
-    for path in ("search/call-log", "search/call-logs", "search/calllog",
-                 "search/callLog", "call-logs/search"):
-        call(f"POST /{path}", "POST", path,
-             params={"page": 0, "size": 100, "sort": "startTime,desc"},
-             body={"fields": None, "jsonRule": None}, show_env=True)
+    print("\n[D] alternate spellings paired with page")
+    for extra in ({"page": 1, "pageSize": 100}, {"page": 1, "limit": 100},
+                  {"pageNo": 1, "size": 100}, {"offset": 10, "size": 100}):
+        get("&".join(f"{k}={v}" for k, v in extra.items()), extra)
 
-    print("\n[4] date-range filters (what an EOD summary actually wants)")
-    lo, hi = "2026-08-18T00:00:00.000Z", "2026-08-23T00:00:00.000Z"
-    for params in (
-        {"startTime": lo}, {"from": lo, "to": hi}, {"fromDate": lo, "toDate": hi},
-        {"startDate": lo, "endDate": hi}, {"createdAtGte": lo},
-        {"startTimeFrom": lo, "startTimeTo": hi},
-    ):
-        p = {"entityId": DEAL, "entityType": "deal", **params}
-        call(f"?{'&'.join(params)}", "GET", "call-logs", params=p)
+    print("\n[E] does `size` alone still reach older days as it grows?")
+    for n in (100, 500, 1000):
+        rows = get(f"size={n} (day histogram)", {"size": n})
+        if rows:
+            hist = Counter(str(r.get("startTime") or "")[:10] for r in rows)
+            days = sorted(hist)
+            print(f"       {len(days)} distinct day(s): {days[0]} .. {days[-1]}")
 
-    print("\n[5] nested-under-entity shapes")
-    for label, path in [
-        (f"GET /contacts/{CONTACT}/call-logs", f"contacts/{CONTACT}/call-logs"),
-        (f"GET /deals/{DEAL}/call-logs", f"deals/{DEAL}/call-logs"),
-        (f"GET /call-logs/contact/{CONTACT}", f"call-logs/contact/{CONTACT}"),
-    ]:
-        call(label, "GET", path, show_env=True)
-
-    print("\n" + "=" * 74)
-    print(f"BASELINE (what the current sweep sees): {len(BASELINE)} ids, "
-          f"{min(BASELINE) if BASELINE else '-'}..{max(BASELINE) if BASELINE else '-'}")
-    print("Any line flagged above beats it. If none is flagged, the listing")
-    print("endpoint cannot be made complete and the summary needs a different")
-    print("source for its candidate calls entirely.")
-    print("=" * 74)
+    print("\n" + "=" * 78)
+    print(f"Largest single response seen: {best} rows.")
+    print("If that covers the days a summary needs, one sized request beats")
+    print("paging. Otherwise `page` alone is the only complete walk.")
+    print("=" * 78)
 
 
 if __name__ == "__main__":
