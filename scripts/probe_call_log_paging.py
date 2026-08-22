@@ -39,13 +39,20 @@ WANT = int(os.environ.get("MISSING_CALL_LOG") or 43734306)
 def get(label, extra):
     params = {"entityId": DEAL, "entityType": "deal"}
     params.update(extra)
+    # 20s, not 60: a size the server will not serve promptly is a size this
+    # job cannot use anyway, and 25 requests at 60s each outran the job timeout
+    # on run 32554836666 and produced no output at all.
+    import time
+    t0 = time.time()
     try:
-        r = requests.get(f"{BASE}/call-logs", headers=HEADERS, params=params, timeout=60)
+        r = requests.get(f"{BASE}/call-logs", headers=HEADERS, params=params, timeout=20)
     except Exception as e:
-        print(f"  {label:34s} EXC {str(e)[:50]}")
+        print(f"  {label:34s} TIMEOUT/EXC after {time.time()-t0:.0f}s {str(e)[:40]}",
+              flush=True)
         return None
+    took = f"{time.time()-t0:.1f}s"
     if r.status_code != 200:
-        print(f"  {label:34s} HTTP {r.status_code} {r.text[:70]}")
+        print(f"  {label:34s} HTTP {r.status_code} {took} {r.text[:60]}", flush=True)
         return None
     body = r.json()
     rows = body.get("content") or []
@@ -53,8 +60,8 @@ def get(label, extra):
     times = sorted(str(x.get("startTime") or "") for x in rows if x.get("startTime"))
     span = f"{times[0][:10]}..{times[-1][:10]}" if times else "-"
     flag = "  <<< HAS THE MISSING RECORD" if any(x.get("id") == WANT for x in rows) else ""
-    print(f"  {label:34s} HTTP 200  {len(rows):5d} rows  {span}  "
-          f"pages={env.get('totalPages')}{flag}")
+    print(f"  {label:34s} HTTP 200 {took:>6s} {len(rows):5d} rows  {span}  "
+          f"pages={env.get('totalPages')}{flag}", flush=True)
     return rows
 
 
@@ -65,13 +72,13 @@ def main():
 
     print("\n[A] size alone — how big can one response get?")
     best = None
-    for n in (10, 50, 100, 200, 500, 1000, 2000, 5000, 10000):
+    for n in (100, 200, 500, 1000):
         rows = get(f"size={n}", {"size": n})
         if rows is not None and len(rows) >= (best or 0):
             best = len(rows)
 
     print("\n[B] page alone (size defaults to 10)")
-    for n in (0, 1, 2, 5, 50):
+    for n in (1, 2, 50):
         get(f"page={n}", {"page": n})
 
     print("\n[C] page + size together, the combination that 404d")
@@ -82,14 +89,6 @@ def main():
     for extra in ({"page": 1, "pageSize": 100}, {"page": 1, "limit": 100},
                   {"pageNo": 1, "size": 100}, {"offset": 10, "size": 100}):
         get("&".join(f"{k}={v}" for k, v in extra.items()), extra)
-
-    print("\n[E] does `size` alone still reach older days as it grows?")
-    for n in (100, 500, 1000):
-        rows = get(f"size={n} (day histogram)", {"size": n})
-        if rows:
-            hist = Counter(str(r.get("startTime") or "")[:10] for r in rows)
-            days = sorted(hist)
-            print(f"       {len(days)} distinct day(s): {days[0]} .. {days[-1]}")
 
     print("\n" + "=" * 78)
     print(f"Largest single response seen: {best} rows.")
