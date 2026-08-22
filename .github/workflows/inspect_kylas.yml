@@ -28,24 +28,24 @@ jobs:
       # their questions and are recorded in the commit history and in
       # eod_call_notes.py's docstring. Two of them wrote to production.
 
-      - name: EOD note format, 21 Aug (DRY RUN — writes nothing)
-        # No --deal: show every deal that had calls on 2026-08-21 IST, which is
-        # the day the reps' own calls landed on. Previously this pinned
-        # --deal 4383813 and reported zero, because that deal never had those
-        # calls — the ten rows it appeared to own were the unfiltered
-        # tenant-wide set, back when get_call_logs still trusted the server.
+      # WRITES REAL NOTES. Backfills 2026-08-21 IST — the last day carrying the
+      # team's own calls. Today (the 22nd) holds only the two admin-key test
+      # call logs, so summarising it would add noise on a deal that is already
+      # due a cleanup.
+      #
+      # Verified on run 32553863356 before arming: Hrithik Rawat's 3:56 PM call
+      # reached its deals through the contact bridge, and 246 deals / 305
+      # linked contacts built the index.
+      #
+      # Idempotent by the [calls 2026-08-21] marker, so re-dispatching is safe.
+      # Set BACKFILL_DATE to "" to disarm.
+      - name: EOD call notes backfill (WRITES to production)
         if: always()
-        run: python scripts/eod_call_notes.py --date 2026-08-21 --dry-run
+        run: |
+          if [ -z "$BACKFILL_DATE" ]; then
+            echo "BACKFILL_DATE empty — skipping."; exit 0
+          fi
+          python scripts/eod_call_notes.py --date "$BACKFILL_DATE"
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-
-      - name: EOD full sweep cost (DRY RUN — writes nothing)
-        # Answers the only open question before this can be scheduled: how many
-        # open deals there are, and therefore how many Actions minutes a daily
-        # run would cost. The script prints the true open-deal count and its
-        # estimate BEFORE --max-deals caps the actual scanning, so the number is
-        # real even though only a sample is scanned here.
-        if: always()
-        run: python scripts/eod_call_notes.py --dry-run --max-deals 60
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          BACKFILL_DATE: "2026-08-21"
