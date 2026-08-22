@@ -243,3 +243,73 @@ def test_each_seed_is_read_exactly_once():
     c = _SweepClient({10: [{"id": 1}], 20: [{"id": 1}]})
     c.get_all_call_logs([10, 20])
     assert sorted(s for s, _ in c.pages) == [10, 20]
+
+
+# ------------------------------------------- bridging calls to deals by contact
+#
+# Reps log calls against the CONTACT, not the deal: of the tenant's ten call
+# logs the only two naming a deal were written through the API with an explicit
+# relatedTo. So a deal-scoped summary has to bridge contact -> deal itself, or
+# it summarises nothing the team actually did.
+
+from scripts.eod_call_notes import (  # noqa: E402
+    _is_open, contact_to_deals, deals_for_call,
+)
+
+_DEALS = [
+    {"id": 100, "pipelineStage": {"name": "Introductory Call"},
+     "associatedContacts": [{"id": 1}, {"id": 2}]},
+    {"id": 200, "pipelineStage": {"name": "Proposal Sent"},
+     "associatedContacts": [{"id": 2}]},
+    {"id": 300, "pipelineStage": {"name": "Closed Lost"},
+     "associatedContacts": [{"id": 3}]},
+]
+
+
+def _idx():
+    return contact_to_deals(_DEALS)
+
+
+def test_a_call_naming_its_own_deal_is_taken_at_its_word():
+    call = {"relatedTo": [{"id": 999, "entity": "deal"}]}
+    dids, how = deals_for_call(call, *_idx())
+    assert dids == {999} and how == "direct"
+
+
+def test_a_contact_only_call_reaches_the_contacts_open_deal():
+    call = {"relatedTo": [{"id": 1, "entity": "contact"}]}
+    dids, how = deals_for_call(call, *_idx())
+    assert dids == {100} and how == "via-contact-open"
+
+
+def test_a_contact_on_two_open_deals_yields_both():
+    # Under-reporting a rep's work is worse than the call showing on two deals.
+    call = {"relatedTo": [{"id": 2, "entity": "contact"}]}
+    dids, how = deals_for_call(call, *_idx())
+    assert dids == {100, 200} and how == "via-contact-open"
+
+
+def test_a_contact_with_only_a_closed_deal_still_gets_the_call():
+    # Better on a closed deal than silently dropped.
+    call = {"relatedTo": [{"id": 3, "entity": "contact"}]}
+    dids, how = deals_for_call(call, *_idx())
+    assert dids == {300} and how == "via-contact-closed"
+
+
+def test_a_call_with_no_usable_link_is_reported_as_unmapped():
+    dids, how = deals_for_call({"relatedTo": [{"id": 77, "entity": "contact"}]}, *_idx())
+    assert dids == set() and how == "unmapped"
+
+
+def test_index_separates_open_from_all():
+    open_by, all_by = _idx()
+    assert sorted(open_by[2]) == [100, 200]
+    assert open_by.get(3) in (None, [])
+    assert all_by[3] == [300]
+
+
+def test_index_tolerates_deals_without_contacts_or_ids():
+    open_by, all_by = contact_to_deals(
+        [{"id": 1}, {"associatedContacts": [{"id": 9}]}, {"id": 2,
+         "pipelineStage": {"name": "Open"}, "associatedContacts": [5, {"id": 6}]}])
+    assert all_by[5] == [2] and all_by[6] == [2] and 9 not in all_by

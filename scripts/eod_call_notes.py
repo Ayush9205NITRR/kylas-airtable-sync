@@ -59,6 +59,63 @@ def _ist_day_bounds(day):
             (start_ist + timedelta(days=1)).astimezone(timezone.utc))
 
 
+CLOSED_HINTS = ("closed", "won", "lost", "unqualified", "junk", "dropped")
+
+
+def _is_open(deal):
+    stage = ((deal.get("pipelineStage") or {}).get("name") or "").lower()
+    return not any(h in stage for h in CLOSED_HINTS)
+
+
+def contact_to_deals(deals):
+    """
+    contact id -> ([open deal ids], [all deal ids]).
+
+    Reps log their calls against the CONTACT, not the deal: of this tenant's
+    ten call logs, the only two naming a deal are the ones written through the
+    API with an explicit relatedTo. So a deal-scoped summary has to bridge the
+    gap itself, via each deal's associatedContacts.
+    """
+    open_by, all_by = defaultdict(list), defaultdict(list)
+    for d in deals:
+        did = d.get("id")
+        if not did:
+            continue
+        live = _is_open(d)
+        for c in d.get("associatedContacts") or []:
+            cid = c.get("id") if isinstance(c, dict) else c
+            if not cid:
+                continue
+            all_by[int(cid)].append(int(did))
+            if live:
+                open_by[int(cid)].append(int(did))
+    return open_by, all_by
+
+
+def deals_for_call(call, open_by, all_by):
+    """
+    Which deals this call belongs on.
+
+    A call that names its own deal is taken at its word. Otherwise it is
+    bridged through the contact it names, preferring that contact's OPEN deals
+    and falling back to all of them -- a call landing on a closed deal is worth
+    more than a call silently dropped. A contact on several open deals yields
+    several, deliberately: under-reporting a rep's work is worse than the same
+    call appearing on two deals they are both relevant to.
+    """
+    named = KylasClient.call_log_relations(call, "deal")
+    if named:
+        return named, "direct"
+    out = set()
+    for cid in KylasClient.call_log_relations(call, "contact"):
+        out.update(open_by.get(cid) or [])
+    if out:
+        return out, "via-contact-open"
+    for cid in KylasClient.call_log_relations(call, "contact"):
+        out.update(all_by.get(cid) or [])
+    return out, ("via-contact-closed" if out else "unmapped")
+
+
 def _parse_utc(ts):
     if not ts:
         return None
@@ -162,15 +219,33 @@ def main():
         print("         Re-run per deal with --deal, or rework the candidate set.")
         return 1
 
+    todays = [c for c in calls
+              if (_parse_utc(c.get("startTime")) or datetime.min.replace(tzinfo=timezone.utc))
+              and start <= (_parse_utc(c.get("startTime"))
+                            or datetime.min.replace(tzinfo=timezone.utc)) < end]
+    print(f"  {len(todays)} of them fall on {day}")
+
+    open_by, all_by = {}, {}
+    if todays:
+        print("  building the contact -> deal index...")
+        deals = client.get_deals()
+        open_by, all_by = contact_to_deals(deals)
+        print(f"  {len(deals)} deals, {len(all_by)} contacts linked to at least one")
+
     by_deal = defaultdict(list)
-    for c in calls:
-        started = _parse_utc(c.get("startTime"))
-        if not (started and start <= started < end):
-            continue
-        for did in KylasClient.call_log_relations(c, "deal"):
+    routes = defaultdict(int)
+    for c in todays:
+        dids, how = deals_for_call(c, open_by, all_by)
+        routes[how] += 1
+        for did in dids:
             if args.deal and did != args.deal:
                 continue
             by_deal[did].append(c)
+    if routes:
+        print(f"  routing: {dict(routes)}")
+    if routes.get("unmapped"):
+        print(f"  [WARN] {routes['unmapped']} call(s) name neither a deal nor a "
+              f"contact on any deal — they cannot be summarised anywhere.")
 
     # Which deals already have today's note?
     done = set()
