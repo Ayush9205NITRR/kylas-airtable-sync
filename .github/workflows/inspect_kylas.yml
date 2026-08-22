@@ -64,7 +64,26 @@ jobs:
           python scripts/diag_missing_deal_note.py
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          DIAG_MISSING: "1"
+          DIAG_MISSING: ""
+          MISSING_DEAL: "4676048"
+          MISSING_CONTACT: "5927888"
+          MISSING_CALL_LOG: "43734306"
+
+      # READ-ONLY. Run 32554452867 showed the /call-logs listing returns the
+      # same newest ten records for every entity asked for, while the record we
+      # want reads back fine by its own id -- so the listing is capped, not
+      # filtered, and the EOD summary is incomplete on every date. This hunts
+      # for a read shape that returns more. Set PROBE_PAGING to "" to skip.
+      - name: Probe for a complete call-log read (read-only)
+        if: always()
+        run: |
+          if [ -z "$PROBE_PAGING" ]; then
+            echo "PROBE_PAGING empty — skipping."; exit 0
+          fi
+          python scripts/probe_call_log_paging.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          PROBE_PAGING: "1"
           MISSING_DEAL: "4676048"
           MISSING_CONTACT: "5927888"
           MISSING_CALL_LOG: "43734306"
