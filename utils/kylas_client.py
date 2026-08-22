@@ -574,37 +574,124 @@ class KylasClient:
                     pass
         return out
 
-    def _sweep_call_logs(self, seed_id, seed_type) -> List[dict]:
-        """
-        One /call-logs read. There is no paging: adding page/size/sort 404s the
-        endpoint outright, so entityId + entityType are the ONLY params it
-        accepts, and whatever comes back in that single response is all there
-        is. If this tenant's call volume ever outgrows one response, the missing
-        rows will be silent -- see the truncation warning in get_all_call_logs.
-        """
-        try:
-            resp = self._get("call-logs", {"entityId": int(seed_id),
-                                           "entityType": str(seed_type).lower()})
-        except Exception as exc:
-            print(f"  [Kylas] call-logs read failed: {str(exc)[:200]}")
-            return []
-        rows = resp if isinstance(resp, list) else (
-            resp.get("content") or resp.get("data") or [])
-        return rows if isinstance(rows, list) else []
+    CALL_LOG_PAGE_SIZE = 100
 
-    def get_all_call_logs(self, seed_ids, seed_type: str = "deal"):
+    def _call_log_page(self, seed_id, seed_type, page, size=None):
+        """
+        One page of /call-logs. Returns (rows, envelope).
+
+        This endpoint IS paged, contrary to what this client asserted until
+        2026-08-22: `page` and `size` both work and the response carries
+        totalElements/totalPages/first/last. The earlier claim that they 404ed
+        came from testing page, size and sort together -- `sort` is the one it
+        rejects -- and cost real accuracy: reading page 0 at the default size
+        of 10 and calling it the whole set meant every call-log summary was
+        built from the ten most recent calls in a tenant that has 5,399.
+        """
+        params = {"entityId": int(seed_id), "entityType": str(seed_type).lower(),
+                  "page": int(page), "size": int(size or self.CALL_LOG_PAGE_SIZE)}
+        try:
+            resp = self._get("call-logs", params)
+        except Exception as exc:
+            print(f"  [Kylas] call-logs page {page} failed: {str(exc)[:200]}")
+            return [], {}
+        if isinstance(resp, list):
+            return resp, {}
+        rows = resp.get("content")
+        if not isinstance(rows, list):
+            rows = resp.get("data") if isinstance(resp.get("data"), list) else []
+        env = {k: v for k, v in resp.items() if not isinstance(v, (list, dict))}
+        return rows, env
+
+    def _sweep_call_logs(self, seed_id, seed_type, max_pages=200,
+                         stop_before=None) -> List[dict]:
+        """
+        Every call log the listing will give up, paged to the end.
+
+        `stop_before` is an optional aware datetime: paging stops early once a
+        whole page lands entirely before it AND the rows seen so far have been
+        in descending startTime order. Callers summarising one day pass that
+        day's start, which turns a 54-page sweep into two or three -- but only
+        when the ordering has actually been observed to be descending, never on
+        the assumption that it is.
+        """
+        rows, env = self._call_log_page(seed_id, seed_type, 0)
+        out = list(rows)
+        seen = {r.get("id") for r in rows if isinstance(r, dict)}
+        total_pages = env.get("totalPages")
+        total = env.get("totalElements")
+        if not rows:
+            return out
+
+        descending = self._is_descending(rows)
+        page = 1
+        limit = min(int(total_pages or max_pages), max_pages)
+        while page < limit:
+            if stop_before is not None and descending and self._page_is_before(rows, stop_before):
+                break
+            rows, _ = self._call_log_page(seed_id, seed_type, page)
+            if not rows:
+                break
+            fresh = [r for r in rows
+                     if isinstance(r, dict) and r.get("id") not in seen]
+            if not fresh:
+                # This endpoint already ignores entityId/entityType; a page that
+                # repeats the last one would mean it ignores `page` too. Stop
+                # rather than collect the same rows to the cap.
+                break
+            seen.update(r.get("id") for r in fresh)
+            descending = descending and self._is_descending(rows)
+            out.extend(fresh)
+            page += 1
+
+        if total and len(out) < int(total) and not (stop_before is not None and descending):
+            print(f"  [Kylas] WARNING: swept {len(out)} of {total} call logs "
+                  f"({page} page(s), cap {max_pages}) — the rest were not read.")
+        return out
+
+    @staticmethod
+    def _call_log_start(row):
+        from datetime import datetime as _dt
+        ts = row.get("startTime") if isinstance(row, dict) else None
+        if not ts:
+            return None
+        try:
+            return _dt.fromisoformat(str(ts).replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
+    @classmethod
+    def _is_descending(cls, rows) -> bool:
+        seen = [t for t in (cls._call_log_start(r) for r in rows) if t]
+        return all(a >= b for a, b in zip(seen, seen[1:]))
+
+    @classmethod
+    def _page_is_before(cls, rows, when) -> bool:
+        seen = [t for t in (cls._call_log_start(r) for r in rows) if t]
+        return bool(seen) and all(t < when for t in seen)
+
+    def get_all_call_logs(self, seed_ids, seed_type: str = "deal",
+                          stop_before=None):
         """
         Every call log in the tenant, plus proof that it really is every one.
 
         /call-logs needs entityId+entityType to respond, but ignores them when
         filtering: it hands back the tenant-wide set whatever entity is named.
-        This leans on that deliberately -- one paged sweep instead of a request
-        per deal -- which is only safe if the behaviour still holds.
+        Measured again on 2026-08-22 -- seeding with a contact that demonstrably
+        owns call logs returned the identical page as seeding with an unrelated
+        deal, and none of those rows named that contact. This leans on that
+        deliberately: one paged sweep instead of a request per deal.
 
-        So it sweeps with TWO different seed entities and compares. Identical
-        results mean the filter is genuinely ignored and the set is tenant-wide.
-        Different results mean Kylas has since fixed the filter, and anything
-        summarising all deals from one sweep would silently miss most of them.
+        That is only safe while the behaviour holds, so it compares page 0 for
+        TWO different seeds first. Identical pages mean the filter is genuinely
+        ignored and the sweep is tenant-wide; different pages mean Kylas has
+        fixed it, and anything summarising all deals from one sweep would
+        silently miss most of them. Only page 0 is compared -- the full sweep is
+        dozens of pages and running it twice to prove a property visible on the
+        first page would double the cost for nothing.
+
+        `stop_before` is passed through to the sweep so a single-day caller
+        stops paging once it is safely past the window.
 
         Returns (rows, filter_ignored). A caller that needs completeness must
         check filter_ignored and fall back to per-entity reads when it is False.
@@ -612,26 +699,22 @@ class KylasClient:
         seeds = [s for s in (seed_ids or []) if s][:2]
         if not seeds:
             return [], False
-        first = self._sweep_call_logs(seeds[0], seed_type)
         if len(seeds) < 2:
             # Nothing to compare against, so completeness cannot be claimed.
-            return first, False
-        second = self._sweep_call_logs(seeds[1], seed_type)
-        ids_a = {r.get("id") for r in first}
-        ids_b = {r.get("id") for r in second}
+            return self._sweep_call_logs(seeds[0], seed_type,
+                                         stop_before=stop_before), False
+        probe_a, _ = self._call_log_page(seeds[0], seed_type, 0)
+        probe_b, _ = self._call_log_page(seeds[1], seed_type, 0)
+        ids_a = {r.get("id") for r in probe_a}
+        ids_b = {r.get("id") for r in probe_b}
         if ids_a and ids_a == ids_b:
-            # No paging exists, so a suspiciously round count probably means
-            # the response was capped and older calls are missing silently.
-            if len(first) in (50, 100, 200, 500, 1000):
-                print(f"  [Kylas] WARNING: exactly {len(first)} call logs returned "
-                      f"and /call-logs supports no paging — the response may be "
-                      f"capped, so older calls could be missing.")
-            return first, True
-        # Filter appears to work now: merge what we have and tell the caller
-        # the sweep is not authoritative.
-        merged = list(first)
+            return self._sweep_call_logs(seeds[0], seed_type,
+                                         stop_before=stop_before), True
+        # Filter appears to work now: hand back what the two probes saw and tell
+        # the caller the sweep is not authoritative, so it can refuse to write.
+        merged = list(probe_a)
         known = set(ids_a)
-        for r in second:
+        for r in probe_b:
             if r.get("id") not in known:
                 merged.append(r)
                 known.add(r.get("id"))
@@ -649,36 +732,31 @@ class KylasClient:
             print(f"  [Kylas] could not fetch seed deal ids: {str(exc)[:160]}")
             return []
 
-    def get_call_logs(self, entity_id, entity_type: str = "deal") -> List[dict]:
+    def get_call_logs(self, entity_id, entity_type: str = "deal",
+                      stop_before=None) -> List[dict]:
         """
         Call logs attached to one deal/contact/lead.
 
-        WARNING, measured on this tenant: the entityId/entityType query params
-        are IGNORED. GET /call-logs?entityId=<x>&entityType=deal returns the
-        same tenant-wide set for every x — a dry run scanning 60 deals produced
-        the identical two call logs for all 60, and those two belong to a
-        single deal. The documented GET /call-logs/{id}?relatedToType=... is no
-        better: it 404s with errorCode 02002001 even for a deal that
-        demonstrably has call logs.
+        WARNING, measured on this tenant twice: the entityId/entityType query
+        params are IGNORED. GET /call-logs?entityId=<x>&entityType=<y> returns
+        the same tenant-wide page for every x and y — seeding with a contact
+        that owns call logs returns a page in which that contact appears
+        nowhere. The documented GET /call-logs/{id}?relatedToType=... is no
+        help either: it 404s with errorCode 02002001 for a contact id and a
+        deal id alike, because the path segment is read as a CALL-LOG id.
 
         So the filtering is done here, against each record's own relatedTo /
-        associatedTo. Never trust the server-side filter on this endpoint;
-        callers summarising many deals should use get_all_call_logs() once and
+        associatedTo, over a fully paged sweep rather than page 0 — the default
+        page size is 10 against 5,399 records, and reading only the first page
+        is what made every earlier summary silently incomplete. Callers
+        summarising many deals should still use get_all_call_logs() once and
         group locally rather than calling this per deal.
         """
         try:
             eid = int(entity_id)
         except (TypeError, ValueError):
             return []
-        try:
-            resp = self._get("call-logs", {"entityId": eid,
-                                           "entityType": str(entity_type).lower()})
-        except Exception:
-            return []
-        rows = resp if isinstance(resp, list) else (
-            resp.get("content") or resp.get("data") or [])
-        if not isinstance(rows, list):
-            return []
+        rows = self._sweep_call_logs(eid, entity_type, stop_before=stop_before)
         return [r for r in rows if eid in self.call_log_relations(r, entity_type)]
 
     def get_user_email(self, user_id) -> str:

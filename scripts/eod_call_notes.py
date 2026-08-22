@@ -7,12 +7,22 @@ End-of-day: write each deal's calls for the day into its Kylas Notes section.
 
 WHY THERE IS NO DEAL SWEEP
 The /call-logs endpoint ignores its entityId/entityType filter: it returns the
-same tenant-wide set whatever entity you ask for. A dry run over 60 deals
+same tenant-wide page whatever entity you ask for. A dry run over 60 deals
 produced the identical two call logs for all 60, and those two belong to a
 single deal -- live, that would have posted the same wrong note onto every
 one of them. So this reads every call log ONCE and groups locally by the deal
 each record itself names in relatedTo. That is both the correct answer and the
-cheap one: a single paged read instead of a request per deal.
+cheap one: a paged read instead of a request per deal.
+
+AND WHY IT MUST BE PAGED
+The listing IS paged -- `page` and `size` both work, and the response carries
+totalElements/totalPages. This script did not use them at first, on a wrong
+reading of an early probe that tried page, size and sort together and blamed
+all three for `sort`'s 404. The default page size is 10 against a tenant that
+holds 5,399 call logs, so every summary was built from the ten most recent
+calls and was silently incomplete on every date. It surfaced as a deal whose
+contact had two visible calls getting no note at all (deal 4676048, contact
+5927888, call log 43734306 -- readable by its own id, absent from page 0).
 
 Three other routes were measured and ruled out before landing here:
 
@@ -199,14 +209,17 @@ def main():
     # One sweep of every call log, grouped locally by the deal each one names.
     #
     # There is deliberately no deal sweep here. The /call-logs endpoint ignores
-    # its entityId/entityType filter and hands back the same tenant-wide set
+    # its entityId/entityType filter and hands back the same tenant-wide page
     # whatever you ask for -- a dry run over 60 deals produced the identical two
     # call logs for all 60, and those two belong to one deal. Asking per deal is
     # therefore both wrong and needlessly expensive; asking once and grouping by
-    # each record's own relatedTo is correct and costs a single paged read.
+    # each record's own relatedTo is correct and costs one paged read.
     print("  reading call logs...")
     seeds = [args.deal] if args.deal else client.recent_deal_ids(2)
-    calls, filter_ignored = client.get_all_call_logs(seeds)
+    # stop_before lets the sweep stop paging once it is safely past the day --
+    # but only if it has observed the rows to be in descending time order, so a
+    # change of ordering costs pages rather than correctness.
+    calls, filter_ignored = client.get_all_call_logs(seeds, stop_before=start)
     print(f"  {len(calls)} call log(s) returned (seeds {seeds})")
 
     if not args.deal and not filter_ignored:

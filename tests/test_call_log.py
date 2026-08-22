@@ -148,10 +148,14 @@ def test_http_error_is_returned_not_raised():
     assert not res["ok"] and res["status"] == 400 and "bad request" in res["error"]
 
 
-def test_get_call_logs_uses_entity_id_params():
+def test_get_call_logs_asks_for_a_full_page_not_the_default_ten():
     # The documented /call-logs/{id}?relatedToType= 404s on this tenant, so the
     # entityId/entityType form is what gets called -- even though the server
     # ignores the filter and the client has to re-apply it (below).
+    #
+    # `size` matters as much as the filter: the endpoint defaults to ten rows
+    # against 5,399 call logs, and omitting it is what made every call-log
+    # summary silently incomplete.
     seen = {}
     row = {"id": 43843294, "relatedTo": [{"id": 4383813, "entity": "deal"}]}
 
@@ -160,7 +164,21 @@ def test_get_call_logs_uses_entity_id_params():
         "content": [row]}
     assert c.get_call_logs(4383813, "deal") == [row]
     assert seen["path"] == "call-logs"
-    assert seen["params"] == {"entityId": 4383813, "entityType": "deal"}
+    assert seen["params"]["entityId"] == 4383813
+    assert seen["params"]["entityType"] == "deal"
+    assert seen["params"]["size"] == KylasClient.CALL_LOG_PAGE_SIZE
+    assert "page" in seen["params"]
+
+
+def test_a_server_that_ignored_page_would_not_loop_to_the_cap():
+    # It already ignores entityId/entityType. If it ignored `page` too, a sweep
+    # that kept going would collect the same rows 200 times over.
+    calls = []
+    row = {"id": 1, "relatedTo": [{"id": 4383813, "entity": "deal"}]}
+    c = KylasClient()
+    c._get = lambda path, params=None: calls.append(params) or {"content": [row]}
+    assert c.get_call_logs(4383813, "deal") == [row]
+    assert len(calls) == 2  # page 0, then page 1 repeats it and the sweep stops
 
 
 def test_get_call_logs_filters_out_other_deals_calls():
