@@ -6,7 +6,9 @@ on:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # 5 was fine for the field dump alone. The full EOD dry run sweeps every
+    # deal and reads call logs for the open ones, so it needs real headroom.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -21,3 +23,37 @@ jobs:
         run: python scripts/inspect_kylas.py
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+
+      # The call-log and recency probes that lived here are gone: they answered
+      # their questions and are recorded in the commit history and in
+      # eod_call_notes.py's docstring. Two of them wrote to production.
+
+      # WRITES REAL NOTES for each IST date in BACKFILL_DATES (space separated).
+      # Empty = disarmed, which is how it should be left between backfills.
+      #
+      # Idempotent by the [calls <date>] marker: a deal already carrying the
+      # day's note is skipped. That protection did NOT work until 2026-08-22 —
+      # already_noted read a note shape get_all_notes never returns, so every
+      # run believed nothing was marked. Run 32555234756 re-ran 2026-08-21 and
+      # posted a second identical note onto deals 4436857 and 4443457 as a
+      # result.
+      #
+      # Backfill 19-21 Aug is done (13 notes, run 32555234756). Leave this
+      # disarmed unless a specific date needs re-running.
+      - name: EOD call notes backfill (WRITES to production)
+        if: always()
+        run: |
+          if [ -z "$BACKFILL_DATES" ]; then
+            echo "BACKFILL_DATES empty — skipping."; exit 0
+          fi
+          rc=0
+          for d in $BACKFILL_DATES; do
+            echo "=============== $d ==============="
+            # Keep going if one date fails: the days are independent, and a
+            # transient failure on one should not cost the others.
+            python scripts/eod_call_notes.py --date "$d" || rc=1
+          done
+          exit $rc
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          BACKFILL_DATES: ""

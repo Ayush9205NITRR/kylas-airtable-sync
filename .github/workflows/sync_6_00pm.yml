@@ -18,7 +18,11 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 30 is ~2x the measured cost of a healthy run (sync ~14 min + rollup a few
+    # minutes). It used to be 60 because the rollup could not finish; now that
+    # it can, a job creeping past 30 means something regressed, and the cap
+    # stops that regression from quietly eating the month's Actions minutes.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -57,19 +61,41 @@ jobs:
           SMTP_USER:                ${{ secrets.SMTP_USER }}
           SMTP_PASS:                ${{ secrets.SMTP_PASS }}
 
+      - name: EOD call notes (Kylas deal Notes)
+        # Summarises the day's calls into each deal's Notes section: which rep,
+        # IST time, outcome, duration. Reads the call logs the reps log
+        # themselves, so createdBy carries the real caller — writing call logs
+        # here instead would stamp them all with the API key's user.
+        #
+        # Idempotent by a [calls YYYY-MM-DD] marker checked against one notes
+        # sweep, so re-dispatching this workflow will not double-post. If that
+        # sweep fails it writes nothing rather than risk duplicates.
+        #
+        # continue-on-error because this is a summary of work already done: it
+        # must never take down the sync or the BD emails above it. Capped well
+        # under the job timeout for the same reason.
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python scripts/eod_call_notes.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+
       - name: Rollup Offsite Timeline (Contact → Company)
         # Secondary enrichment: never fail the run if this hiccups (rate limits,
         # timeout) — the sync + email above have already completed.
         continue-on-error: true
         # Must be LESS than the job's timeout-minutes. continue-on-error only
         # forgives a *step* failure; a *job* timeout kills the job outright and
-        # marks the whole run cancelled. Without this the step ran until the
-        # 60-minute job limit and every run concluded 'cancelled' even though
-        # the sync and emails had succeeded — see run 32047732976, where step 6
-        # finished at 17:09 and this step was killed at 17:53. The rollup gets
-        # the same wall-clock either way; the difference is that the run now
-        # reports the truth and the post-job steps still run.
-        timeout-minutes: 45
+        # marks the whole run cancelled.
+        #
+        # This was 45 and hit that cap every single weekday, because the script
+        # made 2 + N_contacts Kylas calls per company and could not get through
+        # the Company List in time — 45 of the job's 60 minutes, ~1,200 Actions
+        # minutes a month, spent on work that never completed. The script now
+        # bulk-prefetches contacts and companies in two sweeps, so a healthy
+        # run is minutes. 15 leaves generous headroom while capping the damage
+        # if that ever regresses.
+        timeout-minutes: 15
         run: |
           python scripts/rollup_offsite_timeline.py \
             --company-field "Offsite Timeline (BD - New)" \

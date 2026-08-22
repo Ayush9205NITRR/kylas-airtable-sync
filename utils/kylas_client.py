@@ -445,6 +445,306 @@ class KylasClient:
             attempts.append(f"{path}->{r.status_code} {(r.text or '').strip()[:450]}")
         return {"ok": False, "status": 0, "id": None, "error": " || ".join(attempts)[:1400]}
 
+    # ------------------------------------------------------------------
+    # Call logs.
+    #
+    # Kylas call logs are their own resource at /v1/call-logs/ — not a search
+    # entity and not under /entities/{e}/fields, which is why probing those
+    # shapes for "call"/"calls" returned only 400s.
+    #
+    # ATTRIBUTION, verified against this tenant (call log 43843294):
+    # createdBy, updatedBy and owner are all stamped with the API key's own
+    # user and CANNOT be reassigned. PATCHing owner / ownedBy / ownerId /
+    # createdBy in every shape left updatedAt untouched at its createdAt
+    # value — nothing moved. So a call log written with the tenant admin key
+    # always shows "Logged By: <that admin>" in the UI, whoever actually
+    # called. Until per-rep API keys exist, the real caller can only be
+    # carried in the note text, which is what made_by does below.
+    # ------------------------------------------------------------------
+
+    #: Kylas rejects a duration on any outcome other than "connected".
+    CALL_OUTCOMES = ("connected", "missed", "rejected", "busy", "no_answer")
+
+    @staticmethod
+    def _call_start_time(started_at=None) -> str:
+        """Kylas wants UTC ISO-8601 with milliseconds and a Z suffix.
+
+        It renders in the tenant's timezone, so a UTC 20:00 shows as 1:30 am
+        IST — send UTC and let Kylas localise rather than pre-shifting.
+        """
+        dt = started_at or datetime.now(timezone.utc)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+    @staticmethod
+    def _fmt_duration(seconds) -> str:
+        try:
+            s = int(seconds)
+        except (TypeError, ValueError):
+            return ""
+        return f"{s // 60}m{s % 60:02d}s" if s >= 60 else f"{s}s"
+
+    def create_call_log(self, deal_id, made_by: str, duration_seconds=None,
+                        outcome: str = "connected", call_type: str = "outgoing",
+                        phone_number: str = "", contact_ids=None,
+                        started_at=None, note: str = "",
+                        recording_url: str = "", dry_run: bool = False) -> dict:
+        """
+        Log a call against a deal.
+
+        made_by is the rep who actually called. It is written into the note
+        because Kylas will not accept it as a field (see the note above) — the
+        UI's "Logged By" will still read as the API key's user.
+
+        Never raises, matching create_note: returns
+        {"ok": bool, "status": int, "id": <call log id or None>, "error": str}.
+        """
+        try:
+            did = int(deal_id)
+        except (TypeError, ValueError):
+            return {"ok": False, "status": 0, "id": None,
+                    "error": f"bad deal_id: {deal_id!r}"}
+
+        outcome = str(outcome or "connected").lower()
+        if outcome not in self.CALL_OUTCOMES:
+            return {"ok": False, "status": 0, "id": None,
+                    "error": f"outcome must be one of {self.CALL_OUTCOMES}, got {outcome!r}"}
+
+        rep = str(made_by or "").strip() or "unknown"
+        headline = f"Call by {rep} | {outcome}"
+        if outcome == "connected" and duration_seconds:
+            headline += f" | {self._fmt_duration(duration_seconds)}"
+        description = headline + (f"\n{note.strip()}" if note and note.strip() else "")
+
+        payload = {
+            "outcome":   outcome,
+            "callType":  str(call_type or "outgoing").lower(),
+            "startTime": self._call_start_time(started_at),
+            "notes":     [{"description": description}],
+            "relatedTo": {"id": did, "entity": "deal"},
+        }
+        # Kylas 400s on a duration for a call that never connected.
+        if outcome == "connected" and duration_seconds:
+            payload["duration"] = str(int(duration_seconds))
+        if phone_number:
+            payload["phoneNumber"] = str(phone_number)
+            payload["relatedTo"]["phoneNumber"] = str(phone_number)
+        if contact_ids:
+            payload["associatedTo"] = [
+                {"id": int(c), "entity": "contact",
+                 **({"phoneNumber": str(phone_number)} if phone_number else {})}
+                for c in contact_ids
+            ]
+        if recording_url:
+            payload["callRecording"] = {"url": recording_url,
+                                        "fileName": recording_url.rsplit("/", 1)[-1]}
+
+        if dry_run:
+            return {"ok": True, "status": 0, "id": None, "error": "",
+                    "dry_run": True, "payload": payload}
+
+        try:
+            r = self._request("POST", "call-logs/", json=payload)
+        except Exception as exc:
+            return {"ok": False, "status": 0, "id": None, "error": str(exc)[:300]}
+        if not r.ok:
+            return {"ok": False, "status": r.status_code, "id": None,
+                    "error": (r.text or "").strip()[:400]}
+        call_id = None
+        try:
+            data = r.json() if r.content else {}
+            data = data.get("data", data) if isinstance(data, dict) else data
+            if isinstance(data, dict):
+                call_id = data.get("id")
+        except Exception:
+            pass
+        return {"ok": True, "status": r.status_code, "id": call_id, "error": ""}
+
+    @staticmethod
+    def call_log_relations(call: dict, entity_type: str) -> set:
+        """Ids of the given entity type this call log is attached to."""
+        want = str(entity_type).lower()
+        out = set()
+        for rel in (call.get("relatedTo") or []) + (call.get("associatedTo") or []):
+            if isinstance(rel, dict) and str(rel.get("entity") or "").lower() == want:
+                try:
+                    out.add(int(rel["id"]))
+                except (KeyError, TypeError, ValueError):
+                    pass
+        return out
+
+    # `page` and `size` each work on /call-logs but 404 when sent together, and
+    # `sort` 404s on its own. So the read is one sized request, escalating until
+    # it demonstrably covers the window asked for. Measured 2026-08-22:
+    #   size=1 -> 1 row, size=100 -> 100 rows, page=1 -> the same ten ids as the
+    #   default page (it is 1-indexed), page=100 -> rows page 1 never shows,
+    #   page+size -> 404.
+    CALL_LOG_SIZES = (100, 500, 1000)
+
+    def _call_log_page(self, seed_id, seed_type, size):
+        """
+        One sized /call-logs read. Returns (rows, envelope).
+
+        `size` travels alone: pairing it with `page` 404s the endpoint, which is
+        where the original "this endpoint has no paging" claim came from -- an
+        early probe sent page, size and sort together and blamed all three.
+        """
+        params = {"entityId": int(seed_id), "entityType": str(seed_type).lower(),
+                  "size": int(size)}
+        try:
+            resp = self._get("call-logs", params)
+        except Exception as exc:
+            print(f"  [Kylas] call-logs size={size} failed: {str(exc)[:200]}")
+            return [], {}
+        if isinstance(resp, list):
+            return resp, {}
+        rows = resp.get("content")
+        if not isinstance(rows, list):
+            rows = resp.get("data") if isinstance(resp.get("data"), list) else []
+        env = {k: v for k, v in resp.items() if not isinstance(v, (list, dict))}
+        return rows, env
+
+    def _sweep_call_logs(self, seed_id, seed_type, stop_before=None):
+        """
+        Call logs, read far enough back to cover `stop_before`. Returns
+        (rows, covered).
+
+        The default response is TEN rows out of this tenant's 5,399, and reading
+        that and calling it the tenant is what made every call-log summary
+        silently incomplete: a deal whose contact had two visible calls got no
+        note, because those calls sat outside the newest ten.
+
+        So `covered` is the point of this method. It is True only when the read
+        provably reached past `stop_before` -- either it returned a row older
+        than the window, or it returned every record the endpoint claims exists.
+        A caller writing one day's summary must refuse to write when it is
+        False, because a short read looks exactly like a quiet day.
+        """
+        rows, env = [], {}
+        for size in self.CALL_LOG_SIZES:
+            rows, env = self._call_log_page(seed_id, seed_type, size)
+            if not rows:
+                return rows, False
+            total = env.get("totalElements")
+            if total and len(rows) >= int(total):
+                return rows, True          # everything there is
+            if len(rows) < size:
+                return rows, True          # server ran out before the cap
+            if stop_before is None:
+                continue                   # no window: escalate to the largest
+            oldest = self._oldest_start(rows)
+            if oldest is not None and oldest < stop_before:
+                return rows, True          # read back past the window
+        if stop_before is not None:
+            print(f"  [Kylas] WARNING: {len(rows)} call logs of "
+                  f"{env.get('totalElements')} and the oldest is still inside "
+                  f"the requested window — the read did not reach far enough.")
+        return rows, stop_before is None
+
+    @staticmethod
+    def _call_log_start(row):
+        from datetime import datetime as _dt
+        ts = row.get("startTime") if isinstance(row, dict) else None
+        if not ts:
+            return None
+        try:
+            return _dt.fromisoformat(str(ts).replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
+    @classmethod
+    def _oldest_start(cls, rows):
+        seen = [t for t in (cls._call_log_start(r) for r in rows) if t]
+        return min(seen) if seen else None
+
+    def get_all_call_logs(self, seed_ids, seed_type: str = "deal",
+                          stop_before=None):
+        """
+        Every call log in the tenant, plus proof that it really is every one.
+
+        /call-logs needs entityId+entityType to respond, but ignores them when
+        filtering: it hands back the tenant-wide set whatever entity is named.
+        Measured again 2026-08-22 -- seeding with a contact that demonstrably
+        owns call logs returned the identical rows as an unrelated deal, and
+        none of them named that contact. This leans on that deliberately: one
+        sized read instead of a request per deal.
+
+        That is only safe while the behaviour holds, so it compares a small read
+        for TWO different seeds first. Identical rows mean the filter is
+        genuinely ignored and the read is tenant-wide; different rows mean Kylas
+        has fixed it, and anything summarising all deals from one read would
+        silently miss most of them.
+
+        Returns (rows, usable). `usable` is True only when the filter is still
+        ignored AND the read reached back past `stop_before`. Both halves matter
+        and both were learned the hard way: the first would post one deal's
+        calls onto every deal, the second would summarise a day from whatever
+        few calls happened to be newest.
+        """
+        seeds = [x for x in (seed_ids or []) if x][:2]
+        if not seeds:
+            return [], False
+        if len(seeds) < 2:
+            # Nothing to compare against, so tenant-wideness cannot be claimed.
+            rows, _ = self._sweep_call_logs(seeds[0], seed_type, stop_before)
+            return rows, False
+        probe_a, _ = self._call_log_page(seeds[0], seed_type, self.CALL_LOG_SIZES[0])
+        probe_b, _ = self._call_log_page(seeds[1], seed_type, self.CALL_LOG_SIZES[0])
+        ids_a = {r.get("id") for r in probe_a}
+        ids_b = {r.get("id") for r in probe_b}
+        if not (ids_a and ids_a == ids_b):
+            # Filter appears to work now: hand back what the probes saw and tell
+            # the caller the read is not authoritative, so it can refuse to write.
+            merged = list(probe_a)
+            known = set(ids_a)
+            for r in probe_b:
+                if r.get("id") not in known:
+                    merged.append(r)
+                    known.add(r.get("id"))
+            return merged, False
+        rows, covered = self._sweep_call_logs(seeds[0], seed_type, stop_before)
+        return rows, covered
+
+    def recent_deal_ids(self, n: int = 2) -> List[int]:
+        """A few real deal ids, cheaply — used to seed the call-log sweep."""
+        try:
+            r = self._request("POST", "search/deal",
+                              params={"page": 0, "size": n, "sort": "updatedAt,desc"},
+                              json={"fields": ["id"], "jsonRule": None})
+            self._raise_for_status(r)
+            return [d["id"] for d in r.json().get("content", []) if d.get("id")]
+        except Exception as exc:
+            print(f"  [Kylas] could not fetch seed deal ids: {str(exc)[:160]}")
+            return []
+
+    def get_call_logs(self, entity_id, entity_type: str = "deal",
+                      stop_before=None) -> List[dict]:
+        """
+        Call logs attached to one deal/contact/lead.
+
+        WARNING, measured on this tenant twice: the entityId/entityType query
+        params are IGNORED. GET /call-logs?entityId=<x>&entityType=<y> returns
+        the same tenant-wide page for every x and y — seeding with a contact
+        that owns call logs returns a page in which that contact appears
+        nowhere. The documented GET /call-logs/{id}?relatedToType=... is no
+        help either: it 404s with errorCode 02002001 for a contact id and a
+        deal id alike, because the path segment is read as a CALL-LOG id.
+
+        So the filtering is done here, against each record's own relatedTo /
+        associatedTo, over a read sized to reach the caller's window rather
+        than the default ten rows — ten against 5,399 records is what made every
+        earlier summary silently incomplete. Callers summarising many deals
+        should still use get_all_call_logs() once and group locally rather than
+        calling this per deal.
+        """
+        try:
+            eid = int(entity_id)
+        except (TypeError, ValueError):
+            return []
+        rows, _ = self._sweep_call_logs(eid, entity_type, stop_before)
+        return [r for r in rows if eid in self.call_log_relations(r, entity_type)]
+
     def get_user_email(self, user_id) -> str:
         """
         Fetch a single user's email via GET /users/{id}.

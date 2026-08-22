@@ -237,3 +237,132 @@ if __name__ == "__main__":
     test_company_key_from_config_empty_company_block()
     test_company_key_from_config_via_monkeypatch()
     print("\nALL TESTS PASSED")
+
+
+# ---------------------------------------------------------------------------
+# Bulk-prefetch path
+# ---------------------------------------------------------------------------
+
+from scripts.rollup_offsite_timeline import _labels_from_raw  # noqa: E402
+
+_ID2LBL = {2880424: "Jan - Mar", 2880425: "Apr - Jun", 2880426: "Jul - Sep"}
+
+
+@pytest.mark.parametrize("raw,expected", [
+    (None,                                    set()),
+    ({"name": "Jul - Sep", "id": 2880426},    {"Jul - Sep"}),
+    (2880426,                                 {"Jul - Sep"}),
+    ([2880424, 2880425],                      {"Jan - Mar", "Apr - Jun"}),
+    ([{"name": "Jul - Sep"}, {"name": "Jan - Mar"}], {"Jul - Sep", "Jan - Mar"}),
+    ([2880424, {"name": "Jul - Sep"}],        {"Jan - Mar", "Jul - Sep"}),
+    (999999,                                  set()),      # id not in the map
+    ("not-an-id",                             set()),      # unparseable
+    ([{"noname": 1}],                         set()),      # dict without name
+])
+def test_labels_from_raw_shapes(raw, expected):
+    assert _labels_from_raw(raw, _ID2LBL) == expected
+
+
+class _FakeBulkClient:
+    """Client whose only reads are the two bulk sweeps.
+
+    Every per-record read raises: the whole point of the rewrite is that the
+    loop stops calling them, so a regression here fails loudly rather than
+    quietly reintroducing tens of thousands of requests.
+    """
+    CO_KEY = "cfOffsiteTimelineBdNew"
+    CT_KEY = "cfOffsiteTimeline"
+
+    def __init__(self, contacts, companies):
+        self._contacts, self._companies = contacts, companies
+        self.merges = []
+        self.sweeps = []
+
+    _contact_company_id = staticmethod(KylasClient._contact_company_id)
+
+    def cf_key_for_display(self, entity, name):
+        return self.CO_KEY if entity == "company" else self.CT_KEY
+
+    def get_custom_field_defs(self, entity):
+        return {(self.CO_KEY if entity == "company" else self.CT_KEY):
+                {"multiValue": True, "options": {}, "labels": dict(_ID2LBL)}}
+
+    def get_contacts(self, since=None):
+        self.sweeps.append("contacts")
+        return self._contacts
+
+    def get_companies(self, since=None):
+        self.sweeps.append("companies")
+        return self._companies
+
+    def merge_company_multiselect(self, company_id, cf_key, labels, dry_run=False):
+        self.merges.append((company_id, sorted(labels)))
+        return "updated"
+
+    def _boom(self, *a, **k):
+        raise AssertionError("per-record read in bulk mode")
+
+    get_contacts_by_company = get_contact = get_company = _boom
+
+
+def _run_bulk(monkeypatch, contacts, companies, airtable_rows):
+    """Drive run() in bulk mode against fakes; return the fake client."""
+    import scripts.rollup_offsite_timeline as R
+
+    client = _FakeBulkClient(contacts, companies)
+    monkeypatch.setattr(R, "KylasClient", lambda: client)
+    monkeypatch.setattr(R, "load_dotenv", lambda *a, **k: None)
+    monkeypatch.setenv("AIRTABLE_PAT", "pat-test")
+    monkeypatch.setenv("AIRTABLE_BASE_ID", "app-test")
+
+    # run() imports pyairtable lazily, so inject a stub module.
+    fake_table = type("T", (), {"all": lambda self, formula=None: airtable_rows})()
+    fake_api = type("A", (), {"__init__": lambda self, pat: None,
+                              "table": lambda self, base, name: fake_table})
+    monkeypatch.setitem(sys.modules, "pyairtable",
+                        type("M", (), {"Api": fake_api})())
+
+    R.run(view_name=None, dry_run=False, company_field="Offsite Timeline (BD - New)",
+          contact_field="Offsite Timeline", inspect=False,
+          company_cf_key_arg=_FakeBulkClient.CO_KEY)
+    return client
+
+
+def test_bulk_mode_rolls_up_without_per_record_reads(monkeypatch):
+    contacts = [
+        {"id": 1, "company": {"id": 10}, "customFieldValues": {"cfOffsiteTimeline": 2880426}},
+        {"id": 2, "company": {"id": 10}, "customFieldValues": {"cfOffsiteTimeline": 2880424}},
+        {"id": 3, "company": {"id": 20}, "customFieldValues": {"cfOffsiteTimeline": 2880425}},
+        {"id": 4, "company": None,       "customFieldValues": {"cfOffsiteTimeline": 2880425}},
+    ]
+    companies = [
+        # 10 already carries Jul - Sep, so only Jan - Mar is new.
+        {"id": 10, "customFieldValues": {"cfOffsiteTimelineBdNew": [{"name": "Jul - Sep"}]}},
+        {"id": 20, "customFieldValues": {}},
+    ]
+    rows = [{"fields": {"Kylas Company Id": "10", "Company Name": "Ten"}},
+            {"fields": {"Kylas Company Id": "20", "Company Name": "Twenty"}}]
+
+    client = _run_bulk(monkeypatch, contacts, companies, rows)
+
+    # Exactly two sweeps, and no per-record read (those raise).
+    assert client.sweeps == ["contacts", "companies"]
+    # Only the genuine diffs are written.
+    assert sorted(client.merges) == [(10, ["Jan - Mar"]), (20, ["Apr - Jun"])]
+
+
+def test_bulk_mode_writes_nothing_when_company_already_current(monkeypatch):
+    contacts = [{"id": 1, "company": {"id": 10},
+                 "customFieldValues": {"cfOffsiteTimeline": 2880426}}]
+    companies = [{"id": 10, "customFieldValues":
+                  {"cfOffsiteTimelineBdNew": [{"name": "Jul - Sep"}]}}]
+    rows = [{"fields": {"Kylas Company Id": "10", "Company Name": "Ten"}}]
+
+    client = _run_bulk(monkeypatch, contacts, companies, rows)
+    assert client.merges == []
+
+
+def test_bulk_mode_skips_rows_without_kylas_id(monkeypatch):
+    rows = [{"fields": {"Company Name": "No Id"}}]
+    client = _run_bulk(monkeypatch, [], [], rows)
+    assert client.merges == []
