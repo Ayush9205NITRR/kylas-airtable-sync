@@ -48,4 +48,23 @@ jobs:
           python scripts/eod_call_notes.py --date "$BACKFILL_DATE"
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          BACKFILL_DATE: "2026-08-21"
+          BACKFILL_DATE: ""
+
+      # READ-ONLY. Investigates the report that deal 4676048 got no call note
+      # even though its associated contact carries call logs. Separates the two
+      # candidate causes -- the backfill only ran 2026-08-21 while the calls are
+      # 19/20 Aug, versus /call-logs silently truncating older records out of
+      # its un-paged response. Set DIAG_MISSING to "" to skip.
+      - name: Diagnose the missing deal note (read-only)
+        if: always()
+        run: |
+          if [ -z "$DIAG_MISSING" ]; then
+            echo "DIAG_MISSING empty — skipping."; exit 0
+          fi
+          python scripts/diag_missing_deal_note.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          DIAG_MISSING: "1"
+          MISSING_DEAL: "4676048"
+          MISSING_CONTACT: "5927888"
+          MISSING_CALL_LOG: "43734306"
