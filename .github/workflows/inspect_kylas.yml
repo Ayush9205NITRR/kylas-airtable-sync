@@ -28,17 +28,20 @@ jobs:
       # their questions and are recorded in the commit history and in
       # eod_call_notes.py's docstring. Two of them wrote to production.
 
-      # WRITES REAL NOTES. Backfills 2026-08-21 IST — the last day carrying the
-      # team's own calls. Today (the 22nd) holds only the two admin-key test
-      # call logs, so summarising it would add noise on a deal that is already
-      # due a cleanup.
+      # WRITES REAL NOTES for the IST date in BACKFILL_DATE. Empty = disarmed,
+      # which is how it should be left between backfills.
       #
-      # Verified on run 32553863356 before arming: Hrithik Rawat's 3:56 PM call
-      # reached its deals through the contact bridge, and 246 deals / 305
-      # linked contacts built the index.
+      # Idempotent by the [calls <date>] marker, so re-dispatching is safe: a
+      # deal that already carries the day's note is skipped. That cuts both
+      # ways — a deal noted from the pre-2026-08-22 read carries an INCOMPLETE
+      # note and will be skipped rather than corrected, because the marker
+      # cannot tell a short read from a quiet day. Deals 4436857 and 4443457
+      # are in that state for 2026-08-21.
       #
-      # Idempotent by the [calls 2026-08-21] marker, so re-dispatching is safe.
-      # Set BACKFILL_DATE to "" to disarm.
+      # Verified on run 32555064819 (dry run, 2026-08-19): 100 call logs read,
+      # 21 on the day, 6 deals — including 4676048, the deal whose missing note
+      # started this. The same date returned nothing at all before the read was
+      # sized.
       - name: EOD call notes backfill (WRITES to production)
         if: always()
         run: |
@@ -49,55 +52,3 @@ jobs:
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
           BACKFILL_DATE: ""
-
-      # READ-ONLY. Investigates the report that deal 4676048 got no call note
-      # even though its associated contact carries call logs. Separates the two
-      # candidate causes -- the backfill only ran 2026-08-21 while the calls are
-      # 19/20 Aug, versus /call-logs silently truncating older records out of
-      # its un-paged response. Set DIAG_MISSING to "" to skip.
-      - name: Diagnose the missing deal note (read-only)
-        if: always()
-        run: |
-          if [ -z "$DIAG_MISSING" ]; then
-            echo "DIAG_MISSING empty — skipping."; exit 0
-          fi
-          python scripts/diag_missing_deal_note.py
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          DIAG_MISSING: ""
-          MISSING_DEAL: "4676048"
-          MISSING_CONTACT: "5927888"
-          MISSING_CALL_LOG: "43734306"
-
-      # READ-ONLY. Run 32554452867 showed the /call-logs listing returns the
-      # same newest ten records for every entity asked for, while the record we
-      # want reads back fine by its own id -- so the listing is capped, not
-      # filtered, and the EOD summary is incomplete on every date. This hunts
-      # for a read shape that returns more. Set PROBE_PAGING to "" to skip.
-      - name: Probe for a complete call-log read (read-only)
-        if: always()
-        run: |
-          if [ -z "$PROBE_PAGING" ]; then
-            echo "PROBE_PAGING empty — skipping."; exit 0
-          fi
-          python scripts/probe_call_log_paging.py
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          PROBE_PAGING: ""
-          MISSING_DEAL: "4676048"
-          MISSING_CONTACT: "5927888"
-          MISSING_CALL_LOG: "43734306"
-
-      # READ-ONLY dry run proving the paging fix. 19 Aug is the day of the call
-      # that went missing (contact 5927888, call log 43734306), so deal 4676048
-      # must appear below. Set VERIFY_DATE to "" to skip.
-      - name: Verify the paging fix (dry run, writes nothing)
-        if: always()
-        run: |
-          if [ -z "$VERIFY_DATE" ]; then
-            echo "VERIFY_DATE empty — skipping."; exit 0
-          fi
-          python scripts/eod_call_notes.py --date "$VERIFY_DATE" --dry-run
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          VERIFY_DATE: "2026-08-19"
