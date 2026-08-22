@@ -219,17 +219,19 @@ def main():
     # stop_before lets the sweep stop paging once it is safely past the day --
     # but only if it has observed the rows to be in descending time order, so a
     # change of ordering costs pages rather than correctness.
-    calls, filter_ignored = client.get_all_call_logs(seeds, stop_before=start)
+    calls, usable = client.get_all_call_logs(seeds, stop_before=start)
     print(f"  {len(calls)} call log(s) returned (seeds {seeds})")
 
-    if not args.deal and not filter_ignored:
-        # Two different seeds gave different results, so this sweep is one
-        # deal's calls rather than the tenant's. Summarising every deal from it
-        # would silently skip most of them, so stop instead of writing a
-        # confidently incomplete set of notes.
-        print("  [STOP] /call-logs appears to filter by entity now, so a single")
-        print("         sweep is NOT tenant-wide and most deals would be missed.")
-        print("         Re-run per deal with --deal, or rework the candidate set.")
+    if not args.deal and not usable:
+        # Either the tenant-wide read stopped being tenant-wide, or it did not
+        # reach back past the start of the day. Both look identical to a quiet
+        # day and both produce confidently wrong notes -- the second is exactly
+        # what put no note on deal 4676048 while its contact had calls. Stop.
+        print("  [STOP] the call-log read cannot be trusted for this day:")
+        print("         either /call-logs filters by entity now (so one read is")
+        print("         NOT tenant-wide and most deals would be missed), or it")
+        print("         did not reach back past the start of the day.")
+        print("         Re-run per deal with --deal, or widen CALL_LOG_SIZES.")
         return 1
 
     todays = [c for c in calls

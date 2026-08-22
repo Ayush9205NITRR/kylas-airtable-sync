@@ -83,7 +83,7 @@ jobs:
           python scripts/probe_call_log_paging.py
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          PROBE_PAGING: "1"
+          PROBE_PAGING: ""
           MISSING_DEAL: "4676048"
           MISSING_CONTACT: "5927888"
           MISSING_CALL_LOG: "43734306"
@@ -100,4 +100,4 @@ jobs:
           python scripts/eod_call_notes.py --date "$VERIFY_DATE" --dry-run
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          VERIFY_DATE: ""
+          VERIFY_DATE: "2026-08-19"

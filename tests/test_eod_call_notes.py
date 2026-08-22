@@ -195,139 +195,147 @@ def test_duration_formatting(secs, expected):
 # --------------------------------------------- the tenant-wide sweep guard
 #
 # /call-logs needs entityId+entityType to answer but ignores them when
-# filtering, so one sweep returns everything. That is only safe while it holds:
-# if Kylas fixes the filter, a single sweep becomes one deal's calls and an EOD
-# run would silently skip every other deal. get_all_call_logs proves which
-# behaviour is live by comparing PAGE 0 for two seeds -- page 0 is enough to
-# show the property, and sweeping twice would double a dozens-of-pages read.
+# filtering, so one read returns everything. That is only safe while it holds:
+# if Kylas fixes the filter, one read becomes one deal's calls and an EOD run
+# would silently skip every other deal. get_all_call_logs proves which
+# behaviour is live by comparing a small read for two seeds.
 
 class _SweepClient(KylasClient):
-    """Fakes the paged endpoint: pages[seed] is a list of pages."""
+    """
+    Fakes /call-logs: `by_seed[seed]` is the full row list for that seed, and a
+    request for `size=N` returns the first N of it -- which is what the real
+    endpoint does, newest first.
+    """
 
-    def __init__(self, by_seed):
+    def __init__(self, by_seed, total=None):
         super().__init__()
         self._by_seed = by_seed
+        self._total = total
         self.reads = []
 
-    def _call_log_page(self, seed_id, seed_type, page, size=None):
-        self.reads.append((int(seed_id), int(page)))
-        pages = self._by_seed.get(int(seed_id), [])
-        rows = pages[page] if page < len(pages) else []
-        return rows, {"totalPages": len(pages),
-                      "totalElements": sum(len(p) for p in pages)}
+    def _call_log_page(self, seed_id, seed_type, size):
+        self.reads.append((int(seed_id), int(size)))
+        rows = self._by_seed.get(int(seed_id), [])
+        total = self._total if self._total is not None else len(rows)
+        return rows[:size], {"totalElements": total}
 
-
-def test_identical_first_pages_means_filter_ignored():
-    rows = [{"id": 1}, {"id": 2}]
-    c = _SweepClient({10: [list(rows)], 20: [list(rows)]})
-    got, ignored = c.get_all_call_logs([10, 20])
-    assert ignored is True
-    assert {r["id"] for r in got} == {1, 2}
-
-
-def test_differing_results_means_the_filter_works_and_sweep_is_not_trusted():
-    c = _SweepClient({10: [[{"id": 1}]], 20: [[{"id": 2}]]})
-    got, ignored = c.get_all_call_logs([10, 20])
-    assert ignored is False
-    assert {r["id"] for r in got} == {1, 2}
-
-
-def test_a_single_seed_cannot_prove_completeness():
-    c = _SweepClient({10: [[{"id": 1}]]})
-    got, ignored = c.get_all_call_logs([10])
-    assert ignored is False and len(got) == 1
-
-
-def test_no_seeds_returns_nothing_rather_than_guessing():
-    c = _SweepClient({})
-    assert c.get_all_call_logs([]) == ([], False)
-
-
-def test_proving_the_filter_is_ignored_costs_one_page_per_seed():
-    # Not one full sweep per seed: the property shows on page 0.
-    c = _SweepClient({10: [[{"id": 1}], [{"id": 3}]], 20: [[{"id": 1}]]})
-    c.get_all_call_logs([10, 20])
-    assert c.reads.count((20, 0)) == 1
-    assert not any(s == 20 and p > 0 for s, p in c.reads)
-
-
-# ------------------------------------------------------- paging the listing
-#
-# The listing IS paged: `page` and `size` work and the envelope carries
-# totalElements/totalPages. This client claimed otherwise until 2026-08-22,
-# after an early probe tried page, size and sort together and blamed all three
-# for sort's 404. The cost was not theoretical: the default page size is 10
-# against 5,399 call logs, so every summary was built from the ten most recent
-# calls in the tenant and was silently incomplete on every date. Deal 4676048
-# got no note because its contact's calls sat on page 1 and beyond.
 
 def _row(id_, iso):
     return {"id": id_, "startTime": iso}
 
 
-def test_the_sweep_reads_past_page_zero():
-    c = _SweepClient({10: [[_row(1, "2026-08-21T05:00:00.000Z")],
-                           [_row(2, "2026-08-20T05:00:00.000Z")],
-                           [_row(3, "2026-08-19T05:00:00.000Z")]]})
-    got = c._sweep_call_logs(10, "deal")
-    assert [r["id"] for r in got] == [1, 2, 3]
+def test_identical_reads_from_two_seeds_means_filter_ignored():
+    rows = [_row(1, "2026-08-21T05:00:00.000Z")]
+    c = _SweepClient({10: list(rows), 20: list(rows)})
+    got, usable = c.get_all_call_logs([10, 20])
+    assert usable is True
+    assert {r["id"] for r in got} == {1}
 
 
-def test_the_sweep_stops_at_the_last_page_rather_than_the_cap():
-    c = _SweepClient({10: [[_row(1, "2026-08-21T05:00:00.000Z")]]})
-    c._sweep_call_logs(10, "deal")
-    assert c.reads == [(10, 0)]
+def test_differing_reads_mean_the_filter_works_and_the_read_is_not_trusted():
+    c = _SweepClient({10: [_row(1, "2026-08-21T05:00:00.000Z")],
+                      20: [_row(2, "2026-08-21T05:00:00.000Z")]})
+    got, usable = c.get_all_call_logs([10, 20])
+    assert usable is False
+    assert {r["id"] for r in got} == {1, 2}
 
 
-def test_a_descending_sweep_stops_once_it_is_past_the_window():
+def test_a_single_seed_cannot_prove_the_read_is_tenant_wide():
+    c = _SweepClient({10: [_row(1, "2026-08-21T05:00:00.000Z")]})
+    got, usable = c.get_all_call_logs([10])
+    assert usable is False and len(got) == 1
+
+
+def test_no_seeds_returns_nothing_rather_than_guessing():
+    assert _SweepClient({}).get_all_call_logs([]) == ([], False)
+
+
+# ------------------------------------------------------ reaching far enough
+#
+# The default response is TEN rows against this tenant's 5,399, and reading
+# that and calling it the tenant is the whole bug: deal 4676048 got no note
+# because its contact's 19 and 20 Aug calls sat outside the newest ten, while
+# GET /call-logs/43734306 read the record back by its own id without trouble.
+#
+# `page` and `size` each work but 404 together, and `sort` 404s alone -- the
+# original "no paging exists" claim came from sending all three at once. So the
+# read is one sized request, escalated until it PROVES it covered the day.
+
+def test_the_read_escalates_until_it_reaches_past_the_window():
     day_start, _ = _ist_day_bounds(DAY)
-    c = _SweepClient({10: [[_row(1, "2026-08-21T05:00:00.000Z")],
-                           [_row(2, "2026-08-19T05:00:00.000Z")],
-                           [_row(3, "2026-08-18T05:00:00.000Z")]]})
-    got = c._sweep_call_logs(10, "deal", stop_before=day_start)
-    # Page 1 is entirely before the window, so page 2 is never fetched.
-    assert [r["id"] for r in got] == [1, 2]
-    assert (10, 2) not in c.reads
+    rows = ([_row(i, "2026-08-21T05:00:00.000Z") for i in range(100)]
+            + [_row(999, "2026-08-19T05:00:00.000Z")])
+    c = _SweepClient({10: rows}, total=5399)
+    got, covered = c._sweep_call_logs(10, "deal", day_start)
+    assert covered is True
+    assert 999 in {r["id"] for r in got}
+    assert [sz for _, sz in c.reads] == [100, 500]
 
 
-def test_an_unordered_sweep_keeps_paging_instead_of_trusting_the_order():
-    # If the rows are not descending, an early exit could drop the day's calls.
+def test_a_read_that_never_reaches_the_window_is_reported_as_not_covered():
+    # Every row is inside the day and the server claims far more exist, so the
+    # read cannot show it saw the whole day. Summarising here would invent a
+    # quiet day out of a truncated response.
     day_start, _ = _ist_day_bounds(DAY)
-    c = _SweepClient({10: [[_row(1, "2026-08-18T05:00:00.000Z"),
-                            _row(2, "2026-08-21T05:00:00.000Z")],
-                           [_row(3, "2026-08-10T05:00:00.000Z")],
-                           [_row(4, "2026-08-21T09:00:00.000Z")]]})
-    got = c._sweep_call_logs(10, "deal", stop_before=day_start)
-    assert [r["id"] for r in got] == [1, 2, 3, 4]
+    rows = [_row(i, "2026-08-21T05:00:00.000Z") for i in range(2000)]
+    c = _SweepClient({10: rows}, total=5399)
+    _, covered = c._sweep_call_logs(10, "deal", day_start)
+    assert covered is False
 
 
-def test_the_window_is_passed_through_from_get_all_call_logs():
+def test_one_read_is_enough_when_it_already_spans_the_window():
     day_start, _ = _ist_day_bounds(DAY)
-    c = _SweepClient({10: [[_row(1, "2026-08-21T05:00:00.000Z")],
-                           [_row(2, "2026-08-19T05:00:00.000Z")],
-                           [_row(3, "2026-08-18T05:00:00.000Z")]],
-                      20: [[_row(1, "2026-08-21T05:00:00.000Z")]]})
-    got, ignored = c.get_all_call_logs([10, 20], stop_before=day_start)
-    assert ignored is True
-    assert [r["id"] for r in got] == [1, 2]
+    c = _SweepClient({10: [_row(1, "2026-08-21T05:00:00.000Z"),
+                           _row(2, "2026-08-18T05:00:00.000Z")]}, total=5399)
+    _, covered = c._sweep_call_logs(10, "deal", day_start)
+    assert covered is True
+    assert c.reads == [(10, 100)]
 
 
-def test_the_missing_record_is_found_once_paging_is_real():
-    # The exact shape of the reported bug: the record the sweep could not see
-    # sits on page 1, and page 0 alone never reaches it.
-    c = _SweepClient({10: [[_row(43843303, "2026-08-22T05:00:00.000Z")],
-                           [_row(43734306, "2026-08-19T06:47:34.000Z")]],
-                      20: [[_row(43843303, "2026-08-22T05:00:00.000Z")]]})
-    got, _ = c.get_all_call_logs([10, 20])
+def test_having_every_record_counts_as_covered_even_inside_the_window():
+    day_start, _ = _ist_day_bounds(DAY)
+    c = _SweepClient({10: [_row(1, "2026-08-21T05:00:00.000Z")]}, total=1)
+    _, covered = c._sweep_call_logs(10, "deal", day_start)
+    assert covered is True
+
+
+def test_an_unusable_read_is_reported_even_when_the_filter_is_ignored():
+    # Both halves of `usable` matter: a tenant-wide read that stops short of
+    # the day is just as wrong as a read that is not tenant-wide.
+    day_start, _ = _ist_day_bounds(DAY)
+    rows = [_row(i, "2026-08-21T05:00:00.000Z") for i in range(2000)]
+    c = _SweepClient({10: rows, 20: rows}, total=5399)
+    _, usable = c.get_all_call_logs([10, 20], stop_before=day_start)
+    assert usable is False
+
+
+def test_the_missing_record_is_found_once_the_read_is_sized():
+    # The reported bug exactly: the record is the 40th newest, so the default
+    # ten never reaches it and a sized read does.
+    day_start, _ = _ist_day_bounds(date(2026, 8, 19))
+    rows = ([_row(43843303 - i, f"2026-08-2{2 - i // 20}T05:00:00.000Z")
+             for i in range(39)]
+            + [_row(43734306, "2026-08-19T06:47:34.000Z"),
+               _row(43700000, "2026-08-17T05:00:00.000Z")])
+    c = _SweepClient({10: rows, 20: rows}, total=5399)
+    got, usable = c.get_all_call_logs([10, 20], stop_before=day_start)
+    assert usable is True
     assert 43734306 in {r["id"] for r in got}
 
 
-def test_get_call_logs_pages_and_then_filters_to_the_asked_for_entity():
+def test_an_empty_read_is_never_called_covered():
+    day_start, _ = _ist_day_bounds(DAY)
+    c = _SweepClient({10: []}, total=5399)
+    got, covered = c._sweep_call_logs(10, "deal", day_start)
+    assert got == [] and covered is False
+
+
+def test_get_call_logs_sizes_the_read_then_filters_to_the_entity():
     mine = {"id": 7, "startTime": "2026-08-19T06:47:34.000Z",
             "relatedTo": [{"id": 5927888, "entity": "contact"}]}
     other = {"id": 8, "startTime": "2026-08-19T07:00:00.000Z",
              "relatedTo": [{"id": 111, "entity": "contact"}]}
-    c = _SweepClient({5927888: [[other], [mine]]})
+    c = _SweepClient({5927888: [other, mine]})
     assert [r["id"] for r in c.get_call_logs(5927888, "contact")] == [7]
 
 
