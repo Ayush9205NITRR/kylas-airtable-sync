@@ -57,14 +57,3 @@ jobs:
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
           BACKFILL_DATES: ""
-
-      # DESTRUCTIVE, one-off. Removes the duplicate 2026-08-21 call notes that
-      # run 32555234756 posted onto deals 4436857 and 4443457 when the marker
-      # check was broken. Deletes only the ids named here. Set NOTE_IDS to ""
-      # to disarm; this whole step goes away once it has run.
-      - name: Delete duplicate call notes (DESTRUCTIVE)
-        if: always()
-        run: python scripts/delete_notes.py
-        env:
-          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          NOTE_IDS: "55053005 55053008"
