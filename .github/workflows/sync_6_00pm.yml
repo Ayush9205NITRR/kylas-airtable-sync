@@ -61,6 +61,25 @@ jobs:
           SMTP_USER:                ${{ secrets.SMTP_USER }}
           SMTP_PASS:                ${{ secrets.SMTP_PASS }}
 
+      - name: EOD call notes (Kylas deal Notes)
+        # Summarises the day's calls into each deal's Notes section: which rep,
+        # IST time, outcome, duration. Reads the call logs the reps log
+        # themselves, so createdBy carries the real caller — writing call logs
+        # here instead would stamp them all with the API key's user.
+        #
+        # Idempotent by a [calls YYYY-MM-DD] marker checked against one notes
+        # sweep, so re-dispatching this workflow will not double-post. If that
+        # sweep fails it writes nothing rather than risk duplicates.
+        #
+        # continue-on-error because this is a summary of work already done: it
+        # must never take down the sync or the BD emails above it. Capped well
+        # under the job timeout for the same reason.
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python scripts/eod_call_notes.py
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+
       - name: Rollup Offsite Timeline (Contact → Company)
         # Secondary enrichment: never fail the run if this hiccups (rate limits,
         # timeout) — the sync + email above have already completed.

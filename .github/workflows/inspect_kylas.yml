@@ -28,15 +28,14 @@ jobs:
       # their questions and are recorded in the commit history and in
       # eod_call_notes.py's docstring. Two of them wrote to production.
 
-      - name: EOD note format (DRY RUN — writes nothing)
-        # --deal skips the sweep, so this is a couple of API calls. Dated
-        # 2026-08-21 IST deliberately: that day's calls include Hrithik
-        # Rawat's real one, so the output shows genuine rep attribution
-        # rather than the two admin-key test records from later that night.
+      - name: EOD note format, 21 Aug (DRY RUN — writes nothing)
+        # No --deal: show every deal that had calls on 2026-08-21 IST, which is
+        # the day the reps' own calls landed on. Previously this pinned
+        # --deal 4383813 and reported zero, because that deal never had those
+        # calls — the ten rows it appeared to own were the unfiltered
+        # tenant-wide set, back when get_call_logs still trusted the server.
         if: always()
-        run: |
-          python scripts/eod_call_notes.py \
-            --deal 4383813 --date 2026-08-21 --dry-run
+        run: python scripts/eod_call_notes.py --date 2026-08-21 --dry-run
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
 
