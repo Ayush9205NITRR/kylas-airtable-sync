@@ -28,8 +28,8 @@ jobs:
       # their questions and are recorded in the commit history and in
       # eod_call_notes.py's docstring. Two of them wrote to production.
 
-      # WRITES REAL NOTES for the IST date in BACKFILL_DATE. Empty = disarmed,
-      # which is how it should be left between backfills.
+      # WRITES REAL NOTES for each IST date in BACKFILL_DATES (space separated).
+      # Empty = disarmed, which is how it should be left between backfills.
       #
       # Idempotent by the [calls <date>] marker, so re-dispatching is safe: a
       # deal that already carries the day's note is skipped. That cuts both
@@ -45,10 +45,17 @@ jobs:
       - name: EOD call notes backfill (WRITES to production)
         if: always()
         run: |
-          if [ -z "$BACKFILL_DATE" ]; then
-            echo "BACKFILL_DATE empty — skipping."; exit 0
+          if [ -z "$BACKFILL_DATES" ]; then
+            echo "BACKFILL_DATES empty — skipping."; exit 0
           fi
-          python scripts/eod_call_notes.py --date "$BACKFILL_DATE"
+          rc=0
+          for d in $BACKFILL_DATES; do
+            echo "=============== $d ==============="
+            # Keep going if one date fails: the days are independent, and a
+            # transient failure on one should not cost the others.
+            python scripts/eod_call_notes.py --date "$d" || rc=1
+          done
+          exit $rc
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
-          BACKFILL_DATE: ""
+          BACKFILL_DATES: "2026-08-19 2026-08-20 2026-08-21"
