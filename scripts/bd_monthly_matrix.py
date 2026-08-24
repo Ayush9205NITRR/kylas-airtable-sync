@@ -4,20 +4,30 @@ BD Monthly Matrix — per-rep, per-month funnel counts, written to Airtable.
 One Airtable row per (BD rep × month) so the numbers can be filtered by month
 in Airtable directly. Creates the table on first run.
 
-Columns
-───────
-  Call Attempted        — bd_metrics: any stage except "Yet to Be Mined"/blank
-  Call Connected        — bd_metrics.CONNECTED_STAGES
-  Discovery Call Booked — SQL, Discovery Call Booked, Offsite Delayed,
-                          Discovery Call No-Show, Reschedule Pending,
-                          Closing Loops - Low Value
-  Meeting Happened      — SQL, Closing Loops - Low Value, Offsite Delayed,
-                          Discovery Call Done - Awaiting Client Inputs
-  SQL                   — SQL (Sales Qualified Lead)
+Columns — canonical funnel definitions agreed 2026-08-24
+──────────────────────────────────────────────────────
+  Call Attempted — any stage except "Yet to Be Mined"/blank
+  Call Connected — Attempted MINUS CNC-1/2/3 and Followup-CNC (i.e. the call
+                   was picked up / a person was reached, whatever happened next)
+  Meeting Booked — Discovery Call Booked, Reschedule Pending, Offsite Delayed,
+                   Discovery Call No-Show (a meeting is/was on the calendar,
+                   whether or not it has happened yet)
+  Meeting Done   — Discovery Call Done - Awaiting Client Inputs,
+                   Closing Loops - Low Value, Offsite Done (Late Reachout),
+                   SQL (Sales Qualified Lead) (the meeting actually took place)
+  SQL            — SQL (Sales Qualified Lead) only
+  MQL            — MQL (Marketing Qualified Lead) only
 
-Attempted/Connected reuse the existing shared definitions in utils/bd_metrics
-so this table can never drift from the daily BD emails. The two middle buckets
-are spelled out above because they are specific to this report.
+Booked vs Done is intentionally non-overlapping: a stage counts in exactly one
+of the two (e.g. Offsite Delayed = booked-not-done; Reschedule Pending and
+Discovery Call No-Show are booked but did NOT happen, so neither is in Done).
+Connected here is an EXCLUDE-list (not bd_metrics.CONNECTED_STAGES, which is a
+curated include-list that silently drops any stage nobody remembered to add,
+e.g. Reschedule Pending/Discovery Call No-Show/Closing Loops previously fell
+through it despite obviously implying a connection). This file intentionally
+does not share Connected/Meeting-Booked/Meeting-Done with utils/bd_metrics —
+only Attempted does — so a change here does not ripple into the daily BD
+emails / BD Trends without a separate, explicit decision to do that too.
 
 Month attribution
 ─────────────────
@@ -59,23 +69,30 @@ META = "https://api.airtable.com/v0/meta/bases"
 # spec was written with an en-dash "–", so all comparisons run through
 # _norm() which folds dash variants and case. Without that these silently
 # match nothing and every count reads 0.
-DCB_STAGES = {
-    "SQL (Sales Qualified Lead)",
+MEETING_BOOKED_STAGES = {
     "Discovery Call Booked",
+    "Reschedule Pending",
     "Offsite Delayed",
     "Discovery Call No-Show",
-    "Reschedule Pending",
-    "Closing Loops - Low Value",
 }
-MEETING_STAGES = {
-    "SQL (Sales Qualified Lead)",
-    "Closing Loops - Low Value",
-    "Offsite Delayed",
+MEETING_DONE_STAGES = {
     "Discovery Call Done - Awaiting Client Inputs",
+    "Closing Loops - Low Value",
+    "Offsite Done (Late Reachout)",
+    "SQL (Sales Qualified Lead)",
+}
+MQL_STAGES = {"MQL (Marketing Qualified Lead)"}
+
+# "Connected" = Attempted minus these (couldn't-connect outcomes only).
+CNC_EXCLUDE_STAGES = {
+    "CNC (Could Not Connect) - 1",
+    "CNC (Could Not Connect) - 2",
+    "CNC (Could Not Connect) - 3",
+    "Followup - CNC",
 }
 
-COLUMNS = ["Call Attempted", "Call Connected", "Discovery Call Booked",
-           "Meeting Happened", "SQL"]
+COLUMNS = ["Call Attempted", "Call Connected", "Meeting Booked",
+           "Meeting Done", "SQL", "MQL"]
 
 
 def _norm(s: str) -> str:
@@ -84,8 +101,10 @@ def _norm(s: str) -> str:
             .replace("–", "-").replace("—", "-").replace("−", "-"))
 
 
-_DCB_N     = {_norm(s) for s in DCB_STAGES}
-_MEETING_N = {_norm(s) for s in MEETING_STAGES}
+_MEETING_BOOKED_N = {_norm(s) for s in MEETING_BOOKED_STAGES}
+_MEETING_DONE_N   = {_norm(s) for s in MEETING_DONE_STAGES}
+_MQL_N            = {_norm(s) for s in MQL_STAGES}
+_CNC_EXCLUDE_N    = {_norm(s) for s in CNC_EXCLUDE_STAGES}
 
 
 def _parse_lc(raw: str) -> str:
@@ -151,12 +170,10 @@ def _build_user_map(kylas) -> dict:
 
 def build_matrix(kylas) -> tuple:
     """Return ({(rep, month): {col: count}}, stats)."""
-    from utils.bd_metrics import (refresh_stage_map, contact_stage,
-                                  CONNECTED_STAGES, ATTEMPTED_EXCLUDE)
+    from utils.bd_metrics import refresh_stage_map, contact_stage, ATTEMPTED_EXCLUDE
     refresh_stage_map(kylas)   # bare option ids must resolve to real labels
 
-    connected_n = {_norm(s) for s in CONNECTED_STAGES}
-    exclude_n   = {_norm(s) for s in ATTEMPTED_EXCLUDE}
+    exclude_n = {_norm(s) for s in ATTEMPTED_EXCLUDE}
 
     user_map = _build_user_map(kylas)
 
@@ -183,16 +200,19 @@ def build_matrix(kylas) -> tuple:
         stage = _norm(contact_stage(ct))
         cell  = grid[(_owner_name(ct, user_map), month)]
 
-        if stage and stage not in exclude_n:
+        attempted = bool(stage) and stage not in exclude_n
+        if attempted:
             cell["Call Attempted"] += 1
-        if stage in connected_n:
+        if attempted and stage not in _CNC_EXCLUDE_N:
             cell["Call Connected"] += 1
-        if stage in _DCB_N:
-            cell["Discovery Call Booked"] += 1
-        if stage in _MEETING_N:
-            cell["Meeting Happened"] += 1
+        if stage in _MEETING_BOOKED_N:
+            cell["Meeting Booked"] += 1
+        if stage in _MEETING_DONE_N:
+            cell["Meeting Done"] += 1
         if stage == _norm("SQL (Sales Qualified Lead)"):
             cell["SQL"] += 1
+        if stage in _MQL_N:
+            cell["MQL"] += 1
 
     stats = {"contacts": len(contacts), "no_last_called": no_lc,
              "counted": len(contacts) - no_lc, "rows": len(grid)}
@@ -219,16 +239,58 @@ def print_table(grid: dict) -> None:
         print()
 
 
+def _patch_existing_columns(base_id: str, headers: dict, table: dict) -> None:
+    """Bring an already-existing table's columns up to the current schema:
+    rename the two pre-2026-08-24 columns to their agreed names (Airtable
+    field renames keep the field's data/position; push_to_airtable() always
+    overwrites values on its next run, so the renamed cells self-correct to
+    the new definitions), and add the MQL column if it's missing."""
+    table_id = table["id"]
+    fields   = {f["name"]: f["id"] for f in table.get("fields", [])}
+
+    renames = [("Discovery Call Booked", "Meeting Booked"),
+               ("Meeting Happened", "Meeting Done")]
+    for old, new in renames:
+        if new in fields:
+            continue
+        if old not in fields:
+            print(f"[matrix]   ! neither {old!r} nor {new!r} found — add {new!r} manually")
+            continue
+        resp = requests.patch(
+            f"{META}/{base_id}/tables/{table_id}/fields/{fields[old]}",
+            json={"name": new}, headers=headers, timeout=30,
+        )
+        if resp.status_code == 200:
+            print(f"[matrix]   renamed {old!r} -> {new!r}")
+            fields[new] = fields.pop(old)
+        else:
+            print(f"[matrix]   ! rename {old!r} -> {new!r} FAILED {resp.status_code}: {resp.text[:200]}")
+
+    if "MQL" not in fields:
+        resp = requests.post(
+            f"{META}/{base_id}/tables/{table_id}/fields",
+            json={"name": "MQL", "type": "number", "options": {"precision": 0}},
+            headers=headers, timeout=30,
+        )
+        if resp.status_code in (200, 201):
+            print("[matrix]   + added MQL column")
+        else:
+            print(f"[matrix]   ! add MQL FAILED {resp.status_code}: {resp.text[:200]}")
+
+
 def ensure_table(base_id: str, headers: dict) -> bool:
     r = requests.get(f"{META}/{base_id}/tables", headers=headers, timeout=30)
     r.raise_for_status()
-    if any(t["name"] == TABLE_NAME for t in r.json().get("tables", [])):
+    existing = next((t for t in r.json().get("tables", []) if t["name"] == TABLE_NAME), None)
+    if existing:
         print(f"[matrix] Airtable table {TABLE_NAME!r} already exists")
+        _patch_existing_columns(base_id, headers, existing)
         return True
     defn = {
         "name": TABLE_NAME,
-        "description": ("Per BD rep, per month funnel counts. Month = month of the "
-                        "contact's Last Called date; contacts with no last-called "
+        "description": ("Per BD rep, per month funnel counts (Attempted / Connected / "
+                        "Meeting Booked / Meeting Done / SQL / MQL). Month = month of "
+                        "the contact's Last Called date; contacts with no last-called "
                         "date are excluded. Snapshot of CURRENT stage, not history "
                         "— see scripts/bd_monthly_matrix.py."),
         "fields": [
