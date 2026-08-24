@@ -1,9 +1,11 @@
 name: Sync - 1:30 PM IST
 
 on:
-  schedule:
-    # 1:30 PM IST = 08:00 UTC, Mon–Fri
-    - cron: '0 8 * * 1-5'
+  # Scheduling is owned by cron-job.org's "BD + Hot Pipeline" job (fires
+  # workflow_dispatch at exactly 08:00 UTC / 1:30 PM IST). No native
+  # `schedule:` here — GitHub's cron drifts late and was firing a SECOND
+  # run (and a second email to the whole team) a few minutes after
+  # cron-job.org's on-time one.
   workflow_dispatch:
     inputs:
       full_sync:

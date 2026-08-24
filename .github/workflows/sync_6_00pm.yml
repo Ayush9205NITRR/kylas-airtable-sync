@@ -1,9 +1,10 @@
 name: Sync - 6:30 PM IST
 
 on:
-  schedule:
-    # 6:30 PM IST = 13:00 UTC, Mon–Fri
-    - cron: '0 13 * * 1-5'
+  # Scheduling is owned by cron-job.org's "BD EOD" job (fires workflow_dispatch
+  # at exactly 13:00 UTC / 6:30 PM IST). No native `schedule:` here — GitHub's
+  # cron drifts late and was firing a SECOND run (and a second EOD email to
+  # the whole team) a few minutes after cron-job.org's on-time one.
   workflow_dispatch:
     inputs:
       full_sync:

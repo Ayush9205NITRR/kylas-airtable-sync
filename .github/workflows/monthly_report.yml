@@ -1,9 +1,11 @@
 name: BD Monthly Report
 
 on:
-  schedule:
-    # 1st of every month, 9:00 AM IST = 03:30 UTC (covers previous month)
-    - cron: '30 3 1 * *'
+  # Scheduling is owned by cron-job.org's "BD Monthly" job (fires
+  # workflow_dispatch at exactly 03:30 UTC / 9:00 AM IST on the 1st). No
+  # native `schedule:` here — GitHub's cron drifts late and was firing a
+  # SECOND run (and a second email to the whole team) after cron-job.org's
+  # on-time one.
   workflow_dispatch:
 
 jobs:
