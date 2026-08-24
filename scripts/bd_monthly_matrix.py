@@ -9,24 +9,30 @@ Columns — canonical funnel definitions agreed 2026-08-24
   Call Attempted — any stage except "Yet to Be Mined"/blank
   Call Connected — Attempted MINUS CNC-1/2/3 and Followup-CNC (i.e. the call
                    was picked up / a person was reached, whatever happened next)
-  Meeting Booked — Discovery Call Booked, Reschedule Pending,
-                   Discovery Call No-Show (a discovery-call meeting is/was on
-                   the calendar, whether or not it happened)
-  Meeting Done   — Discovery Call Done - Awaiting Client Inputs,
-                   Closing Loops - Low Value,
-                   SQL (Sales Qualified Lead) (the meeting actually took place)
+  Meeting Booked — CUMULATIVE: every meeting ever booked, whether still
+                   pending or already resolved. Discovery Call Booked,
+                   Reschedule Pending, Discovery Call No-Show (still pending)
+                   PLUS Discovery Call Done - Awaiting Client Inputs,
+                   Closing Loops - Low Value, Offsite Done (Late Reachout),
+                   SQL (Sales Qualified Lead) (resolved — a resolved meeting
+                   was, by definition, booked at some point too)
+  Meeting Done   — the subset of Booked that specifically COMPLETED as a
+                   meeting: Discovery Call Done - Awaiting Client Inputs,
+                   Closing Loops - Low Value, SQL (Sales Qualified Lead)
   SQL            — SQL (Sales Qualified Lead) only
   MQL            — MQL (Marketing Qualified Lead) only
 
-"Offsite Delayed" AND "Offsite Done (Late Reachout)" are deliberately in
-NEITHER bucket (re-calibrated 2026-08-24): both track a post-sale offsite
-ENGAGEMENT slipping/closing, not a discovery-call-style sales meeting being
-scheduled/held — a different kind of event than what this funnel measures.
-They still count toward Attempted/Connected.
+Booked is deliberately a SUPERSET of Done (re-calibrated 2026-08-24) — every
+stage in Meeting Done also counts in Meeting Booked, since completing a
+meeting implies it was booked. Reschedule Pending and Discovery Call No-Show
+count only in Booked (booked but did NOT happen).
 
-Booked vs Done is intentionally non-overlapping: a stage counts in exactly one
-of the two (Reschedule Pending and Discovery Call No-Show are booked but did
-NOT happen, so neither is in Done).
+"Offsite Delayed" counts in NEITHER bucket: it tracks a post-sale offsite
+ENGAGEMENT still slipping, not a discovery-call-style meeting on the
+calendar — a different kind of event. "Offsite Done (Late Reachout)" DOES
+count in Meeting Booked (a late reachout still means an engagement was
+booked) but not in Meeting Done (it's an execution wrap-up, not a clean
+meeting completion). Both still count toward Attempted/Connected regardless.
 Connected here is an EXCLUDE-list (not bd_metrics.CONNECTED_STAGES, which is a
 curated include-list that silently drops any stage nobody remembered to add,
 e.g. Reschedule Pending/Discovery Call No-Show/Closing Loops previously fell
@@ -75,16 +81,19 @@ META = "https://api.airtable.com/v0/meta/bases"
 # spec was written with an en-dash "–", so all comparisons run through
 # _norm() which folds dash variants and case. Without that these silently
 # match nothing and every count reads 0.
-MEETING_BOOKED_STAGES = {
-    "Discovery Call Booked",
-    "Reschedule Pending",
-    "Discovery Call No-Show",
-}
 MEETING_DONE_STAGES = {
     "Discovery Call Done - Awaiting Client Inputs",
     "Closing Loops - Low Value",
     "SQL (Sales Qualified Lead)",
 }
+# Booked = still-pending stages + everything in Done (a resolved meeting was
+# booked too, by definition) + Offsite Done (Late Reachout) specifically
+# (counts as booked, but deliberately excluded from Done — see docstring).
+MEETING_BOOKED_STAGES = {
+    "Discovery Call Booked",
+    "Reschedule Pending",
+    "Discovery Call No-Show",
+} | MEETING_DONE_STAGES | {"Offsite Done (Late Reachout)"}
 MQL_STAGES = {"MQL (Marketing Qualified Lead)"}
 
 # "Connected" = Attempted minus these (couldn't-connect outcomes only).
