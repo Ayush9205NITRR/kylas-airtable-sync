@@ -349,6 +349,8 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
             fields[fm["needsReassign"]] = e["needs_reassign"]
         if fm.get("claimedBy"):
             fields[fm["claimedBy"]] = e.get("claimed_by", "")
+        if fm.get("accountStatus"):
+            fields[fm["accountStatus"]] = e["status"]
         if fm.get("statusOfReachout"):
             sor = e.get("status_of_reachout", "Stale")
             lc  = e.get("last_called", "")
