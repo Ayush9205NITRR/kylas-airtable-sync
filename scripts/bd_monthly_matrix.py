@@ -13,17 +13,16 @@ Columns — canonical funnel definitions agreed 2026-08-24
                    Discovery Call No-Show (a discovery-call meeting is/was on
                    the calendar, whether or not it happened)
   Meeting Done   — Discovery Call Done - Awaiting Client Inputs,
-                   Closing Loops - Low Value, Offsite Done (Late Reachout),
+                   Closing Loops - Low Value,
                    SQL (Sales Qualified Lead) (the meeting actually took place)
   SQL            — SQL (Sales Qualified Lead) only
   MQL            — MQL (Marketing Qualified Lead) only
 
-"Offsite Delayed" is deliberately in NEITHER bucket (re-calibrated 2026-08-24):
-it tracks an offsite ENGAGEMENT slipping post-sale, not a discovery-call-style
-sales meeting being scheduled — a different kind of event than what this
-funnel measures. It still counts toward Attempted/Connected. Its counterpart
-"Offsite Done (Late Reachout)" is left in Meeting Done for now (open question,
-not yet decided: same execution-vs-meeting argument may apply to it too).
+"Offsite Delayed" AND "Offsite Done (Late Reachout)" are deliberately in
+NEITHER bucket (re-calibrated 2026-08-24): both track a post-sale offsite
+ENGAGEMENT slipping/closing, not a discovery-call-style sales meeting being
+scheduled/held — a different kind of event than what this funnel measures.
+They still count toward Attempted/Connected.
 
 Booked vs Done is intentionally non-overlapping: a stage counts in exactly one
 of the two (Reschedule Pending and Discovery Call No-Show are booked but did
@@ -84,7 +83,6 @@ MEETING_BOOKED_STAGES = {
 MEETING_DONE_STAGES = {
     "Discovery Call Done - Awaiting Client Inputs",
     "Closing Loops - Low Value",
-    "Offsite Done (Late Reachout)",
     "SQL (Sales Qualified Lead)",
 }
 MQL_STAGES = {"MQL (Marketing Qualified Lead)"}
