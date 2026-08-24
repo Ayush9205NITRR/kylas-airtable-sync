@@ -1,0 +1,47 @@
+name: BD Trends Rollup
+
+# Aggregates "BD Daily Stats" (Slot=full_day) into the persistent "BD Trends"
+# table — one row per (grain x period x owner) for Day/Week/Month/Quarter —
+# feeding an Airtable Interface dashboard. See scripts/build_bd_trends.py.
+
+on:
+  schedule:
+    # 2:00 PM UTC = 7:30 PM IST, Mon-Sat — after the EOD sync (6:30 PM IST)
+    # and the daily account-status job (7:00 PM IST).
+    - cron: '0 14 * * 1-6'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'setup = create/patch the BD Trends table schema | run = aggregate BD Daily Stats into BD Trends'
+        required: false
+        type: choice
+        default: run
+        options:
+          - setup
+          - run
+
+jobs:
+  bd-trends:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup schema / run rollup
+        run: |
+          if [ "$MODE" = "setup" ]; then
+            python scripts/setup_bd_trends.py
+          else
+            python scripts/build_bd_trends.py
+          fi
+        env:
+          MODE:             ${{ github.event.inputs.mode }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
