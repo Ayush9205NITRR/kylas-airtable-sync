@@ -9,18 +9,25 @@ Columns — canonical funnel definitions agreed 2026-08-24
   Call Attempted — any stage except "Yet to Be Mined"/blank
   Call Connected — Attempted MINUS CNC-1/2/3 and Followup-CNC (i.e. the call
                    was picked up / a person was reached, whatever happened next)
-  Meeting Booked — Discovery Call Booked, Reschedule Pending, Offsite Delayed,
-                   Discovery Call No-Show (a meeting is/was on the calendar,
-                   whether or not it has happened yet)
+  Meeting Booked — Discovery Call Booked, Reschedule Pending,
+                   Discovery Call No-Show (a discovery-call meeting is/was on
+                   the calendar, whether or not it happened)
   Meeting Done   — Discovery Call Done - Awaiting Client Inputs,
                    Closing Loops - Low Value, Offsite Done (Late Reachout),
                    SQL (Sales Qualified Lead) (the meeting actually took place)
   SQL            — SQL (Sales Qualified Lead) only
   MQL            — MQL (Marketing Qualified Lead) only
 
+"Offsite Delayed" is deliberately in NEITHER bucket (re-calibrated 2026-08-24):
+it tracks an offsite ENGAGEMENT slipping post-sale, not a discovery-call-style
+sales meeting being scheduled — a different kind of event than what this
+funnel measures. It still counts toward Attempted/Connected. Its counterpart
+"Offsite Done (Late Reachout)" is left in Meeting Done for now (open question,
+not yet decided: same execution-vs-meeting argument may apply to it too).
+
 Booked vs Done is intentionally non-overlapping: a stage counts in exactly one
-of the two (e.g. Offsite Delayed = booked-not-done; Reschedule Pending and
-Discovery Call No-Show are booked but did NOT happen, so neither is in Done).
+of the two (Reschedule Pending and Discovery Call No-Show are booked but did
+NOT happen, so neither is in Done).
 Connected here is an EXCLUDE-list (not bd_metrics.CONNECTED_STAGES, which is a
 curated include-list that silently drops any stage nobody remembered to add,
 e.g. Reschedule Pending/Discovery Call No-Show/Closing Loops previously fell
@@ -72,7 +79,6 @@ META = "https://api.airtable.com/v0/meta/bases"
 MEETING_BOOKED_STAGES = {
     "Discovery Call Booked",
     "Reschedule Pending",
-    "Offsite Delayed",
     "Discovery Call No-Show",
 }
 MEETING_DONE_STAGES = {
