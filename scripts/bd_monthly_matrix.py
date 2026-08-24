@@ -404,6 +404,39 @@ def diagnose(kylas) -> None:
     print("[diag] in the static map; the live picklist says 'Disqualified - Wrong POC'.")
     print("[diag] Any historical SQL figure built before that correction was inflated by it.")
 
+    print("\n[diag] Meeting Booked / Meeting Done — exact stage behind each rep's count")
+    print("[diag] (CURRENT stage, all months combined; no-Last-Called-date contacts excluded)")
+    user_map = _build_user_map(kylas)
+    booked_rs, done_rs = Counter(), Counter()
+    for ct in contacts:
+        cf = ct.get("customFieldValues") or {}
+        if not _parse_lc(cf.get("cfLastCalledAt", "")):
+            continue
+        stage_raw = contact_stage(ct)
+        stage_n   = _norm(stage_raw)
+        rep       = _owner_name(ct, user_map)
+        if stage_n in _MEETING_BOOKED_N:
+            booked_rs[(rep, stage_raw)] += 1
+        if stage_n in _MEETING_DONE_N:
+            done_rs[(rep, stage_raw)] += 1
+
+    rep_totals = Counter()
+    for (r, _), n in booked_rs.items():
+        rep_totals[r] += n
+    for (r, _), n in done_rs.items():
+        rep_totals[r] += n
+
+    for rep, _ in rep_totals.most_common():
+        b_total = sum(n for (r, s), n in booked_rs.items() if r == rep)
+        d_total = sum(n for (r, s), n in done_rs.items() if r == rep)
+        print(f"\n    {rep}  (Booked={b_total}  Done={d_total})")
+        for (r, s), n in sorted(booked_rs.items(), key=lambda x: -x[1]):
+            if r == rep:
+                print(f"      BOOKED  {s:<46}{n:>5}")
+        for (r, s), n in sorted(done_rs.items(), key=lambda x: -x[1]):
+            if r == rep:
+                print(f"      DONE    {s:<46}{n:>5}")
+
 
 def main():
     ap = argparse.ArgumentParser(description="Build the BD monthly matrix in Airtable")
