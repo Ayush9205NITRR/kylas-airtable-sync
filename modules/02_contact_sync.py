@@ -16,31 +16,6 @@ CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 
 _FM = None
 
-_PIPELINE_STAGE = {
-    2862826: "Yet to Be Mined",
-    2862827: "CNC (Could Not Connect) - 1",
-    2862828: "MQL (Marketing Qualified Lead)",
-    2862829: "Activation",
-    2862831: "Not Interested",
-    2864173: "Yet to Be Mined",
-    2864175: "Invalid Contact",
-    2867816: "CNC (Could Not Connect) - 2",
-    2867817: "MQL (Marketing Qualified Lead)",
-    2870484: "SQL (Sales Qualified Lead)",
-    2870485: "Not a Decision Maker (NDM)",
-    2873316: "Follow-up (1)",
-    2873317: "Follow-up (2)",
-    2873318: "Follow-up (3)",
-    2873321: "POC - Organisation - Changed",
-    2873487: "Followup - CNC",
-    2909379: "Discovery Call Booked",
-    2909380: "Reschedule Pending",
-    2909381: "Closing Loops - Low Value",
-    2909382: "Discovery Call No-Show",
-    2909383: "Offsite Delayed",
-    2910918: "Discovery Call Done - Awaiting Client Inputs",
-}
-
 
 def _fm():
     global _FM
@@ -88,13 +63,11 @@ def _map(raw: dict, user_map: dict = None, company_id_map: dict = None) -> dict:
     phones = raw.get("phoneNumbers") or []
     cf     = raw.get("customFieldValues") or {}
 
-    psd = cf.get("cfPipelineStageBd")
-    if isinstance(psd, dict):
-        pipeline_stage = psd.get("name", "")
-    elif psd is not None:
-        pipeline_stage = _PIPELINE_STAGE.get(int(psd), str(psd))
-    else:
-        pipeline_stage = ""
+    # Single source of truth for stage-id -> label (bd_metrics._PIPELINE_STAGE,
+    # kept correct by refresh_stage_map() in run_sync.py). A local copy here
+    # previously went stale and silently mis-resolved SQL/MQL for weeks — see
+    # the "Pipeline-stage map refresh" comment in run_sync.py.
+    pipeline_stage = _contact_stage(raw)
 
     src    = raw.get("source")
     source = src.get("name", "") if isinstance(src, dict) else (str(src) if src else "")

@@ -83,6 +83,18 @@ def main():
     if args.test:
         print("[TEST MODE] Only first 5 records per module will be processed.\n")
 
+    # Pipeline-stage map refresh: Kylas re-labels/repurposes option ids over
+    # time (e.g. id 2870484 used to mean SQL, now means "Disqualified - Wrong
+    # POC"; id 2862830, the CURRENT SQL id, wasn't in the static map at all).
+    # Module 2 (BD Daily Stats -> BD Trends -> daily/weekly/monthly emails)
+    # was resolving stages from the static map only, so it silently miscounted
+    # SQL/MQL/Attempted for every contact sitting on a re-labelled id. Refresh
+    # ONCE here, before Module 2, so bd_metrics.contact_stage() — used by
+    # every module below — resolves against Kylas's live picklist.
+    from utils.bd_metrics import refresh_stage_map
+    n_corrected = refresh_stage_map(KylasClient())
+    print(f"[run_sync] Pipeline-stage map refreshed from Kylas ({n_corrected} correction/addition(s))\n")
+
     stats = {}
 
     print("=" * 40 + "\nMODULE 1: Companies\n" + "=" * 40)
