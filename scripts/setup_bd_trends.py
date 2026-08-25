@@ -10,6 +10,10 @@ rows are pruned (see build_bd_trends.py).
 Safe to re-run: creates the table if missing, otherwise adds any fields that
 aren't there yet (existing fields/rows are left untouched).
 
+build_bd_trends.py imports ensure_table() from here so the nightly rollup
+self-heals instead of dying with a bare Airtable 403 when the table is
+missing — running this script by hand is no longer a prerequisite.
+
 Run:  python scripts/setup_bd_trends.py
 Env:  AIRTABLE_PAT, AIRTABLE_BASE_ID
 """
@@ -21,10 +25,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PAT     = os.environ["AIRTABLE_PAT"]
-BASE_ID = os.environ["AIRTABLE_BASE_ID"]
-HEADERS = {"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"}
-META    = "https://api.airtable.com/v0/meta/bases"
+META = "https://api.airtable.com/v0/meta/bases"
 
 TABLE_NAME = "BD Trends"
 
@@ -61,8 +62,19 @@ BD_TRENDS_TABLE = {
 }
 
 
-def get_tables(base_id):
-    r = requests.get(f"{META}/{base_id}/tables", headers=HEADERS, timeout=30)
+# Env is read lazily (not at import time) so build_bd_trends.py can import
+# ensure_table() before it has called load_dotenv() itself.
+def _headers() -> dict:
+    return {"Authorization": f"Bearer {os.environ['AIRTABLE_PAT']}",
+            "Content-Type": "application/json"}
+
+
+def _base_id() -> str:
+    return os.environ["AIRTABLE_BASE_ID"]
+
+
+def get_tables(base_id, headers=None):
+    r = requests.get(f"{META}/{base_id}/tables", headers=headers or _headers(), timeout=30)
     r.raise_for_status()
     return {t["name"]: t for t in r.json().get("tables", [])}
 
@@ -71,11 +83,11 @@ def field_names(table):
     return {f["name"] for f in table.get("fields", [])}
 
 
-def add_field(base_id, table_id, field):
+def add_field(base_id, table_id, field, headers=None):
     time.sleep(0.3)
     r = requests.post(
         f"{META}/{base_id}/tables/{table_id}/fields",
-        json=field, headers=HEADERS, timeout=30,
+        json=field, headers=headers or _headers(), timeout=30,
     )
     name = field["name"]
     if r.status_code in (200, 201):
@@ -86,18 +98,18 @@ def add_field(base_id, table_id, field):
         print(f"    ! {name} FAILED {r.status_code}: {r.text[:150]}")
 
 
-def add_missing(base_id, table, new_fields):
+def add_missing(base_id, table, new_fields, headers=None):
     existing = field_names(table)
     for f in new_fields:
         if f["name"] not in existing:
-            add_field(base_id, table["id"], f)
+            add_field(base_id, table["id"], f, headers=headers)
         else:
             print(f"    ~ {f['name']} (already exists)")
 
 
-def create_table(base_id, table_def):
+def create_table(base_id, table_def, headers=None):
     r = requests.post(f"{META}/{base_id}/tables", json=table_def,
-                      headers=HEADERS, timeout=30)
+                      headers=headers or _headers(), timeout=30)
     if r.status_code in (200, 201):
         print(f"    + Created: {table_def['name']}")
         return r.json()
@@ -105,18 +117,49 @@ def create_table(base_id, table_def):
     return None
 
 
+def ensure_table(base_id: str = None, headers: dict = None, prefix: str = "   ") -> bool:
+    """Make sure "BD Trends" exists (creating it if not) and has every column.
+
+    Returns True when the table can be expected to exist, False only when it is
+    genuinely missing AND could not be created — the one case where the caller
+    must not go on to hit the data API (it would just 403).
+
+    A PAT that lacks the schema.bases:* scopes can still read and write records,
+    so an unreachable metadata API is a warning, not a failure: we return True
+    and let the data API be the judge.
+    """
+    base_id = base_id or _base_id()
+    headers = headers or _headers()
+    try:
+        tables = get_tables(base_id, headers)
+    except requests.exceptions.RequestException as exc:
+        print(f"{prefix} WARNING: could not read the base schema ({exc}); "
+              f"assuming {TABLE_NAME!r} exists. If it does not, grant the PAT "
+              f"the 'schema.bases:read' + 'schema.bases:write' scopes, or run "
+              f"scripts/setup_bd_trends.py once by hand.")
+        return True
+
+    if TABLE_NAME in tables:
+        print(f"{prefix} {TABLE_NAME!r} exists — checking for missing fields")
+        add_missing(base_id, tables[TABLE_NAME],
+                    [f for f in BD_TRENDS_TABLE["fields"] if f["name"] != "Key"],
+                    headers=headers)
+        return True
+
+    print(f"{prefix} {TABLE_NAME!r} not found in base {base_id} — creating it")
+    if create_table(base_id, BD_TRENDS_TABLE, headers=headers):
+        return True
+
+    print(f"{prefix} ERROR: {TABLE_NAME!r} is missing and could not be created. "
+          f"Give the PAT the 'schema.bases:write' scope, or add the table by "
+          f"hand and re-run.")
+    return False
+
+
 def main():
     print("=== BD Trends Schema Setup ===\n")
-    tables = get_tables(BASE_ID)
-
     print(f"[{TABLE_NAME}]")
-    if TABLE_NAME in tables:
-        print("    ~ Already exists — checking for missing fields")
-        add_missing(BASE_ID, tables[TABLE_NAME],
-                    [f for f in BD_TRENDS_TABLE["fields"] if f["name"] != "Key"])
-    else:
-        create_table(BASE_ID, BD_TRENDS_TABLE)
-
+    ensure_table(prefix="   ")
     print("\n=== Done ===")
 
 

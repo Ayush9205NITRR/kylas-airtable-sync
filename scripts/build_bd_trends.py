@@ -44,6 +44,7 @@ from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from scripts.setup_bd_trends import ensure_table
 from utils.airtable_client import AirtableClient
 from utils.bd_metrics import BD_KEYS
 
@@ -154,7 +155,18 @@ def aggregate(rows: list) -> tuple:
 # ──────────────────────────────────────────────────────────────────────────
 
 def push_to_airtable(agg: dict) -> dict:
-    """Upsert every (grain, period, owner) row. Returns {grain: {"created": n, "updated": n}}."""
+    """Upsert every (grain, period, owner) row.
+
+    Returns (tally, tbl) with tally = {grain: {"created": n, "updated": n}}, or
+    (None, None) if the destination table is missing and could not be created.
+    """
+    # The data API answers a missing table with a bare 403
+    # INVALID_PERMISSIONS_OR_MODEL_NOT_FOUND, which reads like a token problem
+    # and isn't. Create/patch the schema first so a fresh base (or a base whose
+    # setup step was never dispatched) just works.
+    if not ensure_table(prefix="[bd-trends]"):
+        return None, None
+
     tbl = AirtableClient(DST_TABLE)
     n = tbl.build_cache("Key")
     print(f"[bd-trends] {n} existing row(s) in {DST_TABLE!r}")
@@ -217,6 +229,9 @@ def main():
         print(f"[bd-trends]   {grain:<7} {len(agg[grain])} period x owner row(s) to upsert")
 
     tally, tbl = push_to_airtable(agg)
+    if tally is None:
+        print(f"[bd-trends] ABORTED: {DST_TABLE!r} is not available in the base")
+        sys.exit(1)
     pruned = prune_old_day_rows(tbl)
 
     print("\n[bd-trends] === Summary ===")

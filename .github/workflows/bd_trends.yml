@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'setup = create/patch the BD Trends table schema | run = aggregate BD Daily Stats into BD Trends'
+        description: 'setup = create/patch the BD Trends table schema only | run = aggregate BD Daily Stats into BD Trends (also creates/patches the schema first)'
         required: false
         type: choice
         default: run
@@ -42,6 +42,6 @@ jobs:
             python scripts/build_bd_trends.py
           fi
         env:
-          MODE:             ${{ github.event.inputs.mode }}
+          MODE:             ${{ github.event.inputs.mode || 'run' }}
           AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}

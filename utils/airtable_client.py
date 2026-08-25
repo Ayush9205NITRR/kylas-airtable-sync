@@ -7,10 +7,21 @@ import requests
 from pyairtable import Api
 
 
+class AirtableTableNotFound(RuntimeError):
+    """Airtable answered 403 INVALID_PERMISSIONS_OR_MODEL_NOT_FOUND.
+
+    Despite the status code this is far more often a missing/renamed table than
+    a token problem: Airtable deliberately does not distinguish "you may not see
+    this" from "this does not exist".
+    """
+
+
 class AirtableClient:
     def __init__(self, table_name: str, base_id: str = None):
         api = Api(os.environ["AIRTABLE_PAT"])
         base = base_id or os.environ["AIRTABLE_BASE_ID"]
+        self.table_name = table_name
+        self.base_id = base
         self.table = api.table(base, table_name)
         self._cache: Dict[str, dict] = {}
         self._creates: List[Tuple[str, dict]] = []
@@ -29,6 +40,15 @@ class AirtableClient:
                 return len(self._cache)
             except requests.exceptions.HTTPError as exc:
                 err = str(exc)
+                if "INVALID_PERMISSIONS_OR_MODEL_NOT_FOUND" in err:
+                    raise AirtableTableNotFound(
+                        f"Airtable rejected reading table {self.table_name!r} in base "
+                        f"{self.base_id} with 403 INVALID_PERMISSIONS_OR_MODEL_NOT_FOUND. "
+                        f"Usually the table does not exist under that exact name (check "
+                        f"spelling/case, or run the table's setup script); otherwise the "
+                        f"PAT is missing 'data.records:read' or this base is not in its "
+                        f"access list."
+                    ) from exc
                 if any(code in err for code in ("406", "429", "503")):
                     wait = 2 ** attempt
                     print(f"[AirtableClient] transient error on build_cache (attempt {attempt+1}/4), retrying in {wait}s...")
