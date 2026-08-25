@@ -82,6 +82,50 @@ def test_request_gives_up_after_max_retries():
     print("PASS _request returns final 429 after exhausting retries")
 
 
+def test_request_retries_on_connection_error():
+    """A dropped connection (RemoteDisconnected etc.) raises before any
+    Response exists — 2026-08-25's Sync-1:30PM failure was exactly this,
+    uncaught, aborting the whole run on the very first API call."""
+    import requests
+    client = KylasClient()
+    client._delay = 0
+    calls = {"n": 0}
+
+    def fake_request(method, url, **kw):
+        calls["n"] += 1
+        if calls["n"] < 3:
+            raise requests.exceptions.ConnectionError("Connection aborted.")
+        return _Resp(200)
+
+    client.session.request = fake_request
+    with mock.patch("utils.kylas_client.time.sleep"):
+        r = client._request("GET", "companies")
+    assert r.status_code == 200 and calls["n"] == 3, (r.status_code, calls["n"])
+    print("PASS _request retries on connection error then succeeds")
+
+
+def test_request_reraises_connection_error_after_max_retries():
+    import requests
+    client = KylasClient()
+    client._delay = 0
+    client._max_retries = 2
+    calls = {"n": 0}
+
+    def fake_request(method, url, **kw):
+        calls["n"] += 1
+        raise requests.exceptions.ConnectionError("Connection aborted.")
+
+    client.session.request = fake_request
+    with mock.patch("utils.kylas_client.time.sleep"):
+        try:
+            client._request("GET", "companies")
+            raised = False
+        except requests.exceptions.ConnectionError:
+            raised = True
+    assert raised and calls["n"] == 3, (raised, calls["n"])  # 1 + 2 retries
+    print("PASS _request re-raises connection error after exhausting retries")
+
+
 def test_update_company_fields_cleans_body():
     client = KylasClient()
     client.update_company_owner = lambda *a, **k: True  # re-assert is a no-op in tests
@@ -396,6 +440,8 @@ if __name__ == "__main__":
     test_clean_for_put_strips_readonly()
     test_request_retries_on_429()
     test_request_gives_up_after_max_retries()
+    test_request_retries_on_connection_error()
+    test_request_reraises_connection_error_after_max_retries()
     test_update_company_fields_cleans_body()
     test_ownerless_company_is_not_written()
     test_update_contact_fields_coerces_company_id()

@@ -68,20 +68,41 @@ class KylasClient:
             time.sleep(wait)
 
     def _request(self, method: str, path: str, **kwargs) -> requests.Response:
-        """One Kylas HTTP call with pacing + automatic 429 (rate-limit) backoff.
+        """One Kylas HTTP call with pacing + automatic retry on 429 (rate
+        limit) and on transient connection failures.
 
         `path` is relative to KYLAS_BASE. On HTTP 429 it waits — honoring the
         Retry-After header when present, otherwise exponential backoff — and
         retries up to self._max_retries times, then returns the final response.
         Callers keep using r.raise_for_status()/r.ok exactly as before, so a
         transient rate limit no longer loses an update or aborts a whole sync.
+
+        A connection-level failure (Kylas drops the TCP connection before
+        responding, a timeout, a truncated chunked read) raises before any
+        Response exists, so it can't be inspected for a status code the way
+        429 is — it gets the same backoff-and-retry treatment on the way in,
+        and only re-raises once self._max_retries is exhausted. Both failure
+        kinds share one attempt budget/counter, so a run can't be starved by
+        alternating between the two beyond self._max_retries total tries.
         """
         kwargs.setdefault("timeout", 30)
         url = f"{KYLAS_BASE}/{path}"
         attempt = 0
         while True:
             self._pace()
-            r = self.session.request(method, url, **kwargs)
+            try:
+                r = self.session.request(method, url, **kwargs)
+            except (requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                    requests.exceptions.ChunkedEncodingError) as exc:
+                if attempt >= self._max_retries:
+                    raise
+                wait = min(2 ** attempt, 30)
+                print(f"  [Kylas] connection error on {method} {path} — "
+                      f"retry {attempt + 1}/{self._max_retries} in {wait:.0f}s ({exc})")
+                time.sleep(wait)
+                attempt += 1
+                continue
             if r.status_code != 429 or attempt >= self._max_retries:
                 return r
             ra = r.headers.get("Retry-After")
