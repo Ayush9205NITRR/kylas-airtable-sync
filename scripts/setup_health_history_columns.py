@@ -31,6 +31,10 @@ HISTORY_COLUMNS = [
     ("Previous Health",     {"type": "singleLineText"}),
     ("Health Last Changed", {"type": "singleLineText"}),
     ("Health Change Count", {"type": "number", "options": {"precision": 0}}),
+    # These two survive month boundaries, unlike baseline/count above, and are
+    # what answer "this account has not moved in three months".
+    ("Status Since",        {"type": "singleLineText"}),
+    ("Months Unchanged",    {"type": "number", "options": {"precision": 0}}),
 ]
 
 # Written by account health already, but missing from one or both bases.

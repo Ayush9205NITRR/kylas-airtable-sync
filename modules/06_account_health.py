@@ -416,7 +416,9 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
         for _fm_key, _stat_key in (("healthBaseline",    "health_baseline"),
                                    ("healthPrevious",    "health_previous"),
                                    ("healthLastChanged", "health_last_changed"),
-                                   ("healthChangeCount", "health_change_count")):
+                                   ("healthChangeCount", "health_change_count"),
+                                   ("healthStatusSince",  "health_status_since"),
+                                   ("healthMonthsUnchanged", "health_months_unchanged")):
             _at = fm.get(_fm_key)
             if _at and _stat_key in e:
                 fields[_at] = e[_stat_key]
@@ -1008,6 +1010,11 @@ def run(kylas=None, send_email: bool = True) -> dict:
             _e["health_previous"]     = _s.get("prev", "")
             _e["health_last_changed"] = _s.get("changed", "")
             _e["health_change_count"] = int(_s.get("count", 0))
+            # Survive month boundaries — these answer "stable for N months",
+            # which the month-scoped count above deliberately cannot.
+            _e["health_status_since"]     = _s.get("status_since", "")
+            _e["health_months_unchanged"] = _hh.months_unchanged(
+                _s, date.today().isoformat())
         if not _prev_snap:
             print(f"[Account Health] History: BASELINE established for "
                   f"{_hstats['new']} accounts (first run — no changes to report)")
@@ -1024,6 +1031,8 @@ def run(kylas=None, send_email: bool = True) -> dict:
             _e.setdefault("health_previous", "")
             _e.setdefault("health_last_changed", "")
             _e.setdefault("health_change_count", 0)
+            _e.setdefault("health_status_since", "")
+            _e.setdefault("health_months_unchanged", 0)
 
     counts = {s: sum(1 for e in health.values() if e["status"] == s)
               for s in ("Fresh", "Active", "MQL - Action Needed",

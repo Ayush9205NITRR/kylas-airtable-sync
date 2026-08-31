@@ -25,7 +25,9 @@ def test_first_run_baselines_everything_and_counts_nothing():
     snap, stats = hh.apply({}, _health(a="Active", b="MQL - Action Needed"), "2026-09-01")
     assert stats["new"] == 2 and stats["changed"] == 0
     assert snap["a"] == {"status": "Active", "baseline": "Active", "prev": "",
-                         "changed": "", "count": 0, "month": "2026-09", "v": V}
+                         "changed": "", "count": 0, "month": "2026-09",
+                         "status_since": "2026-09-01",
+                         "months": {"2026-09": "Active"}, "v": V}
 
 
 def test_unchanged_account_stays_at_zero():
@@ -114,3 +116,70 @@ def test_missing_or_corrupt_file_reads_as_first_run(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text("{not json")
     assert hh.load(str(bad)) == {}
+
+
+# ── status_since / months_unchanged / month series ───────────────────────────
+
+def test_status_since_survives_a_month_rollover():
+    """The whole point: baseline and count reset monthly, this must not."""
+    snap, _ = hh.apply({}, _health(a="Active"), "2026-09-05")
+    snap, _ = hh.apply(snap, _health(a="Active"), "2026-10-01")
+    snap, _ = hh.apply(snap, _health(a="Active"), "2026-11-01")
+    e = snap["a"]
+    assert e["status_since"] == "2026-09-05"
+    assert e["count"] == 0                     # month-scoped, reset
+    assert hh.months_unchanged(e, "2026-11-01") == 2
+
+
+def test_status_since_resets_only_on_a_real_change():
+    snap, _ = hh.apply({}, _health(a="Active"), "2026-09-01")
+    snap, _ = hh.apply(snap, _health(a="SQL"), "2026-10-10")
+    e = snap["a"]
+    assert e["status_since"] == "2026-10-10"
+    assert hh.months_unchanged(e, "2026-10-20") == 0, "changed this month"
+
+
+def test_flip_and_flip_back_is_not_counted_as_stable():
+    """baseline == status would call this unchanged; status_since must not."""
+    snap, _ = hh.apply({}, _health(a="Active"), "2026-09-01")
+    snap, _ = hh.apply(snap, _health(a="SQL"), "2026-09-10")
+    snap, _ = hh.apply(snap, _health(a="Active"), "2026-09-20")
+    e = snap["a"]
+    assert e["baseline"] == "Active" and e["status"] == "Active"
+    assert e["count"] == 2
+    assert e["status_since"] == "2026-09-20"
+    assert hh.months_unchanged(e, "2026-09-30") == 0
+
+
+def test_months_map_records_each_months_closing_status():
+    snap, _ = hh.apply({}, _health(a="Active"), "2026-09-01")
+    snap, _ = hh.apply(snap, _health(a="MQL - Action Needed"), "2026-09-28")
+    snap, _ = hh.apply(snap, _health(a="SQL"), "2026-10-15")
+    snap, _ = hh.apply(snap, _health(a="SQL"), "2026-11-02")
+    assert snap["a"]["months"] == {"2026-09": "MQL - Action Needed",
+                                   "2026-10": "SQL",
+                                   "2026-11": "SQL"}
+
+
+def test_months_map_is_trimmed_to_the_cap():
+    snap = {}
+    for i in range(hh.MONTHS_KEPT + 6):
+        y, m = 2026 + i // 12, i % 12 + 1
+        snap, _ = hh.apply(snap, _health(a="Active"), f"{y}-{m:02d}-01")
+    assert len(snap["a"]["months"]) == hh.MONTHS_KEPT
+
+
+def test_existing_snapshot_without_the_new_keys_is_adopted_not_reset():
+    """The baseline already committed predates these fields."""
+    old = {"a": {"status": "Active", "baseline": "Active", "prev": "",
+                 "changed": "", "count": 0, "month": "2026-08", "v": V}}
+    snap, stats = hh.apply(old, _health(a="Active"), "2026-09-01")
+    e = snap["a"]
+    assert stats["rebaselined"] == 0, "must not re-baseline just to add fields"
+    assert e["status_since"] == "2026-09-01"
+    assert e["months"] == {"2026-09": "Active"}
+
+
+def test_months_unchanged_is_zero_without_a_date():
+    assert hh.months_unchanged({}, "2026-09-01") == 0
+    assert hh.months_unchanged({"status_since": ""}, "2026-09-01") == 0
