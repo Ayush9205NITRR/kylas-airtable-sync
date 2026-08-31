@@ -1,0 +1,41 @@
+name: Setup - Account Health history columns (run once)
+
+# Creates the Airtable columns that modules/06_account_health.py writes for
+# health-change tracking. AirtableClient silently skips fields that do not
+# exist, so until this runs the history is computed and then discarded.
+# Idempotent — existing columns and their data are left untouched.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report what would be created, change nothing'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create the columns
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          python scripts/setup_health_history_columns.py $ARGS
+        env:
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}

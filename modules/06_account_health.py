@@ -403,6 +403,17 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
         _la = e.get("last_activity") or e["last_called"]
         if fm.get("lastCalledAtContacts") and _la:
             fields[fm["lastCalledAtContacts"]] = _la
+        # Account Health history mirror — the record itself is the git snapshot;
+        # these exist so reallocation can be filtered in Airtable. Baseline and
+        # count are scoped to the CURRENT month and reset at the boundary.
+        for _fm_key, _stat_key in (("healthBaseline",    "health_baseline"),
+                                   ("healthPrevious",    "health_previous"),
+                                   ("healthLastChanged", "health_last_changed"),
+                                   ("healthChangeCount", "health_change_count")):
+            _at = fm.get(_fm_key)
+            if _at and _stat_key in e:
+                fields[_at] = e[_stat_key]
+
         if fm.get("needsReassign"):
             fields[fm["needsReassign"]] = e["needs_reassign"]
         if fm.get("claimedBy"):
@@ -946,6 +957,38 @@ def run(kylas=None, send_email: bool = True) -> dict:
         print(f"[Account Health] WARNING: Account Pipeline Stage skipped — {_exc}")
         for _e in health.values():
             _e.setdefault("account_pipeline_stage", "")
+
+    # Account Health history — diff today's status against the last run so the
+    # month's movement is answerable. The snapshot lives in git, not Airtable
+    # (see utils/health_history.py); Airtable only mirrors the counters below.
+    # Wrapped so a history failure can never block the health push itself.
+    try:
+        from utils import health_history as _hh
+        _prev_snap = _hh.load()
+        _snap, _hstats = _hh.apply(_prev_snap, health, date.today().isoformat())
+        _hh.save(_snap, today=date.today().isoformat())
+        for _cid, _e in health.items():
+            _s = _snap.get(_cid, {})
+            _e["health_baseline"]     = _s.get("baseline", "")
+            _e["health_previous"]     = _s.get("prev", "")
+            _e["health_last_changed"] = _s.get("changed", "")
+            _e["health_change_count"] = int(_s.get("count", 0))
+        if not _prev_snap:
+            print(f"[Account Health] History: BASELINE established for "
+                  f"{_hstats['new']} accounts (first run — no changes to report)")
+        else:
+            print(f"[Account Health] History: {_hstats['changed']} changed, "
+                  f"{_hstats['unchanged']} unchanged, {_hstats['new']} new, "
+                  f"{_hstats['rebaselined']} re-baselined (formula change), "
+                  f"{_hstats['month_rollover']} month rollover, "
+                  f"{_hstats['carried']} carried (gone from Kylas)")
+    except Exception as _exc:
+        print(f"[Account Health] WARNING: history snapshot skipped — {_exc}")
+        for _e in health.values():
+            _e.setdefault("health_baseline", "")
+            _e.setdefault("health_previous", "")
+            _e.setdefault("health_last_changed", "")
+            _e.setdefault("health_change_count", 0)
 
     counts = {s: sum(1 for e in health.values() if e["status"] == s)
               for s in ("Fresh", "Active", "MQL - Action Needed",

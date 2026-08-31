@@ -14,6 +14,8 @@ on:
 jobs:
   account-health:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -39,3 +41,30 @@ jobs:
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
           SMTP_USER:                ${{ secrets.SMTP_USER }}
           SMTP_PASS:                ${{ secrets.SMTP_PASS }}
+
+      - name: Commit Account Health snapshot
+        # The runner is ephemeral: without this, state/account_health.json is
+        # discarded at the end of the job, every run looks like a first run, and
+        # nothing is ever tracked. git is the system of record for account
+        # health history -- Airtable only mirrors the counters.
+        #
+        # continue-on-error because the Airtable push has already landed by this
+        # point; losing one snapshot commit costs a day of change granularity,
+        # never the sync itself. The pull --rebase retry handles two syncs
+        # racing each other to push.
+        continue-on-error: true
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state/account_health.json
+          if git diff --staged --quiet; then
+            echo "account health snapshot unchanged - nothing to commit"
+          else
+            git commit -m "Account Health snapshot $(date -u +%F) [skip ci]"
+            for i in 1 2 3; do
+              if git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push; then
+                echo "snapshot pushed"; break
+              fi
+              echo "push failed (attempt $i) - retrying"; sleep $((i * 5))
+            done
+          fi
