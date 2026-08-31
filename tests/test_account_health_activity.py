@@ -149,12 +149,15 @@ def test_no_contact_company_already_correct_is_not_rewritten():
     assert tbl._updates == [], "must not spend an update re-writing the same value"
 
 
-def test_company_whose_contacts_all_rank_nothing_is_marked_too():
+def test_company_with_contacts_but_no_rank_is_unmined_not_no_contacts():
+    """It HAS people, they just have unrecognised stages. That is a different
+    state from having nobody at all, and must not be collapsed into it."""
     tbl = _FakeTbl({"1": _rec("rec1", "1")})
     health = {"1": {"status": "Active", "account_pipeline_stage": "",
                     "last_called": "", "needs_reassign": False}}
     ah._write_table(tbl, health, _FM)
-    assert _written(tbl._updates)["1"] == ah.NO_CONTACT_STAGE
+    assert _written(tbl._updates)["1"] == ah.UNMINED_STAGE
+    assert ah.UNMINED_STAGE != ah.NO_CONTACT_STAGE
 
 
 def test_failed_ranking_leaves_the_column_untouched():
@@ -165,3 +168,17 @@ def test_failed_ranking_leaves_the_column_untouched():
     ah._write_table(tbl, health, _FM)
     for _kid, _rid, fields in tbl._updates:
         assert "Account Pipeline Stage" not in fields
+
+
+def test_the_two_empty_states_are_labelled_differently():
+    """No contacts at all vs contacts nobody ranked — distinct labels."""
+    assert ah.NO_CONTACT_STAGE == "No Contacts"
+    assert ah.UNMINED_STAGE == "Yet to Be Mined"
+
+    tbl = _FakeTbl({"1": _rec("rec1", "1"), "99": _rec("rec99", "99")})
+    health = {"1": {"status": "Active", "account_pipeline_stage": "",
+                    "last_called": "", "needs_reassign": False}}
+    ah._write_table(tbl, health, _FM)
+    w = _written(tbl._updates)
+    assert w["1"] == "Yet to Be Mined", "has contacts, none ranked"
+    assert w["99"] == "No Contacts", "no contacts at all"

@@ -71,12 +71,21 @@ TEAM_PATH       = os.path.join(os.path.dirname(os.path.dirname(__file__)), "conf
 FM_PATH         = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "field_map.json")
 REASSIGN_CUTOFF = "2026-04-19"
 
-# Account Pipeline Stage for a company that has no contacts at all. Such a
-# company never appears in compute_health() (which is built from contacts), so
-# without an explicit write its column would stay blank forever. Nobody holds a
-# contact there, so it is un-mined by definition. Must match the rank-24 label
-# in config/account_pipeline_order.json.
-NO_CONTACT_STAGE = "Yet to Be Mined"
+# Two different empty states, deliberately labelled differently:
+#
+#   NO_CONTACT_STAGE — the company has NO contacts at all. It never appears in
+#     compute_health() (which is built from contacts), so without an explicit
+#     write its column would stay blank forever. There is nobody to work here.
+#     This is NOT a pipeline stage and is absent from account_pipeline_order.json.
+#
+#   UNMINED_STAGE — the company HAS contacts, but none of them resolved to a
+#     rank (an unrecognised stage name). People exist to work; nobody has.
+#     Must match the rank-24 label in config/account_pipeline_order.json.
+#
+# Collapsing these two would hide the distinction between "no one to call" and
+# "someone to call that nobody has called".
+NO_CONTACT_STAGE = "No Contacts"
+UNMINED_STAGE    = "Yet to Be Mined"
 
 _TERMINAL_STAGES = {
     "Not Interested",
@@ -434,9 +443,12 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
         # no contacts are handled in the sweep after this loop.
         # The key is absent only when the ranking itself failed upstream; in
         # that case write nothing rather than blanking real data.
+        # This branch is only reached for companies that HAVE contacts, so an
+        # empty result means "contacts exist, none ranked" — un-mined, not
+        # contactless. The no-contacts case is the sweep below.
         if fm.get("accountPipelineStage") and "account_pipeline_stage" in e:
             fields[fm["accountPipelineStage"]] = (
-                e["account_pipeline_stage"] or NO_CONTACT_STAGE)
+                e["account_pipeline_stage"] or UNMINED_STAGE)
         if fm.get("statusOfReachout"):
             sor = e.get("status_of_reachout", "Stale")
             lc  = e.get("last_called", "")
