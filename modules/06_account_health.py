@@ -71,6 +71,13 @@ TEAM_PATH       = os.path.join(os.path.dirname(os.path.dirname(__file__)), "conf
 FM_PATH         = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "field_map.json")
 REASSIGN_CUTOFF = "2026-04-19"
 
+# Account Pipeline Stage for a company that has no contacts at all. Such a
+# company never appears in compute_health() (which is built from contacts), so
+# without an explicit write its column would stay blank forever. Nobody holds a
+# contact there, so it is un-mined by definition. Must match the rank-24 label
+# in config/account_pipeline_order.json.
+NO_CONTACT_STAGE = "Yet to Be Mined"
+
 _TERMINAL_STAGES = {
     "Not Interested",
     "Invalid Contact",
@@ -421,10 +428,13 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
         if fm.get("accountStatus"):
             fields[fm["accountStatus"]] = e["status"]
         # Granular tracker, independent of "status" above: the best pipeline
-        # stage any single contact on this account has reached. Written blank
-        # when nothing ranks (no contacts, or all Yet to Be Mined).
-        if fm.get("accountPipelineStage"):
-            fields[fm["accountPipelineStage"]] = e.get("account_pipeline_stage", "")
+        # stage any single contact on this account has reached. Companies with
+        # no contacts are handled in the sweep after this loop.
+        # The key is absent only when the ranking itself failed upstream; in
+        # that case write nothing rather than blanking real data.
+        if fm.get("accountPipelineStage") and "account_pipeline_stage" in e:
+            fields[fm["accountPipelineStage"]] = (
+                e["account_pipeline_stage"] or NO_CONTACT_STAGE)
         if fm.get("statusOfReachout"):
             sor = e.get("status_of_reachout", "Stale")
             lc  = e.get("last_called", "")
@@ -436,9 +446,31 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
         tbl._updates.append((co_id, rec["id"], fields))
         updated += 1
 
+    # Companies with NO contacts never reach the loop above — compute_health()
+    # is built from contacts, so they are absent from `health` entirely and
+    # their Account Pipeline Stage would stay blank forever. An account nobody
+    # holds a contact for is un-mined, so say so explicitly. Only this one
+    # field is written: there are no contacts to derive any other stat from.
+    no_contact = 0
+    ap_field = fm.get("accountPipelineStage")
+    # Only sweep when the ranking actually ran this cycle — otherwise a failed
+    # computation would stamp every company as un-mined.
+    ap_ok = any("account_pipeline_stage" in e for e in health.values())
+    if ap_field and ap_ok:
+        for kid, rec in tbl._cache.items():
+            if kid in health:
+                continue
+            if str(rec["fields"].get(ap_field, "") or "").strip() == NO_CONTACT_STAGE:
+                continue          # already correct — don't spend an update on it
+            tbl._updates.append((kid, rec["id"], {ap_field: NO_CONTACT_STAGE}))
+            no_contact += 1
+
     tbl.flush()
     if matched_by_name:
         print(f"[Account Health]   ({matched_by_name} matched by name, id backfilled)")
+    if no_contact:
+        print(f"[Account Health]   ({no_contact} companies have no contacts → "
+              f"Account Pipeline Stage = {NO_CONTACT_STAGE!r})")
     return updated, skipped
 
 
@@ -953,10 +985,13 @@ def run(kylas=None, send_email: bool = True) -> dict:
         print(f"[Account Health] Account Pipeline Stage: {_ranked}/{len(_ap)} "
               f"companies ranked, {len(_ap) - _ranked} blank (no ranked contact)")
     except Exception as _exc:
-        # Never let the new column take down the existing health push.
+        # Never let the new column take down the existing health push. Leave the
+        # key ABSENT rather than blank: _write_table treats a missing key as
+        # "don't touch this field", so a failure here preserves whatever is
+        # already in Airtable instead of blanking or mislabelling 13k rows.
         print(f"[Account Health] WARNING: Account Pipeline Stage skipped — {_exc}")
         for _e in health.values():
-            _e.setdefault("account_pipeline_stage", "")
+            _e.pop("account_pipeline_stage", None)
 
     # Account Health history — diff today's status against the last run so the
     # month's movement is answerable. The snapshot lives in git, not Airtable

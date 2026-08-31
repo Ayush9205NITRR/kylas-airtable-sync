@@ -101,3 +101,67 @@ def test_account_takes_the_latest_activity_across_its_contacts():
         _ct("2026-01-01T00:00:00Z", "2026-08-25T00:00:00Z", cid=2),
     ])
     assert health["77"]["last_activity"] == "2026-08-25"
+
+
+# ── Account Pipeline Stage coverage for companies with no contacts ────────────
+
+class _FakeTbl:
+    """Minimal AirtableClient stand-in: records what _write_table would write."""
+    def __init__(self, cache):
+        self._cache, self._updates, self.flushed = cache, [], False
+        self.table = self
+    def all(self):
+        return list(self._cache.values())
+    def flush(self):
+        self.flushed = True
+
+
+_FM = {"id": "Kylas Company ID", "accountPipelineStage": "Account Pipeline Stage"}
+
+
+def _rec(rid, kid, stage=None):
+    f = {"Kylas Company ID": kid}
+    if stage is not None:
+        f["Account Pipeline Stage"] = stage
+    return {"id": rid, "fields": f}
+
+
+def _written(updates):
+    return {kid: fields.get("Account Pipeline Stage") for kid, _rid, fields in updates}
+
+
+def test_company_with_no_contacts_is_marked_yet_to_be_mined():
+    """It never appears in health (built from contacts), so without the sweep
+    its column would stay blank forever."""
+    tbl = _FakeTbl({"1": _rec("rec1", "1"), "99": _rec("rec99", "99")})
+    health = {"1": {"status": "Active", "account_pipeline_stage": "SQL (Sales Qualified Lead)",
+                    "last_called": "", "needs_reassign": False}}
+    ah._write_table(tbl, health, _FM)
+    w = _written(tbl._updates)
+    assert w["1"] == "SQL (Sales Qualified Lead)"
+    assert w["99"] == ah.NO_CONTACT_STAGE, "company with no contacts must be marked"
+    assert tbl.flushed
+
+
+def test_no_contact_company_already_correct_is_not_rewritten():
+    tbl = _FakeTbl({"99": _rec("rec99", "99", ah.NO_CONTACT_STAGE)})
+    ah._write_table(tbl, {}, _FM)
+    assert tbl._updates == [], "must not spend an update re-writing the same value"
+
+
+def test_company_whose_contacts_all_rank_nothing_is_marked_too():
+    tbl = _FakeTbl({"1": _rec("rec1", "1")})
+    health = {"1": {"status": "Active", "account_pipeline_stage": "",
+                    "last_called": "", "needs_reassign": False}}
+    ah._write_table(tbl, health, _FM)
+    assert _written(tbl._updates)["1"] == ah.NO_CONTACT_STAGE
+
+
+def test_failed_ranking_leaves_the_column_untouched():
+    """If the ranking blew up upstream the key is absent — existing Airtable
+    data must be preserved, not blanked or stamped un-mined."""
+    tbl = _FakeTbl({"1": _rec("rec1", "1", "SQL (Sales Qualified Lead)")})
+    health = {"1": {"status": "Active", "last_called": "", "needs_reassign": False}}
+    ah._write_table(tbl, health, _FM)
+    for _kid, _rid, fields in tbl._updates:
+        assert "Account Pipeline Stage" not in fields
