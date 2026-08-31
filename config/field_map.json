@@ -20,6 +20,7 @@
     "lastCalledAtContacts":  "Last Called At (Contacts)",
     "calledSinceApr19":      "Called Since Apr 19",
     "accountStatus":         "Account Status",
+    "accountPipelineStage":  "Account Pipeline Stage",
     "needsReassign":         "Needs Re-assign",
     "claimedBy":             "Claimed By",
     "statusOfReachout":      "Status of Reachout"
@@ -47,6 +48,7 @@
     "lastCalledAtContacts":  "Last Called At (Contacts)",
     "calledSinceApr19":      "Called Since Apr 19",
     "accountStatus":         "Account Status",
+    "accountPipelineStage":  "Account Pipeline Stage",
     "needsReassign":         "Needs Re-assign",
     "claimedBy":             "Claimed By",
     "statusOfReachout":      "Status of Reachout"

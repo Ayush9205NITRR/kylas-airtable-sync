@@ -351,6 +351,11 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
             fields[fm["claimedBy"]] = e.get("claimed_by", "")
         if fm.get("accountStatus"):
             fields[fm["accountStatus"]] = e["status"]
+        # Granular tracker, independent of "status" above: the best pipeline
+        # stage any single contact on this account has reached. Written blank
+        # when nothing ranks (no contacts, or all Yet to Be Mined).
+        if fm.get("accountPipelineStage"):
+            fields[fm["accountPipelineStage"]] = e.get("account_pipeline_stage", "")
         if fm.get("statusOfReachout"):
             sor = e.get("status_of_reachout", "Stale")
             lc  = e.get("last_called", "")
@@ -857,6 +862,28 @@ def run(kylas=None, send_email: bool = True) -> dict:
     print(f"[Account Health] {len(contacts)} contacts fetched")
 
     health = compute_health(contacts, user_email_map=user_email_map)
+
+    # Account Pipeline Stage (BD) — the granular tracker. Deliberately computed
+    # separately from compute_health above: Account Health is the higher-level
+    # view with its own priority (Offsite Delayed > Offsite Done > SQL), while
+    # this one ranks by how far a single contact has actually progressed (SQL
+    # first). The two orders disagree on purpose — see
+    # config/account_pipeline_order.json.
+    try:
+        from utils.account_pipeline import compute_account_pipeline, load_order
+        _ap_order = load_order()
+        _ap = compute_account_pipeline(contacts, order=_ap_order)
+        for _cid, _e in health.items():
+            _e["account_pipeline_stage"] = _ap.get(_cid, {}).get("stage", "")
+        _ap_order.report_unranked()
+        _ranked = sum(1 for v in _ap.values() if v["rank"])
+        print(f"[Account Health] Account Pipeline Stage: {_ranked}/{len(_ap)} "
+              f"companies ranked, {len(_ap) - _ranked} blank (no ranked contact)")
+    except Exception as _exc:
+        # Never let the new column take down the existing health push.
+        print(f"[Account Health] WARNING: Account Pipeline Stage skipped — {_exc}")
+        for _e in health.values():
+            _e.setdefault("account_pipeline_stage", "")
 
     counts = {s: sum(1 for e in health.values() if e["status"] == s)
               for s in ("Fresh", "Active", "MQL - Action Needed",

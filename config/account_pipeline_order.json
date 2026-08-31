@@ -1,0 +1,45 @@
+{
+  "_comment": "Rank order for 'Account Pipeline Stage (BD)' — the GRANULAR account-level tracker. For each company we look at all of its contacts, take each contact's Pipeline Stage (BD), and the account gets the BEST (lowest rank number) stage any of its contacts has reached. Rank 1 is the best. This is deliberately SEPARATE from 'Account Health (BD)', which is the higher-level tracker and keeps its own priority (Offsite Delayed > Offsite Done > SQL > ...). Do not merge the two orders — they answer different questions.",
+
+  "_editing": "To reorder, just renumber 'order'. Names are matched case-insensitively after normalization (see _normalization), so exact punctuation and capitalization here do not have to be perfect. Ranks must be unique and contiguous from 1.",
+
+  "_normalization": "Before comparing, both sides are lowercased, whitespace-collapsed, en/em/figure dashes folded to '-', ' - ' folded to '-', and 'organisation' folded to 'organization'. This is what makes 'Closing Loops – Low Value' match 'Closing Loops - Low Value' and 'POC - Organisation - Changed' match 'POC - Organization - Changed'.",
+
+  "order": [
+    "SQL (Sales Qualified Lead)",
+    "Discovery Call Done - Awaiting Client Inputs",
+    "Closing Loops - Low Value",
+    "Reschedule Pending",
+    "Discovery Call No-Show",
+    "Discovery Call Booked",
+    "Follow-up (1)",
+    "Follow-up (2)",
+    "Follow-up (3)",
+    "Followup - CNC",
+    "MQL (Marketing Qualified Lead)",
+    "Activation",
+    "Offsite Delayed",
+    "Offsite Done (Late Reachout)",
+    "Not Interested",
+    "Connect Later",
+    "CNC (Could Not Connect) - 3",
+    "CNC (Could Not Connect) - 2",
+    "CNC (Could Not Connect) - 1",
+    "Disqualified - Wrong POC",
+    "Invalid Contact",
+    "Not a Decision Maker (NDM)",
+    "POC - Organization - Changed"
+  ],
+
+  "_aliases_comment": "Extra spellings that map onto a rank in 'order'. Use this for real variants that exist in Kylas, so a rename there does not silently drop accounts to unranked. The value must appear verbatim in 'order'.",
+  "aliases": {
+    "Offsite Done": "Offsite Done (Late Reachout)",
+    "Offsite Dealyed": "Offsite Delayed",
+    "POC - Organisation - Changed": "POC - Organization - Changed"
+  },
+
+  "_unranked_comment": "Stages that exist in Kylas but are intentionally NOT ranked. An unranked stage never wins the account's stage; if EVERY contact on an account is unranked (or the account has no contacts at all), the account's pipeline stage is left blank. Any stage seen at run time that is in neither 'order', 'aliases', nor here is reported loudly as UNRANKED so it can be triaged rather than silently ignored.",
+  "unranked": [
+    "Yet to Be Mined"
+  ]
+}
