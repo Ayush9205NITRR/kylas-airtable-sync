@@ -304,14 +304,8 @@ def main():
         print(f"[push]   'Last Called AT - Date' not found via API — trying convention guess: {guess!r}")
         lc_key = guess
 
-    # Account Pipeline Stage (BD) — granular tracker, separate field and
-    # separate ordering from Account Health (BD) above.
-    ap_key = kylas.cf_key_for_display("company", "Account Pipeline Stage (BD)") \
-        or _guess_cf_key("Account Pipeline Stage (BD)")
-
     print(f"[push]   Account Health (BD) key → {status_key!r}")
     print(f"[push]   Last Called Date key  → {lc_key!r}")
-    print(f"[push]   Account Pipeline Stage (BD) key → {ap_key!r}")
     print(f"[push]   (override with --status-key / --lc-key if these are wrong)")
 
     if not status_key and not lc_key:
@@ -333,25 +327,6 @@ def main():
     ah     = _load_module("06_account_health.py")
     health = ah.compute_health(contacts)
     print(f"[push] {len(health)} companies with computed health data")
-
-    # Account Pipeline Stage (BD) — computed from the same contact fetch, but
-    # on its own ranking (config/account_pipeline_order.json). Independent of
-    # the health status above by design: this asks "how far did any one contact
-    # actually get?", health asks "what shape is the account in?".
-    try:
-        from utils.account_pipeline import compute_account_pipeline, load_order
-        _ap_order = load_order()
-        _ap_map   = compute_account_pipeline(contacts, order=_ap_order)
-        for _cid, _e in health.items():
-            _e["account_pipeline_stage"] = _ap_map.get(_cid, {}).get("stage", "")
-        _ap_order.report_unranked()
-        _ranked = sum(1 for v in _ap_map.values() if v["rank"])
-        print(f"[push] Account Pipeline Stage: {_ranked} companies ranked, "
-              f"{len(_ap_map) - _ranked} blank (no ranked contact)")
-    except Exception as _exc:
-        print(f"[push] WARNING: Account Pipeline Stage skipped — {_exc}")
-        for _e in health.values():
-            _e.setdefault("account_pipeline_stage", "")
 
     # ── Full company list — powers the "Not Mined" pass AND the skip-if-same ──
     # ── prefetch further down (one windowed search, reused twice).           ──
@@ -426,37 +401,9 @@ def main():
 
     defs_company = kylas.get_custom_field_defs("company")
     _st_options  = (defs_company.get(status_key) or {}).get("options") or {}  # label_lower -> id
-    _ap_options  = (defs_company.get(ap_key) or {}).get("options") or {}
 
-    # Kylas does not return company picklist options over the API, so the ids
-    # come from config/kylas_picklists.json. Without them a write would be
-    # rejected (or worse, silently stored wrong), so skip the field entirely
-    # and say exactly what is missing — same guard as the "Not Mined" rollout.
-    if ap_key and not _ap_options:
-        print(f"[push] Account Pipeline Stage SKIPPED — no picklist options for "
-              f"{ap_key!r}. Create the 'Account Pipeline Stage (BD)' dropdown on "
-              f"the Company entity in Kylas with the 23 stages from "
-              f"config/account_pipeline_order.json, then add "
-              f"{{label: optionId}} under company.{ap_key} in "
-              f"config/kylas_picklists.json (Customizations → Fields → open the "
-              f"field → hover an option to read its Id).")
-        ap_key = ""
-
-    def _stored_matches(cfv: dict, status: str, lc: str, ap: str = "") -> bool:
+    def _stored_matches(cfv: dict, status: str, lc: str) -> bool:
         """True when the prefetched values already carry status + lc (no write needed)."""
-        if ap_key and ap:
-            want = _ap_options.get(ap.strip().lower())
-            got  = cfv.get(ap_key)
-            if isinstance(got, dict):
-                if not (str(got.get("name", "")).strip() == ap
-                        or (want is not None and got.get("id") == want)):
-                    return False
-            elif got is None:
-                return False
-            else:
-                s = str(got).strip()
-                if not (s == str(want) or s.lower() == ap.strip().lower()):
-                    return False
         if status_key:
             want_id = _st_options.get(str(status).strip().lower())
             got = cfv.get(status_key)
@@ -482,18 +429,12 @@ def main():
         e      = health[co_id]
         status = e["status"]
         lc     = e["last_called"]
-        ap     = e.get("account_pipeline_stage", "")
 
         fields = {}
         if status_key:
             fields[status_key] = status
         if lc_key and lc:
             fields[lc_key] = lc
-        # Only write a ranked stage. A blank means no contact on the account
-        # has reached a ranked stage, and blanking the field in Kylas would
-        # destroy a value a human may have set by hand.
-        if ap_key and ap:
-            fields[ap_key] = ap
 
         if not fields:
             unchanged += 1
@@ -501,7 +442,7 @@ def main():
 
         if prefetch:
             cfv = prefetch.get(str(co_id))
-            if cfv is not None and _stored_matches(cfv, status, lc, ap):
+            if cfv is not None and _stored_matches(cfv, status, lc):
                 unchanged += 1
                 continue
 
