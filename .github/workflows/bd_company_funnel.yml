@@ -1,0 +1,49 @@
+name: BD Company Funnel
+
+# Per BD associate per month, counted in COMPANIES rather than contacts.
+# Creates/refreshes the "BD Company Funnel" Airtable table.
+#
+# Daily rather than monthly on purpose: the current month's counts move every
+# day as reps work accounts, and a month-end-only run would leave the live month
+# stale for 30 days. Closed months are recomputed too and simply land on the same
+# numbers, so re-running is always safe.
+
+on:
+  schedule:
+    # 06:30 UTC = 12:00 PM IST, after the 1:30 PM IST sync has had a day's data.
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the table only, write nothing to Airtable'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  funnel:
+    runs-on: ubuntu-latest
+    # A full contact sweep is ~16 min; 30 leaves headroom without letting a
+    # regression quietly burn Actions minutes.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build the funnel
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          python scripts/bd_company_funnel.py $ARGS
+        env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
