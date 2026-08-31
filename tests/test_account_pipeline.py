@@ -203,3 +203,19 @@ def test_every_ranked_stage_round_trips(order):
         assert order.rank_of(label) == rank
         assert order.best([label]) == (label, rank)
 
+
+
+def test_blank_stage_counts_as_yet_to_be_mined(order):
+    """A contact with no stage is un-mined, not un-rankable — compute_health
+    already treats it that way, so the account must not be left blank."""
+    out = compute_account_pipeline(
+        [{"company": 5, "s": ""}, {"company": 5, "s": None}],
+        order=order, stage_of=lambda c: c["s"])
+    assert out["5"] == {"stage": "Yet to Be Mined", "rank": 24}
+
+
+def test_a_real_stage_still_beats_a_blank_one(order):
+    out = compute_account_pipeline(
+        [{"company": 6, "s": ""}, {"company": 6, "s": "MQL (Marketing Qualified Lead)"}],
+        order=order, stage_of=lambda c: c["s"])
+    assert out["6"] == {"stage": "MQL (Marketing Qualified Lead)", "rank": 11}

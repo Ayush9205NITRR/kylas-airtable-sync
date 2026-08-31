@@ -169,7 +169,11 @@ def compute_account_pipeline(contacts: list, order: AccountPipelineOrder = None,
         cid = _company_id(ct)
         if not cid:
             continue
-        rank = order.rank_of(stage_of(ct))
+        # A contact with no stage set is un-mined, not un-rankable. compute_health
+        # in 06_account_health.py already treats it that way ("not stage or
+        # 'Yet to Be Mined'"); without this the two modules disagree and an
+        # account whose contacts all have empty stages stays blank forever.
+        rank = order.rank_of(stage_of(ct) or "Yet to Be Mined")
         cur = best.get(cid)
         if cur is None:
             best[cid] = rank
