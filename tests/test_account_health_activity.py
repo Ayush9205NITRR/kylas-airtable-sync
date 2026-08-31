@@ -61,16 +61,38 @@ def test_long_form_call_date_still_parses():
         _ct("2026-01-01T00:00:00Z", None, "Jun 05, 2026")) == "2026-06-05"
 
 
-def test_composite_does_not_inflate_called_or_collapse_fresh():
-    """A contact created today but never called: has an activity date, but is
-    NOT 'called', and its account stays Fresh rather than flipping to Active."""
+def test_account_created_today_is_active_not_fresh():
+    """The intended reclassification: activity of any kind counts as touched, so
+    a contact created today makes its account Active rather than Fresh — even
+    though nobody has phoned it and cfLastCalledAt is empty."""
     health = ah.compute_health([_ct("2026-08-30T00:00:00Z", "2026-08-30T00:00:00Z")])
     e = health["77"]
-    assert e["called"] == 0
-    assert e["called_apr19"] == 0
-    assert e["status"] == "Fresh"
-    assert e["last_called"] == ""
+    assert e["called"] == 1
+    assert e["called_apr19"] == 1          # 2026-08-30 is past the Apr 19 cutoff
+    assert e["status"] == "Active"
+    assert e["status_of_reachout"] == "Tapped – Active"
     assert e["last_activity"] == "2026-08-30"
+
+
+def test_activity_before_the_cutoff_is_still_stale():
+    """Touched, but not since Apr 19 — must stay Stale, or the cutoff is pointless."""
+    health = ah.compute_health([_ct("2026-01-05T00:00:00Z", "2026-02-02T00:00:00Z")])
+    e = health["77"]
+    assert e["called"] == 1
+    assert e["called_apr19"] == 0
+    assert e["status_of_reachout"] == "Stale"
+
+
+def test_exhausted_still_wins_over_activity():
+    """Exhausted is evaluated ahead of the activity branch and must survive."""
+    # two NOI contacts → noi >= 2 → Exhausted, despite fresh activity dates
+    health2 = ah.compute_health([
+        dict(_ct("2026-08-30T00:00:00Z", "2026-08-30T00:00:00Z", cid=1),
+             customFieldValues={"cfPipelineStageBd": "Not Interested"}),
+        dict(_ct("2026-08-30T00:00:00Z", "2026-08-30T00:00:00Z", cid=2),
+             customFieldValues={"cfPipelineStageBd": "Not Interested"}),
+    ])
+    assert health2["77"]["status"] == "Exhausted", health2["77"]["status"]
 
 
 def test_account_takes_the_latest_activity_across_its_contacts():

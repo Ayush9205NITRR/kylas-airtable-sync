@@ -13,10 +13,16 @@ Airtable column mapping (what gets written where):
   Connected POCs         MQL+Activation+SQL+DCB Warm+hot combined (summary)
   Terminal POCs          NOI+Invalid+NDM+etc.   Dead ends — no more calls
   NOI Count              "Not Interested" only  Key exhaustion signal (≥2 = gone)
-  Called Since Apr 19    cfLastCalledAt ≥ Apr19 How many contacts tapped since cutoff
-  Last Called At         max(cfLastCalledAt)     Last time any POC in this company was called
+  Called Since Apr 19    activity ≥ Apr 19      How many contacts touched since cutoff
+  Last Called At         max(activity)          Last activity on any POC in this company
   Account Status         computed (see below)   Health label for filtering
-  Needs Re-assign        YtBM>0 AND called=0    Has untouched POCs, nobody called since Apr 19
+  Needs Re-assign        YtBM>0 AND touched=0   Has untouched POCs, no activity since Apr 19
+
+"Activity" throughout means max(createdAt, updatedAt, cfLastCalledAt) per contact
+— see _last_activity(). cfLastCalledAt alone is blank on many contacts, which made
+genuinely-worked accounts look untouched. Because every contact has a createdAt,
+every account with contacts now counts as touched, so the "Fresh" status no longer
+occurs. That is intended: an account created today is Active, not Fresh.
 
 Account Status logic (best POC stage wins across all POCs):
 ─────────────────────────────────────────────────────────────────────────────
@@ -147,10 +153,18 @@ def _last_activity(ct: dict) -> str:
     then the account looks untouched forever. Taking the max of the three gives
     a "last activity" date that is always populated.
 
-    Deliberately NOT used for the called / called_apr19 counters: every contact
-    has a createdAt, so feeding this into those would make "called" true for
-    everything and collapse the Fresh/Active and Tapped/Stale distinctions.
-    Those stay on the real call date; this drives the displayed date only.
+    This is THE date for account health: it drives the displayed date, the
+    called / called_apr19 counters, Account Status and Status of Reachout. The
+    intent is deliberate — status should reflect the most recent activity of any
+    kind, so an account created today reads as Active rather than Fresh.
+
+    Consequence worth knowing: every contact has a createdAt, so every account
+    with contacts now counts as "called" at least once. "Fresh" (the old
+    never-called fallback) therefore no longer occurs. "Exhausted" is unaffected,
+    being evaluated ahead of that branch.
+
+    Note this is NOT a call count — a contact edited but never phoned still
+    registers here. Real call volume comes from Kylas /call-logs, not this.
     """
     cf = ct.get("customFieldValues") or {}
     return max(
@@ -192,7 +206,6 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
 
         cf    = ct.get("customFieldValues") or {}
         stage = contact_stage(ct)
-        lc    = _parse_lc(cf.get("cfLastCalledAt", ""))
         la    = _last_activity(ct)
 
         e = by_co.setdefault(co_id, {
@@ -229,17 +242,21 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
             e["offsite_done"] += 1   # covers future variants like "(Late Reachout)"
         # else: unmapped stage → counted in total only
 
-        if lc:
+        # "Touched" = any activity, not a phone call specifically. Keyed off the
+        # composite date so a contact that was created or edited but never had
+        # cfLastCalledAt filled in still counts. last_called mirrors
+        # last_activity — both keys survive only because the weekly digest and
+        # the Airtable field map already reference last_called by name.
+        if la:
             e["called"] += 1
-            if lc >= REASSIGN_CUTOFF:
+            if la >= REASSIGN_CUTOFF:
                 e["called_apr19"] += 1
-                if lc > e["_claimed_date"]:
-                    e["_claimed_date"] = lc
+                if la > e["_claimed_date"]:
+                    e["_claimed_date"] = la
                     e["claimed_by"] = _contact_owner_email(ct, user_email_map)
-            if lc > e["last_called"]:
-                e["last_called"] = lc
+            if la > e["last_called"]:
+                e["last_called"] = la
 
-        # Tracked for every contact, not just called ones — that is the point.
         if la > e["last_activity"]:
             e["last_activity"] = la
 
@@ -267,6 +284,9 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         elif e["called"] > 0:
             e["status"] = "Active"
         else:
+            # Unreachable in practice now that "called" keys off activity: every
+            # contact has a createdAt. Kept as the honest fallback for a company
+            # whose contacts carry no usable timestamp at all.
             e["status"] = "Fresh"
 
         # hot = sql + dcb + offsite stages combined (keeps existing Airtable "Hot POCs" column working)
