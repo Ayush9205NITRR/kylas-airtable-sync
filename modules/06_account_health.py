@@ -132,6 +132,34 @@ def _parse_lc(raw: str) -> str:
         return ""
 
 
+def _iso_date(raw) -> str:
+    """Any Kylas timestamp ("2026-06-05T07:23:22.11Z", "2026-06-05") → "2026-06-05"."""
+    raw = str(raw or "").strip()
+    return raw[:10] if raw[:1].isdigit() else ""
+
+
+def _last_activity(ct: dict) -> str:
+    """
+    Latest of createdAt, updatedAt and cfLastCalledAt, as an ISO date.
+
+    cfLastCalledAt alone is blank on a large share of contacts — a contact can
+    be created and worked without anyone ever filling that custom field in, and
+    then the account looks untouched forever. Taking the max of the three gives
+    a "last activity" date that is always populated.
+
+    Deliberately NOT used for the called / called_apr19 counters: every contact
+    has a createdAt, so feeding this into those would make "called" true for
+    everything and collapse the Fresh/Active and Tapped/Stale distinctions.
+    Those stay on the real call date; this drives the displayed date only.
+    """
+    cf = ct.get("customFieldValues") or {}
+    return max(
+        _parse_lc(cf.get("cfLastCalledAt", "")),
+        _iso_date(ct.get("updatedAt")),
+        _iso_date(ct.get("createdAt")),
+    )
+
+
 def _contact_owner_email(ct: dict, user_email_map: dict) -> str:
     """Extract owner email from a raw Kylas contact dict."""
     ob = ct.get("ownedBy") or {}
@@ -165,6 +193,7 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         cf    = ct.get("customFieldValues") or {}
         stage = contact_stage(ct)
         lc    = _parse_lc(cf.get("cfLastCalledAt", ""))
+        la    = _last_activity(ct)
 
         e = by_co.setdefault(co_id, {
             "total": 0, "ytbm": 0, "active": 0,
@@ -172,6 +201,7 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
             "sql": 0, "dcb": 0, "offsite": 0, "offsite_done": 0,
             "terminal": 0, "noi": 0,
             "called": 0, "called_apr19": 0, "last_called": "",
+            "last_activity": "",
             "claimed_by": "",
             "_claimed_date": "",
         })
@@ -208,6 +238,10 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
                     e["claimed_by"] = _contact_owner_email(ct, user_email_map)
             if lc > e["last_called"]:
                 e["last_called"] = lc
+
+        # Tracked for every contact, not just called ones — that is the point.
+        if la > e["last_activity"]:
+            e["last_activity"] = la
 
     for e in by_co.values():
         t    = e["total"]
@@ -343,8 +377,12 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
             if at_field:
                 fields[at_field] = e[stat_key]
 
-        if fm.get("lastCalledAtContacts") and e["last_called"]:
-            fields[fm["lastCalledAtContacts"]] = e["last_called"]
+        # Latest of createdAt / updatedAt / cfLastCalledAt — see _last_activity().
+        # Falls back to the real call date so the column never regresses to blank
+        # if a contact somehow carries no usable timestamp at all.
+        _la = e.get("last_activity") or e["last_called"]
+        if fm.get("lastCalledAtContacts") and _la:
+            fields[fm["lastCalledAtContacts"]] = _la
         if fm.get("needsReassign"):
             fields[fm["needsReassign"]] = e["needs_reassign"]
         if fm.get("claimedBy"):
@@ -857,7 +895,10 @@ def run(kylas=None, send_email: bool = True) -> dict:
     print("[Account Health] Fetching all contacts from Kylas...")
     contacts = kylas._search_all(
         "contact",
-        fields=["id", "company", "ownedBy", "updatedAt", "customFieldValues"],
+        # createdAt is required by _last_activity() — without it a contact that
+        # was created but never updated or called has no usable date at all.
+        fields=["id", "company", "ownedBy", "createdAt", "updatedAt",
+                "customFieldValues"],
     )
     print(f"[Account Health] {len(contacts)} contacts fetched")
 
