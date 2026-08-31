@@ -29,9 +29,9 @@ def order():
 
 # ── the order itself ─────────────────────────────────────────────────────────
 
-def test_order_is_23_unique_contiguous_ranks(order):
-    assert len(order.order) == 23
-    assert sorted(order.label_by_rank) == list(range(1, 24))
+def test_order_is_24_unique_contiguous_ranks(order):
+    assert len(order.order) == 24
+    assert sorted(order.label_by_rank) == list(range(1, 25))
 
 
 def test_exact_order_as_specified(order):
@@ -60,6 +60,7 @@ def test_exact_order_as_specified(order):
         "Invalid Contact",
         "Not a Decision Maker (NDM)",
         "POC - Organization - Changed",
+        "Yet to Be Mined",
     ]
 
 
@@ -110,9 +111,11 @@ def test_follow_up_hyphen_is_not_eaten(order):
 
 # ── unranked vs unknown ──────────────────────────────────────────────────────
 
-def test_yet_to_be_mined_is_unranked_and_silent(order):
-    assert order.rank_of("Yet to Be Mined") == 0
-    assert order.unknown_seen == {}, "a deliberately-unranked stage must not warn"
+def test_yet_to_be_mined_is_rank_24_and_silent(order):
+    """It used to be unranked (→ blank). It is now the explicit worst rank, so
+    an untouched account reads as 'Yet to Be Mined' instead of empty."""
+    assert order.rank_of("Yet to Be Mined") == 24
+    assert order.unknown_seen == {}, "a configured stage must not warn"
 
 
 def test_unknown_stage_is_recorded_for_reporting(order):
@@ -135,14 +138,20 @@ def test_best_picks_the_highest_ranked_contact(order):
     assert (label, rank) == ("SQL (Sales Qualified Lead)", 1)
 
 
-def test_best_ignores_unranked_even_when_listed_first(order):
-    label, rank = order.best(["Yet to Be Mined", "Invalid Contact"])
+def test_best_ignores_unrecognised_even_when_listed_first(order):
+    label, rank = order.best(["No Such Stage", "Invalid Contact"])
     assert (label, rank) == ("Invalid Contact", 21)
+
+
+def test_yet_to_be_mined_loses_to_every_real_stage(order):
+    """Rank 24 is last, so any genuine progress outranks an unmined contact."""
+    assert order.best(["Yet to Be Mined", "POC - Organization - Changed"])[1] == 23
+    assert order.best(["Yet to Be Mined"]) == ("Yet to Be Mined", 24)
 
 
 def test_best_of_nothing_is_blank(order):
     assert order.best([]) == ("", 0)
-    assert order.best(["Yet to Be Mined", "Yet to Be Mined"]) == ("", 0)
+    assert order.best(["No Such Stage", ""]) == ("", 0)
 
 
 def test_a_single_good_contact_beats_many_bad_ones(order):
@@ -166,14 +175,14 @@ def test_compute_groups_by_company_and_takes_the_best(order):
     contacts = [
         {"company": 1, "s": "MQL (Marketing Qualified Lead)"},
         {"company": 1, "s": "Discovery Call Booked"},
-        {"company": 2, "s": "Yet to Be Mined"},
+        {"company": 2, "s": "Yet to Be Mined"},   # ranks 24, no longer blank
         {"company": 3, "s": "Closing Loops – Low Value"},   # en dash
         {"company": None, "s": "SQL (Sales Qualified Lead)"},  # dropped: no company
     ]
     out = compute_account_pipeline(contacts, order=order, stage_of=lambda c: c["s"])
 
     assert out["1"] == {"stage": "Discovery Call Booked", "rank": 6}
-    assert out["2"] == {"stage": "", "rank": 0}
+    assert out["2"] == {"stage": "Yet to Be Mined", "rank": 24}
     assert out["3"] == {"stage": "Closing Loops - Low Value", "rank": 3}
     assert set(out) == {"1", "2", "3"}
 
