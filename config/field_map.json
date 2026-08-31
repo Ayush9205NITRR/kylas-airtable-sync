@@ -68,7 +68,6 @@
     "country":       "Country",
     "source":        "Source",
     "pipelineStage": "Pipeline Stage",
-    "accountPipelineStage": "Account Pipeline Stage (BD)",
     "lastCalledAt":  "Last Called At",
     "nextCallDate":  "Next Call Date",
     "remarks":       "Remarks",

@@ -59,7 +59,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.kylas_client import KylasClient
 from utils.airtable_client import AirtableClient
 from utils.bd_metrics import contact_stage
-from utils.account_pipeline import _company_id as _ap_company_id
 from utils.redact import mask_email, mask_emails
 
 TEAM_PATH       = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
@@ -261,59 +260,6 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
         e["needs_reassign"] = bool(e["ytbm"] > 0 and e["called_apr19"] == 0)
 
     return by_co
-
-
-def _write_contact_pipeline(contacts: list, ap_map: dict, fm_contact: dict,
-                            base_id: str) -> tuple:
-    """
-    Stamp each contact's ACCOUNT-level pipeline stage onto its Airtable row.
-
-    Every contact of an account carries the same value — the best stage any one
-    of that account's contacts has reached. It sits alongside the contact's own
-    "Pipeline Stage", so a contact list can be filtered by how far the ACCOUNT
-    has got, not just that one person.
-
-    Must be driven by the FULL contact set. 02_contact_sync.py fetches contacts
-    incrementally (get_contacts(since=...)), so computing the rollup there would
-    see only recently-touched contacts and under-rank every account — which is
-    why this lives here, where run() has already fetched all of them.
-
-    Returns (updated, skipped).
-    """
-    field    = fm_contact.get("accountPipelineStage")
-    id_field = fm_contact.get("id")
-    if not field or not id_field:
-        return 0, 0
-
-    tbl = AirtableClient("Contacts", base_id=base_id)
-    for attempt in range(4):
-        try:
-            tbl.build_cache(id_field)
-            break
-        except Exception as exc:
-            if attempt < 3:
-                time.sleep(2 ** attempt)
-            else:
-                print(f"[Account Health] WARNING: Contacts cache failed — {exc}")
-                return 0, 0
-
-    updated = skipped = 0
-    for ct in contacts:
-        ct_id = str(ct.get("id") or "")
-        rec   = tbl._cache.get(ct_id) if ct_id else None
-        if rec is None:
-            skipped += 1
-            continue
-        stage = ap_map.get(_ap_company_id(ct), {}).get("stage", "")
-        # Skip-if-same: ~18k contacts, and most accounts do not move day to day.
-        if str(rec["fields"].get(field, "") or "") == stage:
-            skipped += 1
-            continue
-        tbl._updates.append((ct_id, rec["id"], {field: stage}))
-        updated += 1
-
-    tbl.flush()
-    return updated, skipped
 
 
 def _norm_name(val) -> str:
@@ -889,7 +835,6 @@ def run(kylas=None, send_email: bool = True) -> dict:
         fm_all  = json.load(f)
     fm_list    = fm_all.get("company", {})
     fm_crm     = fm_all.get("company_crm", {})
-    fm_contact = fm_all.get("contact", {})
 
     with open(TEAM_PATH) as f:
         cfg = json.load(f)
@@ -979,18 +924,6 @@ def run(kylas=None, send_email: bool = True) -> dict:
         print(f"[Account Health] Companies CRM → {upd} updated, {skp} unmatched")
     except Exception as exc:
         print(f"[Account Health] WARNING: Companies CRM write failed — {exc}")
-
-    # Same rolled-up value stamped onto every contact of the account, so a
-    # contact view can be filtered by the ACCOUNT's position. Isolated in its
-    # own try: this is the newest write and must never break the ones above.
-    if _ap:
-        try:
-            upd, skp = _write_contact_pipeline(contacts, _ap, fm_contact, crm_base)
-            print(f"[Account Health] Contacts · Account Pipeline Stage → "
-                  f"{upd} updated, {skp} unchanged/unmatched")
-        except Exception as exc:
-            print(f"[Account Health] WARNING: contact-level Account Pipeline "
-                  f"Stage write failed — {exc}")
 
     if not send_email:
         print("[Account Health] Airtable updated (email skipped — use weekly workflow to send)")
