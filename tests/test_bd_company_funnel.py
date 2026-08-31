@@ -80,7 +80,7 @@ def test_last_called_parses_both_kylas_formats():
 
 def _grid_from(rows):
     """rows: [(company_id, stage)] → the counts one rep/month cell would get."""
-    cnc = {ORDER.rank_of(s) for s in fn.CNC_STAGES} - {0}
+    cnc = {ORDER.rank_of(s) for s in fn.NOT_REACHED_STAGES} - {0}
     best = {}
     for cid, stage in rows:
         r = ORDER.rank_of(stage)
@@ -136,21 +136,35 @@ def test_yet_to_be_mined_account_is_worked_but_goes_no_further():
     assert g["Requirements Stated"] == 0
 
 
-def test_funnel_nests_except_for_the_known_followup_cnc_case():
-    """Every column should be <= the one before it. 'Followup - CNC' is the one
-    stage that breaks it: rank 10 puts it in Requirements Stated while its CNC
-    membership keeps it out of Companies Reached. Pinned so the exception stays
-    visible rather than being discovered in a report."""
+def test_followup_cnc_counts_as_reached():
+    """It is rank 10, inside the Requirements Stated band, so treating it as
+    not-reached would put Requirements Stated above Companies Reached."""
+    g = _grid_from([("1", "Followup - CNC")])
+    assert g["Companies Reached"] == 1
+    assert g["Requirements Stated"] == 1
+    assert "Followup - CNC" not in fn.NOT_REACHED_STAGES
+
+
+def test_only_the_three_hard_cnc_stages_are_not_reached():
+    assert fn.NOT_REACHED_STAGES == {
+        "CNC (Could Not Connect) - 1",
+        "CNC (Could Not Connect) - 2",
+        "CNC (Could Not Connect) - 3",
+    }
+    for s in fn.NOT_REACHED_STAGES:
+        assert _grid_from([("1", s)])["Companies Reached"] == 0
+
+
+def test_funnel_nests_at_every_level():
+    """Each column must be <= the one before it, for any mix of stages."""
     g = _grid_from([("1", "SQL (Sales Qualified Lead)"),
                     ("2", "MQL (Marketing Qualified Lead)"),
                     ("3", "CNC (Could Not Connect) - 1"),
-                    ("4", "Not Interested")])
+                    ("4", "Followup - CNC"),
+                    ("5", "Not Interested"),
+                    ("6", "Yet to Be Mined"),
+                    ("7", "Closing Loops - Low Value")])
     assert (g["Companies Worked"] >= g["Companies Reached"]
             >= g["Requirements Stated"] >= g["Handoff Calls Held"]
             >= g["SQLs Accepted"])
-
-    odd = _grid_from([("1", "Followup - CNC")])
-    assert odd["Companies Reached"] == 0
-    assert odd["Requirements Stated"] == 1, (
-        "known inconsistency: Followup - CNC is rank 10 (in Requirements "
-        "Stated) but is also a CNC stage (out of Companies Reached)")
+    assert g["Handoff Calls Held"] >= g["SQLs Accepted"] + g["SQLs Rejected"]

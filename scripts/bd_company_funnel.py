@@ -10,8 +10,8 @@ Columns
 ───────────────────────────────────────────────────────────────────────────────
   Companies Worked     the rep called someone there this month and that contact
                        has a pipeline stage set (a blank stage is not "worked")
-  Companies Reached    Companies Worked minus accounts stuck at CNC — somebody
-                       actually got through
+  Companies Reached    Companies Worked minus accounts stuck at CNC 1/2/3 —
+                       somebody actually got through
   Requirements Stated  the account reached rank 1-12, i.e. Activation or better
   Handoff Calls Held   the account reached rank 1-3: SQL, Discovery Call Done -
                        Awaiting Client Inputs, or Closing Loops - Low Value
@@ -62,14 +62,18 @@ HANDOFF_MAX_RANK      = 3    # SQL / Discovery Call Done - Awaiting / Closing Lo
 SQL_STAGE      = "SQL (Sales Qualified Lead)"
 REJECTED_STAGE = "Closing Loops - Low Value"
 
-# "Reached" means somebody actually got through. Same set bd_monthly_matrix.py
-# uses to separate Call Connected from Call Attempted — kept identical so the
-# two tables cannot disagree about what "connected" means.
-CNC_STAGES = {
+# "Reached" means somebody actually got through — only the three hard
+# could-not-connect stages are excluded.
+#
+# "Followup - CNC" is deliberately NOT here, though bd_monthly_matrix.py's
+# CNC_EXCLUDE_STAGES does include it. It sits at rank 10, inside the rank 1-12
+# band that defines Requirements Stated, so excluding it here would let
+# Requirements Stated exceed Companies Reached and break the funnel's nesting.
+# The two tables therefore disagree on this one stage, on purpose.
+NOT_REACHED_STAGES = {
     "CNC (Could Not Connect) - 1",
     "CNC (Could Not Connect) - 2",
     "CNC (Could Not Connect) - 3",
-    "Followup - CNC",
 }
 
 
@@ -183,7 +187,7 @@ def build_funnel(kylas) -> tuple:
     order.report_unranked()
 
     grid = {}
-    cnc_ranks = {order.rank_of(s) for s in CNC_STAGES} - {0}
+    cnc_ranks = {order.rank_of(s) for s in NOT_REACHED_STAGES} - {0}
     sql_rank  = order.rank_of(SQL_STAGE)
     rej_rank  = order.rank_of(REJECTED_STAGE)
 
