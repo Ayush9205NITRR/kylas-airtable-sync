@@ -16,7 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    timeout-minutes: 20
+    # A healthy run is ~16 min (37k contacts fetched from Kylas), and the
+    # snapshot commit step now follows it. 20 left too little headroom: a job
+    # timeout kills the job outright, which would lose the snapshot commit and
+    # so the day's history, even though the Airtable push had already landed.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
