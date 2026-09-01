@@ -535,8 +535,9 @@ def prune_non_roster(table_name: str, roster: set) -> int:
     """
     Delete rows whose BD Email is not on the roster.
 
-    The upsert only stops WRITING non-roster people; rows created by earlier
-    runs would otherwise sit there forever and still show on the dashboard.
+    NOT called by default — see main(). Leaving a departed rep's rows in place
+    preserves their frozen history; build_funnel() already stops adding new ones.
+    This exists for a deliberate cleanup, behind --prune-non-roster.
     Scoped deliberately narrowly — only rows failing the roster test go, never
     "any row this run did not touch", which would delete legitimate periods a
     rep happened to be inactive in.
@@ -577,6 +578,9 @@ def main() -> int:
                     help="refresh the monthly table only")
     ap.add_argument("--all-owners", action="store_true",
                     help="include owners outside the BD roster (diagnostic)")
+    ap.add_argument("--prune-non-roster", action="store_true",
+                    help="DELETE rows for people no longer on the roster. Off by "
+                         "default: their history is kept, only new rows stop.")
     args = ap.parse_args()
 
     month_grid, day_grid, _ = build_funnel(KylasClient(),
@@ -592,7 +596,11 @@ def main() -> int:
 
     # Rows for people who have since left the roster (or were never on it) are
     # not touched by the upserts above, so remove them explicitly.
-    if not args.all_owners:
+    # Rows for someone who has left the roster are deliberately LEFT IN PLACE:
+    # build_funnel() already stops producing new ones, and deleting the old ones
+    # would erase a departed rep's frozen history, which is the opposite of
+    # keeping a year of it. Opt in with --prune-non-roster to remove them.
+    if args.prune_non_roster:
         roster = bd_roster()
         prune_non_roster(TABLE_NAME, roster)
         if not args.skip_daily:
