@@ -156,6 +156,28 @@ def _build_user_map(kylas) -> dict:
     return umap
 
 
+def bd_roster() -> set:
+    """
+    Lowercased emails of the BD team, from config/team.json bd_team.
+
+    Matched on EMAIL, not name: the roster stores short names ("Aditi") while
+    Kylas resolves full ones ("Aditi saini"), so name matching would drop half
+    the team. sync_team.py keeps team.json current, so this follows joiners and
+    leavers automatically.
+    """
+    tp = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                      "config", "team.json")
+    try:
+        import json
+        with open(tp) as fh:
+            roster = json.load(fh).get("bd_team") or []
+        return {str(m.get("email", "")).strip().lower()
+                for m in roster if m.get("email")}
+    except Exception as exc:
+        print(f"[funnel] WARN: bd_team unreadable ({exc}) — not filtering")
+        return set()
+
+
 def _counts(ranks: list, order) -> dict:
     """Turn a list of per-company best ranks into the six funnel columns."""
     cnc      = {order.rank_of(x) for x in NOT_REACHED_STAGES} - {0}
@@ -181,7 +203,7 @@ def _iso_week(day: str) -> str:
         return ""
 
 
-def build_funnel(kylas) -> tuple:
+def build_funnel(kylas, all_owners: bool = False) -> tuple:
     """
     One Kylas fetch, two grains.
 
@@ -197,6 +219,9 @@ def build_funnel(kylas) -> tuple:
 
     order    = load_order()
     user_map = _build_user_map(kylas)
+    roster   = set() if all_owners else bd_roster()
+    if roster:
+        print(f"[funnel] filtering to the {len(roster)} BD roster member(s)")
 
     print("[funnel] Fetching contacts from Kylas...")
     # ownerId and updatedAt are both REQUIRED — see bd_monthly_matrix.py:
@@ -209,6 +234,7 @@ def build_funnel(kylas) -> tuple:
     )
     print(f"[funnel] {len(contacts)} contacts fetched")
 
+    dropped  = defaultdict(int)      # owner -> contacts excluded as non-roster
     by_month = defaultdict(dict)     # (rep, email, 'YYYY-MM') -> {cid: best_rank}
     by_day   = defaultdict(dict)     # (rep, email, 'YYYY-MM-DD') -> {cid: best_rank}
     no_lc = no_stage = no_company = 0
@@ -232,6 +258,9 @@ def build_funnel(kylas) -> tuple:
         if not rank:
             continue                # unrecognised — surfaced by report_unranked
         name, email = _owner(ct, user_map)
+        if roster and email.strip().lower() not in roster:
+            dropped[f"{name} <{email or 'no email'}>"] += 1
+            continue
         for bucket, period in ((by_month, lc[:7]), (by_day, lc)):
             cell = bucket[(name, email, period)]
             cur  = cell.get(cid)
@@ -239,6 +268,13 @@ def build_funnel(kylas) -> tuple:
                 cell[cid] = rank
 
     order.report_unranked()
+    if dropped:
+        print(f"[funnel] excluded {sum(dropped.values())} contact(s) from "
+              f"{len(dropped)} non-roster owner(s):")
+        for who, n in sorted(dropped.items(), key=lambda kv: -kv[1]):
+            print(f"[funnel]   {who} — {n} contact(s)")
+        print("[funnel]   (if a real BD member is listed, their Kylas email "
+              "does not match config/team.json bd_team)")
 
     month_grid = {k: _counts(list(v.values()), order) for k, v in by_month.items()}
     day_grid   = {k: _counts(list(v.values()), order) for k, v in by_day.items()}
@@ -411,9 +447,12 @@ def main() -> int:
                     help="print the table, write nothing to Airtable")
     ap.add_argument("--skip-daily", action="store_true",
                     help="refresh the monthly table only")
+    ap.add_argument("--all-owners", action="store_true",
+                    help="include owners outside the BD roster (diagnostic)")
     args = ap.parse_args()
 
-    month_grid, day_grid, _ = build_funnel(KylasClient())
+    month_grid, day_grid, _ = build_funnel(KylasClient(),
+                                           all_owners=args.all_owners)
     print_table(month_grid)
     if args.dry_run:
         print(f"[funnel] dry run — nothing written "

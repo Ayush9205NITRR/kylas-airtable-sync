@@ -208,3 +208,28 @@ def test_daily_rows_sum_higher_than_the_monthly_row():
     monthly = fn._counts(month_ranks, o)["Companies Worked"]
     daily   = sum(fn._counts(d, o)["Companies Worked"] for d in day_ranks)
     assert monthly == 1 and daily == 2
+
+
+# ── BD roster filter ─────────────────────────────────────────────────────────
+
+def test_roster_is_read_from_team_json_and_is_all_emails():
+    r = fn.bd_roster()
+    assert len(r) == 18, f"expected the 18-person BD team, got {len(r)}"
+    assert all("@" in e and e == e.lower() for e in r), "emails, lowercased"
+
+
+def test_roster_covers_the_reps_seen_in_the_funnel():
+    """Emails from team.json must match what Kylas resolves, or real BD members
+    would be silently dropped from the dashboard."""
+    r = fn.bd_roster()
+    for email in ("aditi.saini@enout.in", "mayra@enout.in", "anjali.athya@enout.in",
+                  "gaurav@enout.in", "gurnoor@enout.in", "muskan@enout.in",
+                  "arshdeep@enout.in", "bhaumik@enout.in"):
+        assert email in r, f"{email} missing from bd_team"
+
+
+def test_non_roster_owners_are_not_in_the_roster():
+    """The accounts that prompted this filter."""
+    r = fn.bd_roster()
+    for email in ("superadmin@enout.in", "charu@enout.in", "vedant@enout.in"):
+        assert email not in r
