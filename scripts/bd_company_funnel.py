@@ -33,6 +33,20 @@ NOT the max(createdAt, updatedAt, cfLastCalledAt) composite used by account
 health: updatedAt is bumped by our own owner/field pushes, which would drag every
 contact into the current month and empty out the historical ones.
 
+Two tables are written from ONE Kylas fetch:
+
+  BD Company Funnel        one row per rep per MONTH. Distinct accounts, so an
+                           account worked on ten days still counts once.
+  BD Company Funnel Daily  one row per rep per DAY, carrying Week and Month
+                           labels for grouping. Rows SUM cleanly over any date
+                           range, which is what makes week-on-week and
+                           month-on-month charts work in a BI tool.
+
+They deliberately disagree: summing daily rows over a month gives a HIGHER
+number than the monthly row, because an account worked on three separate days
+appears on three daily rows. Daily answers "how much activity", monthly answers
+"how many distinct accounts". Use the monthly table for distinct counts.
+
     python scripts/bd_company_funnel.py              # build + push to Airtable
     python scripts/bd_company_funnel.py --dry-run    # print the table only
 """
@@ -40,7 +54,7 @@ import argparse
 import os
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import requests
 
@@ -50,7 +64,12 @@ from utils.kylas_client import KylasClient          # noqa: E402
 from utils.account_pipeline import load_order, _norm, _company_id  # noqa: E402
 
 META       = "https://api.airtable.com/v0/meta/bases"
-TABLE_NAME = "BD Company Funnel"
+TABLE_NAME       = "BD Company Funnel"
+DAILY_TABLE_NAME = "BD Company Funnel Daily"
+
+# Bound how much daily history is pushed. ~16 reps x ~22 working days is ~350
+# rows a month; 400 days keeps year-on-year possible without unbounded growth.
+DAILY_HISTORY_DAYS = 400
 
 COLUMNS = ["Companies Worked", "Companies Reached", "Requirements Stated",
            "Handoff Calls Held", "SQLs Accepted", "SQLs Rejected"]
@@ -137,8 +156,42 @@ def _build_user_map(kylas) -> dict:
     return umap
 
 
+def _counts(ranks: list, order) -> dict:
+    """Turn a list of per-company best ranks into the six funnel columns."""
+    cnc      = {order.rank_of(x) for x in NOT_REACHED_STAGES} - {0}
+    sql_rank = order.rank_of(SQL_STAGE)
+    rej_rank = order.rank_of(REJECTED_STAGE)
+    return {
+        "Companies Worked":    len(ranks),
+        "Companies Reached":   sum(1 for r in ranks if r not in cnc),
+        "Requirements Stated": sum(1 for r in ranks if r <= REQUIREMENTS_MAX_RANK),
+        "Handoff Calls Held":  sum(1 for r in ranks if r <= HANDOFF_MAX_RANK),
+        "SQLs Accepted":       sum(1 for r in ranks if r == sql_rank),
+        "SQLs Rejected":       sum(1 for r in ranks if r == rej_rank),
+    }
+
+
+def _iso_week(day: str) -> str:
+    """'2026-09-01' -> '2026-W36'. Precomputed so a BI tool can group by week
+    without needing date functions over a text column."""
+    try:
+        y, w, _ = datetime.strptime(day, "%Y-%m-%d").date().isocalendar()
+        return f"{y}-W{w:02d}"
+    except ValueError:
+        return ""
+
+
 def build_funnel(kylas) -> tuple:
-    """Return ({(rep, email, month): {col: count}}, stats)."""
+    """
+    One Kylas fetch, two grains.
+
+    Returns (month_grid, day_grid, stats), each keyed
+    (rep, email, period) -> {column: count}.
+
+    The month grid is NOT the sum of the day grid: each is accumulated
+    separately so a company worked on several days is one account for the month
+    but appears on each of those days.
+    """
     from utils.bd_metrics import refresh_stage_map, contact_stage
     refresh_stage_map(kylas)     # bare option ids must resolve to real labels
 
@@ -156,15 +209,15 @@ def build_funnel(kylas) -> tuple:
     )
     print(f"[funnel] {len(contacts)} contacts fetched")
 
-    # (rep, email, month) -> {company_id: best_rank}
-    best = defaultdict(dict)
+    by_month = defaultdict(dict)     # (rep, email, 'YYYY-MM') -> {cid: best_rank}
+    by_day   = defaultdict(dict)     # (rep, email, 'YYYY-MM-DD') -> {cid: best_rank}
     no_lc = no_stage = no_company = 0
 
     for ct in contacts:
         cf = ct.get("customFieldValues") or {}
         lc = _parse_lc(cf.get("cfLastCalledAt", ""))
         if not lc:
-            no_lc += 1              # no month to attribute to → excluded by design
+            no_lc += 1              # no date to attribute to → excluded by design
             continue
         stage = contact_stage(ct)
         if not stage:
@@ -172,42 +225,31 @@ def build_funnel(kylas) -> tuple:
             continue
         cid = _company_id(ct)
         if not cid:
-            no_company += 1         # company-level metric needs a company
+            no_company += 1         # a company-level metric needs a company
             continue
 
         rank = order.rank_of(stage)
         if not rank:
-            continue                # unrecognised stage — reported by report_unranked
+            continue                # unrecognised — surfaced by report_unranked
         name, email = _owner(ct, user_map)
-        cell = best[(name, email, lc[:7])]
-        cur  = cell.get(cid)
-        if cur is None or rank < cur:
-            cell[cid] = rank
+        for bucket, period in ((by_month, lc[:7]), (by_day, lc)):
+            cell = bucket[(name, email, period)]
+            cur  = cell.get(cid)
+            if cur is None or rank < cur:
+                cell[cid] = rank
 
     order.report_unranked()
 
-    grid = {}
-    cnc_ranks = {order.rank_of(s) for s in NOT_REACHED_STAGES} - {0}
-    sql_rank  = order.rank_of(SQL_STAGE)
-    rej_rank  = order.rank_of(REJECTED_STAGE)
-
-    for key, companies in best.items():
-        ranks = list(companies.values())
-        grid[key] = {
-            "Companies Worked":    len(ranks),
-            "Companies Reached":   sum(1 for r in ranks if r not in cnc_ranks),
-            "Requirements Stated": sum(1 for r in ranks if r <= REQUIREMENTS_MAX_RANK),
-            "Handoff Calls Held":  sum(1 for r in ranks if r <= HANDOFF_MAX_RANK),
-            "SQLs Accepted":       sum(1 for r in ranks if r == sql_rank),
-            "SQLs Rejected":       sum(1 for r in ranks if r == rej_rank),
-        }
+    month_grid = {k: _counts(list(v.values()), order) for k, v in by_month.items()}
+    day_grid   = {k: _counts(list(v.values()), order) for k, v in by_day.items()}
 
     stats = {"contacts": len(contacts), "no_last_called": no_lc,
-             "no_stage": no_stage, "no_company": no_company, "rows": len(grid)}
+             "no_stage": no_stage, "no_company": no_company,
+             "month_rows": len(month_grid), "day_rows": len(day_grid)}
     print(f"[funnel] skipped: {no_lc} without a Last Called date, "
           f"{no_stage} with a blank stage, {no_company} without a company")
-    print(f"[funnel] → {len(grid)} rep×month rows")
-    return grid, stats
+    print(f"[funnel] → {len(month_grid)} rep×month rows, {len(day_grid)} rep×day rows")
+    return month_grid, day_grid, stats
 
 
 def print_table(grid: dict) -> None:
@@ -296,18 +338,90 @@ def push_to_airtable(grid: dict) -> None:
           f"skipped={tally['skipped']}")
 
 
+def ensure_daily_table(base_id: str, headers: dict) -> bool:
+    r = requests.get(f"{META}/{base_id}/tables", headers=headers, timeout=30)
+    r.raise_for_status()
+    if any(t["name"] == DAILY_TABLE_NAME for t in r.json().get("tables", [])):
+        print(f"[funnel] Airtable table {DAILY_TABLE_NAME!r} already exists")
+        return True
+    defn = {
+        "name": DAILY_TABLE_NAME,
+        "description": ("One row per BD associate per DAY. Rows sum over any "
+                        "date range — use this for week-on-week and "
+                        "month-on-month charts. For DISTINCT account counts in "
+                        "a month use 'BD Company Funnel' instead, which "
+                        "deliberately gives a lower number. Built by "
+                        "scripts/bd_company_funnel.py."),
+        "fields": [
+            {"name": "Key",          "type": "singleLineText"},  # "<rep> | YYYY-MM-DD"
+            {"name": "Date",         "type": "singleLineText"},  # YYYY-MM-DD, sorts as text
+            {"name": "Week",         "type": "singleLineText"},  # YYYY-Www, for WoW grouping
+            {"name": "Month",        "type": "singleLineText"},  # YYYY-MM, for MoM grouping
+            {"name": "BD Email",     "type": "singleLineText"},
+            {"name": "BD Associate", "type": "singleLineText"},
+        ] + [{"name": c, "type": "number", "options": {"precision": 0}}
+             for c in COLUMNS]
+          + [{"name": "Updated At", "type": "singleLineText"}],
+    }
+    resp = requests.post(f"{META}/{base_id}/tables", json=defn, headers=headers, timeout=30)
+    if resp.status_code in (200, 201):
+        print(f"[funnel] Created Airtable table {DAILY_TABLE_NAME!r}")
+        return True
+    print(f"[funnel] ERROR creating {DAILY_TABLE_NAME!r}: {resp.status_code} {resp.text[:300]}")
+    return False
+
+
+def push_daily(day_grid: dict) -> None:
+    from utils.airtable_client import AirtableClient
+    base_id = os.environ["AIRTABLE_BASE_ID"]
+    headers = {"Authorization": f"Bearer {os.environ['AIRTABLE_PAT']}",
+               "Content-Type": "application/json"}
+    if not ensure_daily_table(base_id, headers):
+        return
+
+    cutoff = (datetime.now(timezone.utc).date()
+              - timedelta(days=DAILY_HISTORY_DAYS)).isoformat()
+    rows = {k: v for k, v in day_grid.items() if k[2] >= cutoff}
+    dropped = len(day_grid) - len(rows)
+
+    at = AirtableClient(DAILY_TABLE_NAME)
+    n  = at.build_cache("Key")
+    print(f"[funnel] {n} existing row(s) in {DAILY_TABLE_NAME!r}"
+          + (f" ({dropped} row(s) older than {cutoff} not pushed)" if dropped else ""))
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    tally = defaultdict(int)
+    for (rep, email, day), counts in sorted(rows.items()):
+        key = f"{rep} | {day}"
+        action, _ = at.upsert(
+            "Key", key,
+            {"Key": key, "Date": day, "Week": _iso_week(day), "Month": day[:7],
+             "BD Email": email, "BD Associate": rep,
+             **{c: counts[c] for c in COLUMNS}, "Updated At": stamp},
+            stamp, updated_at_field="")   # always refresh: a day can gain calls
+        tally[action] += 1
+    at.flush()
+    print(f"[funnel] {DAILY_TABLE_NAME}: created={tally['created']} "
+          f"updated={tally['updated']} skipped={tally['skipped']}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true",
                     help="print the table, write nothing to Airtable")
+    ap.add_argument("--skip-daily", action="store_true",
+                    help="refresh the monthly table only")
     args = ap.parse_args()
 
-    grid, _ = build_funnel(KylasClient())
-    print_table(grid)
+    month_grid, day_grid, _ = build_funnel(KylasClient())
+    print_table(month_grid)
     if args.dry_run:
-        print("[funnel] dry run — nothing written")
+        print(f"[funnel] dry run — nothing written "
+              f"({len(month_grid)} month rows, {len(day_grid)} day rows)")
         return 0
-    push_to_airtable(grid)
+    push_to_airtable(month_grid)
+    if not args.skip_daily:
+        push_daily(day_grid)
     return 0
 
 

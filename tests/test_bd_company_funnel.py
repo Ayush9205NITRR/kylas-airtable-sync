@@ -168,3 +168,43 @@ def test_funnel_nests_at_every_level():
             >= g["Requirements Stated"] >= g["Handoff Calls Held"]
             >= g["SQLs Accepted"])
     assert g["Handoff Calls Held"] >= g["SQLs Accepted"] + g["SQLs Rejected"]
+
+
+# ── daily grain ──────────────────────────────────────────────────────────────
+
+def test_iso_week_labels_group_correctly():
+    """Week labels must be sortable text and agree across a month boundary."""
+    assert fn._iso_week("2026-09-01") == fn._iso_week("2026-08-31"), \
+        "31 Aug and 1 Sep 2026 fall in the same ISO week"
+    assert fn._iso_week("2026-01-05") == "2026-W02"
+    assert fn._iso_week("") == ""
+    assert fn._iso_week("not-a-date") == ""
+
+
+def test_counts_helper_matches_the_column_definitions():
+    o = ORDER
+    r = [o.rank_of("SQL (Sales Qualified Lead)"),
+         o.rank_of("Closing Loops - Low Value"),
+         o.rank_of("CNC (Could Not Connect) - 1"),
+         o.rank_of("Yet to Be Mined")]
+    c = fn._counts(r, o)
+    assert c["Companies Worked"] == 4
+    assert c["Companies Reached"] == 3          # the CNC one drops out
+    assert c["Requirements Stated"] == 2        # SQL + Closing Loops
+    assert c["Handoff Calls Held"] == 2
+    assert c["SQLs Accepted"] == 1
+    assert c["SQLs Rejected"] == 1
+
+
+def test_daily_rows_sum_higher_than_the_monthly_row():
+    """The documented, intentional disagreement: one account worked on two days
+    is 1 for the month but 2 across the daily rows. If these ever match, the
+    two grains have been wrongly collapsed into one."""
+    o = ORDER
+    # same company, two different days, both in the same month
+    month_ranks = [o.rank_of("Follow-up (1)")]                  # distinct → 1
+    day_ranks   = [[o.rank_of("Follow-up (1)")],
+                   [o.rank_of("Follow-up (1)")]]                # 1 per day → 2
+    monthly = fn._counts(month_ranks, o)["Companies Worked"]
+    daily   = sum(fn._counts(d, o)["Companies Worked"] for d in day_ranks)
+    assert monthly == 1 and daily == 2
