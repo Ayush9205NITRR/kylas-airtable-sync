@@ -228,6 +228,19 @@ def _counts(ranks: list, order) -> dict:
     }
 
 
+def _is_closed(period: str, today: str) -> bool:
+    """
+    Has this period finished?
+
+    ISO dates sort lexicographically, so comparing the period against the same
+    number of leading characters of today works for both grains:
+      "2026-08"    vs "2026-09"    -> closed
+      "2026-08-31" vs "2026-09-01" -> closed
+      the current month/day        -> open
+    """
+    return bool(period) and period < today[:len(period)]
+
+
 def _iso_week(day: str) -> str:
     """'2026-09-01' -> '2026-W36'. Precomputed so a BI tool can group by week
     without needing date functions over a text column."""
@@ -395,9 +408,18 @@ def push_to_airtable(grid: dict) -> None:
     print(f"[funnel] {n} existing row(s) in {TABLE_NAME!r}")
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    tally = defaultdict(int)
+    today  = datetime.now(timezone.utc).date().isoformat()
+    frozen = 0
+    tally  = defaultdict(int)
     for (rep, email, month), counts in sorted(grid.items()):
         key = f"{rep} | {month}"
+        # A finished month never gets rewritten. These counts are derived from
+        # CURRENT state, so re-deriving August in December would silently shrink
+        # it: an account re-called in December leaves its August row entirely.
+        # First write wins, so history stops decaying the moment it lands.
+        if _is_closed(month, today) and key in at._cache:
+            frozen += 1
+            continue
         action, _ = at.upsert(
             "Key", key,
             {"Key": key, "Month": month, "BD Email": email, "BD Associate": rep,
@@ -406,7 +428,7 @@ def push_to_airtable(grid: dict) -> None:
         tally[action] += 1
     at.flush()
     print(f"[funnel] Airtable: created={tally['created']} updated={tally['updated']} "
-          f"skipped={tally['skipped']}")
+          f"skipped={tally['skipped']} frozen={frozen} (closed months left as written)")
 
 
 def ensure_daily_table(base_id: str, headers: dict) -> bool:
@@ -461,9 +483,14 @@ def push_daily(day_grid: dict) -> None:
           + (f" ({dropped} row(s) older than {cutoff} not pushed)" if dropped else ""))
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    tally = defaultdict(int)
+    today  = datetime.now(timezone.utc).date().isoformat()
+    frozen = 0
+    tally  = defaultdict(int)
     for (rep, email, day), counts in sorted(rows.items()):
         key = f"{rep} | {day}"
+        if _is_closed(day, today) and key in at._cache:
+            frozen += 1          # a finished day is a record, not a projection
+            continue
         action, _ = at.upsert(
             "Key", key,
             {"Key": key, "Date": day, "Week": _iso_week(day), "Month": day[:7],
@@ -473,7 +500,8 @@ def push_daily(day_grid: dict) -> None:
         tally[action] += 1
     at.flush()
     print(f"[funnel] {DAILY_TABLE_NAME}: created={tally['created']} "
-          f"updated={tally['updated']} skipped={tally['skipped']}")
+          f"updated={tally['updated']} skipped={tally['skipped']} "
+          f"frozen={frozen} (closed days left as written)")
 
 
 def prune_expired(table_name: str, cutoff: str) -> int:

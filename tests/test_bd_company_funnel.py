@@ -249,3 +249,30 @@ def test_retention_window_is_bounded_and_sane():
     assert 90 <= fn.DAILY_HISTORY_DAYS <= 800
     est_rows = (fn.DAILY_HISTORY_DAYS / 30) * 400
     assert est_rows < 10_000, f"retention would imply ~{est_rows:.0f} rows"
+
+
+# ── freezing closed periods ──────────────────────────────────────────────────
+
+def test_closed_months_and_days_are_detected():
+    t = "2026-09-01"
+    assert fn._is_closed("2026-08", t) is True
+    assert fn._is_closed("2026-08-31", t) is True
+    assert fn._is_closed("2026-09", t) is False, "the current month is still open"
+    assert fn._is_closed("2026-09-01", t) is False, "today is still open"
+    assert fn._is_closed("2026-10", t) is False, "a future month is not closed"
+    assert fn._is_closed("", t) is False
+
+
+def test_freeze_boundary_rolls_over_at_month_end():
+    """On 1 Sep, August closes. On 31 Aug it must still be open, or the last
+    day's calls would never be recorded."""
+    assert fn._is_closed("2026-08", "2026-08-31") is False
+    assert fn._is_closed("2026-08", "2026-09-01") is True
+    assert fn._is_closed("2026-08-31", "2026-08-31") is False
+    assert fn._is_closed("2026-08-31", "2026-09-01") is True
+
+
+def test_year_boundary_closes_correctly():
+    assert fn._is_closed("2026-12", "2027-01-01") is True
+    assert fn._is_closed("2026-12-31", "2027-01-01") is True
+    assert fn._is_closed("2027-01", "2027-01-01") is False
