@@ -212,9 +212,11 @@ def test_daily_rows_sum_higher_than_the_monthly_row():
 
 # ── BD roster filter ─────────────────────────────────────────────────────────
 
-def test_roster_is_read_from_team_json_and_is_all_emails():
+def test_roster_is_lowercased_emails():
+    """Source is Airtable 'BD Members' (Active only) with team.json as fallback;
+    in this sandbox Airtable is unreachable, so this exercises the fallback."""
     r = fn.bd_roster()
-    assert len(r) == 18, f"expected the 18-person BD team, got {len(r)}"
+    assert r, "roster must not be empty"
     assert all("@" in e and e == e.lower() for e in r), "emails, lowercased"
 
 
@@ -239,3 +241,11 @@ def test_prune_is_a_noop_without_a_roster():
     """An unreadable team.json yields an empty roster; pruning then must not
     delete the entire table."""
     assert fn.prune_non_roster("BD Company Funnel", set()) == 0
+
+
+def test_retention_window_is_bounded_and_sane():
+    """Unbounded growth was the bug: pushes were capped but nothing deleted
+    rows that aged out. 400 days at ~400 rows/month settles near 5k."""
+    assert 90 <= fn.DAILY_HISTORY_DAYS <= 800
+    est_rows = (fn.DAILY_HISTORY_DAYS / 30) * 400
+    assert est_rows < 10_000, f"retention would imply ~{est_rows:.0f} rows"

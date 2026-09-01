@@ -159,21 +159,55 @@ def _build_user_map(kylas) -> dict:
 
 def bd_roster() -> set:
     """
-    Lowercased emails of the BD team, from config/team.json bd_team.
+    Lowercased emails of ACTIVE BD members.
+
+    Airtable 'BD Members' is the authority — it carries the Active checkbox and
+    a Group column, so deactivating someone there stops them syncing on the
+    next run with no code change. config/team.json bd_team is only a FALLBACK
+    for when that table is unreadable.
+
+    Deliberately NOT the merge that 04_email_alert._load_bd_members() does: it
+    adds team.json members missing from the Airtable list, which would resurrect
+    someone who had just been marked inactive (their email is absent from the
+    active set, so the merge treats them as new). For a dashboard roster,
+    "inactive means gone" has to hold.
 
     Matched on EMAIL, not name: the roster stores short names ("Aditi") while
-    Kylas resolves full ones ("Aditi saini"), so name matching would drop half
-    the team. sync_team.py keeps team.json current, so this follows joiners and
-    leavers automatically.
+    Kylas resolves full ones ("Aditi saini"), so name matching drops most of
+    the team.
     """
+    try:
+        from utils.airtable_client import AirtableClient
+        rows = AirtableClient("BD Members").table.all()
+        active = {
+            str(r["fields"]["Email"]).strip().lower()
+            for r in rows
+            if r["fields"].get("Active", True)
+            and str(r["fields"].get("Group", "BD")).strip().upper() == "BD"
+            and r["fields"].get("Email")
+        }
+        if active:
+            inactive = sum(1 for r in rows if not r["fields"].get("Active", True))
+            print(f"[funnel] roster: {len(active)} active BD member(s) from "
+                  f"Airtable 'BD Members'"
+                  + (f", {inactive} inactive excluded" if inactive else ""))
+            return active
+        print("[funnel] WARN: 'BD Members' returned no active rows — "
+              "falling back to team.json")
+    except Exception as exc:
+        print(f"[funnel] WARN: 'BD Members' unreadable ({exc}) — "
+              f"falling back to team.json")
+
     tp = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                       "config", "team.json")
     try:
         import json
         with open(tp) as fh:
             roster = json.load(fh).get("bd_team") or []
-        return {str(m.get("email", "")).strip().lower()
-                for m in roster if m.get("email")}
+        emails = {str(m.get("email", "")).strip().lower()
+                  for m in roster if m.get("email")}
+        print(f"[funnel] roster: {len(emails)} member(s) from team.json bd_team")
+        return emails
     except Exception as exc:
         print(f"[funnel] WARN: bd_team unreadable ({exc}) — not filtering")
         return set()
@@ -442,6 +476,33 @@ def push_daily(day_grid: dict) -> None:
           f"updated={tally['updated']} skipped={tally['skipped']}")
 
 
+def prune_expired(table_name: str, cutoff: str) -> int:
+    """
+    Delete daily rows older than the retention window.
+
+    push_daily() only caps what it WRITES; without this the table would grow
+    without limit, since nothing ever removed rows that aged past the cutoff.
+    At ~18 reps x ~22 working days that is ~400 rows a month, so 400 days of
+    retention settles at roughly 5k rows instead of climbing forever.
+    """
+    from utils.airtable_client import AirtableClient
+    tbl = AirtableClient(table_name)
+    try:
+        records = tbl.table.all()
+    except Exception as exc:
+        print(f"[funnel] WARN: could not read {table_name!r} to prune — {exc}")
+        return 0
+    stale = [r["id"] for r in records
+             if str(r["fields"].get("Date", "")) and str(r["fields"]["Date"]) < cutoff]
+    if not stale:
+        return 0
+    print(f"[funnel] pruning {len(stale)} row(s) older than {cutoff} from {table_name!r}")
+    for i in range(0, len(stale), 10):
+        time.sleep(0.2)
+        tbl.table.batch_delete(stale[i:i + 10])
+    return len(stale)
+
+
 def prune_non_roster(table_name: str, roster: set) -> int:
     """
     Delete rows whose BD Email is not on the roster.
@@ -508,6 +569,13 @@ def main() -> int:
         prune_non_roster(TABLE_NAME, roster)
         if not args.skip_daily:
             prune_non_roster(DAILY_TABLE_NAME, roster)
+
+    # Bound the daily table: rows that have aged out of the retention window
+    # are never rewritten by push_daily(), so they must be deleted explicitly.
+    if not args.skip_daily:
+        cutoff = (datetime.now(timezone.utc).date()
+                  - timedelta(days=DAILY_HISTORY_DAYS)).isoformat()
+        prune_expired(DAILY_TABLE_NAME, cutoff)
     return 0
 
 
