@@ -1,0 +1,46 @@
+name: BD Metrics Daily (long form)
+
+# Writes "BD Metrics Daily" — one row per associate per day per metric, so a
+# chart can put metric NAMES on the X-axis. The wide funnel tables cannot do
+# that: a chart plots the values of ONE column, and there each metric is its own
+# column.
+#
+# Runs 20 minutes after bd_company_funnel so the two never hit Kylas at once and
+# rate-limit each other.
+
+on:
+  schedule:
+    - cron: '50 6 * * *'      # 12:20 PM IST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print a summary only, write nothing to Airtable'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build the long-form metrics
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          python scripts/bd_metrics_long.py $ARGS
+        env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
