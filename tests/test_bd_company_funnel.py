@@ -233,3 +233,9 @@ def test_non_roster_owners_are_not_in_the_roster():
     r = fn.bd_roster()
     for email in ("superadmin@enout.in", "charu@enout.in", "vedant@enout.in"):
         assert email not in r
+
+
+def test_prune_is_a_noop_without_a_roster():
+    """An unreadable team.json yields an empty roster; pruning then must not
+    delete the entire table."""
+    assert fn.prune_non_roster("BD Company Funnel", set()) == 0

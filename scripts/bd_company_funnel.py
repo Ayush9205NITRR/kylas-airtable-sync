@@ -53,6 +53,7 @@ appears on three daily rows. Daily answers "how much activity", monthly answers
 import argparse
 import os
 import sys
+import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
@@ -441,6 +442,44 @@ def push_daily(day_grid: dict) -> None:
           f"updated={tally['updated']} skipped={tally['skipped']}")
 
 
+def prune_non_roster(table_name: str, roster: set) -> int:
+    """
+    Delete rows whose BD Email is not on the roster.
+
+    The upsert only stops WRITING non-roster people; rows created by earlier
+    runs would otherwise sit there forever and still show on the dashboard.
+    Scoped deliberately narrowly — only rows failing the roster test go, never
+    "any row this run did not touch", which would delete legitimate periods a
+    rep happened to be inactive in.
+
+    Safe because both tables are derived: everything here is rebuilt from Kylas
+    on the next run.
+    """
+    if not roster:
+        return 0
+    from utils.airtable_client import AirtableClient
+    tbl = AirtableClient(table_name)
+    try:
+        records = tbl.table.all()
+    except Exception as exc:
+        print(f"[funnel] WARN: could not read {table_name!r} to prune — {exc}")
+        return 0
+
+    stale = [r["id"] for r in records
+             if str(r["fields"].get("BD Email", "")).strip().lower() not in roster]
+    if not stale:
+        return 0
+
+    who = sorted({str(r["fields"].get("BD Associate", "?")) for r in records
+                  if str(r["fields"].get("BD Email", "")).strip().lower() not in roster})
+    print(f"[funnel] pruning {len(stale)} non-roster row(s) from {table_name!r}: "
+          + ", ".join(who))
+    for i in range(0, len(stale), 10):
+        time.sleep(0.2)             # same pacing the BD Stats prune uses
+        tbl.table.batch_delete(stale[i:i + 10])
+    return len(stale)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true",
@@ -461,6 +500,14 @@ def main() -> int:
     push_to_airtable(month_grid)
     if not args.skip_daily:
         push_daily(day_grid)
+
+    # Rows for people who have since left the roster (or were never on it) are
+    # not touched by the upserts above, so remove them explicitly.
+    if not args.all_owners:
+        roster = bd_roster()
+        prune_non_roster(TABLE_NAME, roster)
+        if not args.skip_daily:
+            prune_non_roster(DAILY_TABLE_NAME, roster)
     return 0
 
 
