@@ -1,0 +1,51 @@
+name: Assign Contacts to Company Owner
+
+# Whoever owns a company in Kylas should own every contact under it. This
+# writes contact ownership in PRODUCTION Kylas for potentially thousands of
+# contacts at once, so it is manual-only (no schedule) and defaults to a
+# report-only dry run — you must explicitly type CONFIRM to let it write.
+#
+# Safe to re-run any time: an already-correct contact is a no-op, never a
+# re-write. Use it once for the backfill, then occasionally (or add it to a
+# schedule later once you have watched it run clean a few times).
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type CONFIRM (exact case) to actually reassign. Anything else stays dry-run.'
+        required: false
+        default: ''
+      limit:
+        description: 'Only reassign the first N contacts this run (blank = all). Use for a cautious first real run.'
+        required: false
+        default: ''
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Plan (and apply, only if confirmed)
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.confirm }}" = "CONFIRM" ]; then
+            ARGS="--apply"
+            if [ -n "${{ github.event.inputs.limit }}" ]; then
+              ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
+            fi
+          else
+            echo "Not confirmed (type CONFIRM in the input to write) — dry run only."
+          fi
+          python scripts/assign_contacts_to_company_owner.py $ARGS
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
