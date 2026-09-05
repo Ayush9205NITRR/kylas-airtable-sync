@@ -65,13 +65,13 @@ time are triggered externally via `workflow_dispatch` instead.
 | `08:00` *(cron-job.org)* | 13:30 | `sync_1_30pm` | Midday sync |
 | `0 13` Mon–Sat | 18:30 | `call_invites` | Calendar blocks |
 | `13:00` *(cron-job.org)* | 18:30 | `sync_6_00pm` | EOD sync + rollup |
-| **`15 8` daily** | **13:45** | **`bd_stage_changes`** | **Detect stage moves → BD Stage Changes** |
-| **`30 8` daily** | **14:00** | **`bd_metrics_long`** | **Base table + midday team digest** |
-| **`45 12` daily** | **18:15** | **`bd_stage_changes`** | **Detect stage moves (evening batch)** |
-| **`0 13` daily** | **18:30** | **`bd_metrics_long`** | **Base table + evening team digest** |
+| **`08:15` *(cron-job.org)*** | **13:45** | **`bd_stage_changes`** | **Detect stage moves → BD Stage Changes** |
+| **`08:30` *(cron-job.org)*** | **14:00** | **`bd_metrics_long`** | **Base table + midday team digest** |
+| **`12:45` *(cron-job.org)*** | **18:15** | **`bd_stage_changes`** | **Detect stage moves (evening batch)** |
+| **`13:00` *(cron-job.org)*** | **18:30** | **`bd_metrics_long`** | **Base table + evening team digest** |
 | `30 13` Mon–Fri | 19:00 | `daily_account_status` | Account Health → Kylas |
 | `0 14` Mon–Sat | 19:30 | `bd_trends` | Trends rollup |
-| **`30 13` daily** | **19:00** | **`bd_matrix_views`** | **Contact + Company Matrix** |
+| **`13:30` *(cron-job.org)*** | **19:00** | **`bd_matrix_views`** | **Contact + Company Matrix** |
 | `30 2` Mon | 08:00 | `account_health_weekly` | Account Health digest |
 | Sat `03:30` *(cron-job.org)* | 09:00 | `weekly_report` | Weekly team digest |
 | 1st `03:30` *(cron-job.org)* | 09:00 | `monthly_report` | Monthly team digest |
@@ -91,10 +91,28 @@ The midday digest reports the day **so far**; the evening one reports the day as
 it finished. Run these out of order and the later ones read stale or empty input
 — each warns loudly rather than silently reporting zeros.
 
-⚠️ **GitHub's cron drifts, and not by a little.** The 13:30 UTC run on
-2026-09-05 fired at 16:11 — 2h41m late. These times are therefore
-approximate. If 2:00 PM and 6:30 PM must be exact, move these two to
-cron-job.org via `workflow_dispatch`, as the sync jobs already are.
+These five are triggered by **cron-job.org**, not GitHub cron, and none of them
+carries a native `schedule:`. GitHub's cron drifts late — the 13:30 UTC run on
+2026-09-05 fired at 16:11, 2h41m behind — which for a dependent chain is worse
+than merely late: detection could land *after* the digest that reads it, and the
+digest would report zeros with no error. External triggering makes the order
+hold.
+
+**Adding a workflow to cron-job.org.** One job per time slot, all identical
+apart from the URL and the schedule:
+
+    Method   POST
+    URL      https://api.github.com/repos/Ayush9205NITRR/kylas-airtable-sync
+             /actions/workflows/<FILE>.yml/dispatches
+    Headers  Accept: application/vnd.github+json
+             Authorization: Bearer <GitHub PAT with `actions: write`>
+             Content-Type: application/json
+             User-Agent: cron-job.org
+    Body     {"ref":"main"}
+
+A success is **HTTP 204 No Content** with an empty body — not 200. A 404 almost
+always means the PAT lacks access or the workflow file is not on the default
+branch.
 
 ---
 

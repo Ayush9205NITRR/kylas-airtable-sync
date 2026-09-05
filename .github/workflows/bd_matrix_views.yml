@@ -8,8 +8,10 @@ name: BD Matrix Views (Company + Contact)
 # reads. Nothing is measured here — a failure loses a view, never data.
 
 on:
-  schedule:
-    - cron: '30 13 * * *'     # 7:00 PM IST, 30 min after the evening digest
+  # Scheduling is owned by cron-job.org, which fires workflow_dispatch at
+  # exactly 13:30 UTC / 7:00 PM IST — 30 min after the evening digest, which
+  # writes the base table this rolls up. No native `schedule:` here: GitHub's
+  # cron drifts late, which would run this before its input existed.
   workflow_dispatch:
     inputs:
       month:

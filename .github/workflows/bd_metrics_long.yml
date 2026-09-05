@@ -15,13 +15,14 @@ name: BD Metrics Daily (long form)
 # rather than half-finished.
 
 on:
-  schedule:
-    # Two digests a day, each reporting the day SO FAR at that moment:
-    #   midday  — 2:00 PM IST, activity up to 2:00 PM
-    #   evening — 6:30 PM IST, the day as it finished
-    # bd_stage_changes runs 15 min before each, since this derives from it.
-    - cron: '30 8 * * *'       # 2:00 PM IST
-    - cron: '0 13 * * *'       # 6:30 PM IST
+  # Scheduling is owned by cron-job.org, which fires workflow_dispatch twice a
+  # day at exactly 08:30 UTC / 2:00 PM IST (the day so far) and 13:00 UTC /
+  # 6:30 PM IST (the day as it finished). bd_stage_changes runs 15 min before
+  # each, since this derives everything from the rows it writes.
+  #
+  # No native `schedule:` here: GitHub's cron drifts late — the 13:30 UTC run on
+  # 2026-09-05 fired at 16:11, 2h41m late — so a digest labelled "2:00 PM" could
+  # land at any hour, and would race the detection job it depends on.
   workflow_dispatch:
     inputs:
       dry_run:

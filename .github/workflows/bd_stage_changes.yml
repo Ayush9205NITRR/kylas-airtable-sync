@@ -8,13 +8,12 @@ name: BD Stage Changes
 # sync, so a day's moves are captured once with the day's work in them.
 
 on:
-  schedule:
-    # Runs 15 minutes before each digest, because bd_metrics_long derives
-    # everything from the rows this writes. Detecting twice a day also splits
-    # the day's moves into a midday and an evening batch rather than one
-    # end-of-day lump.
-    - cron: '15 8 * * *'       # 1:45 PM IST — feeds the 2:00 PM digest
-    - cron: '45 12 * * *'      # 6:15 PM IST — feeds the 6:30 PM digest
+  # Scheduling is owned by cron-job.org, which fires workflow_dispatch twice a
+  # day at exactly 08:15 UTC / 1:45 PM IST and 12:45 UTC / 6:15 PM IST — 15 min
+  # before each digest, because bd_metrics_long derives everything from the rows
+  # this writes. No native `schedule:` here: GitHub's cron drifts late (2h41m
+  # observed on 2026-09-05), which would put detection AFTER the digest that
+  # depends on it and quietly report zeros.
   workflow_dispatch:
     inputs:
       dry_run:
