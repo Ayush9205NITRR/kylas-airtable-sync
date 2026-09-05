@@ -94,20 +94,85 @@ def test_multiple_contacts_under_one_company_all_move_to_its_owner():
     assert stats["already_correct"] == 1
 
 
-def test_apply_moves_respects_limit_and_counts_failures():
-    calls = []
+class _FakeKylasWrite:
+    """update_contact_owner() always reports success; get_contact() returns
+    whatever owner_after_write says it actually is — lets a test simulate the
+    silent-no-op fallback bug independently of the call's own return value."""
+    def __init__(self, owner_after_write: dict, call_result=None):
+        self._owner_after = owner_after_write
+        self._call_result = call_result if call_result is not None else {}
+        self.calls = []
 
-    class _K:
-        def update_contact_owner(self, cid, uid):
-            calls.append((cid, uid))
-            return cid != 2   # contact 2 "fails"
+    def update_contact_owner(self, cid, uid):
+        self.calls.append((cid, uid))
+        return self._call_result.get(cid, True)
 
+    def get_contact(self, cid):
+        return {"ownedBy": {"id": self._owner_after.get(cid)}}
+
+
+def test_apply_moves_respects_limit():
+    k = _FakeKylasWrite(owner_after_write={1: 10, 2: 10, 3: 10})
     moves = [{"contact_id": 1, "to_owner": 10, "contact_name": "A"},
              {"contact_id": 2, "to_owner": 10, "contact_name": "B"},
              {"contact_id": 3, "to_owner": 10, "contact_name": "C"}]
-    tally = ac.apply_moves(_K(), moves, limit=2)
-    assert len(calls) == 2, "limit=2 must stop after the second move"
-    assert tally == {"ok": 1, "failed": 1}
+    ac.apply_moves(k, moves, limit=2)
+    assert len(k.calls) == 2, "limit=2 must stop after the second move"
+
+
+def test_apply_moves_counts_a_failed_api_call():
+    k = _FakeKylasWrite(owner_after_write={1: 10}, call_result={2: False})
+    moves = [{"contact_id": 1, "to_owner": 10, "contact_name": "A"},
+             {"contact_id": 2, "to_owner": 10, "contact_name": "B"}]
+    tally = ac.apply_moves(k, moves)
+    assert tally == {"ok": 1, "failed": 1, "unverified": 0}
+
+
+def test_apply_moves_catches_the_silent_no_op_fallback_bug():
+    """The exact failure mode reported in production: update_contact_owner()
+    returns True, but the owner never actually changed (the fallback PUT is a
+    documented no-op) and Kylas is left showing some other owner (e.g. the
+    API key's own service account). Must be counted as FAILED, not ok —
+    trusting the boolean here is precisely what let this go unnoticed."""
+    k = _FakeKylasWrite(owner_after_write={1: 999})   # call succeeds, owner is wrong
+    moves = [{"contact_id": 1, "to_owner": 10, "contact_name": "A"}]
+    tally = ac.apply_moves(k, moves)
+    assert tally == {"ok": 0, "failed": 1, "unverified": 0}
+
+
+def test_apply_moves_confirms_a_real_success():
+    k = _FakeKylasWrite(owner_after_write={1: 10})
+    moves = [{"contact_id": 1, "to_owner": 10, "contact_name": "A"}]
+    tally = ac.apply_moves(k, moves)
+    assert tally == {"ok": 1, "failed": 0, "unverified": 0}
+
+
+def test_apply_moves_counts_unverified_when_the_read_back_itself_fails():
+    class _K:
+        def update_contact_owner(self, cid, uid):
+            return True
+        def get_contact(self, cid):
+            raise RuntimeError("network blip")
+
+    tally = ac.apply_moves(_K(), [{"contact_id": 1, "to_owner": 10, "contact_name": "A"}])
+    assert tally == {"ok": 0, "failed": 0, "unverified": 1}
+
+
+def test_current_owner_id_reads_ownedby_dict_first_then_ownerid():
+    class _K:
+        def get_contact(self, cid):
+            return {"ownedBy": {"id": 42}, "ownerId": 7}
+    assert ac._current_owner_id(_K(), 1) == 42
+
+    class _K2:
+        def get_contact(self, cid):
+            return {"ownedBy": None, "ownerId": 7}
+    assert ac._current_owner_id(_K2(), 1) == 7
+
+    class _K3:
+        def get_contact(self, cid):
+            return {}
+    assert ac._current_owner_id(_K3(), 1) is None
 
 
 def test_dry_run_is_the_default_and_writes_nothing(monkeypatch, capsys):

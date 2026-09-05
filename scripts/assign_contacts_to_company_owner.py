@@ -117,14 +117,55 @@ def print_summary(moves: list, stats: dict, user_names: dict) -> None:
         print(f"  {user_names.get(uid, f'user #{uid}'):<30} +{n} contact(s)")
 
 
+def _current_owner_id(kylas: KylasClient, contact_id) -> int:
+    """Read a contact's owner straight back from Kylas, ignoring nothing."""
+    ct = kylas.get_contact(contact_id)
+    ob = ct.get("ownedBy")
+    if isinstance(ob, dict) and ob.get("id"):
+        return int(ob["id"])
+    oid = ct.get("ownerId")
+    return int(oid) if oid else None
+
+
 def apply_moves(kylas: KylasClient, moves: list, limit: int = None) -> dict:
-    tally = {"ok": 0, "failed": 0}
+    """
+    Reassign, then VERIFY by reading each contact back — never trust
+    update_contact_owner()'s return value alone.
+
+    Its fallback path does a full PUT with `ownedBy` set, but Kylas ignores
+    `ownedBy` on that endpoint (its own docstring says so) and the fallback
+    also strips `ownerId` from the body before sending. That PUT changes
+    nothing about ownership, Kylas is then free to leave (or default) the
+    owner to whatever the API key's own account is, and the function still
+    returns True — a silent no-op reported as success. This is almost
+    certainly the source of contacts turning up owned by the API's own
+    service account after a reassignment. Reading back and comparing is the
+    only way to know a move actually landed, since the call succeeding
+    proves nothing here.
+    """
+    tally = {"ok": 0, "failed": 0, "unverified": 0}
     for m in moves[:limit] if limit else moves:
-        ok = kylas.update_contact_owner(m["contact_id"], m["to_owner"])
-        tally["ok" if ok else "failed"] += 1
-        if not ok:
+        called_ok = kylas.update_contact_owner(m["contact_id"], m["to_owner"])
+        if not called_ok:
+            tally["failed"] += 1
             print(f"  [FAILED] contact {m['contact_id']} "
-                  f"({m['contact_name']!r}) -> owner {m['to_owner']}")
+                  f"({m['contact_name']!r}) -> owner {m['to_owner']} — API call failed")
+            continue
+        try:
+            actual = _current_owner_id(kylas, m["contact_id"])
+        except Exception as exc:
+            tally["unverified"] += 1
+            print(f"  [UNVERIFIED] contact {m['contact_id']} "
+                  f"({m['contact_name']!r}) — call reported success but the "
+                  f"read-back to confirm it failed ({exc})")
+            continue
+        if actual == m["to_owner"]:
+            tally["ok"] += 1
+        else:
+            tally["failed"] += 1
+            print(f"  [FAILED] contact {m['contact_id']} ({m['contact_name']!r}) "
+                  f"-> wanted owner {m['to_owner']}, Kylas now shows {actual} — "
+                  f"the write silently did not take (see docstring above)")
     return tally
 
 
@@ -159,8 +200,9 @@ def main() -> int:
     n = len(moves) if args.limit is None else min(args.limit, len(moves))
     print(f"\n[assign] Applying {n} of {len(moves)} reassignment(s)...")
     tally = apply_moves(kylas, moves, args.limit)
-    print(f"[assign] Done — {tally['ok']} reassigned, {tally['failed']} failed")
-    return 1 if tally["failed"] else 0
+    print(f"[assign] Done — {tally['ok']} confirmed reassigned, "
+          f"{tally['failed']} failed, {tally['unverified']} could not be checked")
+    return 1 if (tally["failed"] or tally["unverified"]) else 0
 
 
 if __name__ == "__main__":
