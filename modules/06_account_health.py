@@ -1016,6 +1016,25 @@ def run(kylas=None, send_email: bool = True) -> dict:
         if _stage_changes:
             print(f"[Account Health] Stage changes (full coverage): "
                   f"{len(_stage_changes)}")
+            # Whoever detects a change is responsible for logging it: diff()
+            # is "first write wins", so if this run doesn't push these to BD
+            # Stage Changes / BD Stage Change Daily, the standalone
+            # bd_stage_changes.py job (or the next sync) will see this
+            # snapshot already reflects them and silently log NOTHING for a
+            # change that genuinely happened.
+            try:
+                import importlib.util as _ilu
+                _bsc_path = os.path.join(os.path.dirname(__file__), "..",
+                                         "scripts", "bd_stage_changes.py")
+                _spec = _ilu.spec_from_file_location("bd_stage_changes", _bsc_path)
+                _bsc = _ilu.module_from_spec(_spec)
+                _spec.loader.exec_module(_bsc)
+                from utils.account_pipeline import load_order as _load_order
+                _order = _load_order()
+                _bsc.push(_stage_changes, _bsc.summarise(_stage_changes, _order))
+            except Exception as _exc:
+                print(f"[Account Health] WARNING: could not log stage changes "
+                      f"to Airtable — {_exc}")
     except Exception as _exc:
         print(f"[Account Health] WARNING: stage-change diff skipped — {_exc}")
         stage_snap = {}

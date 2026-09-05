@@ -193,6 +193,23 @@ def run(test_mode: bool = False, test_id: int = None,
             print(f"[Contacts] Stage changes detected: {len(stage_changes)} "
                   f"(of {stage_stats['changed'] + stage_stats['unchanged']} "
                   f"contacts with a stage in this batch)")
+            # diff() is "first write wins": if THIS module doesn't log what it
+            # just detected, 06_account_health.py's later full-coverage diff in
+            # the same run will see the snapshot already reflects it and log
+            # nothing — the change would be real but invisible everywhere.
+            try:
+                import importlib.util as _ilu
+                _bsc_path = os.path.join(os.path.dirname(__file__), "..",
+                                         "scripts", "bd_stage_changes.py")
+                _spec = _ilu.spec_from_file_location("bd_stage_changes", _bsc_path)
+                _bsc = _ilu.module_from_spec(_spec)
+                _spec.loader.exec_module(_bsc)
+                from utils.account_pipeline import load_order as _load_order
+                _order = _load_order()
+                _bsc.push(stage_changes, _bsc.summarise(stage_changes, _order))
+            except Exception as _exc:
+                print(f"[Contacts] WARNING: could not log stage changes to "
+                      f"Airtable — {_exc}")
 
         for ct in contacts:
             try:
