@@ -92,16 +92,33 @@ def save(snapshot: dict, path: str = None, today: str = "") -> None:
     os.replace(tmp, path)     # atomic: a killed run cannot half-write it
 
 
-def diff(prev: dict, current: dict, today: str) -> tuple:
+def diff(prev: dict, current: dict, today: str, is_call=None) -> tuple:
     """
     prev:    snapshot from the last run ({} on the very first run)
     current: {contact_id: {"stage", "owner", "email", "company"}} read now
     today:   ISO date the observation is attributed to
+    is_call: optional callable(to_stage) -> bool. Decides whether landing on
+             a given stage counts as a CALL (sets last_call_date), separately
+             from whether the stage merely DIFFERS (which always updates
+             `stage`/`since`/`changes` — the contact's position did move,
+             that part is never in question).
+
+             Without this, any difference sets last_call_date, which breaks
+             on a picklist RENAME: Kylas relabelling id 2862826 from "Yet to
+             Be Mined" to "LinkedIn Outreach Initiated" made every contact
+             sitting at the bottom of the funnel look, once, like it had just
+             been called — 12,638 of them, in the run that first hit it. Pass
+             `is_call=lambda s: order.rank_of(s) != order.unmined_rank` (see
+             utils/account_pipeline.py) so landing back on the bottom stage —
+             whether by a rename or a real regression — is recorded as a
+             stage change but never mistaken for a call.
 
     Returns (new_snapshot, changes, stats). `changes` is a list of
     {contact_id, owner, email, company, from, to, date} — one per contact whose
-    stage differs from last time. Contacts absent from `current` (deleted, or
-    outside this run's filter) are carried through untouched.
+    stage differs from last time, REGARDLESS of is_call (the change is real
+    either way; only whether it set last_call_date depends on is_call).
+    Contacts absent from `current` (deleted, or outside this run's filter) are
+    carried through untouched.
     """
     out = dict(prev)
     changes = []
@@ -135,7 +152,8 @@ def diff(prev: dict, current: dict, today: str) -> tuple:
             entry["stage"] = stage
             entry["since"] = today
             entry["changes"] = int(entry.get("changes", 0)) + 1
-            entry["last_call_date"] = today   # the ONLY thing that sets this
+            if is_call is None or is_call(stage):
+                entry["last_call_date"] = today   # the ONLY thing that sets this
             stats["changed"] += 1
         else:
             stats["unchanged"] += 1

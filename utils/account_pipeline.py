@@ -60,6 +60,15 @@ class AccountPipelineOrder:
         self.label_by_rank = {i + 1: lbl for i, lbl in enumerate(self.order)}
         self.rank_by_norm = {_norm(lbl): i + 1 for i, lbl in enumerate(self.order)}
 
+        # The stage occupying the LAST rank is "un-mined" — the bottom-of-
+        # funnel stage nobody has worked yet. Kylas has renamed this exact
+        # option once already (id 2862826: "Yet to Be Mined" ->
+        # "LinkedIn Outreach Initiated"); deriving it from rank position
+        # rather than hardcoding a label means the next rename needs no code
+        # change anywhere that used to match the literal string.
+        self.unmined_rank  = len(self.order)
+        self.unmined_label = self.label_by_rank[self.unmined_rank]
+
         dupes = len(self.order) - len(self.rank_by_norm)
         if dupes:
             raise ValueError(
@@ -173,7 +182,7 @@ def compute_account_pipeline(contacts: list, order: AccountPipelineOrder = None,
         # in 06_account_health.py already treats it that way ("not stage or
         # 'Yet to Be Mined'"); without this the two modules disagree and an
         # account whose contacts all have empty stages stays blank forever.
-        rank = order.rank_of(stage_of(ct) or "Yet to Be Mined")
+        rank = order.rank_of(stage_of(ct) or order.unmined_label)
         cur = best.get(cid)
         if cur is None:
             best[cid] = rank

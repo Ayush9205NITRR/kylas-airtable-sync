@@ -229,7 +229,9 @@ def main() -> int:
     current = read_contacts(KylasClient(), all_owners=args.all_owners)
     prev    = stage_history.load()
 
-    snapshot, changes, stats = stage_history.diff(prev, current, today)
+    snapshot, changes, stats = stage_history.diff(
+        prev, current, today,
+        is_call=lambda s: order.rank_of(s) != order.unmined_rank)
 
     if not prev:
         print(f"[stage] BASELINE established for {stats['new']} contact(s) — "

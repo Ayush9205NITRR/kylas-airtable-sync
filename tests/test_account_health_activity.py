@@ -171,16 +171,19 @@ def test_failed_ranking_leaves_the_column_untouched():
 
 
 def test_the_two_empty_states_are_labelled_differently():
-    """No contacts at all vs contacts nobody ranked — distinct labels."""
+    """No contacts at all vs contacts nobody ranked — distinct labels.
+    UNMINED_STAGE is derived from account_pipeline_order.json's last rank
+    (currently "LinkedIn Outreach Initiated", renamed from "Yet to Be Mined"
+    at the Kylas source — id 2862826), not hardcoded here."""
     assert ah.NO_CONTACT_STAGE == "No Contacts"
-    assert ah.UNMINED_STAGE == "Yet to Be Mined"
+    assert ah.UNMINED_STAGE == "LinkedIn Outreach Initiated"
 
     tbl = _FakeTbl({"1": _rec("rec1", "1"), "99": _rec("rec99", "99")})
     health = {"1": {"status": "Active", "account_pipeline_stage": "",
                     "last_called": "", "needs_reassign": False}}
     ah._write_table(tbl, health, _FM)
     w = _written(tbl._updates)
-    assert w["1"] == "Yet to Be Mined", "has contacts, none ranked"
+    assert w["1"] == ah.UNMINED_STAGE, "has contacts, none ranked"
     assert w["99"] == "No Contacts", "no contacts at all"
 
 

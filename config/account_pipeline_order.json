@@ -29,16 +29,17 @@
     "Invalid Contact",
     "Not a Decision Maker (NDM)",
     "POC - Organization - Changed",
-    "Yet to Be Mined"
+    "LinkedIn Outreach Initiated"
   ],
 
   "_aliases_comment": "Extra spellings that map onto a rank in 'order'. Use this for real variants that exist in Kylas, so a rename there does not silently drop accounts to unranked. The value must appear verbatim in 'order'.",
   "aliases": {
     "Offsite Done": "Offsite Done (Late Reachout)",
     "Offsite Dealyed": "Offsite Delayed",
-    "POC - Organisation - Changed": "POC - Organization - Changed"
+    "POC - Organisation - Changed": "POC - Organization - Changed",
+    "Yet to Be Mined": "LinkedIn Outreach Initiated"
   },
 
-  "_unranked_comment": "Stages that exist in Kylas but are intentionally NOT ranked. An unranked stage never wins the account's stage; if EVERY contact on an account is unranked (or the account has no contacts at all), the account's pipeline stage is left blank. Any stage seen at run time that is in neither 'order', 'aliases', nor here is reported loudly as UNRANKED so it can be triaged rather than silently ignored. Currently empty: 'Yet to Be Mined' used to sit here, but it is now rank 24 so an untouched account reads as 'Yet to Be Mined' rather than blank — blank now means only 'no contacts, or no recognised stage'.",
+  "_unranked_comment": "Stages that exist in Kylas but are intentionally NOT ranked. An unranked stage never wins the account's stage; if EVERY contact on an account is unranked (or the account has no contacts at all), the account's pipeline stage is left blank. Any stage seen at run time that is in neither 'order', 'aliases', nor here is reported loudly as UNRANKED so it can be triaged rather than silently ignored. Currently empty: the bottom-of-funnel stage (Kylas option id 2862826, live label 'LinkedIn Outreach Initiated', formerly 'Yet to Be Mined' — see the alias above) sits at rank 24, the LAST rank, so an untouched account reads as that label rather than blank. Code should not hardcode this label: AccountPipelineOrder.unmined_label always resolves to whichever stage currently occupies the last rank, so a future rename here needs no code change.",
   "unranked": []
 }

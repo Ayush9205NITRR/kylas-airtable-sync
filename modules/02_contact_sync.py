@@ -187,8 +187,11 @@ def run(test_mode: bool = False, test_id: int = None,
                 "email": user_email_map.get(_owner_nm, ""),
                 "company": _co_name,
             }
+        from utils.account_pipeline import load_order as _load_order
+        _ap_order = _load_order()
         stage_snap, stage_changes, stage_stats = _stage_history.diff(
-            _prev_snap, _batch, today_iso)
+            _prev_snap, _batch, today_iso,
+            is_call=lambda s: _ap_order.rank_of(s) != _ap_order.unmined_rank)
         if stage_changes:
             print(f"[Contacts] Stage changes detected: {len(stage_changes)} "
                   f"(of {stage_stats['changed'] + stage_stats['unchanged']} "
@@ -204,9 +207,7 @@ def run(test_mode: bool = False, test_id: int = None,
                 _spec = _ilu.spec_from_file_location("bd_stage_changes", _bsc_path)
                 _bsc = _ilu.module_from_spec(_spec)
                 _spec.loader.exec_module(_bsc)
-                from utils.account_pipeline import load_order as _load_order
-                _order = _load_order()
-                _bsc.push(stage_changes, _bsc.summarise(stage_changes, _order))
+                _bsc.push(stage_changes, _bsc.summarise(stage_changes, _ap_order))
             except Exception as _exc:
                 print(f"[Contacts] WARNING: could not log stage changes to "
                       f"Airtable — {_exc}")

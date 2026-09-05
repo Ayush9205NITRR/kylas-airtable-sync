@@ -157,7 +157,8 @@ _STAGE_SHORT = {
     "Discovery Call Booked":                        "DCB",
     "Discovery Call No-Show":                       "DCB-NS",
     "Discovery Call Done - Awaiting Client Inputs": "DCB-Done",
-    "Yet to Be Mined":                              "YtBM",
+    "LinkedIn Outreach Initiated":                  "YtBM",  # renamed from "Yet to Be Mined" (Kylas id 2862826)
+    "Yet to Be Mined":                              "YtBM",  # kept for any stale cached value
     "Not Interested":                               "NOI",
     "Follow-up (1)":                                "FU-1",
     "Follow-up (2)":                                "FU-2",

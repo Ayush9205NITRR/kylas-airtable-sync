@@ -85,12 +85,20 @@ REASSIGN_CUTOFF = "2026-04-19"
 #
 #   UNMINED_STAGE — the company HAS contacts, but none of them resolved to a
 #     rank (an unrecognised stage name). People exist to work; nobody has.
-#     Must match the rank-24 label in config/account_pipeline_order.json.
+#     Derived from account_pipeline_order.json's last rank (see
+#     AccountPipelineOrder.unmined_label) rather than hardcoded: this exact
+#     Kylas option has already been renamed once (id 2862826: "Yet to Be
+#     Mined" -> "LinkedIn Outreach Initiated"), and a hardcoded literal here
+#     would have silently stopped matching anything the next time it happens.
 #
 # Collapsing these two would hide the distinction between "no one to call" and
 # "someone to call that nobody has called".
 NO_CONTACT_STAGE = "No Contacts"
-UNMINED_STAGE    = "Yet to Be Mined"
+try:
+    from utils.account_pipeline import load_order as _load_order
+    UNMINED_STAGE = _load_order().unmined_label
+except Exception:
+    UNMINED_STAGE = "Yet to Be Mined"   # last-resort fallback if config load fails
 
 _TERMINAL_STAGES = {
     "Not Interested",
@@ -249,7 +257,7 @@ def compute_health(contacts: list, user_email_map: dict = None,
         })
         e["total"] += 1
 
-        if not stage or stage == "Yet to Be Mined":
+        if not stage or stage == UNMINED_STAGE:
             e["ytbm"] += 1
         elif stage in _TERMINAL_STAGES:
             e["terminal"] += 1
@@ -1010,8 +1018,10 @@ def run(kylas=None, send_email: bool = True) -> dict:
                 "owner": "",
                 "email": _contact_owner_email(_ct, user_email_map),
             }
+        _ap_order = _load_order()
         stage_snap, _stage_changes, _stage_stats = _stage_history.diff(
-            _prev_stage_snap, _stage_batch, date.today().isoformat())
+            _prev_stage_snap, _stage_batch, date.today().isoformat(),
+            is_call=lambda s: _ap_order.rank_of(s) != _ap_order.unmined_rank)
         _stage_history.save(stage_snap, today=date.today().isoformat())
         if _stage_changes:
             print(f"[Account Health] Stage changes (full coverage): "
@@ -1029,9 +1039,7 @@ def run(kylas=None, send_email: bool = True) -> dict:
                 _spec = _ilu.spec_from_file_location("bd_stage_changes", _bsc_path)
                 _bsc = _ilu.module_from_spec(_spec)
                 _spec.loader.exec_module(_bsc)
-                from utils.account_pipeline import load_order as _load_order
-                _order = _load_order()
-                _bsc.push(_stage_changes, _bsc.summarise(_stage_changes, _order))
+                _bsc.push(_stage_changes, _bsc.summarise(_stage_changes, _ap_order))
             except Exception as _exc:
                 print(f"[Account Health] WARNING: could not log stage changes "
                       f"to Airtable — {_exc}")

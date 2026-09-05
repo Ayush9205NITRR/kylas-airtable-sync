@@ -60,8 +60,22 @@ def test_exact_order_as_specified(order):
         "Invalid Contact",
         "Not a Decision Maker (NDM)",
         "POC - Organization - Changed",
-        "Yet to Be Mined",
+        "LinkedIn Outreach Initiated",
     ]
+
+
+def test_the_kylas_rename_is_covered_by_an_alias(order):
+    """id 2862826 was relabelled "Yet to Be Mined" -> "LinkedIn Outreach
+    Initiated" in Kylas. The old label must still resolve, or every contact
+    still carrying a stale cached value would drop to unranked."""
+    assert order.rank_of("Yet to Be Mined") == order.rank_of("LinkedIn Outreach Initiated") == 24
+
+
+def test_unmined_label_and_rank_are_derived_not_hardcoded(order):
+    """Code should read order.unmined_label / .unmined_rank rather than
+    matching a literal string, so the NEXT rename needs no code change."""
+    assert order.unmined_rank == 24
+    assert order.unmined_label == "LinkedIn Outreach Initiated"
 
 
 def test_no_show_outranks_booked_and_activation_outranks_offsite_delayed(order):
@@ -144,9 +158,11 @@ def test_best_ignores_unrecognised_even_when_listed_first(order):
 
 
 def test_yet_to_be_mined_loses_to_every_real_stage(order):
-    """Rank 24 is last, so any genuine progress outranks an unmined contact."""
+    """Rank 24 is last, so any genuine progress outranks an unmined contact.
+    The input may be spelled either way (alias); the output is always the
+    CANONICAL label — order.best() never echoes back a stale spelling."""
     assert order.best(["Yet to Be Mined", "POC - Organization - Changed"])[1] == 23
-    assert order.best(["Yet to Be Mined"]) == ("Yet to Be Mined", 24)
+    assert order.best(["Yet to Be Mined"]) == ("LinkedIn Outreach Initiated", 24)
 
 
 def test_best_of_nothing_is_blank(order):
@@ -175,14 +191,14 @@ def test_compute_groups_by_company_and_takes_the_best(order):
     contacts = [
         {"company": 1, "s": "MQL (Marketing Qualified Lead)"},
         {"company": 1, "s": "Discovery Call Booked"},
-        {"company": 2, "s": "Yet to Be Mined"},   # ranks 24, no longer blank
+        {"company": 2, "s": "Yet to Be Mined"},   # old alias in, ranks 24
         {"company": 3, "s": "Closing Loops – Low Value"},   # en dash
         {"company": None, "s": "SQL (Sales Qualified Lead)"},  # dropped: no company
     ]
     out = compute_account_pipeline(contacts, order=order, stage_of=lambda c: c["s"])
 
     assert out["1"] == {"stage": "Discovery Call Booked", "rank": 6}
-    assert out["2"] == {"stage": "Yet to Be Mined", "rank": 24}
+    assert out["2"] == {"stage": "LinkedIn Outreach Initiated", "rank": 24}  # canonical out
     assert out["3"] == {"stage": "Closing Loops - Low Value", "rank": 3}
     assert set(out) == {"1", "2", "3"}
 
@@ -211,7 +227,7 @@ def test_blank_stage_counts_as_yet_to_be_mined(order):
     out = compute_account_pipeline(
         [{"company": 5, "s": ""}, {"company": 5, "s": None}],
         order=order, stage_of=lambda c: c["s"])
-    assert out["5"] == {"stage": "Yet to Be Mined", "rank": 24}
+    assert out["5"] == {"stage": order.unmined_label, "rank": order.unmined_rank}
 
 
 def test_a_real_stage_still_beats_a_blank_one(order):

@@ -162,3 +162,61 @@ def test_a_blank_email_from_one_caller_does_not_erase_a_known_one():
                         "2026-09-02")
     assert snap["c1"]["email"] == "anjali.athya@enout.in"
     assert snap["c1"]["stage"] == "MQL (Marketing Qualified Lead)"
+
+
+# ── is_call: a rename must not look like a call ──────────────────────────────
+
+def test_without_is_call_any_change_still_sets_the_date():
+    """Default behaviour (no predicate) is unchanged — every existing test
+    above relies on this."""
+    snap, _, _ = sh.diff({}, _cur(c1="Yet to Be Mined"), "2026-09-02")
+    snap, _, _ = sh.diff(snap, _cur(c1="Follow-up (1)"), "2026-09-05")
+    assert snap["c1"]["last_call_date"] == "2026-09-05"
+
+
+def test_is_call_false_records_the_change_but_not_the_call_date():
+    """A picklist RENAME (same underlying stage, new label) must move the
+    contact's recorded stage — it did change — without setting a call date,
+    since nothing was actually called."""
+    is_unmined = lambda s: s in ("Yet to Be Mined", "LinkedIn Outreach Initiated")
+    is_call = lambda s: not is_unmined(s)
+
+    snap, _, _ = sh.diff({}, _cur(c1="Yet to Be Mined"), "2026-09-02", is_call=is_call)
+    snap, changes, stats = sh.diff(
+        snap, _cur(c1="LinkedIn Outreach Initiated"), "2026-09-05", is_call=is_call)
+
+    assert stats["changed"] == 1 and len(changes) == 1, "the label move is still recorded"
+    assert changes[0] == {"contact_id": "c1", "owner": "Anjali Athya",
+                          "email": "anjali.athya@enout.in", "company": "Acme",
+                          "from": "Yet to Be Mined", "to": "LinkedIn Outreach Initiated",
+                          "date": "2026-09-05"}
+    assert snap["c1"]["stage"] == "LinkedIn Outreach Initiated"
+    assert snap["c1"]["last_call_date"] == "", "a rename is not a call"
+
+
+def test_is_call_true_for_a_genuine_move_off_the_bottom_stage():
+    is_call = lambda s: s != "LinkedIn Outreach Initiated"
+    snap, _, _ = sh.diff({}, _cur(c1="LinkedIn Outreach Initiated"), "2026-09-02",
+                         is_call=is_call)
+    snap, _, _ = sh.diff(snap, _cur(c1="Follow-up (1)"), "2026-09-05", is_call=is_call)
+    assert snap["c1"]["last_call_date"] == "2026-09-05"
+
+
+def test_is_call_false_for_a_regression_back_to_the_bottom_stage():
+    """Not just renames: sliding BACK to the bottom stage is not a call either,
+    under the same rule."""
+    is_call = lambda s: s != "LinkedIn Outreach Initiated"
+    snap, _, _ = sh.diff({}, _cur(c1="Follow-up (1)"), "2026-09-02", is_call=is_call)
+    snap, changes, _ = sh.diff(snap, _cur(c1="LinkedIn Outreach Initiated"),
+                               "2026-09-05", is_call=is_call)
+    assert len(changes) == 1               # the regression is still recorded
+    assert snap["c1"]["last_call_date"] == ""
+
+
+def test_creation_ignores_is_call_entirely():
+    """Creation is never a call regardless of what is_call would say about the
+    stage it starts at."""
+    is_call = lambda s: True   # would say yes to everything
+    snap, _, _ = sh.diff({}, _cur(c1="SQL (Sales Qualified Lead)"), "2026-09-02",
+                         is_call=is_call)
+    assert snap["c1"]["last_call_date"] == ""

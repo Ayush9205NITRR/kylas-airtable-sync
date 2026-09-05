@@ -1,7 +1,10 @@
 """Shared BD stage classification — imported by contact sync, BD stats, and backfill."""
 
 _PIPELINE_STAGE = {
-    2862826: "Yet to Be Mined",
+    # Renamed in Kylas: id 2862826 was "Yet to Be Mined", now "LinkedIn
+    # Outreach Initiated". This static map is only the fallback before
+    # refresh_stage_map() pulls the live picklist, which is the authority.
+    2862826: "LinkedIn Outreach Initiated",
     2862827: "CNC (Could Not Connect) - 1",
     2862828: "MQL (Marketing Qualified Lead)",
     2862829: "Activation",
@@ -59,7 +62,10 @@ DCB_STAGES = {
 SQL_STAGES        = {"SQL (Sales Qualified Lead)"}
 MQL_STAGES        = {"MQL (Marketing Qualified Lead)"}
 ACTIVATION_STAGES = {"Activation"}
-ATTEMPTED_EXCLUDE = {"Yet to Be Mined", ""}
+# Both spellings kept: "LinkedIn Outreach Initiated" is the live label as of
+# the Kylas rename of id 2862826; "Yet to Be Mined" stays for any stale cached
+# value (an Airtable cell not yet touched by a fresh sync) still carrying it.
+ATTEMPTED_EXCLUDE = {"LinkedIn Outreach Initiated", "Yet to Be Mined", ""}
 
 
 def refresh_stage_map(kylas) -> int:
