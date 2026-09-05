@@ -83,9 +83,30 @@ class AccountPipelineOrder:
                     f"account_pipeline_order.json alias {alias!r} points at "
                     f"{target!r}, which is not in 'order'"
                 )
-            self.rank_by_norm[_norm(alias)] = rank
+            # Aliases are applied after 'order', so an alias key that
+            # normalizes onto a real stage would silently overwrite that
+            # stage's rank — the same class of bug the duplicate check above
+            # guards against, but harder to spot because the two spellings
+            # differ on screen.
+            akey = _norm(alias)
+            clash = self.rank_by_norm.get(akey)
+            if clash is not None and clash != rank:
+                raise ValueError(
+                    f"account_pipeline_order.json alias {alias!r} normalizes to "
+                    f"{akey!r}, which already ranks {clash} "
+                    f"({self.label_by_rank.get(clash)!r}). Aliasing it to "
+                    f"{target!r} would silently re-rank that stage."
+                )
+            self.rank_by_norm[akey] = rank
 
         self.unranked = {_norm(u) for u in (cfg.get("unranked") or [])}
+        overlap = self.unranked & set(self.rank_by_norm)
+        if overlap:
+            raise ValueError(
+                f"account_pipeline_order.json lists {sorted(overlap)} as both "
+                f"ranked and 'unranked' — it would rank, and the unranked entry "
+                f"would be silently ignored"
+            )
 
         # Stage names seen at run time that we could not rank. Surfaced by
         # report_unranked() so a Kylas rename shows up as a loud warning
@@ -168,7 +189,13 @@ def compute_account_pipeline(contacts: list, order: AccountPipelineOrder = None,
     contacts never rank are present with stage "" — the caller distinguishes
     "has contacts, none ranked" from "no contacts at all", which this cannot see.
     """
-    if order is None:
+    # The one production call site (06_account_health.py) always passes an
+    # explicit order and reports unranked stages itself. When a caller does
+    # not — direct use, a future script — this function owns the order it
+    # builds and must report on it before returning, or an unrecognised stage
+    # name goes completely unnoticed on that path.
+    owns_order = order is None
+    if owns_order:
         order = load_order()
     if stage_of is None:
         from utils.bd_metrics import contact_stage as stage_of
@@ -188,6 +215,9 @@ def compute_account_pipeline(contacts: list, order: AccountPipelineOrder = None,
             best[cid] = rank
         elif rank and (cur == 0 or rank < cur):
             best[cid] = rank
+
+    if owns_order:
+        order.report_unranked()
 
     return {cid: {"stage": order.label_by_rank.get(r, ""), "rank": r}
             for cid, r in best.items()}

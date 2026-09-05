@@ -235,3 +235,71 @@ def test_a_real_stage_still_beats_a_blank_one(order):
         [{"company": 6, "s": ""}, {"company": 6, "s": "MQL (Marketing Qualified Lead)"}],
         order=order, stage_of=lambda c: c["s"])
     assert out["6"] == {"stage": "MQL (Marketing Qualified Lead)", "rank": 11}
+
+
+# ── config validation ────────────────────────────────────────────────────────
+
+def _order_from(cfg):
+    from utils.account_pipeline import AccountPipelineOrder
+    return AccountPipelineOrder(cfg)
+
+
+def test_alias_colliding_with_a_real_stage_is_rejected():
+    """An alias that normalizes onto a ranked stage would silently re-rank it."""
+    with pytest.raises(ValueError, match="silently re-rank"):
+        _order_from({
+            "order": ["SQL (Sales Qualified Lead)", "Activation"],
+            # 'sql (sales qualified lead)' already ranks 1 — aliasing it to
+            # Activation would move it to 2 with no warning.
+            "aliases": {"SQL  (Sales Qualified Lead)": "Activation"},
+        })
+
+
+def test_alias_restating_an_existing_rank_is_allowed():
+    """Harmless redundancy must not be rejected — only a genuine re-rank is."""
+    o = _order_from({
+        "order": ["SQL (Sales Qualified Lead)", "Activation"],
+        "aliases": {"SQL – Sales Qualified Lead": "SQL (Sales Qualified Lead)"},
+    })
+    assert o.rank_of("SQL (Sales Qualified Lead)") == 1
+
+
+def test_stage_listed_both_ranked_and_unranked_is_rejected():
+    with pytest.raises(ValueError, match="both"):
+        _order_from({"order": ["Activation"], "unranked": ["Activation"]})
+
+
+def test_alias_to_a_missing_target_is_rejected():
+    with pytest.raises(ValueError, match="not in 'order'"):
+        _order_from({"order": ["Activation"], "aliases": {"X": "Nope"}})
+
+
+def test_duplicate_order_entries_are_rejected():
+    with pytest.raises(ValueError, match="duplicate"):
+        _order_from({"order": ["Activation", "activation"]})
+
+
+def test_bad_select_option_is_treated_as_a_value_error():
+    """
+    Airtable rejects an unknown single-select option with
+    INVALID_MULTIPLE_CHOICE_OPTIONS. If that is not recognised as a value
+    error, _batch_update_safe re-raises instead of probing, and the batch
+    write for the ENTIRE table is lost — not just this column — the first
+    time a stage gets renamed in Kylas before the Airtable select catches up.
+    """
+    from utils.airtable_client import _is_value_error
+    assert _is_value_error('422 ... "type": "INVALID_MULTIPLE_CHOICE_OPTIONS"')
+    assert _is_value_error("INVALID_VALUE_FOR_COLUMN")
+    assert _is_value_error("UNKNOWN_FIELD_NAME")
+    assert not _is_value_error("SERVICE_UNAVAILABLE")
+
+
+def test_unranked_is_reported_even_when_order_is_built_internally(capsys):
+    """
+    compute_account_pipeline(order=None) builds its own order, so the caller
+    cannot call report_unranked() itself. It must report before returning, or
+    an unrecognised stage name goes unnoticed on that code path.
+    """
+    compute_account_pipeline(
+        [{"company": 1, "s": "Totally New Stage"}], stage_of=lambda c: c["s"])
+    assert "totally new stage" in capsys.readouterr().out.lower()

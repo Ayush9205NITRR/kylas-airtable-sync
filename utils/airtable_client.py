@@ -163,5 +163,16 @@ def _extract_skip_field(error_msg: str) -> str:
 
 
 def _is_value_error(error_msg: str) -> bool:
-    """True for 422s that are about a specific field value being wrong."""
-    return "INVALID_VALUE_FOR_COLUMN" in error_msg or "UNKNOWN_FIELD_NAME" in error_msg
+    """
+    True for 422s that are about a specific field value being wrong.
+
+    INVALID_MULTIPLE_CHOICE_OPTIONS is what Airtable returns when a value is
+    written to a single/multi-select whose option list does not contain it —
+    e.g. a pipeline stage renamed in Kylas but not yet added to the Airtable
+    select. Without it here the batch raises and takes down the ENTIRE table
+    write; with it, the probe isolates that one field and skips it, so every
+    other column still lands.
+    """
+    return ("INVALID_VALUE_FOR_COLUMN" in error_msg
+            or "UNKNOWN_FIELD_NAME" in error_msg
+            or "INVALID_MULTIPLE_CHOICE_OPTIONS" in error_msg)
