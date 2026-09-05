@@ -22,7 +22,13 @@ Airtable column mapping (what gets written where):
 one exists (utils/stage_history.py: only a real stage move sets this, never a
 contact's creation or an unrelated edit), falling back to
 max(createdAt, updatedAt, cfLastCalledAt) — see _last_activity() — while that
-contact has no detected change yet. The composite is what makes "Fresh" no
+contact has no detected change yet.
+
+That fallback now applies ONLY to dates before stage_history.CALL_DATE_CUTOVER.
+From the cutover onward a contact counts as touched on a day only if its stage
+actually moved, so these numbers stop being inflated by our own automation
+editing an unrelated field. Days already measured keep the figures they were
+measured with. The composite is what makes "Fresh" no
 longer occur (every contact has a createdAt, so every account counts as
 touched); the stage-change date is what will make that touched-ness mean an
 actual call rather than any edit, as changes accumulate. An account created

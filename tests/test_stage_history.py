@@ -132,9 +132,10 @@ def test_effective_call_date_prefers_a_detected_change():
 
 
 def test_effective_call_date_falls_back_when_nothing_detected_yet():
-    """Most contacts today: no detected change, so the caller's fallback
-    (cfLastCalledAt, or the activity composite) must be used, not blank —
-    otherwise Account Health and BD counts would read as empty for weeks."""
+    """No detected change yet, so the caller's fallback (cfLastCalledAt, or the
+    activity composite) is used rather than blank — but only for dates BEFORE
+    CALL_DATE_CUTOVER, which both of these are. Post-cutover the fallback is
+    deliberately discarded; see test_fallback_on_or_after_the_cutover_is_discarded."""
     assert sh.effective_call_date({}, "c1", fallback="2026-07-04") == "2026-07-04"
     assert sh.effective_call_date({"c1": {"last_call_date": ""}}, "c1",
                                   fallback="2026-07-04") == "2026-07-04"
@@ -213,10 +214,93 @@ def test_is_call_false_for_a_regression_back_to_the_bottom_stage():
     assert snap["c1"]["last_call_date"] == ""
 
 
-def test_creation_ignores_is_call_entirely():
-    """Creation is never a call regardless of what is_call would say about the
-    stage it starts at."""
+def test_creation_on_a_bootstrap_run_ignores_is_call_entirely():
+    """On a bootstrap run (empty snapshot) a first sighting is never a call,
+    regardless of what is_call would say about the stage it starts at.
+
+    With a NON-empty snapshot the in-progress rule does apply — see
+    test_new_contact_imported_already_in_progress_counts_as_a_move."""
     is_call = lambda s: True   # would say yes to everything
     snap, _, _ = sh.diff({}, _cur(c1="SQL (Sales Qualified Lead)"), "2026-09-02",
                          is_call=is_call)
+    assert snap["c1"]["last_call_date"] == ""
+
+
+# ── cutover: history preserved, everything after must be evidenced ───────────
+
+CUT = sh.CALL_DATE_CUTOVER
+
+
+def test_fallback_before_the_cutover_is_still_honoured():
+    """Days already measured must not change — closed days are a record."""
+    assert sh.effective_call_date({}, "c1", fallback="2026-07-04") == "2026-07-04"
+    assert sh.effective_call_date({}, "c1", fallback="2026-09-04") == "2026-09-04"
+
+
+def test_fallback_on_or_after_the_cutover_is_discarded():
+    """From the cutover on, only a real detected stage move counts as a call.
+    cfLastCalledAt / the createdAt composite no longer manufacture a date."""
+    assert sh.effective_call_date({}, "c1", fallback=CUT) == ""
+    assert sh.effective_call_date({}, "c1", fallback="2026-12-31") == ""
+
+
+def test_a_detected_change_still_wins_after_the_cutover():
+    """The cutover removes the FALLBACK, not the mechanism itself."""
+    snap = {"c1": {"last_call_date": "2026-10-01"}}
+    assert sh.effective_call_date(snap, "c1", fallback="2026-12-31") == "2026-10-01"
+
+
+def test_cutover_can_be_disabled_explicitly():
+    assert sh.effective_call_date({}, "c1", fallback="2026-12-31", cutover="") == "2026-12-31"
+
+
+# ── a contact that first appears already in progress ─────────────────────────
+
+def test_new_contact_at_the_bottom_stage_is_a_baseline_not_a_call():
+    """The normal import case: created, not worked. No change, no call date."""
+    prev = {"seed": {"stage": "Activation", "changes": 0, "last_call_date": ""}}
+    is_call = lambda s: s != "LinkedIn Outreach Initiated"  # noqa: E731
+    snap, changes, stats = sh.diff(prev, _cur(c1="LinkedIn Outreach Initiated"),
+                                   "2026-09-06", is_call=is_call)
+    assert changes == []
+    assert stats["new"] == 1 and stats["new_in_progress"] == 0
+    assert snap["c1"]["changes"] == 0
+    assert snap["c1"]["last_call_date"] == ""
+
+
+def test_new_contact_imported_already_in_progress_counts_as_a_move():
+    """Imported straight in at Activation: work happened, just before we were
+    watching. Recording it as a baseline would swallow it, and the contact
+    would have to move AGAIN before it ever counted."""
+    prev = {"seed": {"stage": "Activation", "changes": 0, "last_call_date": ""}}
+    is_call = lambda s: s != "LinkedIn Outreach Initiated"  # noqa: E731
+    snap, changes, stats = sh.diff(prev, _cur(c1="Activation"),
+                                   "2026-09-06", is_call=is_call)
+    assert stats["new_in_progress"] == 1 and stats["new"] == 0
+    assert snap["c1"]["changes"] == 1
+    assert snap["c1"]["last_call_date"] == "2026-09-06"
+    assert len(changes) == 1
+    assert changes[0]["from"] == "", "no previous stage existed — must stay blank"
+    assert changes[0]["to"] == "Activation"
+    assert changes[0]["date"] == "2026-09-06"
+
+
+def test_bootstrap_run_never_fires_the_in_progress_rule():
+    """An empty snapshot means we are bootstrapping, not that 33k contacts
+    appeared at once. Firing the rule here would stamp ~20k contacts with
+    today's date — the same shape as the picklist-rename incident."""
+    is_call = lambda s: s != "LinkedIn Outreach Initiated"  # noqa: E731
+    snap, changes, stats = sh.diff(
+        {}, _cur(c1="Activation", c2="SQL (Sales Qualified Lead)"),
+        "2026-09-06", is_call=is_call)
+    assert changes == []
+    assert stats["new"] == 2 and stats["new_in_progress"] == 0
+    assert all(snap[c]["last_call_date"] == "" for c in ("c1", "c2"))
+
+
+def test_in_progress_rule_is_inert_without_is_call():
+    """No is_call means no way to tell bottom from in-progress — stay safe."""
+    prev = {"seed": {"stage": "Activation", "changes": 0, "last_call_date": ""}}
+    snap, changes, stats = sh.diff(prev, _cur(c1="Activation"), "2026-09-06")
+    assert changes == [] and stats["new"] == 1
     assert snap["c1"]["last_call_date"] == ""

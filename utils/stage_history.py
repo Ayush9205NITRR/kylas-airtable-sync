@@ -27,9 +27,16 @@ So this measures PIPELINE PROGRESSION, which is the thing the stage list can
 actually evidence. True call volume comes from Kylas /call-logs, which carries
 the caller, the timestamp and the duration.
 
-A contact seen for the first time is recorded as a baseline, never as a change:
-otherwise the first run would report ~37k "changes" that are simply the initial
-read.
+A contact seen for the first time is normally recorded as a baseline, not a
+change: otherwise the first run would report ~37k "changes" that are simply the
+initial read.
+
+The one exception is a contact that first appears ALREADY IN PROGRESS — bulk
+imported straight in at, say, Activation rather than at the bottom of the
+funnel. Work demonstrably happened on it, just before we were watching, so it
+is logged as a change from nothing -> its stage. Suppressed entirely on a
+bootstrap run (empty snapshot), where every contact is a first sighting and the
+rule would otherwise fire ~20k times for no reason.
 
 LAST CALL DATE
 ────────────────────────────────────────────────────────────────────────────
@@ -60,6 +67,25 @@ DEFAULT_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "state", "contact_stage.json",
 )
+
+# The day "last call date" stopped being inferred and started being evidenced.
+#
+# BEFORE this date, effective_call_date() still honours the old fallback
+# (cfLastCalledAt, or the account-health createdAt/updatedAt composite), so
+# every figure already measured stays exactly as it was — closed days are a
+# record, not a projection.
+#
+# FROM this date onward the fallback is ignored entirely: a contact counts as
+# called on a day only if its pipeline stage actually MOVED, as detected by
+# diff() against the previous run. The old composite could be bumped by our own
+# automation editing an unrelated field (an owner reassignment, say), which is
+# exactly what made it untrustworthy as a call signal.
+#
+# Consequence, and it is deliberate: forward-looking counts start near zero and
+# fill in as real moves accumulate, because a contact that never moves never
+# gets a date. That is the point — an unmoved contact was not evidence of a
+# call before either, it just looked like one.
+CALL_DATE_CUTOVER = "2026-09-05"
 
 
 def load(path: str = None) -> dict:
@@ -122,19 +148,55 @@ def diff(prev: dict, current: dict, today: str, is_call=None) -> tuple:
     """
     out = dict(prev)
     changes = []
-    stats = {"new": 0, "changed": 0, "unchanged": 0, "carried": 0}
+    # A completely empty `prev` means we are bootstrapping (first ever run, or
+    # state/contact_stage.json lost), NOT that 33k contacts all appeared at
+    # once. Every contact is a first sighting on that run, so the
+    # "started in progress" rule below would fire for every contact already
+    # above the bottom stage — roughly 20k rows, all stamped with today's date,
+    # none of them real activity. Same shape as the picklist-rename incident.
+    # On a bootstrap run every first sighting is a baseline, no exceptions.
+    bootstrapping = not prev
+    stats = {"new": 0, "new_in_progress": 0, "changed": 0,
+             "unchanged": 0, "carried": 0}
 
     for cid, cur in current.items():
         stage = cur.get("stage", "")
         old = prev.get(cid)
 
         if old is None:
-            # Creation is a baseline capture, not a call: last_call_date stays
-            # blank until this contact's stage actually moves from here.
+            # A contact seen for the first time AT THE BOTTOM stage is just a
+            # baseline capture — it was created, not worked, so no change and
+            # no last_call_date. That is the normal case for a fresh import.
+            #
+            # But a contact that first appears ALREADY IN PROGRESS (imported
+            # straight in at, say, Activation) did have work done on it; the
+            # work simply happened before we were watching. Recording that as a
+            # baseline would silently swallow it, and the contact would then
+            # need to move AGAIN before it ever counted. So it is logged as a
+            # change from nothing -> its stage.
+            #
+            # `is_call` is what distinguishes the two: it already answers "is
+            # this stage above the bottom of the funnel", which is exactly the
+            # question here. From-stage is left blank on purpose — rank_of("")
+            # returns 0 silently, so it renders as an empty Previous Stage and
+            # never trips the unranked-stage warning.
+            started_in_progress = (not bootstrapping
+                                   and is_call is not None and is_call(stage))
+            if started_in_progress:
+                changes.append({
+                    "contact_id": cid,
+                    "owner":   cur.get("owner", ""),
+                    "email":   cur.get("email", ""),
+                    "company": cur.get("company", ""),
+                    "from":    "",
+                    "to":      stage,
+                    "date":    today,
+                })
             out[cid] = {"stage": stage, "owner": cur.get("owner", ""),
                         "email": cur.get("email", ""), "since": today,
-                        "changes": 0, "last_call_date": ""}
-            stats["new"] += 1      # first sighting is a baseline, not a move
+                        "changes": 1 if started_in_progress else 0,
+                        "last_call_date": today if started_in_progress else ""}
+            stats["new_in_progress" if started_in_progress else "new"] += 1
             continue
 
         entry = dict(old)
@@ -173,7 +235,8 @@ def diff(prev: dict, current: dict, today: str, is_call=None) -> tuple:
     return out, changes, stats
 
 
-def effective_call_date(snapshot: dict, contact_id, fallback: str = "") -> str:
+def effective_call_date(snapshot: dict, contact_id, fallback: str = "",
+                        cutover: str = None) -> str:
     """
     The date to treat as "this contact was actually called", for anything that
     used to read cfLastCalledAt (or the account-health activity composite)
@@ -183,15 +246,20 @@ def effective_call_date(snapshot: dict, contact_id, fallback: str = "") -> str:
     change, so it cannot be bumped by our own automation editing an unrelated
     field, the way the activity composite could.
 
-    Falls back to `fallback` (caller-supplied: cfLastCalledAt, or the account
-    health composite) when the snapshot has no detected change for this
-    contact yet — which today is most contacts, since tracking only just
-    started. Without this fallback, Account Health and BD daily counts would
-    read as empty for weeks while real changes slowly accumulate. The stage-
-    change date takes over for a contact automatically the first time it
-    actually moves.
+    The `fallback` (caller-supplied: cfLastCalledAt, or the account-health
+    composite) is honoured only for dates BEFORE `cutover`. See CALL_DATE_CUTOVER:
+    history stays exactly as it was measured, while everything from the cutover
+    onward must be evidenced by an actual stage move. Pass cutover="" to
+    disable the rule (used by tests that assert the old behaviour).
     """
     entry = snapshot.get(str(contact_id))
     if entry and entry.get("last_call_date"):
         return entry["last_call_date"]
-    return fallback or ""
+
+    fallback = fallback or ""
+    if cutover is None:
+        cutover = CALL_DATE_CUTOVER
+    # ISO dates compare lexicographically — the same trick _is_closed() uses.
+    if cutover and fallback and fallback >= cutover:
+        return ""
+    return fallback
