@@ -204,3 +204,66 @@ def test_daily_digest_columns_are_unchanged():
         "Companies Worked", "Companies Reached", "Requirements Stated",
         "Handoff Calls (This Week)"]
     assert sort_col == "SQL (This Month)"
+
+
+# ── BD Metrics Daily as the base table ───────────────────────────────────────
+
+class _FakeAT:
+    """Stands in for AirtableClient over the BD Metrics Daily table."""
+    def __init__(self, rows):
+        self._cache = {f"k{i}": {"id": f"rec{i}", "fields": f}
+                       for i, f in enumerate(rows)}
+    def build_cache(self, key_field):
+        return len(self._cache)
+
+
+def _row(rep="Anjali Athya", email="a@enout.in", date="2026-09-09",
+         group="Contact", metric="Call Attempted", value=3):
+    return {"BD Associate": rep, "BD Email": email, "Date": date,
+            "Week": "2026-W37", "Month": date[:7],
+            "Metric Group": group, "Metric": metric, "Value": value}
+
+
+def _patch_at(monkeypatch, rows):
+    import utils.airtable_client as ac
+    monkeypatch.setattr(ac, "AirtableClient", lambda *a, **k: _FakeAT(rows))
+
+
+def test_the_base_table_round_trips_into_long_rows(monkeypatch):
+    """read_metrics_daily() must reproduce exactly what push() wrote, or the
+    weekly/monthly roll-ups would disagree with the daily numbers."""
+    _patch_at(monkeypatch, [_row(), _row(metric="SQL", value=2)])
+    out = long_mod.read_metrics_daily()
+    assert out[("Anjali Athya", "a@enout.in", "2026-09-09", "Contact",
+                "Call Attempted")] == 3
+    assert out[("Anjali Athya", "a@enout.in", "2026-09-09", "Contact", "SQL")] == 2
+
+
+def test_digests_work_identically_off_the_base_table(monkeypatch):
+    """The whole point of the shape: a digest cannot tell whether its rows were
+    computed or read back."""
+    _patch_at(monkeypatch, [
+        _row(date="2026-09-09", value=1),
+        _row(date="2026-09-07", value=10),
+        _row(date="2026-09-01", value=100),
+    ])
+    stored = long_mod.read_metrics_daily()
+    assert long_mod.team_digest_rows(stored, "2026-09-09", "daily")[0]["Call Attempted"] == 1
+    assert long_mod.team_digest_rows(stored, "2026-09-09", "weekly")[0]["Call Attempted"] == 11
+    assert long_mod.team_digest_rows(stored, "2026-09-09", "monthly")[0]["Call Attempted"] == 111
+
+
+def test_unparseable_or_incomplete_stored_rows_are_skipped(monkeypatch):
+    _patch_at(monkeypatch, [
+        _row(value="not-a-number"),
+        _row(rep=""),                       # no associate
+        {"BD Associate": "X", "Date": "2026-09-09"},   # no group/metric
+        _row(value=7),                      # the only good one
+    ])
+    out = long_mod.read_metrics_daily()
+    assert list(out.values()) == [7]
+
+
+def test_a_blank_base_table_yields_no_rows_rather_than_an_error(monkeypatch):
+    _patch_at(monkeypatch, [])
+    assert long_mod.read_metrics_daily() == {}

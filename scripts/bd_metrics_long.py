@@ -35,6 +35,21 @@ did, and a day with no moves is genuinely zero.
 That makes scripts/bd_stage_changes.py a hard dependency: it must run BEFORE
 this script (6:00 PM IST vs 7:00 PM IST) or there is nothing to derive from.
 
+THE SHAPE OF THE WHOLE THING
+────────────────────────────────────────────────────────────────────────────
+    BD Stage Changes    contact moved from X to Y on this date (the evidence)
+      └─ BD Metrics Daily   THE BASE TABLE — per associate per day per metric,
+                            at both Contact and Company grain
+           ├─ Daily digest    computed fresh, because today is not frozen yet
+           ├─ Weekly digest   rolled up FROM the base table (--email-only)
+           └─ Monthly digest  rolled up FROM the base table (--email-only)
+
+The weekly and monthly roll-ups read the STORED daily numbers back via
+read_metrics_daily() rather than recomputing them. Closed days in the base
+table are frozen on write, so reading them back reports exactly the figures
+that were measured; recomputing could quietly disagree with what was already
+sent out.
+
 Closed days are frozen on first write — see bd_company_funnel._is_closed for
 why re-deriving history silently shrinks it. That freeze is what protects the
 figures measured before the switch to stage-change evidence.
@@ -131,6 +146,37 @@ def read_stage_changes() -> list:
                "to":         str(f.get("Current Stage", "")).strip()}
         if row["date"] and row["rep"] and row["to"]:
             out.append(row)
+    return out
+
+
+def read_metrics_daily() -> dict:
+    """
+    Rebuild the long_rows dict from the BD Metrics Daily table itself.
+
+    This is what makes BD Metrics Daily the base table rather than a by-product:
+    the weekly and monthly roll-ups read the STORED daily numbers instead of
+    recomputing them from the change log. That matters because closed days are
+    frozen on write — recomputing would quietly re-derive history and could
+    disagree with the figures already reported, while reading them back cannot.
+
+    Returns the same {(rep, email, day, group, metric): value} shape build_long()
+    produces, so every digest works against either source unchanged.
+    """
+    from utils.airtable_client import AirtableClient
+    at = AirtableClient(TABLE_NAME)
+    at.build_cache("Key")
+    out = {}
+    for rec in at._cache.values():
+        f = rec.get("fields", {})
+        rep, day = str(f.get("BD Associate", "")).strip(), str(f.get("Date", "")).strip()
+        group, metric = str(f.get("Metric Group", "")).strip(), str(f.get("Metric", "")).strip()
+        if not (rep and day and group and metric):
+            continue
+        try:
+            value = int(f.get("Value", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+        out[(rep, str(f.get("BD Email", "")).strip(), day, group, metric)] = value
     return out
 
 
@@ -523,13 +569,24 @@ def main() -> int:
                     help="which team digest to send (default: daily). weekly "
                          "and monthly use the same metrics over their window.")
     ap.add_argument("--email-only", action="store_true",
-                    help="send the digest without rewriting Airtable — for the "
-                         "weekly/monthly runs, which only report on days the "
-                         "daily run already wrote")
+                    help="roll up from the stored BD Metrics Daily table and "
+                         "send the digest, writing nothing — how the weekly "
+                         "and monthly runs read the base table")
     args = ap.parse_args()
 
     today = datetime.now(timezone.utc).date().isoformat()
-    long_rows, _ = build_long(KylasClient(), all_owners=args.all_owners)
+    if args.email_only:
+        # Roll up the base table as it stands. Closed days in it are frozen, so
+        # reading them back reports exactly the figures that were measured;
+        # recomputing could quietly disagree with what was already sent.
+        print(f"[long] Rolling up {TABLE_NAME!r} (the base table)...")
+        long_rows = read_metrics_daily()
+        print(f"[long] {len(long_rows)} stored row(s)")
+        if not long_rows:
+            print(f"[long] WARNING: {TABLE_NAME!r} is empty — the digest will be "
+                  f"all zeros. The daily run populates it.")
+    else:
+        long_rows, _ = build_long(KylasClient(), all_owners=args.all_owners)
     summarise(long_rows)
     if args.dry_run:
         rows = team_digest_rows(long_rows, today, args.period)
