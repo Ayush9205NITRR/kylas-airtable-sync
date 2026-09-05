@@ -103,7 +103,12 @@ def read_contacts(kylas, all_owners: bool = False) -> dict:
             "stage": stage,
             "owner": name,
             "email": email,
+            # Name is display only, and Kylas search returns `company` as a
+            # bare int (the nested object appears only on detail reads), so it
+            # is blank far more often than not. company_id is what downstream
+            # roll-ups group by — _company_id() handles both shapes.
             "company": (co.get("name", "") if isinstance(co, dict) else ""),
+            "company_id": _company_id(ct),
             "name": ct.get("name") or "",
         }
     if off_roster:
@@ -157,7 +162,7 @@ def push(changes: list, grid: dict) -> None:
     text = "singleLineText"
     log_fields = [{"name": n, "type": text} for n in
                   ("Key", "Date", "Week", "Month", "Contact Id", "Contact",
-                   "Company", "BD Associate", "BD Email",
+                   "Company", "Company Id", "BD Associate", "BD Email",
                    "Previous Stage", "Current Stage", "Direction", "Updated At")]
     if _ensure(base_id, headers, LOG_TABLE, log_fields) and changes:
         at = AirtableClient(LOG_TABLE)
@@ -177,6 +182,7 @@ def push(changes: list, grid: dict) -> None:
                 {"Key": key, "Date": c["date"], "Week": funnel._iso_week(c["date"]),
                  "Month": c["date"][:7], "Contact Id": c["contact_id"],
                  "Contact": c["name"], "Company": c["company"],
+                 "Company Id": c.get("company_id", ""),
                  "BD Associate": c["owner"], "BD Email": c["email"],
                  "Previous Stage": c["from"], "Current Stage": c["to"],
                  "Direction": direction, "Updated At": stamp},

@@ -189,6 +189,10 @@ def test_is_call_false_records_the_change_but_not_the_call_date():
     assert stats["changed"] == 1 and len(changes) == 1, "the label move is still recorded"
     assert changes[0] == {"contact_id": "c1", "owner": "Anjali Athya",
                           "email": "anjali.athya@enout.in", "company": "Acme",
+                          # blank here because _cur() supplies no company_id;
+                          # bd_stage_changes.read_contacts() always sets it, and
+                          # the roll-ups group companies by it.
+                          "company_id": "",
                           "from": "Yet to Be Mined", "to": "LinkedIn Outreach Initiated",
                           "date": "2026-09-05"}
     assert snap["c1"]["stage"] == "LinkedIn Outreach Initiated"

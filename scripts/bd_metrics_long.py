@@ -25,9 +25,19 @@ either without mixing grains:
 
 Never put both groups in one chart: one counts people, the other accounts.
 
-Day attribution is cfLastCalledAt, matching both source scripts. Closed days are
-frozen on first write — see bd_company_funnel._is_closed for why re-deriving
-history silently shrinks it.
+Everything here is DERIVED from the "BD Stage Changes" log, which is the base
+table: one row per contact per day that its pipeline stage actually moved. A
+metric is evidenced by that movement, not by where a contact happens to sit
+now, so a contact counts on the day it moved and only on that day — it no
+longer contributes to every subsequent day the way a "current stage" reading
+did, and a day with no moves is genuinely zero.
+
+That makes scripts/bd_stage_changes.py a hard dependency: it must run BEFORE
+this script (6:00 PM IST vs 7:00 PM IST) or there is nothing to derive from.
+
+Closed days are frozen on first write — see bd_company_funnel._is_closed for
+why re-deriving history silently shrinks it. That freeze is what protects the
+figures measured before the switch to stage-change evidence.
 
     python scripts/bd_metrics_long.py              # build + push
     python scripts/bd_metrics_long.py --dry-run    # print a summary only
@@ -66,6 +76,9 @@ funnel = _load("bd_company_funnel.py")
 
 META       = "https://api.airtable.com/v0/meta/bases"
 TABLE_NAME = "BD Metrics Daily"
+# The base table every metric here is derived from. Written by
+# scripts/bd_stage_changes.py, which must run BEFORE this script.
+STAGE_LOG_TABLE = "BD Stage Changes"
 
 CONTACT_METRICS = ["Call Attempted", "Call Connected", "Meeting Booked",
                    "Meeting Done", "SQL", "MQL"]
@@ -97,28 +110,59 @@ def _contact_counts(stage_n: str, order) -> dict:
     }
 
 
-def build_long(kylas, all_owners: bool = False) -> tuple:
-    """Return ({(rep, email, day, group, metric): value}, stats)."""
-    from utils.bd_metrics import refresh_stage_map, contact_stage
-    refresh_stage_map(kylas)
+def read_stage_changes() -> list:
+    """
+    Every row of the BD Stage Changes log — the base table these metrics are
+    derived from.
 
-    order    = load_order()
-    user_map = funnel._build_user_map(kylas)
-    roster   = set() if all_owners else funnel.bd_roster()
+    Returns [{date, rep, email, company_id, to}]. Rows missing a date, owner or
+    to-stage are unusable for attribution and are dropped.
+    """
+    from utils.airtable_client import AirtableClient
+    at = AirtableClient(STAGE_LOG_TABLE)
+    at.build_cache("Key")
+    out = []
+    for rec in at._cache.values():
+        f = rec.get("fields", {})
+        row = {"date":       str(f.get("Date", "")).strip(),
+               "rep":        str(f.get("BD Associate", "")).strip(),
+               "email":      str(f.get("BD Email", "")).strip(),
+               "company_id": str(f.get("Company Id", "")).strip(),
+               "to":         str(f.get("Current Stage", "")).strip()}
+        if row["date"] and row["rep"] and row["to"]:
+            out.append(row)
+    return out
 
-    print("[long] Fetching contacts from Kylas...")
-    contacts = kylas._search_all(
-        "contact",
-        fields=["id", "company", "ownedBy", "ownerId", "updatedAt",
-                "customFieldValues"],
-    )
-    print(f"[long] {len(contacts)} contacts fetched")
 
-    # Day attribution prefers the DETECTED stage-change date, falling back to
-    # cfLastCalledAt while a contact has no detected change yet — matches
-    # bd_company_funnel.py so the two never disagree about which day owns
-    # a given contact. See utils/stage_history.effective_call_date().
-    stage_snap = stage_history.load()
+def build_long(kylas=None, all_owners: bool = False, changes: list = None) -> tuple:
+    """
+    Return ({(rep, email, day, group, metric): value}, stats).
+
+    Derived entirely from the BD Stage Changes log — a metric is evidenced by a
+    contact's stage MOVING on that day, not by where the contact happens to sit
+    now. Two consequences worth knowing:
+
+      * A contact counts on the day it moved, and only on that day. It stops
+        contributing to every subsequent day the way a "current stage" reading
+        did.
+      * A day with no stage moves is genuinely zero, not "nobody has a call
+        date". That is the same question, answered honestly.
+
+    `kylas` is unused and kept only so existing callers need no change: the log
+    already stores resolved stage names and the owner, so this needs no Kylas
+    read at all — which also removes a ~33k-contact fetch from the daily run.
+    """
+    order  = load_order()
+    roster = set() if all_owners else funnel.bd_roster()
+
+    if changes is None:
+        print(f"[long] Reading {STAGE_LOG_TABLE!r} (the base table)...")
+        changes = read_stage_changes()
+    print(f"[long] {len(changes)} stage change(s) in the log")
+    if not changes:
+        print(f"[long] WARNING: {STAGE_LOG_TABLE!r} is empty — every metric will "
+              f"be 0. Has scripts/bd_stage_changes.py run yet? It must run "
+              f"BEFORE this script (6:00 PM IST vs 7:00 PM IST).")
 
     # Contact metrics accumulate directly; company metrics need the per-day
     # best-rank pass first, since an account counts once at its best stage.
@@ -126,29 +170,29 @@ def build_long(kylas, all_owners: bool = False) -> tuple:
     company_best  = defaultdict(dict)                       # (rep,email,day) -> cid -> rank
     skipped = 0
 
-    for ct in contacts:
-        cf = ct.get("customFieldValues") or {}
-        day = stage_history.effective_call_date(
-            stage_snap, ct.get("id"),
-            fallback=funnel._parse_lc(cf.get("cfLastCalledAt", "")))
-        if not day:
-            skipped += 1
+    dropped = 0
+    for ch in changes:
+        # Validate here rather than trusting the caller: read_stage_changes()
+        # filters, but build_long() is also called with a supplied list, and a
+        # row with no date or no owner would otherwise be attributed to the
+        # empty-string rep on the empty-string day.
+        if not (ch.get("date") and ch.get("rep") and ch.get("to")):
+            dropped += 1
             continue
-        stage = contact_stage(ct)
-        if not stage:
-            skipped += 1
-            continue
-        name, email = funnel._owner(ct, user_map)
+
+        email = ch.get("email", "")
         if roster and email.strip().lower() not in roster:
             skipped += 1
             continue
 
-        key = (name, email, day)
+        # The stage the contact moved TO is what the move evidences.
+        stage = ch["to"]
+        key   = (ch["rep"], email, ch["date"])
         for metric, n in _contact_counts(matrix._norm(stage), order).items():
             if n:
                 contact_cells[key][metric] += n
 
-        cid = _company_id(ct)
+        cid = ch["company_id"]
         if cid:
             rank = order.rank_of(stage)
             if rank:
@@ -165,9 +209,11 @@ def build_long(kylas, all_owners: bool = False) -> tuple:
         for metric in COMPANY_METRICS:
             long_rows[(*key, "Company", metric)] = counts[metric]
 
-    stats = {"contacts": len(contacts), "skipped": skipped, "rows": len(long_rows)}
-    print(f"[long] {skipped} contact(s) skipped (no call date, blank stage, "
-          f"or off-roster) → {len(long_rows)} long row(s)")
+    stats = {"changes": len(changes), "skipped": skipped,
+             "dropped": dropped, "rows": len(long_rows)}
+    print(f"[long] {skipped} change(s) skipped (owner off-roster), "
+          f"{dropped} dropped (missing date/owner/stage) "
+          f"→ {len(long_rows)} long row(s)")
     return long_rows, stats
 
 
