@@ -1,0 +1,51 @@
+name: BD Matrix Views (Company + Contact)
+
+# Rolls "BD Metrics Daily" (the base table) up into two week-by-week views:
+# Contact Matrix and Company Matrix, one row per associate per month per
+# metric with W1..W6 across the columns.
+#
+# Runs AFTER bd_metrics_long.yml (13:30 UTC), which writes the base table this
+# reads. Nothing is measured here — a failure loses a view, never data.
+
+on:
+  schedule:
+    - cron: '0 14 * * *'      # 7:30 PM IST daily, 30 min after the base table
+  workflow_dispatch:
+    inputs:
+      month:
+        description: 'Only this month (YYYY-MM). Blank = every month held in the base table.'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Print both matrices, write nothing'
+        type: boolean
+        default: false
+
+jobs:
+  matrix-views:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Roll up the base table into the matrix views
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.month }}" ]; then
+            ARGS="$ARGS --month ${{ github.event.inputs.month }}"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python scripts/bd_matrix_views.py $ARGS
+        env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
