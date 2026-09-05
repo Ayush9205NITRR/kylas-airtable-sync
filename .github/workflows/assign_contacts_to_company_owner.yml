@@ -28,11 +28,15 @@ on:
         description: 'How many sample companies to print with sample_owner_id'
         required: false
         default: '3'
+      exclude_owner_ids:
+        description: 'Comma-separated Kylas owner id(s) to leave out of the cascade entirely (their companies contacts are never touched) — e.g. a service/admin account already misowning companies. Defaults to Enout Super Admin (74725), confirmed on 2026-09-05 to already own 217 companies it should not. Clear this field only once that is resolved.'
+        required: false
+        default: '74725'
 
 jobs:
   assign:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -51,8 +55,15 @@ jobs:
               --sample-n "${{ github.event.inputs.sample_n }}"
           else
             ARGS=""
+            IFS=',' read -ra IDS <<< "${{ github.event.inputs.exclude_owner_ids }}"
+            for oid in "${IDS[@]}"; do
+              oid="$(echo "$oid" | xargs)"
+              if [ -n "$oid" ]; then
+                ARGS="$ARGS --exclude-owner $oid"
+              fi
+            done
             if [ "${{ github.event.inputs.confirm }}" = "CONFIRM" ]; then
-              ARGS="--apply"
+              ARGS="$ARGS --apply"
               if [ -n "${{ github.event.inputs.limit }}" ]; then
                 ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
               fi

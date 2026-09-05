@@ -26,6 +26,9 @@ explicitly. Always run without --apply first and read the summary.
     python scripts/assign_contacts_to_company_owner.py            # dry run — reports only
     python scripts/assign_contacts_to_company_owner.py --apply    # actually reassign
     python scripts/assign_contacts_to_company_owner.py --apply --limit 50   # first 50 moves only
+    python scripts/assign_contacts_to_company_owner.py --apply --exclude-owner 74725
+        # skip companies owned by user #74725 entirely (e.g. a service/admin
+        # account already misowning companies) — repeatable for more than one id
 """
 import argparse
 import os
@@ -62,23 +65,36 @@ def find_companies_owned_by(kylas: KylasClient, owner_id: int) -> list:
             if co.get("ownerId") and int(co["ownerId"]) == owner_id]
 
 
-def build_plan(kylas: KylasClient) -> tuple:
+def build_plan(kylas: KylasClient, exclude_owners: set = None) -> tuple:
     """
     Returns (moves, stats).
     moves: [{"contact_id", "contact_name", "company_id", "from_owner",
              "to_owner"}] — from_owner/to_owner are Kylas user ids (int or None).
     A contact is a "move" only when it HAS a company, that company HAS a known
-    owner, and the contact's current owner differs from it.
+    owner NOT in exclude_owners, and the contact's current owner differs from it.
+
+    exclude_owners: company owner ids to leave out of the cascade entirely —
+    e.g. a service/admin account that companies are already misowned to. Such
+    a company is treated as if it had no known owner: none of its contacts are
+    touched, so the bad ownership isn't spread further while it gets sorted out.
     """
+    exclude_owners = exclude_owners or set()
     print("[assign] Fetching companies from Kylas...")
     companies = kylas.get_companies()
     company_owner = {}
+    excluded = 0
     for co in companies:
         oid = co.get("ownerId")
-        if oid:
-            company_owner[str(co["id"])] = int(oid)
+        if not oid:
+            continue
+        oid = int(oid)
+        if oid in exclude_owners:
+            excluded += 1
+            continue
+        company_owner[str(co["id"])] = oid
     print(f"[assign] {len(companies)} companies fetched, "
-          f"{len(company_owner)} have a known owner")
+          f"{len(company_owner)} have a known (non-excluded) owner"
+          + (f", {excluded} excluded" if excluded else ""))
 
     print("[assign] Fetching contacts from Kylas...")
     contacts = kylas.get_contacts()
@@ -106,6 +122,7 @@ def build_plan(kylas: KylasClient) -> tuple:
         })
 
     stats = {"companies": len(companies), "companies_with_owner": len(company_owner),
+             "companies_excluded": excluded,
              "contacts": len(contacts), "no_company": no_company,
              "no_company_owner": no_company_owner,
              "already_correct": already_correct, "moves": len(moves)}
@@ -113,9 +130,13 @@ def build_plan(kylas: KylasClient) -> tuple:
 
 
 def print_summary(moves: list, stats: dict, user_names: dict) -> None:
+    if stats.get("companies_excluded"):
+        print(f"[assign] {stats['companies_excluded']} compan{'y' if stats['companies_excluded'] == 1 else 'ies'} "
+              f"excluded from the cascade entirely (owner in --exclude-owner) — "
+              f"their contacts are left untouched")
     print(f"\n{stats['contacts']} contacts total")
     print(f"  {stats['no_company']:>6}  no company at all")
-    print(f"  {stats['no_company_owner']:>6}  company has no owner in Kylas")
+    print(f"  {stats['no_company_owner']:>6}  company has no owner in Kylas (or was excluded)")
     print(f"  {stats['already_correct']:>6}  already match their company's owner")
     print(f"  {stats['moves']:>6}  WOULD BE REASSIGNED")
 
@@ -228,6 +249,13 @@ def main() -> int:
     ap.add_argument("--sample-n", type=int, default=3,
                     help="How many sample companies to print with --sample-owner-id "
                          "(default 3).")
+    ap.add_argument("--exclude-owner", type=int, action="append", default=None,
+                    help="Company owner id to leave out of the cascade entirely — "
+                         "its companies' contacts are never touched. Repeatable "
+                         "(pass multiple times for more than one id). Use this for "
+                         "an owner already known to be wrong in Kylas (e.g. a "
+                         "shared/admin account), so the cascade doesn't spread that "
+                         "bad ownership onto its contacts.")
     args = ap.parse_args()
 
     kylas = KylasClient()
@@ -241,7 +269,8 @@ def main() -> int:
             print(f"  company id {co['id']:<10} {co.get('name') or '(no name)'}")
         return 0
 
-    moves, stats = build_plan(kylas)
+    exclude_owners = set(args.exclude_owner) if args.exclude_owner else set()
+    moves, stats = build_plan(kylas, exclude_owners=exclude_owners)
 
     user_names = resolve_user_names(kylas)
     print_summary(moves, stats, user_names)

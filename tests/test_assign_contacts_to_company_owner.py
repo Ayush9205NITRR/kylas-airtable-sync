@@ -77,6 +77,34 @@ def test_contact_with_no_company_is_left_alone():
     assert moves == [] and stats["no_company"] == 1
 
 
+def test_build_plan_excludes_companies_owned_by_a_given_owner():
+    """A company owned by an excluded id is treated as if it had no owner at
+    all -- its contacts must not move, even if they mismatch."""
+    k = _FakeKylas([_co(1, owner=74725), _co(2, owner=10)],
+                  [_ct(100, 1, owner=99), _ct(101, 2, owner=99)])
+    moves, stats = ac.build_plan(k, exclude_owners={74725})
+    assert {m["contact_id"] for m in moves} == {101}
+    assert stats["companies_excluded"] == 1
+    assert stats["companies_with_owner"] == 1
+
+
+def test_build_plan_with_no_exclude_owners_excludes_nothing():
+    """Default (no exclude_owners passed) must behave exactly as before --
+    existing callers and the CLI's plain dry-run path depend on this."""
+    k = _FakeKylas([_co(1, owner=74725)], [_ct(100, 1, owner=99)])
+    moves, stats = ac.build_plan(k)
+    assert len(moves) == 1
+    assert stats["companies_excluded"] == 0
+
+
+def test_build_plan_excludes_multiple_owners():
+    k = _FakeKylas([_co(1, owner=74725), _co(2, owner=555), _co(3, owner=10)],
+                  [_ct(100, 1, owner=99), _ct(101, 2, owner=99), _ct(102, 3, owner=99)])
+    moves, stats = ac.build_plan(k, exclude_owners={74725, 555})
+    assert {m["contact_id"] for m in moves} == {102}
+    assert stats["companies_excluded"] == 2
+
+
 def test_find_companies_owned_by_filters_to_the_given_owner():
     k = _FakeKylas([_co(1, owner=74725), _co(2, owner=10), _co(3, owner=74725)], [])
     owned = ac.find_companies_owned_by(k, 74725)
