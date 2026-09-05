@@ -46,6 +46,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.kylas_client import KylasClient                      # noqa: E402
 from utils.account_pipeline import load_order, _company_id       # noqa: E402
+from utils import stage_history                                  # noqa: E402
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -113,6 +114,12 @@ def build_long(kylas, all_owners: bool = False) -> tuple:
     )
     print(f"[long] {len(contacts)} contacts fetched")
 
+    # Day attribution prefers the DETECTED stage-change date, falling back to
+    # cfLastCalledAt while a contact has no detected change yet — matches
+    # bd_company_funnel.py so the two never disagree about which day owns
+    # a given contact. See utils/stage_history.effective_call_date().
+    stage_snap = stage_history.load()
+
     # Contact metrics accumulate directly; company metrics need the per-day
     # best-rank pass first, since an account counts once at its best stage.
     contact_cells = defaultdict(lambda: defaultdict(int))   # (rep,email,day) -> metric -> n
@@ -121,7 +128,9 @@ def build_long(kylas, all_owners: bool = False) -> tuple:
 
     for ct in contacts:
         cf = ct.get("customFieldValues") or {}
-        day = funnel._parse_lc(cf.get("cfLastCalledAt", ""))
+        day = stage_history.effective_call_date(
+            stage_snap, ct.get("id"),
+            fallback=funnel._parse_lc(cf.get("cfLastCalledAt", "")))
         if not day:
             skipped += 1
             continue

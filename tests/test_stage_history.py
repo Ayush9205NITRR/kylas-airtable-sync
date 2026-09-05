@@ -94,3 +94,71 @@ def test_missing_or_corrupt_snapshot_reads_as_first_run(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text("{not json")
     assert sh.load(str(bad)) == {}
+
+
+# ── last_call_date / effective_call_date ─────────────────────────────────────
+
+def test_creation_does_not_set_last_call_date():
+    snap, _, _ = sh.diff({}, _cur(c1="Yet to Be Mined"), "2026-09-02")
+    assert snap["c1"]["last_call_date"] == ""
+
+
+def test_a_real_stage_change_sets_last_call_date_to_the_observed_day():
+    snap, _, _ = sh.diff({}, _cur(c1="Yet to Be Mined"), "2026-09-02")
+    snap, _, _ = sh.diff(snap, _cur(c1="LinkedIn Outreach Initiated"), "2026-09-05")
+    assert snap["c1"]["last_call_date"] == "2026-09-05"
+
+
+def test_no_move_leaves_last_call_date_untouched():
+    snap, _, _ = sh.diff({}, _cur(c1="Yet to Be Mined"), "2026-09-02")
+    snap, _, _ = sh.diff(snap, _cur(c1="Follow-up (1)"), "2026-09-05")
+    snap, _, _ = sh.diff(snap, _cur(c1="Follow-up (1)"), "2026-09-10")
+    assert snap["c1"]["last_call_date"] == "2026-09-05"
+
+
+def test_legacy_v1_entry_is_adopted_with_a_blank_last_call_date():
+    """An entry from before this field existed must not crash or reset."""
+    legacy = {"c1": {"stage": "Follow-up (1)", "owner": "Anjali Athya",
+                     "email": "anjali.athya@enout.in", "since": "2026-08-31",
+                     "changes": 0}}   # no last_call_date key at all
+    snap, changes, stats = sh.diff(legacy, _cur(c1="Follow-up (1)"), "2026-09-01")
+    assert stats["changed"] == 0
+    assert snap["c1"]["last_call_date"] == ""
+
+
+def test_effective_call_date_prefers_a_detected_change():
+    snap = {"c1": {"last_call_date": "2026-09-05"}}
+    assert sh.effective_call_date(snap, "c1", fallback="2026-01-01") == "2026-09-05"
+
+
+def test_effective_call_date_falls_back_when_nothing_detected_yet():
+    """Most contacts today: no detected change, so the caller's fallback
+    (cfLastCalledAt, or the activity composite) must be used, not blank —
+    otherwise Account Health and BD counts would read as empty for weeks."""
+    assert sh.effective_call_date({}, "c1", fallback="2026-07-04") == "2026-07-04"
+    assert sh.effective_call_date({"c1": {"last_call_date": ""}}, "c1",
+                                  fallback="2026-07-04") == "2026-07-04"
+
+
+def test_effective_call_date_with_no_fallback_is_blank():
+    assert sh.effective_call_date({}, "c1") == ""
+
+
+def test_effective_call_date_accepts_non_string_contact_ids():
+    """Kylas contact ids arrive as ints in some payloads; the snapshot keys
+    are strings, so this must not silently miss a match."""
+    snap = {"123": {"last_call_date": "2026-09-05"}}
+    assert sh.effective_call_date(snap, 123) == "2026-09-05"
+
+
+def test_a_blank_email_from_one_caller_does_not_erase_a_known_one():
+    """Module 2 and bd_stage_changes.py both call diff() on the same snapshot;
+    one caller failing to resolve an email must not blank what the other set."""
+    snap, _, _ = sh.diff({}, {"c1": {"stage": "Follow-up (1)", "owner": "Anjali Athya",
+                                     "email": "anjali.athya@enout.in", "company": "Acme"}},
+                        "2026-09-01")
+    snap, _, _ = sh.diff(snap, {"c1": {"stage": "MQL (Marketing Qualified Lead)",
+                                       "owner": "Anjali Athya", "email": "", "company": ""}},
+                        "2026-09-02")
+    assert snap["c1"]["email"] == "anjali.athya@enout.in"
+    assert snap["c1"]["stage"] == "MQL (Marketing Qualified Lead)"

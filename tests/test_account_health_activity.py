@@ -182,3 +182,28 @@ def test_the_two_empty_states_are_labelled_differently():
     w = _written(tbl._updates)
     assert w["1"] == "Yet to Be Mined", "has contacts, none ranked"
     assert w["99"] == "No Contacts", "no contacts at all"
+
+
+# ── stage-change date takes precedence in compute_health ─────────────────────
+
+def test_detected_stage_change_overrides_the_activity_composite():
+    """A contact with a DETECTED change should use that date, even if the
+    composite (createdAt/updatedAt) would suggest something more recent —
+    the whole point of the stage-change date is that it is not bumped by
+    unrelated edits."""
+    ct = _ct("2026-01-01T00:00:00Z", "2026-08-30T00:00:00Z", cid=1)
+    snap = {"1": {"last_call_date": "2026-06-15"}}
+    health = ah.compute_health([ct], stage_snap=snap)
+    assert health["77"]["last_activity"] == "2026-06-15"
+
+
+def test_no_detected_change_falls_back_to_the_composite():
+    ct = _ct("2026-01-01T00:00:00Z", "2026-08-30T00:00:00Z", cid=1)
+    health = ah.compute_health([ct], stage_snap={"1": {"last_call_date": ""}})
+    assert health["77"]["last_activity"] == "2026-08-30"
+
+
+def test_stage_snap_defaults_to_empty_without_error():
+    ct = _ct("2026-01-01T00:00:00Z", "2026-08-30T00:00:00Z", cid=1)
+    health = ah.compute_health([ct])
+    assert health["77"]["last_activity"] == "2026-08-30"

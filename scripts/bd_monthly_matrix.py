@@ -201,11 +201,20 @@ def build_matrix(kylas) -> tuple:
     )
     print(f"[matrix] {len(contacts)} contacts fetched")
 
+    # Prefers the DETECTED stage-change date over cfLastCalledAt, falling back
+    # to it while a contact has no detected change yet — matches
+    # bd_company_funnel.py / bd_metrics_long.py. See
+    # utils/stage_history.effective_call_date().
+    from utils import stage_history
+    stage_snap = stage_history.load()
+
     grid = defaultdict(lambda: dict.fromkeys(COLUMNS, 0))
     no_lc = 0
     for ct in contacts:
         cf = ct.get("customFieldValues") or {}
-        lc = _parse_lc(cf.get("cfLastCalledAt", ""))
+        lc = stage_history.effective_call_date(
+            stage_snap, ct.get("id"),
+            fallback=_parse_lc(cf.get("cfLastCalledAt", "")))
         if not lc:
             no_lc += 1          # no month to attribute → excluded by design
             continue

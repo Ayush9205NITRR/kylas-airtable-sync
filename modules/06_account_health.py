@@ -18,11 +18,15 @@ Airtable column mapping (what gets written where):
   Account Status         computed (see below)   Health label for filtering
   Needs Re-assign        YtBM>0 AND touched=0   Has untouched POCs, no activity since Apr 19
 
-"Activity" throughout means max(createdAt, updatedAt, cfLastCalledAt) per contact
-— see _last_activity(). cfLastCalledAt alone is blank on many contacts, which made
-genuinely-worked accounts look untouched. Because every contact has a createdAt,
-every account with contacts now counts as touched, so the "Fresh" status no longer
-occurs. That is intended: an account created today is Active, not Fresh.
+"Activity" throughout is the contact's DETECTED pipeline-stage-change date when
+one exists (utils/stage_history.py: only a real stage move sets this, never a
+contact's creation or an unrelated edit), falling back to
+max(createdAt, updatedAt, cfLastCalledAt) — see _last_activity() — while that
+contact has no detected change yet. The composite is what makes "Fresh" no
+longer occur (every contact has a createdAt, so every account counts as
+touched); the stage-change date is what will make that touched-ness mean an
+actual call rather than any edit, as changes accumulate. An account created
+today is Active, not Fresh, either way.
 
 Account Status logic (best POC stage wins across all POCs):
 ─────────────────────────────────────────────────────────────────────────────
@@ -64,6 +68,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.kylas_client import KylasClient
 from utils.airtable_client import AirtableClient
+from utils import stage_history as _stage_history
 from utils.bd_metrics import contact_stage
 from utils.redact import mask_email, mask_emails
 
@@ -203,14 +208,21 @@ def _contact_owner_email(ct: dict, user_email_map: dict) -> str:
     return user_email_map.get(name, "") if name and user_email_map else ""
 
 
-def compute_health(contacts: list, user_email_map: dict = None) -> dict:
+def compute_health(contacts: list, user_email_map: dict = None,
+                   stage_snap: dict = None) -> dict:
     """
     contacts: raw Kylas contact dicts.
     user_email_map: {owner_name: email} — used to populate claimed_by.
+    stage_snap: utils/stage_history.py snapshot — when a contact has a
+      DETECTED stage-change date, that takes over from the activity composite
+      below (see utils.stage_history.effective_call_date). Most contacts have
+      none yet, so the composite remains the fallback rather than going blank.
     Returns {kylas_company_id (str): health_dict}.
     """
     if user_email_map is None:
         user_email_map = {}
+    if stage_snap is None:
+        stage_snap = {}
     by_co = {}
     for ct in contacts:
         co    = ct.get("company")
@@ -222,7 +234,8 @@ def compute_health(contacts: list, user_email_map: dict = None) -> dict:
 
         cf    = ct.get("customFieldValues") or {}
         stage = contact_stage(ct)
-        la    = _last_activity(ct)
+        la    = _stage_history.effective_call_date(
+            stage_snap, ct.get("id"), fallback=_last_activity(ct))
 
         e = by_co.setdefault(co_id, {
             "total": 0, "ytbm": 0, "active": 0,
@@ -979,7 +992,36 @@ def run(kylas=None, send_email: bool = True) -> dict:
     )
     print(f"[Account Health] {len(contacts)} contacts fetched")
 
-    health = compute_health(contacts, user_email_map=user_email_map)
+    # Full-coverage stage-change diff. 02_contact_sync.py already did this for
+    # its incrementally-fetched batch earlier in the same sync run (if this is
+    # part of run_sync.py) — loading its result here and diffing the FULL
+    # contact list catches anything outside that window and brings every
+    # contact's entry up to date, without double-counting: a contact already
+    # updated to today's stage by Module 2 shows no further change here.
+    try:
+        _prev_stage_snap = _stage_history.load()
+        _stage_batch = {}
+        for _ct in contacts:
+            _stg = contact_stage(_ct)
+            if not _stg:
+                continue
+            _stage_batch[str(_ct["id"])] = {
+                "stage": _stg,
+                "owner": "",
+                "email": _contact_owner_email(_ct, user_email_map),
+            }
+        stage_snap, _stage_changes, _stage_stats = _stage_history.diff(
+            _prev_stage_snap, _stage_batch, date.today().isoformat())
+        _stage_history.save(stage_snap, today=date.today().isoformat())
+        if _stage_changes:
+            print(f"[Account Health] Stage changes (full coverage): "
+                  f"{len(_stage_changes)}")
+    except Exception as _exc:
+        print(f"[Account Health] WARNING: stage-change diff skipped — {_exc}")
+        stage_snap = {}
+
+    health = compute_health(contacts, user_email_map=user_email_map,
+                            stage_snap=stage_snap)
 
     # Account Pipeline Stage (BD) — the granular tracker. Deliberately computed
     # separately from compute_health above: Account Health is the higher-level

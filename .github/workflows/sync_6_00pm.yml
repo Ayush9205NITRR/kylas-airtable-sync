@@ -109,7 +109,7 @@ jobs:
           AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
 
-      - name: Commit Account Health snapshot
+      - name: Commit state snapshots (account health + contact stage)
         # The runner is ephemeral: without this, state/account_health.json is
         # discarded at the end of the job, every run looks like a first run, and
         # nothing is ever tracked. git is the system of record for account
@@ -123,7 +123,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add state/account_health.json
+          git add state/account_health.json state/contact_stage.json
           if git diff --staged --quiet; then
             echo "account health snapshot unchanged - nothing to commit"
           else

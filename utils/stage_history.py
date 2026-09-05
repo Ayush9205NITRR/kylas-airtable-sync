@@ -30,11 +30,31 @@ the caller, the timestamp and the duration.
 A contact seen for the first time is recorded as a baseline, never as a change:
 otherwise the first run would report ~37k "changes" that are simply the initial
 read.
+
+LAST CALL DATE
+────────────────────────────────────────────────────────────────────────────
+Each entry also carries `last_call_date`: the date of that contact's most
+recent DETECTED stage change, and nothing else. It is deliberately NOT set on
+first sighting (creation is not a call) and NOT touched by an unchanged stage
+(no move, no call). This is what makes it safe to use as "when was this
+contact actually called" — unlike cfLastCalledAt (a manually-entered field,
+often blank) or max(createdAt, updatedAt, cfLastCalledAt) (bumped by our OWN
+automation editing an unrelated field, e.g. an owner reassignment).
+
+Read it through effective_call_date(), not the raw dict: most contacts have no
+detected change yet (tracking only just started), so every caller needs the
+documented fallback rather than treating a blank as "never called".
 """
 import json
 import os
+from datetime import datetime
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+
+# schema_version history:
+#   1 - stage, owner, email, since, changes
+#   2 - + last_call_date: set ONLY when a real stage change is detected, never
+#       on a contact's first sighting. See effective_call_date() below.
 
 DEFAULT_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -92,13 +112,16 @@ def diff(prev: dict, current: dict, today: str) -> tuple:
         old = prev.get(cid)
 
         if old is None:
+            # Creation is a baseline capture, not a call: last_call_date stays
+            # blank until this contact's stage actually moves from here.
             out[cid] = {"stage": stage, "owner": cur.get("owner", ""),
                         "email": cur.get("email", ""), "since": today,
-                        "changes": 0}
+                        "changes": 0, "last_call_date": ""}
             stats["new"] += 1      # first sighting is a baseline, not a move
             continue
 
         entry = dict(old)
+        entry.setdefault("last_call_date", "")   # adopt pre-v2 entries in place
         if stage != entry.get("stage"):
             changes.append({
                 "contact_id": cid,
@@ -112,14 +135,45 @@ def diff(prev: dict, current: dict, today: str) -> tuple:
             entry["stage"] = stage
             entry["since"] = today
             entry["changes"] = int(entry.get("changes", 0)) + 1
+            entry["last_call_date"] = today   # the ONLY thing that sets this
             stats["changed"] += 1
         else:
             stats["unchanged"] += 1
 
-        # Ownership can move without the stage moving; keep it current either way.
-        entry["owner"] = cur.get("owner", entry.get("owner", ""))
-        entry["email"] = cur.get("email", entry.get("email", ""))
+        # Ownership can move without the stage moving; keep it current either
+        # way. Only overwrite with a non-blank value: different callers (this
+        # module's diff() is invoked from both 02_contact_sync.py and
+        # bd_stage_changes.py) may not all resolve an email, and a blank from
+        # one caller must not erase a real value a previous caller recorded.
+        if cur.get("owner"):
+            entry["owner"] = cur["owner"]
+        if cur.get("email"):
+            entry["email"] = cur["email"]
         out[cid] = entry
 
     stats["carried"] = len(out) - len(current)
     return out, changes, stats
+
+
+def effective_call_date(snapshot: dict, contact_id, fallback: str = "") -> str:
+    """
+    The date to treat as "this contact was actually called", for anything that
+    used to read cfLastCalledAt (or the account-health activity composite)
+    directly.
+
+    Prefers the snapshot's detected last_call_date — set only by a REAL stage
+    change, so it cannot be bumped by our own automation editing an unrelated
+    field, the way the activity composite could.
+
+    Falls back to `fallback` (caller-supplied: cfLastCalledAt, or the account
+    health composite) when the snapshot has no detected change for this
+    contact yet — which today is most contacts, since tracking only just
+    started. Without this fallback, Account Health and BD daily counts would
+    read as empty for weeks while real changes slowly accumulate. The stage-
+    change date takes over for a contact automatically the first time it
+    actually moves.
+    """
+    entry = snapshot.get(str(contact_id))
+    if entry and entry.get("last_call_date"):
+        return entry["last_call_date"]
+    return fallback or ""

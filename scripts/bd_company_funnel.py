@@ -63,6 +63,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.kylas_client import KylasClient          # noqa: E402
 from utils.account_pipeline import load_order, _norm, _company_id  # noqa: E402
+from utils import stage_history                     # noqa: E402
 
 META       = "https://api.airtable.com/v0/meta/bases"
 TABLE_NAME       = "BD Company Funnel"
@@ -282,6 +283,11 @@ def build_funnel(kylas, all_owners: bool = False) -> tuple:
     )
     print(f"[funnel] {len(contacts)} contacts fetched")
 
+    # Day attribution prefers the DETECTED stage-change date over the
+    # manually-typed cfLastCalledAt, falling back to it while a contact has no
+    # detected change yet. See utils/stage_history.effective_call_date().
+    stage_snap = stage_history.load()
+
     dropped  = defaultdict(int)      # owner -> contacts excluded as non-roster
     by_month = defaultdict(dict)     # (rep, email, 'YYYY-MM') -> {cid: best_rank}
     by_day   = defaultdict(dict)     # (rep, email, 'YYYY-MM-DD') -> {cid: best_rank}
@@ -289,7 +295,9 @@ def build_funnel(kylas, all_owners: bool = False) -> tuple:
 
     for ct in contacts:
         cf = ct.get("customFieldValues") or {}
-        lc = _parse_lc(cf.get("cfLastCalledAt", ""))
+        lc = stage_history.effective_call_date(
+            stage_snap, ct.get("id"),
+            fallback=_parse_lc(cf.get("cfLastCalledAt", "")))
         if not lc:
             no_lc += 1              # no date to attribute to → excluded by design
             continue

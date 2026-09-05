@@ -11,6 +11,7 @@ from utils.airtable_client import AirtableClient
 from utils.logger import SyncLogger
 from utils.bd_metrics import BD_KEYS, contact_stage as _contact_stage, classify_bd as _classify_bd, company_info as _company_info
 from utils.calendar_invite import send_invite as _send_invite
+from utils import stage_history as _stage_history
 
 CUTOFF = datetime(2024, 6, 1, tzinfo=timezone.utc)
 
@@ -169,6 +170,30 @@ def run(test_mode: bool = False, test_id: int = None,
                 contacts = contacts[:5]
         print(f"[Contacts] Fetched {len(contacts)} from Kylas")
 
+        # Stage-change detection for "was this contact actually called": a
+        # stage change always bumps updatedAt, so anything that moved is
+        # guaranteed to be in THIS incremental batch — no full fetch needed
+        # here. See utils/stage_history.py for why creation is not a call.
+        _prev_snap = _stage_history.load()
+        _batch = {}
+        for _ct in contacts:
+            _stage = _contact_stage(_ct)
+            if not _stage:
+                continue
+            _co_id, _co_name = _company_info(_ct)
+            _owner_nm = _owner_name(_ct, user_map)
+            _batch[str(_ct["id"])] = {
+                "stage": _stage, "owner": _owner_nm,
+                "email": user_email_map.get(_owner_nm, ""),
+                "company": _co_name,
+            }
+        stage_snap, stage_changes, stage_stats = _stage_history.diff(
+            _prev_snap, _batch, today_iso)
+        if stage_changes:
+            print(f"[Contacts] Stage changes detected: {len(stage_changes)} "
+                  f"(of {stage_stats['changed'] + stage_stats['unchanged']} "
+                  f"contacts with a stage in this batch)")
+
         for ct in contacts:
             try:
                 created_str = ct.get("createdAt", "")
@@ -214,8 +239,15 @@ def run(test_mode: bool = False, test_id: int = None,
                 # We also do NOT require the pipeline stage to differ from
                 # yesterday — a same-stage call (e.g. CNC again) still counts,
                 # matching the Kylas "BD - Daily Report".
-                _cf          = ct.get("customFieldValues") or {}
-                called_today = (_parse_call_date(_cf.get("cfLastCalledAt")) == today_iso)
+                _cf = ct.get("customFieldValues") or {}
+                # Prefer the DETECTED stage-change date over the manually-typed
+                # cfLastCalledAt field; falls back to it automatically while
+                # this contact has no detected change yet. See
+                # utils/stage_history.effective_call_date().
+                _effective_call = _stage_history.effective_call_date(
+                    stage_snap, kylas_id,
+                    fallback=_parse_call_date(_cf.get("cfLastCalledAt")))
+                called_today = (_effective_call == today_iso)
 
                 if bool(new_stage) and called_today:
                     cats = _classify_bd(new_stage)
@@ -283,6 +315,13 @@ def run(test_mode: bool = False, test_id: int = None,
         total_bd = sum(m.get("attempted", 0) for m in bd_daily.values())
         print(f"[Contacts] BD daily: {total_bd} contacts worked today across {len(bd_daily)} owner(s)")
         print(f"[Contacts] Account activity: {len(account_activity)} companies worked today")
+
+        try:
+            _stage_history.save(stage_snap, today=today_iso)
+        except Exception as exc:
+            # Never let the snapshot write take down the sync — BD counts for
+            # this run already used the in-memory diff either way.
+            print(f"[Contacts] WARNING: stage snapshot save failed — {exc}")
 
     except Exception as e:
         logger.fail(log_id, str(e))
