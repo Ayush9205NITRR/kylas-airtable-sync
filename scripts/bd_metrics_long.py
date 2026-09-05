@@ -247,6 +247,141 @@ def push(long_rows: dict) -> None:
     funnel.prune_expired(TABLE_NAME, cutoff)
 
 
+_TD  = 'style="padding:6px 10px;border:1px solid #ddd;font-size:12px;"'
+_TDR = 'style="padding:6px 10px;border:1px solid #ddd;font-size:12px;text-align:right;"'
+_TH  = ('style="padding:6px 10px;border:1px solid #ddd;font-size:11px;'
+       'text-align:right;background:#f2f2f2;"')
+_THL = ('style="padding:6px 10px;border:1px solid #ddd;font-size:11px;'
+       'text-align:left;background:#f2f2f2;"')
+
+# (header label, metric group, metric name, which window)
+# window: "today" = today's Date; "week" = sum over this ISO Week;
+#         "month" = sum over this Month (also the sort key).
+_DIGEST_COLUMNS = [
+    ("Call Attempted",     "Contact", "Call Attempted",     "today"),
+    ("Call Connected",     "Contact", "Call Connected",     "today"),
+    ("Meeting Booked",     "Contact", "Meeting Booked",     "today"),
+    ("SQL (This Month)",   "Contact", "SQL",                "month"),
+    ("Companies Worked",   "Company", "Companies Worked",   "today"),
+    ("Companies Reached",  "Company", "Companies Reached",  "today"),
+    ("Requirements Stated", "Company", "Requirements Stated", "today"),
+    ("Handoff Calls (This Week)", "Company", "Handoff Calls Held", "week"),
+]
+
+
+def team_digest_rows(long_rows: dict, today: str) -> list:
+    """
+    One row per BD associate, built entirely from THIS run's long_rows — no
+    extra Airtable read needed, since build_long() already buckets every
+    contact by its effective_call_date regardless of which day that falls on.
+
+    "today"/"week"/"month" windows per _DIGEST_COLUMNS. Sorted by the SQL
+    (This Month) column descending — the explicit ask: highest SQL count for
+    the month at the top.
+    """
+    week, month = funnel._iso_week(today), today[:7]
+    by_rep = defaultdict(lambda: defaultdict(int))   # rep -> header -> value
+    emails = {}
+
+    for (rep, email, day, group, metric), value in long_rows.items():
+        emails.setdefault(rep, email)
+        for header, want_group, want_metric, window in _DIGEST_COLUMNS:
+            if group != want_group or metric != want_metric:
+                continue
+            if ((window == "today" and day == today) or
+                (window == "week" and funnel._iso_week(day) == week) or
+                (window == "month" and day[:7] == month)):
+                by_rep[rep][header] += value
+
+    # Iterate every rep EVER seen in long_rows, not just those with a row
+    # inside one of the digest windows — a rep idle all day/week/month must
+    # still appear, showing zeros, rather than silently vanish from the table.
+    rows = [{"rep": rep, "email": emails.get(rep, ""), **by_rep.get(rep, {})}
+            for rep in emails]
+    rows.sort(key=lambda r: -r.get("SQL (This Month)", 0))
+    return rows
+
+
+def build_digest_html(rows: list, today: str) -> str:
+    head = "".join(f'<th {_THL if i == 0 else _TH}>{h}</th>'
+                   for i, (h, *_r) in enumerate([("BD Associate",)] + _DIGEST_COLUMNS))
+    body = ""
+    for r in rows:
+        cells = f'<td {_TD}>{r["rep"]}</td>'
+        for header, *_rest in _DIGEST_COLUMNS:
+            cells += f'<td {_TDR}>{r.get(header, 0)}</td>'
+        body += f"<tr>{cells}</tr>"
+    table = (f'<table style="border-collapse:collapse;width:100%;margin:12px 0;">'
+            f'<thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>')
+    return (
+        '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;'
+        'color:#333;max-width:900px;margin:0 auto;padding:20px;">'
+        f'<p style="font-weight:bold;font-size:15px;margin:0 0 4px;">'
+        f'BD Daily Digest — {today}</p>'
+        '<p style="font-size:12px;color:#777;margin:0 0 8px;">'
+        'Sorted by SQL (This Month), highest first. "Today" columns are '
+        'today\'s activity; "This Week"/"This Month" columns are running '
+        'totals for the current period.</p>'
+        + table +
+        '<p style="color:#999;font-size:11px;margin:20px 0 0;">— Kylas Sync</p>'
+        '</body></html>'
+    )
+
+
+def send_team_digest(long_rows: dict, today: str) -> None:
+    """One email, to the whole team, replacing the old per-person
+    1:30pm/6:30pm sends. See modules/04_email_alert.py for the retired
+    per-person builder — kept in the repo, no longer called from run_sync.py."""
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    smtp_user = os.environ.get("SMTP_USER", "")
+    smtp_pass = os.environ.get("SMTP_PASS", "")
+    if not smtp_user or not smtp_pass:
+        print("[long] SMTP_USER / SMTP_PASS not set — skipping team digest")
+        return
+
+    import json
+    tp = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                      "config", "team.json")
+    try:
+        with open(tp) as fh:
+            cfg = json.load(fh)
+    except Exception as exc:
+        print(f"[long] WARNING: team.json unreadable, digest not sent — {exc}")
+        return
+
+    roster_emails = {str(m.get("email", "")).strip().lower()
+                     for m in (cfg.get("bd_team") or []) if m.get("email")}
+    cc_list = cfg.get("cc", [])
+    rows = team_digest_rows(long_rows, today)
+    to_list = sorted({r["email"] for r in rows if r["email"].lower() in roster_emails}
+                     | roster_emails)
+    if not to_list:
+        print("[long] WARNING: no recipients resolved, digest not sent")
+        return
+
+    msg = MIMEMultipart("alternative")
+    msg["From"] = smtp_user
+    msg["To"] = ", ".join(to_list)
+    if cc_list:
+        msg["CC"] = ", ".join(cc_list)
+    msg["Subject"] = f"BD Daily Digest — {today}"
+    msg.attach(MIMEText(build_digest_html(rows, today), "html", "utf-8"))
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as s:
+            s.ehlo(); s.starttls()
+            s.login(smtp_user, smtp_pass)
+            s.sendmail(smtp_user, to_list + list(cc_list), msg.as_string())
+        from utils.redact import mask_emails
+        print(f"[long] Team digest sent → {len(to_list)} recipient(s) "
+              f"{mask_emails(to_list)} (cc: {mask_emails(cc_list)})")
+    except Exception as exc:
+        print(f"[long] WARNING: team digest send failed — {exc}")
+
+
 def summarise(long_rows: dict) -> None:
     """Totals per metric for the most recent month present — a sanity read."""
     if not long_rows:
@@ -270,14 +405,19 @@ def main() -> int:
                     help="print a summary, write nothing to Airtable")
     ap.add_argument("--all-owners", action="store_true",
                     help="include owners outside the BD roster (diagnostic)")
+    ap.add_argument("--no-email", action="store_true",
+                    help="update Airtable only, skip the team digest email")
     args = ap.parse_args()
 
+    today = datetime.now(timezone.utc).date().isoformat()
     long_rows, _ = build_long(KylasClient(), all_owners=args.all_owners)
     summarise(long_rows)
     if args.dry_run:
         print(f"[long] dry run — nothing written ({len(long_rows)} rows)")
         return 0
     push(long_rows)
+    if not args.no_email:
+        send_team_digest(long_rows, today)
     return 0
 
 

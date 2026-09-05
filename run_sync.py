@@ -24,8 +24,9 @@ def main():
                         help="Fetch records updated on/after this date, e.g. 2026-06-01 or 2026-06-01T00:00:00Z "
                              "(overrides --full-sync and the default 72h window)")
     parser.add_argument("--no-email", action="store_true",
-                        help="Run the full sync + write BD Daily Stats, but skip the BD email "
-                             "(use to preview computed numbers in the logs before going live)")
+                        help="Currently a no-op: MODULE 4's per-person email is disabled "
+                             "here regardless (see comment at that module below). Kept so "
+                             "existing workflow_dispatch inputs that pass it do not break.")
     args = parser.parse_args()
 
     from dotenv import load_dotenv
@@ -126,12 +127,13 @@ def main():
     )
     print(f"[run_sync] BD enriched metrics for {len(bd_enriched)} owner(s)\n")
 
-    print("\n" + "=" * 40 + "\nMODULE 4: Email Alert\n" + "=" * 40)
-    if args.no_email:
-        print("[run_sync] --no-email: skipping BD email. Per-owner numbers above "
-              "(MODULE 5) reflect the computed snapshot.")
-    else:
-        _load("04_email_alert.py").send_alert(stats, args.slot, bd_enriched=bd_enriched)
+    # MODULE 4: Email Alert — DISABLED (per-person 1:30pm/6:30pm emails
+    # retired in favour of one team-wide daily digest, sent from
+    # bd_metrics_long.py's own scheduled run after the day's syncs complete).
+    # modules/04_email_alert.py and its send_alert() are unchanged and still
+    # callable directly (e.g. for a demo send) — just not invoked here.
+    print("\n" + "=" * 40 + "\nMODULE 4: Email Alert — disabled, see comment\n"
+          + "=" * 40)
 
     # Account health: update Status of Reachout + POC stats on every sync
     print("\n" + "=" * 40 + "\nMODULE 6: Account Health\n" + "=" * 40)

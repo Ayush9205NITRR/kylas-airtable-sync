@@ -91,3 +91,67 @@ def test_long_key_shape_is_unique_per_metric():
             for g in ("Contact", "Company")
             for m in ("SQL", "Meeting Booked")}
     assert len(keys) == 2 * 2 * 2 * 2
+
+
+# ── team digest: windowing + sort ────────────────────────────────────────────
+
+def _row(rep, email, day, group, metric, value):
+    return (rep, email, day, group, metric), value
+
+
+def test_today_columns_use_only_todays_row():
+    rows = dict([
+        _row("Anjali Athya", "anjali.athya@enout.in", "2026-09-05", "Contact", "Call Attempted", 5),
+        _row("Anjali Athya", "anjali.athya@enout.in", "2026-09-04", "Contact", "Call Attempted", 99),
+    ])
+    out = {r["rep"]: r for r in ml.team_digest_rows(rows, "2026-09-05")}
+    assert out["Anjali Athya"]["Call Attempted"] == 5
+
+
+def test_month_column_sums_the_whole_month_not_just_today():
+    rows = dict([
+        _row("Anjali Athya", "a@x", "2026-09-01", "Contact", "SQL", 2),
+        _row("Anjali Athya", "a@x", "2026-09-04", "Contact", "SQL", 1),
+        _row("Anjali Athya", "a@x", "2026-09-05", "Contact", "SQL", 3),
+        _row("Anjali Athya", "a@x", "2026-08-30", "Contact", "SQL", 100),  # different month
+    ])
+    out = {r["rep"]: r for r in ml.team_digest_rows(rows, "2026-09-05")}
+    assert out["Anjali Athya"]["SQL (This Month)"] == 6
+
+
+def test_week_column_sums_the_iso_week_only():
+    # 2026-08-31 and 2026-09-01 are the same ISO week (see test_bd_company_funnel).
+    rows = dict([
+        _row("Gaurav Kumar", "g@x", "2026-08-31", "Company", "Handoff Calls Held", 2),
+        _row("Gaurav Kumar", "g@x", "2026-09-01", "Company", "Handoff Calls Held", 3),
+        _row("Gaurav Kumar", "g@x", "2026-08-20", "Company", "Handoff Calls Held", 50),  # earlier week
+    ])
+    out = {r["rep"]: r for r in ml.team_digest_rows(rows, "2026-09-01")}
+    assert out["Gaurav Kumar"]["Handoff Calls (This Week)"] == 5
+
+
+def test_sorted_by_sql_this_month_descending():
+    rows = dict([
+        _row("Low SQL",  "l@x", "2026-09-05", "Contact", "SQL", 1),
+        _row("High SQL", "h@x", "2026-09-05", "Contact", "SQL", 9),
+        _row("Mid SQL",  "m@x", "2026-09-05", "Contact", "SQL", 4),
+    ])
+    out = ml.team_digest_rows(rows, "2026-09-05")
+    assert [r["rep"] for r in out] == ["High SQL", "Mid SQL", "Low SQL"]
+
+
+def test_rep_with_no_metrics_this_period_still_appears_with_zeros():
+    rows = dict([_row("Quiet Rep", "q@x", "2026-08-01", "Contact", "Call Attempted", 1)])
+    out = {r["rep"]: r for r in ml.team_digest_rows(rows, "2026-09-05")}
+    assert out["Quiet Rep"].get("Call Attempted", 0) == 0
+    assert out["Quiet Rep"].get("SQL (This Month)", 0) == 0
+
+
+def test_digest_html_contains_every_rep_and_is_valid_enough():
+    rows = ml.team_digest_rows(
+        dict([_row("Anjali Athya", "a@x", "2026-09-05", "Contact", "SQL", 3)]),
+        "2026-09-05")
+    html = ml.build_digest_html(rows, "2026-09-05")
+    assert "Anjali Athya" in html
+    assert html.startswith("<!DOCTYPE html>")
+    assert html.count("<table") == 1

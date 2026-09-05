@@ -1186,13 +1186,18 @@ def run(kylas=None, send_email: bool = True) -> dict:
     except Exception as exc:
         print(f"[Account Health] WARNING: email send failed — {exc}")
 
-    # Per-POC exhaust emails
+    # Per-POC exhaust emails — RETIRED as a separate per-person send (one of
+    # the "too many emails" this was consolidated to fix). _send_poc_emails()
+    # is unchanged and still callable directly; folding its content into the
+    # ONE weekly digest above as an added section is the natural next step,
+    # not done here yet — this stop is the safe, immediate half of that
+    # consolidation.
     stale_ct   = sum(1 for e in health.values() if e.get("status_of_reachout") == "Stale")
     tapped_ct  = sum(1 for e in health.values()
                      if e.get("needs_exhaust") and
                      (e.get("status_of_reachout") or "").startswith("Tapped"))
-    print(f"[Account Health] {stale_ct} stale + {tapped_ct} tapped-unexhausted → sending per-POC emails...")
-    _send_poc_emails(health, tbl_cache, cfg, smtp_user, smtp_pass)
+    print(f"[Account Health] {stale_ct} stale + {tapped_ct} tapped-unexhausted "
+          f"(per-POC emails no longer sent separately — see comment)")
 
     return health
 

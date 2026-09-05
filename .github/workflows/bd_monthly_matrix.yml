@@ -6,9 +6,10 @@ name: BD Monthly Matrix → Airtable
 # "<rep> | YYYY-MM" so re-runs refresh counts instead of duplicating rows.
 
 on:
-  schedule:
-    # 8:00 PM IST = 14:30 UTC, Mon–Fri (after the 7 PM account-status sweep)
-    - cron: '30 14 * * 1-5'
+  # Retired from schedule: superseded by "BD Metrics Daily"
+  # (bd_metrics_long.yml)'s Contact-group rows summed by month. Kept manually
+  # dispatchable (and its --diagnose mode is still useful for tracing a
+  # specific rep's SQL count), not deleted.
   workflow_dispatch:
     inputs:
       dry_run:

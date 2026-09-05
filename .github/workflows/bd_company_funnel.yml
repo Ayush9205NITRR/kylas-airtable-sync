@@ -9,9 +9,11 @@ name: BD Company Funnel
 # numbers, so re-running is always safe.
 
 on:
-  schedule:
-    # 06:30 UTC = 12:00 PM IST, after the 1:30 PM IST sync has had a day's data.
-    - cron: '30 6 * * *'
+  # Retired from schedule: superseded by "BD Metrics Daily"
+  # (bd_metrics_long.yml), which covers the same Company-group metrics in one
+  # long-form table alongside the Contact-group ones. Kept manually
+  # dispatchable, not deleted, in case the old wide-column shape is needed
+  # again before the Airtable tables themselves are removed.
   workflow_dispatch:
     inputs:
       dry_run:
