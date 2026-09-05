@@ -184,3 +184,34 @@ def test_dry_run_is_the_default_and_writes_nothing(monkeypatch, capsys):
     ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args([])
     assert args.apply is False
+
+
+def test_resolve_user_names_prefers_team_json_over_the_live_call(tmp_path, monkeypatch):
+    """The live get_users() only returns its first page (a real bug elsewhere
+    in this client); team.json is synced daily and has the full roster, so it
+    must win on any id both sources claim."""
+    team = tmp_path / "team.json"
+    team.write_text('{"kylas_users": {"1": "From Team JSON", "2": "Also From Team JSON"}}')
+    monkeypatch.setattr(ac, "__file__", str(tmp_path / "scripts" / "assign_contacts_to_company_owner.py"))
+    (tmp_path / "scripts").mkdir(exist_ok=True)
+    (tmp_path / "config").mkdir(exist_ok=True)
+    (tmp_path / "config" / "team.json").write_text(team.read_text())
+
+    class _K:
+        def get_users(self):
+            return {1: "From Live API (stale/wrong)", 3: "Only Live Has This"}
+
+    names = ac.resolve_user_names(_K())
+    assert names[1] == "From Team JSON"       # team.json wins the clash
+    assert names[2] == "Also From Team JSON"  # team.json-only entry survives
+    assert names[3] == "Only Live Has This"   # live call fills a real gap
+
+
+def test_resolve_user_names_survives_both_sources_failing(tmp_path, monkeypatch):
+    monkeypatch.setattr(ac, "__file__", str(tmp_path / "scripts" / "assign_contacts_to_company_owner.py"))
+
+    class _K:
+        def get_users(self):
+            raise RuntimeError("Kylas is down")
+
+    assert ac.resolve_user_names(_K()) == {}

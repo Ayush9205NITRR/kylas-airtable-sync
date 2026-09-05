@@ -169,6 +169,36 @@ def apply_moves(kylas: KylasClient, moves: list, limit: int = None) -> dict:
     return tally
 
 
+def resolve_user_names(kylas: KylasClient) -> dict:
+    """
+    {user_id (int): name}, team.json as the base with the live API only
+    filling gaps.
+
+    kylas.get_users() calls GET /users with no page/size params, so it
+    silently returns just the first page — sync_team.py's working fetch
+    loops with page/size:100 until it runs out. team.json is kept in sync
+    daily by sync_team.yml and already has the full roster, so it is the
+    more complete source here; the live call is a bonus for anyone new
+    enough not to be in team.json yet.
+    """
+    names = {}
+    tp = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                      "config", "team.json")
+    try:
+        import json
+        with open(tp) as fh:
+            for uid, name in (json.load(fh).get("kylas_users") or {}).items():
+                names[int(uid)] = name
+    except Exception as exc:
+        print(f"[assign] WARNING: team.json unreadable ({exc})")
+    try:
+        for uid, name in (kylas.get_users() or {}).items():
+            names.setdefault(int(uid), name)
+    except Exception as exc:
+        print(f"[assign] WARNING: live user list unavailable ({exc})")
+    return names
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--apply", action="store_true",
@@ -181,13 +211,7 @@ def main() -> int:
     kylas = KylasClient()
     moves, stats = build_plan(kylas)
 
-    user_names = {}
-    try:
-        user_names = kylas.get_users()
-    except Exception as exc:
-        print(f"[assign] WARNING: could not resolve user names ({exc}) — "
-              f"summary will show raw ids")
-
+    user_names = resolve_user_names(kylas)
     print_summary(moves, stats, user_names)
 
     if not args.apply:
