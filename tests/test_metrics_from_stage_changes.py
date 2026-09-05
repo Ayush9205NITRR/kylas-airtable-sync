@@ -129,3 +129,78 @@ def test_off_roster_owners_are_excluded_when_a_roster_applies(monkeypatch):
     rows, stats = long_mod.build_long(all_owners=False, changes=changes)
     assert stats["skipped"] == 1
     assert not any(k[0] == "Someone Else" for k in rows)
+
+
+# ── daily / weekly / monthly digests off the same base data ──────────────────
+
+def _rows_for(period, long_rows, today="2026-09-09"):
+    return long_mod.team_digest_rows(long_rows, today, period)
+
+
+def _long(*specs):
+    """specs: (day, metric, value) for one rep, as build_long would emit."""
+    out = {}
+    for day, metric, value in specs:
+        out[("Anjali Athya", "a@enout.in", day, "Contact", metric)] = value
+    return out
+
+
+def test_each_period_sums_only_its_own_window():
+    # 2026-09-09 is a Wednesday. 09-07 is Monday (same week), 09-01 is the same
+    # month but the previous week, 08-31 is the previous month entirely.
+    data = _long(("2026-09-09", "Call Attempted", 1),
+                 ("2026-09-07", "Call Attempted", 10),
+                 ("2026-09-01", "Call Attempted", 100),
+                 ("2026-08-31", "Call Attempted", 1000))
+    assert _rows_for("daily", data)[0]["Call Attempted"] == 1
+    assert _rows_for("weekly", data)[0]["Call Attempted"] == 11      # 09 + 07
+    assert _rows_for("monthly", data)[0]["Call Attempted"] == 111    # 09 + 07 + 01
+
+
+def test_weekly_and_monthly_carry_every_metric_for_their_window():
+    """Same structure as daily — all eight columns, one consistent window."""
+    for period in ("weekly", "monthly"):
+        _w, columns, _s = long_mod.PERIODS[period]
+        headers = [h for h, *_x in columns]
+        assert headers == [h for h, *_x in long_mod._DIGEST_METRICS]
+        assert all(win == ("week" if period == "weekly" else "month")
+                   for *_x, win in columns), "one window per period"
+
+
+def test_every_period_sorts_by_sql_highest_first():
+    rows = {}
+    for rep, sql in (("Low", 1), ("High", 9), ("Mid", 5)):
+        rows[(rep, f"{rep}@enout.in", "2026-09-09", "Contact", "SQL")] = sql
+    for period in ("weekly", "monthly"):
+        assert [r["rep"] for r in _rows_for(period, rows)] == ["High", "Mid", "Low"]
+
+
+def test_an_idle_rep_still_appears_with_zeros():
+    """A rep who did nothing this week must not vanish from the team table."""
+    data = {("Idle", "idle@enout.in", "2026-08-01", "Contact", "SQL"): 3}
+    rows = _rows_for("weekly", data)
+    assert [r["rep"] for r in rows] == ["Idle"]
+    assert rows[0].get("Call Attempted", 0) == 0
+
+
+def test_html_carries_a_team_total_row():
+    data = _long(("2026-09-09", "Call Attempted", 2))
+    for period in ("daily", "weekly", "monthly"):
+        html = long_mod.build_digest_html(_rows_for(period, data), "2026-09-09", period)
+        assert "TEAM TOTAL" in html
+
+
+def test_titles_name_the_period():
+    assert long_mod.digest_title("2026-09-09", "daily") == "BD Daily Digest — 2026-09-09"
+    assert "Weekly" in long_mod.digest_title("2026-09-09", "weekly")
+    assert long_mod.digest_title("2026-09-09", "monthly").endswith("2026-09")
+
+
+def test_daily_digest_columns_are_unchanged():
+    """The evening report the team already reads must not silently change."""
+    _w, columns, sort_col = long_mod.PERIODS["daily"]
+    assert [h for h, *_x in columns] == [
+        "Call Attempted", "Call Connected", "Meeting Booked", "SQL (This Month)",
+        "Companies Worked", "Companies Reached", "Requirements Stated",
+        "Handoff Calls (This Week)"]
+    assert sort_col == "SQL (This Month)"

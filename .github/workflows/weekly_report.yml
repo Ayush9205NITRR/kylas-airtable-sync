@@ -22,8 +22,15 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Send weekly report
-        run: python modules/06_periodic_report.py --period weekly
+        # One consolidated team digest, replacing 06_periodic_report.py's
+        # per-BD loop (one email each, ~16 every run). Same metrics and
+        # same table as the daily digest, over the week window.
+        # --email-only: the daily run already wrote these days to
+        # Airtable, and closed days are frozen, so re-pushing would be
+        # a no-op at best.
+        run: python scripts/bd_metrics_long.py --period weekly --email-only
         env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
           AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           SMTP_USER:        ${{ secrets.SMTP_USER }}

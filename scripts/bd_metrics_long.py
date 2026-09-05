@@ -314,70 +314,136 @@ _DIGEST_COLUMNS = [
     ("Handoff Calls (This Week)", "Company", "Handoff Calls Held", "week"),
 ]
 
+# The same eight metrics, unscoped. The weekly and monthly digests show all of
+# them for their own period, so every column in those tables covers one window
+# and the header needs no "(This Week)" suffix — the subject line says it.
+#
+# The daily digest deliberately keeps _DIGEST_COLUMNS above instead: its SQL and
+# Handoff columns are running period totals on purpose, so a day with no SQL
+# still shows where each rep stands for the month. Changing that would quietly
+# alter a report the team already reads every evening.
+_DIGEST_METRICS = [
+    ("Call Attempted",      "Contact", "Call Attempted"),
+    ("Call Connected",      "Contact", "Call Connected"),
+    ("Meeting Booked",      "Contact", "Meeting Booked"),
+    ("SQL",                 "Contact", "SQL"),
+    ("Companies Worked",    "Company", "Companies Worked"),
+    ("Companies Reached",   "Company", "Companies Reached"),
+    ("Requirements Stated", "Company", "Requirements Stated"),
+    ("Handoff Calls Held",  "Company", "Handoff Calls Held"),
+]
 
-def team_digest_rows(long_rows: dict, today: str) -> list:
-    """
-    One row per BD associate, built entirely from THIS run's long_rows — no
-    extra Airtable read needed, since build_long() already buckets every
-    contact by its effective_call_date regardless of which day that falls on.
+# period -> (window every column uses, column set, the column rows sort by)
+PERIODS = {
+    "daily":   ("today", _DIGEST_COLUMNS, "SQL (This Month)"),
+    "weekly":  ("week",  [(h, g, m, "week")  for h, g, m in _DIGEST_METRICS], "SQL"),
+    "monthly": ("month", [(h, g, m, "month") for h, g, m in _DIGEST_METRICS], "SQL"),
+}
 
-    "today"/"week"/"month" windows per _DIGEST_COLUMNS. Sorted by the SQL
-    (This Month) column descending — the explicit ask: highest SQL count for
-    the month at the top.
+
+def _in_window(day: str, window: str, today: str) -> bool:
+    """Does `day` fall inside `window`, measured relative to `today`?"""
+    if window == "today":
+        return day == today
+    if window == "week":
+        return funnel._iso_week(day) == funnel._iso_week(today)
+    if window == "month":
+        return day[:7] == today[:7]
+    return False
+
+
+def team_digest_rows(long_rows: dict, today: str, period: str = "daily") -> list:
     """
-    week, month = funnel._iso_week(today), today[:7]
+    One row per BD associate for `period`, built entirely from long_rows — no
+    extra Airtable read, since build_long() reads the whole change log and so
+    already carries every day, not just today's.
+
+    That is what lets the weekly and monthly digests be the same code as the
+    daily one with a different window, rather than three separate reports.
+
+    Sorted by the period's SQL column descending — highest SQL on top.
+    """
+    _win, columns, sort_col = PERIODS[period]
     by_rep = defaultdict(lambda: defaultdict(int))   # rep -> header -> value
     emails = {}
 
     for (rep, email, day, group, metric), value in long_rows.items():
         emails.setdefault(rep, email)
-        for header, want_group, want_metric, window in _DIGEST_COLUMNS:
+        for header, want_group, want_metric, window in columns:
             if group != want_group or metric != want_metric:
                 continue
-            if ((window == "today" and day == today) or
-                (window == "week" and funnel._iso_week(day) == week) or
-                (window == "month" and day[:7] == month)):
+            if _in_window(day, window, today):
                 by_rep[rep][header] += value
 
     # Iterate every rep EVER seen in long_rows, not just those with a row
-    # inside one of the digest windows — a rep idle all day/week/month must
-    # still appear, showing zeros, rather than silently vanish from the table.
+    # inside the window — a rep idle all day/week/month must still appear,
+    # showing zeros, rather than silently vanish from the table.
     rows = [{"rep": rep, "email": emails.get(rep, ""), **by_rep.get(rep, {})}
             for rep in emails]
-    rows.sort(key=lambda r: -r.get("SQL (This Month)", 0))
+    rows.sort(key=lambda r: -r.get(sort_col, 0))
     return rows
 
 
-def build_digest_html(rows: list, today: str) -> str:
+def digest_title(today: str, period: str) -> str:
+    if period == "weekly":
+        return f"BD Weekly Digest — week {funnel._iso_week(today)}"
+    if period == "monthly":
+        return f"BD Monthly Digest — {today[:7]}"
+    return f"BD Daily Digest — {today}"
+
+
+def _digest_blurb(period: str) -> str:
+    if period == "daily":
+        return ('Sorted by SQL (This Month), highest first. "Today" columns are '
+                "today's activity; \"This Week\"/\"This Month\" columns are running "
+                'totals for the current period.')
+    span = "this ISO week" if period == "weekly" else "this calendar month"
+    return (f'Every column covers {span}, so the table is one consistent window. '
+            f'Sorted by SQL, highest first. Counted from actual pipeline-stage '
+            f'movement — a contact counts on the day its stage moved.')
+
+
+def build_digest_html(rows: list, today: str, period: str = "daily") -> str:
+    _win, columns, _sort = PERIODS[period]
     head = "".join(f'<th {_THL if i == 0 else _TH}>{h}</th>'
-                   for i, (h, *_r) in enumerate([("BD Associate",)] + _DIGEST_COLUMNS))
+                   for i, (h, *_r) in enumerate([("BD Associate",)] + columns))
     body = ""
     for r in rows:
         cells = f'<td {_TD}>{r["rep"]}</td>'
-        for header, *_rest in _DIGEST_COLUMNS:
+        for header, *_rest in columns:
             cells += f'<td {_TDR}>{r.get(header, 0)}</td>'
         body += f"<tr>{cells}</tr>"
+
+    # Team total: the "complete view" the per-person reports could never give,
+    # since no single recipient ever saw more than their own row.
+    totals = f'<td {_TD}><b>TEAM TOTAL</b></td>'
+    for header, *_rest in columns:
+        totals += f'<td {_TDR}><b>{sum(r.get(header, 0) for r in rows)}</b></td>'
+    body += f'<tr style="background:#f7f7f7;">{totals}</tr>'
+
     table = (f'<table style="border-collapse:collapse;width:100%;margin:12px 0;">'
             f'<thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>')
     return (
         '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;'
         'color:#333;max-width:900px;margin:0 auto;padding:20px;">'
         f'<p style="font-weight:bold;font-size:15px;margin:0 0 4px;">'
-        f'BD Daily Digest — {today}</p>'
-        '<p style="font-size:12px;color:#777;margin:0 0 8px;">'
-        'Sorted by SQL (This Month), highest first. "Today" columns are '
-        'today\'s activity; "This Week"/"This Month" columns are running '
-        'totals for the current period.</p>'
+        f'{digest_title(today, period)}</p>'
+        f'<p style="font-size:12px;color:#777;margin:0 0 8px;">'
+        f'{_digest_blurb(period)}</p>'
         + table +
         '<p style="color:#999;font-size:11px;margin:20px 0 0;">— Kylas Sync</p>'
         '</body></html>'
     )
 
 
-def send_team_digest(long_rows: dict, today: str) -> None:
-    """One email, to the whole team, replacing the old per-person
-    1:30pm/6:30pm sends. See modules/04_email_alert.py for the retired
-    per-person builder — kept in the repo, no longer called from run_sync.py."""
+def send_team_digest(long_rows: dict, today: str, period: str = "daily") -> None:
+    """One email, to the whole team, for `period` (daily / weekly / monthly).
+
+    Replaces the per-person sends: the 1:30pm/6:30pm ones (see
+    modules/04_email_alert.py) and the weekly/monthly loop in
+    modules/06_periodic_report.py, which sent one email per BD associate — 16
+    every Saturday and 16 more on the 1st. Both builders are kept in the repo
+    and still runnable by hand; neither is called on a schedule any more."""
     import smtplib
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
@@ -401,7 +467,7 @@ def send_team_digest(long_rows: dict, today: str) -> None:
     roster_emails = {str(m.get("email", "")).strip().lower()
                      for m in (cfg.get("bd_team") or []) if m.get("email")}
     cc_list = cfg.get("cc", [])
-    rows = team_digest_rows(long_rows, today)
+    rows = team_digest_rows(long_rows, today, period)
     to_list = sorted({r["email"] for r in rows if r["email"].lower() in roster_emails}
                      | roster_emails)
     if not to_list:
@@ -413,8 +479,8 @@ def send_team_digest(long_rows: dict, today: str) -> None:
     msg["To"] = ", ".join(to_list)
     if cc_list:
         msg["CC"] = ", ".join(cc_list)
-    msg["Subject"] = f"BD Daily Digest — {today}"
-    msg.attach(MIMEText(build_digest_html(rows, today), "html", "utf-8"))
+    msg["Subject"] = digest_title(today, period)
+    msg.attach(MIMEText(build_digest_html(rows, today, period), "html", "utf-8"))
 
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as s:
@@ -422,7 +488,7 @@ def send_team_digest(long_rows: dict, today: str) -> None:
             s.login(smtp_user, smtp_pass)
             s.sendmail(smtp_user, to_list + list(cc_list), msg.as_string())
         from utils.redact import mask_emails
-        print(f"[long] Team digest sent → {len(to_list)} recipient(s) "
+        print(f"[long] {period.title()} team digest sent → {len(to_list)} recipient(s) "
               f"{mask_emails(to_list)} (cc: {mask_emails(cc_list)})")
     except Exception as exc:
         print(f"[long] WARNING: team digest send failed — {exc}")
@@ -453,17 +519,31 @@ def main() -> int:
                     help="include owners outside the BD roster (diagnostic)")
     ap.add_argument("--no-email", action="store_true",
                     help="update Airtable only, skip the team digest email")
+    ap.add_argument("--period", choices=sorted(PERIODS), default="daily",
+                    help="which team digest to send (default: daily). weekly "
+                         "and monthly use the same metrics over their window.")
+    ap.add_argument("--email-only", action="store_true",
+                    help="send the digest without rewriting Airtable — for the "
+                         "weekly/monthly runs, which only report on days the "
+                         "daily run already wrote")
     args = ap.parse_args()
 
     today = datetime.now(timezone.utc).date().isoformat()
     long_rows, _ = build_long(KylasClient(), all_owners=args.all_owners)
     summarise(long_rows)
     if args.dry_run:
+        rows = team_digest_rows(long_rows, today, args.period)
+        print(f"\n{digest_title(today, args.period)}")
+        _win, columns, _sort = PERIODS[args.period]
+        for r in rows:
+            cells = "  ".join(f"{h}={r.get(h, 0)}" for h, *_x in columns)
+            print(f"  {r['rep'][:22]:24} {cells}")
         print(f"[long] dry run — nothing written ({len(long_rows)} rows)")
         return 0
-    push(long_rows)
+    if not args.email_only:
+        push(long_rows)
     if not args.no_email:
-        send_team_digest(long_rows, today)
+        send_team_digest(long_rows, today, args.period)
     return 0
 
 
