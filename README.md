@@ -2,6 +2,18 @@
 
 Automated sync from Kylas CRM to Airtable, running twice daily via GitHub Actions.
 
+> ### 📊 [BD Metrics & Reporting — single source of truth](docs/BD_WORKFLOW.md)
+>
+> **Start there** for anything about BD numbers: how Attempted and Connected are
+> calculated, how stage changes are captured, what runs when, how the Contact and
+> Company matrices are derived, and how the daily/weekly/monthly digests work.
+> It also carries the **change log** — what changed, why, and the impact on
+> existing numbers.
+>
+> **If you change how a metric is measured, how a table is built, or when a job
+> runs, update that document in the same commit.** It is only a source of truth
+> while it stays current.
+
 > **Also in this repo:** the **Cold Call Analysis System** (`cold_call/`) — a
 > separate daily pipeline that transcribes BD call recordings from Google Drive,
 > scores them with Gemini, stores results in Airtable, and emails each BD a
