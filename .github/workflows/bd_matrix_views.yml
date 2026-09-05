@@ -9,7 +9,7 @@ name: BD Matrix Views (Company + Contact)
 
 on:
   schedule:
-    - cron: '0 14 * * *'      # 7:30 PM IST daily, 30 min after the base table
+    - cron: '30 13 * * *'     # 7:00 PM IST, 30 min after the evening digest
   workflow_dispatch:
     inputs:
       month:

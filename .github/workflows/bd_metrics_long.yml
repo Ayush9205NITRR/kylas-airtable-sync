@@ -16,7 +16,12 @@ name: BD Metrics Daily (long form)
 
 on:
   schedule:
-    - cron: '30 13 * * *'      # 7:00 PM IST
+    # Two digests a day, each reporting the day SO FAR at that moment:
+    #   midday  — 2:00 PM IST, activity up to 2:00 PM
+    #   evening — 6:30 PM IST, the day as it finished
+    # bd_stage_changes runs 15 min before each, since this derives from it.
+    - cron: '30 8 * * *'       # 2:00 PM IST
+    - cron: '0 13 * * *'       # 6:30 PM IST
   workflow_dispatch:
     inputs:
       dry_run:

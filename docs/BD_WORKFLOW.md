@@ -65,20 +65,36 @@ time are triggered externally via `workflow_dispatch` instead.
 | `08:00` *(cron-job.org)* | 13:30 | `sync_1_30pm` | Midday sync |
 | `0 13` Mon–Sat | 18:30 | `call_invites` | Calendar blocks |
 | `13:00` *(cron-job.org)* | 18:30 | `sync_6_00pm` | EOD sync + rollup |
-| **`30 12` daily** | **18:00** | **`bd_stage_changes`** | **Detect stage moves → BD Stage Changes** |
+| **`15 8` daily** | **13:45** | **`bd_stage_changes`** | **Detect stage moves → BD Stage Changes** |
+| **`30 8` daily** | **14:00** | **`bd_metrics_long`** | **Base table + midday team digest** |
+| **`45 12` daily** | **18:15** | **`bd_stage_changes`** | **Detect stage moves (evening batch)** |
+| **`0 13` daily** | **18:30** | **`bd_metrics_long`** | **Base table + evening team digest** |
 | `30 13` Mon–Fri | 19:00 | `daily_account_status` | Account Health → Kylas |
-| **`30 13` daily** | **19:00** | **`bd_metrics_long`** | **Build BD Metrics Daily + send daily digest** |
 | `0 14` Mon–Sat | 19:30 | `bd_trends` | Trends rollup |
-| **`0 14` daily** | **19:30** | **`bd_matrix_views`** | **Contact + Company Matrix** |
+| **`30 13` daily** | **19:00** | **`bd_matrix_views`** | **Contact + Company Matrix** |
 | `30 2` Mon | 08:00 | `account_health_weekly` | Account Health digest |
 | Sat `03:30` *(cron-job.org)* | 09:00 | `weekly_report` | Weekly team digest |
 | 1st `03:30` *(cron-job.org)* | 09:00 | `monthly_report` | Monthly team digest |
 
-**Order matters for the three in bold.** `bd_stage_changes` (18:00) writes the
-evidence, `bd_metrics_long` (19:00) derives the base table from it, and
-`bd_matrix_views` (19:30) rolls the base table into the matrices. Run them out
-of order and the later ones read stale or empty input — each warns loudly rather
-than silently reporting zeros.
+**Order matters for the rows in bold.** The chain runs twice a day:
+
+```
+13:45 IST  bd_stage_changes    detect moves        ┐ midday
+14:00 IST  bd_metrics_long     base table + digest ┘
+
+18:15 IST  bd_stage_changes    detect moves        ┐
+18:30 IST  bd_metrics_long     base table + digest │ evening
+19:00 IST  bd_matrix_views     the two matrices    ┘
+```
+
+The midday digest reports the day **so far**; the evening one reports the day as
+it finished. Run these out of order and the later ones read stale or empty input
+— each warns loudly rather than silently reporting zeros.
+
+⚠️ **GitHub's cron drifts, and not by a little.** The 13:30 UTC run on
+2026-09-05 fired at 16:11 — 2h41m late. These times are therefore
+approximate. If 2:00 PM and 6:30 PM must be exact, move these two to
+cron-job.org via `workflow_dispatch`, as the sync jobs already are.
 
 ---
 
@@ -298,6 +314,33 @@ did not run, the downstream one has nothing to derive from and says so.
 
 Newest first. Every entry: **what** changed, **why**, **how** it works now, and
 the **impact** on existing numbers.
+
+### 2026-09-05 — Two digests a day, and recipients from the active roster
+
+- **What** — The daily digest now runs **twice**: 2:00 PM IST (the day so far)
+  and 6:30 PM IST (the day as it finished). Stage detection runs 15 min before
+  each; the matrices moved to 7:00 PM IST. Digest recipients now come from the
+  **active** roster instead of `config/team.json`.
+- **Why** — One 7:00 PM digest gave no midday read. Separately, recipients were
+  read from team.json's `bd_team` unconditionally, so the email went to 18
+  people regardless of who was ticked Active in Airtable 'BD Members'.
+- **How** — `send_team_digest()` calls `funnel.bd_roster()`, which honours the
+  Active checkbox, falling back to team.json only if that table is unreadable
+  (a broken read must not silently email nobody). Unticking Active is now all it
+  takes to stop emailing someone.
+- **Impact** — Two emails a day instead of one. The recipient list shrinks to
+  whoever is actually Active. Numbers are unchanged — only timing and audience.
+- **Caveat** — GitHub's cron drifts, badly: the 13:30 UTC run on 2026-09-05
+  fired at 16:11, 2h41m late. If 2:00 PM and 6:30 PM must be exact, these two
+  need moving to cron-job.org like the sync jobs already are.
+
+### 2026-09-05 — Contact Matrix and Company Matrix backfilled
+
+- **What** — Both matrix tables created and populated: 432 rows each.
+- **How** — First non-dry run of `bd_matrix_views`. A dry run had been executed
+  first and wrote nothing, by design.
+- **Impact** — Additive. Only W1 is populated so far, since the month had just
+  begun.
 
 ### 2026-09-05 — Contact Matrix and Company Matrix
 

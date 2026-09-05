@@ -9,7 +9,12 @@ name: BD Stage Changes
 
 on:
   schedule:
-    - cron: '30 12 * * *'      # 6:00 PM IST
+    # Runs 15 minutes before each digest, because bd_metrics_long derives
+    # everything from the rows this writes. Detecting twice a day also splits
+    # the day's moves into a midday and an evening batch rather than one
+    # end-of-day lump.
+    - cron: '15 8 * * *'       # 1:45 PM IST — feeds the 2:00 PM digest
+    - cron: '45 12 * * *'      # 6:15 PM IST — feeds the 6:30 PM digest
   workflow_dispatch:
     inputs:
       dry_run:

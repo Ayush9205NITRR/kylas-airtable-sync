@@ -510,12 +510,22 @@ def send_team_digest(long_rows: dict, today: str, period: str = "daily") -> None
         print(f"[long] WARNING: team.json unreadable, digest not sent — {exc}")
         return
 
-    roster_emails = {str(m.get("email", "")).strip().lower()
-                     for m in (cfg.get("bd_team") or []) if m.get("email")}
+    # Recipients come from the ACTIVE roster, not config/team.json. bd_roster()
+    # reads Airtable 'BD Members' and honours its Active checkbox, falling back
+    # to team.json only when that table is unreadable — so unticking Active is
+    # all it takes to stop emailing someone, with no code or config change.
+    #
+    # This used to be team.json's bd_team unconditionally, which is why the
+    # digest went to 18 people regardless of who was actually active.
+    roster_emails = funnel.bd_roster()
+    if not roster_emails:
+        roster_emails = {str(m.get("email", "")).strip().lower()
+                         for m in (cfg.get("bd_team") or []) if m.get("email")}
+        print("[long] WARNING: no active roster resolved — falling back to "
+              "team.json bd_team for recipients")
     cc_list = cfg.get("cc", [])
     rows = team_digest_rows(long_rows, today, period)
-    to_list = sorted({r["email"] for r in rows if r["email"].lower() in roster_emails}
-                     | roster_emails)
+    to_list = sorted(roster_emails)
     if not to_list:
         print("[long] WARNING: no recipients resolved, digest not sent")
         return

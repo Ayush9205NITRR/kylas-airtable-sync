@@ -267,3 +267,57 @@ def test_unparseable_or_incomplete_stored_rows_are_skipped(monkeypatch):
 def test_a_blank_base_table_yields_no_rows_rather_than_an_error(monkeypatch):
     _patch_at(monkeypatch, [])
     assert long_mod.read_metrics_daily() == {}
+
+
+# ── digest recipients come from the ACTIVE roster ────────────────────────────
+
+def test_recipients_come_from_the_active_roster_not_team_json(monkeypatch):
+    """Unticking Active in Airtable 'BD Members' must stop the email reaching
+    someone. This previously read team.json's bd_team unconditionally, so the
+    digest went to everyone listed there regardless of who was active."""
+    sent = {}
+
+    class _SMTP:
+        def __init__(self, *a, **k): pass
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def ehlo(self): pass
+        def starttls(self): pass
+        def login(self, *a): pass
+        def sendmail(self, frm, to, msg): sent["to"] = to
+
+    import smtplib
+    monkeypatch.setattr(smtplib, "SMTP", _SMTP)
+    monkeypatch.setenv("SMTP_USER", "bot@enout.in")
+    monkeypatch.setenv("SMTP_PASS", "x")
+    # Airtable says only these two are active; team.json lists far more.
+    monkeypatch.setattr(long_mod.funnel, "bd_roster",
+                        lambda: {"active1@enout.in", "active2@enout.in"})
+
+    long_mod.send_team_digest({}, "2026-09-05", "daily")
+
+    assert "inactive@enout.in" not in sent["to"]
+    assert {"active1@enout.in", "active2@enout.in"} <= set(sent["to"])
+
+
+def test_recipients_fall_back_to_team_json_when_the_roster_is_unreadable(monkeypatch):
+    """A broken Airtable read must not silently email nobody."""
+    sent = {}
+
+    class _SMTP:
+        def __init__(self, *a, **k): pass
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def ehlo(self): pass
+        def starttls(self): pass
+        def login(self, *a): pass
+        def sendmail(self, frm, to, msg): sent["to"] = to
+
+    import smtplib
+    monkeypatch.setattr(smtplib, "SMTP", _SMTP)
+    monkeypatch.setenv("SMTP_USER", "bot@enout.in")
+    monkeypatch.setenv("SMTP_PASS", "x")
+    monkeypatch.setattr(long_mod.funnel, "bd_roster", lambda: set())
+
+    long_mod.send_team_digest({}, "2026-09-05", "daily")
+    assert sent.get("to"), "must still send to somebody rather than nobody"
