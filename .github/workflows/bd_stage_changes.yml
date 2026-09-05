@@ -1,0 +1,69 @@
+name: BD Stage Changes
+
+# Diffs every contact's pipeline stage against the last run and records the
+# moves. Kylas stores no stage-change timestamps, so remembering the previous
+# value is the only way to know a stage moved at all.
+#
+# Runs at 6:00 PM IST, after the day's calling is done and after the 1:30 PM
+# sync, so a day's moves are captured once with the day's work in them.
+
+on:
+  schedule:
+    - cron: '30 12 * * *'      # 6:00 PM IST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report the diff only — write nothing, save no snapshot'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  stage-changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Detect stage changes
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          python scripts/bd_stage_changes.py $ARGS
+        env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+
+      - name: Commit the stage snapshot
+        # The runner is ephemeral. Without this the snapshot is discarded, every
+        # run looks like a first run, and NO change is ever detected — the whole
+        # point of the job. Kept non-fatal because the Airtable rows have already
+        # landed by here; losing one commit costs a day of detection, not the run.
+        continue-on-error: true
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state/contact_stage.json
+          if git diff --staged --quiet; then
+            echo "stage snapshot unchanged - nothing to commit"
+          else
+            git commit -m "Contact stage snapshot $(date -u +%F) [skip ci]"
+            for i in 1 2 3; do
+              if git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push; then
+                echo "snapshot pushed"; break
+              fi
+              echo "push failed (attempt $i) - retrying"; sleep $((i * 5))
+            done
+          fi
