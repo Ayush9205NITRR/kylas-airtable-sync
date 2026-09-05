@@ -77,6 +77,17 @@ def test_contact_with_no_company_is_left_alone():
     assert moves == [] and stats["no_company"] == 1
 
 
+def test_find_companies_owned_by_filters_to_the_given_owner():
+    k = _FakeKylas([_co(1, owner=74725), _co(2, owner=10), _co(3, owner=74725)], [])
+    owned = ac.find_companies_owned_by(k, 74725)
+    assert {co["id"] for co in owned} == {1, 3}
+
+
+def test_find_companies_owned_by_excludes_ownerless_companies():
+    k = _FakeKylas([_co(1, owner=None)], [])
+    assert ac.find_companies_owned_by(k, 74725) == []
+
+
 def test_company_id_handles_bare_int_and_nested_object():
     """Kylas returns 'company' as a bare int on search results, nested on
     detail reads. Both must resolve to the same company."""

@@ -20,6 +20,14 @@ on:
         description: 'Only reassign the first N contacts this run (blank = all). Use for a cautious first real run.'
         required: false
         default: ''
+      sample_owner_id:
+        description: 'Diagnostic only, writes nothing: Kylas user id to list a few companies currently owned by (e.g. to spot-check a suspicious owner). Skips plan/apply entirely when set.'
+        required: false
+        default: ''
+      sample_n:
+        description: 'How many sample companies to print with sample_owner_id'
+        required: false
+        default: '3'
 
 jobs:
   assign:
@@ -37,15 +45,21 @@ jobs:
 
       - name: Plan (and apply, only if confirmed)
         run: |
-          ARGS=""
-          if [ "${{ github.event.inputs.confirm }}" = "CONFIRM" ]; then
-            ARGS="--apply"
-            if [ -n "${{ github.event.inputs.limit }}" ]; then
-              ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
-            fi
+          if [ -n "${{ github.event.inputs.sample_owner_id }}" ]; then
+            python scripts/assign_contacts_to_company_owner.py \
+              --sample-owner-id "${{ github.event.inputs.sample_owner_id }}" \
+              --sample-n "${{ github.event.inputs.sample_n }}"
           else
-            echo "Not confirmed (type CONFIRM in the input to write) — dry run only."
+            ARGS=""
+            if [ "${{ github.event.inputs.confirm }}" = "CONFIRM" ]; then
+              ARGS="--apply"
+              if [ -n "${{ github.event.inputs.limit }}" ]; then
+                ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
+              fi
+            else
+              echo "Not confirmed (type CONFIRM in the input to write) — dry run only."
+            fi
+            python scripts/assign_contacts_to_company_owner.py $ARGS
           fi
-          python scripts/assign_contacts_to_company_owner.py $ARGS
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}

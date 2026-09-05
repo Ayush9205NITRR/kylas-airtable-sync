@@ -48,6 +48,20 @@ def _company_id(ct: dict) -> str:
     return ""
 
 
+def find_companies_owned_by(kylas: KylasClient, owner_id: int) -> list:
+    """Companies whose current Kylas owner is exactly owner_id.
+
+    Diagnostic only — reads companies, writes nothing. For spot-checking a
+    suspicious owner (e.g. a shared/admin/service account) before deciding
+    whether to exclude its companies from the reassignment cascade: if a
+    company is already misowned by that account, cascading it onto every
+    contact under it would spread the same bad ownership further.
+    """
+    companies = kylas.get_companies()
+    return [co for co in companies
+            if co.get("ownerId") and int(co["ownerId"]) == owner_id]
+
+
 def build_plan(kylas: KylasClient) -> tuple:
     """
     Returns (moves, stats).
@@ -206,9 +220,27 @@ def main() -> int:
                          "write nothing (the default, on purpose).")
     ap.add_argument("--limit", type=int, default=None,
                     help="Only apply the first N moves (for a cautious first real run).")
+    ap.add_argument("--sample-owner-id", type=int, default=None,
+                    help="Diagnostic only, writes nothing: list companies currently "
+                         "owned by this Kylas user id, e.g. to spot-check a suspicious "
+                         "owner in Kylas before deciding whether to exclude it. Skips "
+                         "planning/apply entirely.")
+    ap.add_argument("--sample-n", type=int, default=3,
+                    help="How many sample companies to print with --sample-owner-id "
+                         "(default 3).")
     args = ap.parse_args()
 
     kylas = KylasClient()
+
+    if args.sample_owner_id is not None:
+        owned = find_companies_owned_by(kylas, args.sample_owner_id)
+        plural = "y" if len(owned) == 1 else "ies"
+        print(f"\n[assign] {len(owned)} compan{plural} currently owned by "
+              f"Kylas user #{args.sample_owner_id}")
+        for co in owned[:args.sample_n]:
+            print(f"  company id {co['id']:<10} {co.get('name') or '(no name)'}")
+        return 0
+
     moves, stats = build_plan(kylas)
 
     user_names = resolve_user_names(kylas)
