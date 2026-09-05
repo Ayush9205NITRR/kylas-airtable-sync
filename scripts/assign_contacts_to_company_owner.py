@@ -65,6 +65,24 @@ def find_companies_owned_by(kylas: KylasClient, owner_id: int) -> list:
             if co.get("ownerId") and int(co["ownerId"]) == owner_id]
 
 
+def find_companies_owned_by_many(kylas: KylasClient, owner_ids) -> dict:
+    """Like find_companies_owned_by, but for several owner ids off a single
+    companies fetch -- checking a batch of suspicious owners (e.g. several
+    confirmed-inactive users) shouldn't cost one fetch per id.
+
+    Returns {owner_id (int): [companies]}, one entry per id passed in (empty
+    list if that owner has none).
+    """
+    owner_ids = {int(o) for o in owner_ids}
+    companies = kylas.get_companies()
+    result = {oid: [] for oid in owner_ids}
+    for co in companies:
+        oid = co.get("ownerId")
+        if oid and int(oid) in owner_ids:
+            result[int(oid)].append(co)
+    return result
+
+
 def build_plan(kylas: KylasClient, exclude_owners: set = None) -> tuple:
     """
     Returns (moves, stats).
@@ -249,6 +267,11 @@ def main() -> int:
     ap.add_argument("--sample-n", type=int, default=3,
                     help="How many sample companies to print with --sample-owner-id "
                          "(default 3).")
+    ap.add_argument("--sample-owner-ids", type=str, default=None,
+                    help="Diagnostic only, writes nothing: comma-separated Kylas "
+                         "user ids to list a few companies owned by each, off a "
+                         "single companies fetch (cheaper than repeating "
+                         "--sample-owner-id per id). Skips planning/apply entirely.")
     ap.add_argument("--exclude-owner", type=int, action="append", default=None,
                     help="Company owner id to leave out of the cascade entirely — "
                          "its companies' contacts are never touched. Repeatable "
@@ -267,6 +290,19 @@ def main() -> int:
               f"Kylas user #{args.sample_owner_id}")
         for co in owned[:args.sample_n]:
             print(f"  company id {co['id']:<10} {co.get('name') or '(no name)'}")
+        return 0
+
+    if args.sample_owner_ids:
+        ids = [int(x.strip()) for x in args.sample_owner_ids.split(",") if x.strip()]
+        grouped = find_companies_owned_by_many(kylas, ids)
+        names = resolve_user_names(kylas)
+        for oid in ids:
+            owned = grouped.get(oid, [])
+            label = names.get(oid, f"user #{oid}")
+            plural = "y" if len(owned) == 1 else "ies"
+            print(f"\n[assign] {label} (#{oid}): {len(owned)} compan{plural}")
+            for co in owned[:args.sample_n]:
+                print(f"  company id {co['id']:<10} {co.get('name') or '(no name)'}")
         return 0
 
     exclude_owners = set(args.exclude_owner) if args.exclude_owner else set()

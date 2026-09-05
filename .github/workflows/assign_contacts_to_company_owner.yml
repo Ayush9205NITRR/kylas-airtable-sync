@@ -25,13 +25,17 @@ on:
         required: false
         default: ''
       sample_n:
-        description: 'How many sample companies to print with sample_owner_id'
+        description: 'How many sample companies to print with sample_owner_id / sample_owner_ids'
         required: false
         default: '3'
-      exclude_owner_ids:
-        description: 'Comma-separated Kylas owner id(s) to leave out of the cascade entirely (their companies contacts are never touched) — e.g. a service/admin account already misowning companies. Defaults to Enout Super Admin (74725), confirmed on 2026-09-05 to already own 217 companies it should not. Clear this field only once that is resolved.'
+      sample_owner_ids:
+        description: 'Diagnostic only, writes nothing: comma-separated Kylas user ids to list a few companies owned by each, off one companies fetch. Skips plan/apply entirely when set (takes priority over sample_owner_id).'
         required: false
-        default: '74725'
+        default: ''
+      exclude_owner_ids:
+        description: 'Comma-separated Kylas owner id(s) to leave out of the cascade entirely (their companies contacts are never touched). Defaults to the 7 confirmed on 2026-09-05: Enout Super Admin (74725, a service account, 217 companies) plus 6 inactive former users whose companies still list them as owner -- Devansh Shukla (74753), Gaurav Kumar (82993), Tanay Kumar (74754), Shreya Bodwal (74756), Charu Rathi (76689), Ifee Malpani (83130). A real --apply run on 2026-09-05 confirmed the mechanism: assigning a contact to an inactive owner does not fail cleanly, Kylas silently reroutes it to a scattered, essentially arbitrary active user instead -- so these must stay excluded until each owner''s companies are reassigned to a real active owner in Kylas. Remove an id only once that is fixed.'
+        required: false
+        default: '74725,74753,82993,74754,74756,76689,83130'
 
 jobs:
   assign:
@@ -49,7 +53,11 @@ jobs:
 
       - name: Plan (and apply, only if confirmed)
         run: |
-          if [ -n "${{ github.event.inputs.sample_owner_id }}" ]; then
+          if [ -n "${{ github.event.inputs.sample_owner_ids }}" ]; then
+            python scripts/assign_contacts_to_company_owner.py \
+              --sample-owner-ids "${{ github.event.inputs.sample_owner_ids }}" \
+              --sample-n "${{ github.event.inputs.sample_n }}"
+          elif [ -n "${{ github.event.inputs.sample_owner_id }}" ]; then
             python scripts/assign_contacts_to_company_owner.py \
               --sample-owner-id "${{ github.event.inputs.sample_owner_id }}" \
               --sample-n "${{ github.event.inputs.sample_n }}"
