@@ -10,6 +10,8 @@ import importlib.util
 import os
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,6 +24,7 @@ ml = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ml)
 
 _norm = ml.matrix._norm
+_real_roster_names_and_emails = ml._roster_names_and_emails
 
 
 def _on(stage):
@@ -99,6 +102,19 @@ def _row(rep, email, day, group, metric, value):
     return (rep, email, day, group, metric), value
 
 
+@pytest.fixture(autouse=True)
+def _no_roster_backfill(monkeypatch):
+    """Default every test in this file to no roster backfill.
+
+    Without this, team_digest_rows() would call the real funnel.bd_roster()
+    (a live Airtable/network call) and read this repo's actual
+    config/team.json, making test output depend on live data instead of each
+    test's own fixture rows. Tests that want to exercise the backfill itself
+    override this explicitly.
+    """
+    monkeypatch.setattr(ml, "_roster_names_and_emails", lambda: {})
+
+
 def test_today_columns_use_only_todays_row():
     rows = dict([
         _row("Anjali Athya", "anjali.athya@enout.in", "2026-09-05", "Contact", "Call Attempted", 5),
@@ -155,3 +171,51 @@ def test_digest_html_contains_every_rep_and_is_valid_enough():
     assert "Anjali Athya" in html
     assert html.startswith("<!DOCTYPE html>")
     assert html.count("<table") == 1
+
+
+# ── team digest: active-roster backfill on a zero-activity day ──────────────
+#
+# The bug this section guards: on 2026-09-06 (a Sunday) the stage-change log
+# had exactly 0 entries, so long_rows came back completely empty. The digest
+# email that went out showed nothing but a single zeroed "TEAM TOTAL" row --
+# all 12 active reps had silently vanished instead of showing up idle.
+
+def test_active_roster_members_appear_even_with_zero_stage_changes(monkeypatch):
+    monkeypatch.setattr(ml, "_roster_names_and_emails",
+                        lambda: {"Idle Rep": "idle@x", "Another Rep": "another@x"})
+    out = {r["rep"]: r for r in ml.team_digest_rows({}, "2026-09-06")}
+    assert set(out) == {"Idle Rep", "Another Rep"}
+    assert out["Idle Rep"]["email"] == "idle@x"
+    assert out["Idle Rep"].get("Call Attempted", 0) == 0
+    assert out["Idle Rep"].get("SQL (This Month)", 0) == 0
+
+
+def test_roster_backfill_does_not_duplicate_a_rep_already_in_long_rows(monkeypatch):
+    """A rep with real activity must get exactly one row, not a second
+    zeroed one just because they're also on the active roster."""
+    monkeypatch.setattr(ml, "_roster_names_and_emails",
+                        lambda: {"Anjali Athya": "anjali.athya@enout.in"})
+    rows = dict([_row("Anjali Athya", "anjali.athya@enout.in", "2026-09-05",
+                      "Contact", "SQL", 3)])
+    out = ml.team_digest_rows(rows, "2026-09-05")
+    assert len(out) == 1
+    assert out[0]["SQL (This Month)"] == 3
+
+
+def test_roster_names_and_emails_filters_to_the_active_set(tmp_path, monkeypatch):
+    # Undo the autouse fixture above -- this test exercises the real function.
+    monkeypatch.setattr(ml, "_roster_names_and_emails", _real_roster_names_and_emails)
+    monkeypatch.setattr(ml.funnel, "bd_roster", lambda: {"active@x"})
+    monkeypatch.setattr(ml, "__file__", str(tmp_path / "scripts" / "bd_metrics_long.py"))
+    (tmp_path / "config").mkdir()
+    (tmp_path / "config" / "team.json").write_text(
+        '{"kylas_user_emails": {"Active Rep": "active@x", "Inactive Rep": "gone@x"}}')
+    assert ml._roster_names_and_emails() == {"Active Rep": "active@x"}
+
+
+def test_roster_names_and_emails_returns_empty_when_roster_unavailable(monkeypatch):
+    monkeypatch.setattr(ml, "_roster_names_and_emails", _real_roster_names_and_emails)
+    def _boom():
+        raise RuntimeError("Airtable down")
+    monkeypatch.setattr(ml.funnel, "bd_roster", _boom)
+    assert ml._roster_names_and_emails() == {}

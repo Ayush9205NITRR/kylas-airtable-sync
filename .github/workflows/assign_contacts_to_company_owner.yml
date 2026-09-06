@@ -20,11 +20,27 @@ on:
         description: 'Only reassign the first N contacts this run (blank = all). Use for a cautious first real run.'
         required: false
         default: ''
+      sample_owner_id:
+        description: 'Diagnostic only, writes nothing: Kylas user id to list a few companies currently owned by (e.g. to spot-check a suspicious owner). Skips plan/apply entirely when set.'
+        required: false
+        default: ''
+      sample_n:
+        description: 'How many sample companies to print with sample_owner_id / sample_owner_ids'
+        required: false
+        default: '3'
+      sample_owner_ids:
+        description: 'Diagnostic only, writes nothing: comma-separated Kylas user ids to list a few companies owned by each, off one companies fetch. Skips plan/apply entirely when set (takes priority over sample_owner_id).'
+        required: false
+        default: ''
+      exclude_owner_ids:
+        description: 'Comma-separated Kylas owner id(s) to leave out of the cascade entirely (their companies contacts are never touched). Defaults to the 7 confirmed on 2026-09-05: Enout Super Admin (74725, a service account, 217 companies) plus 6 inactive former users whose companies still list them as owner -- Devansh Shukla (74753), Gaurav Kumar (82993), Tanay Kumar (74754), Shreya Bodwal (74756), Charu Rathi (76689), Ifee Malpani (83130). A real --apply run on 2026-09-05 confirmed the mechanism: assigning a contact to an inactive owner does not fail cleanly, Kylas silently reroutes it to a scattered, essentially arbitrary active user instead -- so these must stay excluded until each owner''s companies are reassigned to a real active owner in Kylas. Remove an id only once that is fixed.'
+        required: false
+        default: '74725,74753,82993,74754,74756,76689,83130'
 
 jobs:
   assign:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
@@ -37,15 +53,32 @@ jobs:
 
       - name: Plan (and apply, only if confirmed)
         run: |
-          ARGS=""
-          if [ "${{ github.event.inputs.confirm }}" = "CONFIRM" ]; then
-            ARGS="--apply"
-            if [ -n "${{ github.event.inputs.limit }}" ]; then
-              ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
-            fi
+          if [ -n "${{ github.event.inputs.sample_owner_ids }}" ]; then
+            python scripts/assign_contacts_to_company_owner.py \
+              --sample-owner-ids "${{ github.event.inputs.sample_owner_ids }}" \
+              --sample-n "${{ github.event.inputs.sample_n }}"
+          elif [ -n "${{ github.event.inputs.sample_owner_id }}" ]; then
+            python scripts/assign_contacts_to_company_owner.py \
+              --sample-owner-id "${{ github.event.inputs.sample_owner_id }}" \
+              --sample-n "${{ github.event.inputs.sample_n }}"
           else
-            echo "Not confirmed (type CONFIRM in the input to write) — dry run only."
+            ARGS=""
+            IFS=',' read -ra IDS <<< "${{ github.event.inputs.exclude_owner_ids }}"
+            for oid in "${IDS[@]}"; do
+              oid="$(echo "$oid" | xargs)"
+              if [ -n "$oid" ]; then
+                ARGS="$ARGS --exclude-owner $oid"
+              fi
+            done
+            if [ "${{ github.event.inputs.confirm }}" = "CONFIRM" ]; then
+              ARGS="$ARGS --apply"
+              if [ -n "${{ github.event.inputs.limit }}" ]; then
+                ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
+              fi
+            else
+              echo "Not confirmed (type CONFIRM in the input to write) — dry run only."
+            fi
+            python scripts/assign_contacts_to_company_owner.py $ARGS
           fi
-          python scripts/assign_contacts_to_company_owner.py $ARGS
         env:
           KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
