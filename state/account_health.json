@@ -1,7 +1,7 @@
 {
  "_comment": "Account Health snapshot. Written by modules/06_account_health.py; see utils/health_history.py. git history is the archive.",
  "formula_version": 2,
- "as_of": "2026-09-05",
+ "as_of": "2026-09-06",
  "accounts": {
   "1770092": {
    "status": "Active",
@@ -1936,17 +1936,17 @@
    }
   },
   "1770232": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1770233": {
@@ -2846,17 +2846,17 @@
    }
   },
   "1770298": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1770299": {
@@ -7004,17 +7004,17 @@
    }
   },
   "1770602": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1770603": {
@@ -8320,17 +8320,17 @@
    }
   },
   "1770697": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1770698": {
@@ -8656,17 +8656,17 @@
    }
   },
   "1770722": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1770723": {
@@ -9034,17 +9034,17 @@
    }
   },
   "1770750": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1770751": {
@@ -16608,17 +16608,17 @@
    }
   },
   "1771292": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1771293": {
@@ -19184,17 +19184,17 @@
    }
   },
   "1771480": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1771481": {
@@ -20136,17 +20136,17 @@
    }
   },
   "1771549": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1771550": {
@@ -21844,17 +21844,17 @@
    }
   },
   "1771672": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1771673": {
@@ -22278,17 +22278,17 @@
    }
   },
   "1771703": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1771704": {
@@ -30832,17 +30832,17 @@
    }
   },
   "1772320": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1772321": {
@@ -37972,17 +37972,17 @@
    }
   },
   "1772836": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1772837": {
@@ -38952,17 +38952,17 @@
    }
   },
   "1772908": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1772909": {
@@ -42214,17 +42214,17 @@
    }
   },
   "1773144": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1773145": {
@@ -47506,17 +47506,17 @@
    }
   },
   "1773533": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1773534": {
@@ -47744,17 +47744,17 @@
    }
   },
   "1773550": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1773551": {
@@ -48752,17 +48752,17 @@
    }
   },
   "1773623": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1773624": {
@@ -55248,17 +55248,17 @@
    }
   },
   "1774095": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1774096": {
@@ -55388,17 +55388,17 @@
    }
   },
   "1774105": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1774106": {
@@ -56928,17 +56928,17 @@
    }
   },
   "1774217": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1774218": {
@@ -62738,17 +62738,17 @@
    }
   },
   "1774657": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1774658": {
@@ -68603,17 +68603,17 @@
    }
   },
   "1775111": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775112": {
@@ -69471,17 +69471,17 @@
    }
   },
   "1775175": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775176": {
@@ -70437,17 +70437,17 @@
    }
   },
   "1775246": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775247": {
@@ -70731,17 +70731,17 @@
    }
   },
   "1775269": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775270": {
@@ -72719,17 +72719,17 @@
    }
   },
   "1775441": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775442": {
@@ -73307,17 +73307,17 @@
    }
   },
   "1775485": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775486": {
@@ -75561,17 +75561,17 @@
    }
   },
   "1775858": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775859": {
@@ -75813,17 +75813,17 @@
    }
   },
   "1775883": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775884": {
@@ -76681,17 +76681,17 @@
    }
   },
   "1775946": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775947": {
@@ -77157,17 +77157,17 @@
    }
   },
   "1775980": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1775981": {
@@ -80167,17 +80167,17 @@
    }
   },
   "1776199": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776200": {
@@ -81623,17 +81623,17 @@
    }
   },
   "1776307": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776308": {
@@ -82169,17 +82169,17 @@
    }
   },
   "1776346": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776347": {
@@ -83443,17 +83443,17 @@
    }
   },
   "1776441": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776442": {
@@ -83555,17 +83555,17 @@
    }
   },
   "1776449": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776450": {
@@ -84045,17 +84045,17 @@
    }
   },
   "1776484": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776485": {
@@ -84857,17 +84857,17 @@
    }
   },
   "1776545": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776547": {
@@ -84983,17 +84983,17 @@
    }
   },
   "1776555": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776556": {
@@ -85557,17 +85557,17 @@
    }
   },
   "1776600": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776601": {
@@ -86691,17 +86691,17 @@
    }
   },
   "1776683": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776684": {
@@ -86733,17 +86733,17 @@
    }
   },
   "1776686": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776687": {
@@ -86775,17 +86775,17 @@
    }
   },
   "1776689": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776690": {
@@ -86943,17 +86943,17 @@
    }
   },
   "1776702": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776703": {
@@ -87097,17 +87097,17 @@
    }
   },
   "1776714": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776715": {
@@ -87181,17 +87181,17 @@
    }
   },
   "1776720": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776721": {
@@ -87769,17 +87769,17 @@
    }
   },
   "1776764": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776765": {
@@ -87965,17 +87965,17 @@
    }
   },
   "1776778": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776779": {
@@ -88091,17 +88091,17 @@
    }
   },
   "1776787": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776788": {
@@ -88399,17 +88399,17 @@
    }
   },
   "1776810": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776811": {
@@ -88427,17 +88427,17 @@
    }
   },
   "1776812": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776813": {
@@ -88469,17 +88469,17 @@
    }
   },
   "1776815": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776816": {
@@ -88693,17 +88693,17 @@
    }
   },
   "1776832": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776833": {
@@ -88931,17 +88931,17 @@
    }
   },
   "1776849": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776850": {
@@ -88959,17 +88959,17 @@
    }
   },
   "1776851": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776852": {
@@ -89141,17 +89141,17 @@
    }
   },
   "1776865": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776866": {
@@ -90625,17 +90625,17 @@
    }
   },
   "1776971": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1776972": {
@@ -91255,17 +91255,17 @@
    }
   },
   "1777017": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1777018": {
@@ -91941,17 +91941,17 @@
    }
   },
   "1777066": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1777068": {
@@ -92459,17 +92459,17 @@
    }
   },
   "1777105": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1777106": {
@@ -92851,17 +92851,17 @@
    }
   },
   "1777134": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1777135": {
@@ -93355,17 +93355,17 @@
    }
   },
   "1777171": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1777172": {
@@ -94573,17 +94573,17 @@
    }
   },
   "1777258": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1777259": {
@@ -95343,17 +95343,17 @@
    }
   },
   "1777315": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1777316": {
@@ -96141,17 +96141,17 @@
    }
   },
   "1777372": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1777373": {
@@ -103043,17 +103043,17 @@
    }
   },
   "1777874": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1777875": {
@@ -105115,17 +105115,17 @@
    }
   },
   "1778028": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1778029": {
@@ -105843,17 +105843,17 @@
    }
   },
   "1778080": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1778081": {
@@ -106529,17 +106529,17 @@
    }
   },
   "1778130": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1778131": {
@@ -109875,17 +109875,17 @@
    }
   },
   "1778372": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1778373": {
@@ -110211,17 +110211,17 @@
    }
   },
   "1778398": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1778399": {
@@ -113781,17 +113781,17 @@
    }
   },
   "1778656": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1778657": {
@@ -116833,17 +116833,17 @@
    }
   },
   "1778879": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1778880": {
@@ -117631,17 +117631,17 @@
    }
   },
   "1778936": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1778937": {
@@ -123105,17 +123105,17 @@
    }
   },
   "1779341": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779342": {
@@ -124071,17 +124071,17 @@
    }
   },
   "1779412": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779413": {
@@ -125681,17 +125681,17 @@
    }
   },
   "1779530": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779531": {
@@ -126409,17 +126409,17 @@
    }
   },
   "1779582": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779583": {
@@ -128551,17 +128551,17 @@
    }
   },
   "1779742": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779743": {
@@ -129055,17 +129055,17 @@
    }
   },
   "1779780": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779781": {
@@ -129489,17 +129489,17 @@
    }
   },
   "1779811": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779812": {
@@ -130427,17 +130427,17 @@
    }
   },
   "1779878": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779879": {
@@ -130693,17 +130693,17 @@
    }
   },
   "1779897": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779898": {
@@ -131631,17 +131631,17 @@
    }
   },
   "1779965": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1779966": {
@@ -134711,17 +134711,17 @@
    }
   },
   "1780192": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780193": {
@@ -135425,17 +135425,17 @@
    }
   },
   "1780243": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780244": {
@@ -136405,17 +136405,17 @@
    }
   },
   "1780313": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780314": {
@@ -137007,17 +137007,17 @@
    }
   },
   "1780356": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780357": {
@@ -138841,17 +138841,17 @@
    }
   },
   "1780490": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780491": {
@@ -139219,17 +139219,17 @@
    }
   },
   "1780517": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780518": {
@@ -139443,17 +139443,17 @@
    }
   },
   "1780533": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780534": {
@@ -143657,17 +143657,17 @@
    }
   },
   "1780836": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780837": {
@@ -143923,17 +143923,17 @@
    }
   },
   "1780855": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "MQL - Action Needed",
-   "prev": "MQL - Action Needed",
-   "changed": "2026-09-04",
-   "count": 1,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 2,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-09-04",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "MQL - Action Needed",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780856": {
@@ -144763,17 +144763,17 @@
    }
   },
   "1780917": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1780918": {
@@ -147843,17 +147843,17 @@
    }
   },
   "1781141": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781142": {
@@ -150237,17 +150237,17 @@
    }
   },
   "1781316": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781317": {
@@ -151161,17 +151161,17 @@
    }
   },
   "1781383": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781384": {
@@ -151567,17 +151567,17 @@
    }
   },
   "1781413": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781414": {
@@ -151609,17 +151609,17 @@
    }
   },
   "1781416": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781417": {
@@ -152687,17 +152687,17 @@
    }
   },
   "1781495": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781496": {
@@ -152827,17 +152827,17 @@
    }
   },
   "1781505": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781506": {
@@ -153373,17 +153373,17 @@
    }
   },
   "1781544": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781545": {
@@ -153933,17 +153933,17 @@
    }
   },
   "1781587": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781588": {
@@ -154269,17 +154269,17 @@
    }
   },
   "1781612": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781613": {
@@ -154843,17 +154843,17 @@
    }
   },
   "1781654": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781655": {
@@ -155039,17 +155039,17 @@
    }
   },
   "1781669": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781670": {
@@ -159365,17 +159365,17 @@
    }
   },
   "1781990": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1781991": {
@@ -160163,17 +160163,17 @@
    }
   },
   "1782047": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1782048": {
@@ -162375,17 +162375,17 @@
    }
   },
   "1782210": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1782211": {
@@ -163411,17 +163411,17 @@
    }
   },
   "1782289": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1782290": {
@@ -163635,17 +163635,17 @@
    }
   },
   "1782305": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1782306": {
@@ -165175,17 +165175,17 @@
    }
   },
   "1782417": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1782418": {
@@ -165203,17 +165203,17 @@
    }
   },
   "1782420": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1782421": {
@@ -165371,17 +165371,17 @@
    }
   },
   "1782433": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1782434": {
@@ -169319,17 +169319,17 @@
    }
   },
   "1782754": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1782755": {
@@ -172693,17 +172693,17 @@
    }
   },
   "1783000": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783001": {
@@ -173645,17 +173645,17 @@
    }
   },
   "1783070": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783071": {
@@ -174779,17 +174779,17 @@
    }
   },
   "1783181": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783182": {
@@ -174989,17 +174989,17 @@
    }
   },
   "1783196": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783197": {
@@ -175241,17 +175241,17 @@
    }
   },
   "1783214": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783215": {
@@ -176039,17 +176039,17 @@
    }
   },
   "1783288": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783289": {
@@ -176459,17 +176459,17 @@
    }
   },
   "1783321": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783322": {
@@ -176991,17 +176991,17 @@
    }
   },
   "1783364": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783365": {
@@ -177621,45 +177621,45 @@
    }
   },
   "1783410": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783412": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783413": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783414": {
@@ -177691,17 +177691,17 @@
    }
   },
   "1783416": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783417": {
@@ -177957,17 +177957,17 @@
    }
   },
   "1783436": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783437": {
@@ -178041,17 +178041,17 @@
    }
   },
   "1783442": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783444": {
@@ -178601,17 +178601,17 @@
    }
   },
   "1783487": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783488": {
@@ -178811,17 +178811,17 @@
    }
   },
   "1783502": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783503": {
@@ -178937,17 +178937,17 @@
    }
   },
   "1783511": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783512": {
@@ -179539,17 +179539,17 @@
    }
   },
   "1783555": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783556": {
@@ -180001,17 +180001,17 @@
    }
   },
   "1783589": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783590": {
@@ -180197,17 +180197,17 @@
    }
   },
   "1783603": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783604": {
@@ -181765,17 +181765,17 @@
    }
   },
   "1783754": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783755": {
@@ -181905,31 +181905,31 @@
    }
   },
   "1783764": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783765": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783766": {
@@ -182087,17 +182087,17 @@
    }
   },
   "1783778": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783780": {
@@ -182129,17 +182129,17 @@
    }
   },
   "1783785": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1783787": {
@@ -183165,31 +183165,31 @@
    }
   },
   "1793205": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1793362": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1793369": {
@@ -183235,17 +183235,17 @@
    }
   },
   "1793910": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1794073": {
@@ -183319,17 +183319,17 @@
    }
   },
   "1799985": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1799988": {
@@ -183473,31 +183473,31 @@
    }
   },
   "1803476": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1804242": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1804546": {
@@ -188876,17 +188876,17 @@
    }
   },
   "1817515": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1817517": {
@@ -194462,17 +194462,17 @@
    }
   },
   "1956822": {
-   "status": "Active",
+   "status": "Fresh",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-06",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-06",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Fresh"
    }
   },
   "1958259": {
