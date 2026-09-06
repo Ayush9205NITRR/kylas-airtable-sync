@@ -32,6 +32,15 @@ def _long():
 long_mod = _long()
 
 
+@pytest.fixture(autouse=True)
+def _no_roster_backfill(monkeypatch):
+    """Keep team_digest_rows() hermetic: without this it calls the real
+    funnel.bd_roster() (a live Airtable call) and this repo's actual
+    config/team.json, injecting real team members into tests that assert
+    exact row sets built from their own fixture data."""
+    monkeypatch.setattr(long_mod, "_roster_names_and_emails", lambda: {})
+
+
 def _chg(date, to, rep="Anjali Athya", email="anjali.athya@enout.in", cid="501"):
     return {"date": date, "rep": rep, "email": email, "company_id": cid, "to": to}
 
