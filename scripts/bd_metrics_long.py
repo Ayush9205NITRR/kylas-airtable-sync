@@ -398,11 +398,49 @@ def _in_window(day: str, window: str, today: str) -> bool:
     return False
 
 
+def _roster_names_and_emails() -> dict:
+    """{Kylas-resolved full name: email} for every ACTIVE BD roster member.
+
+    long_rows only ever mentions a rep once one of their contacts logs a
+    stage change, so on a day with zero changes across the whole log (a
+    weekend, a holiday, or simply no calling yet) team_digest_rows() would
+    have nobody to iterate over at all -- the digest collapses to a single
+    zeroed TEAM TOTAL row with no per-rep rows, which reads as broken rather
+    than as "quiet day". This backfills every active rep so they always get
+    a row, zeros and all.
+
+    team.json's kylas_user_emails ({name: email}, synced daily by
+    sync_team.yml) is the only place that maps a Kylas-resolved full name to
+    an email -- funnel.bd_roster() itself only returns the email set.
+    """
+    try:
+        active = funnel.bd_roster()
+    except Exception as exc:
+        print(f"[long] WARNING: active roster unavailable, can't backfill "
+              f"idle reps into the digest ({exc})")
+        return {}
+    if not active:
+        return {}
+    import json
+    tp = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                      "config", "team.json")
+    try:
+        with open(tp) as fh:
+            name_to_email = json.load(fh).get("kylas_user_emails") or {}
+    except Exception as exc:
+        print(f"[long] WARNING: team.json unreadable, can't backfill idle "
+              f"reps into the digest ({exc})")
+        return {}
+    return {name: email for name, email in name_to_email.items()
+            if str(email).strip().lower() in active}
+
+
 def team_digest_rows(long_rows: dict, today: str, period: str = "daily") -> list:
     """
-    One row per BD associate for `period`, built entirely from long_rows — no
-    extra Airtable read, since build_long() reads the whole change log and so
-    already carries every day, not just today's.
+    One row per BD associate for `period`, built from long_rows plus every
+    currently-active roster member (see _roster_names_and_emails) — no extra
+    Airtable read for long_rows itself, since build_long() reads the whole
+    change log and so already carries every day, not just today's.
 
     That is what lets the weekly and monthly digests be the same code as the
     daily one with a different window, rather than three separate reports.
@@ -421,9 +459,14 @@ def team_digest_rows(long_rows: dict, today: str, period: str = "daily") -> list
             if _in_window(day, window, today):
                 by_rep[rep][header] += value
 
-    # Iterate every rep EVER seen in long_rows, not just those with a row
-    # inside the window — a rep idle all day/week/month must still appear,
-    # showing zeros, rather than silently vanish from the table.
+    # Every rep EVER seen in long_rows appears, not just those with a row
+    # inside the window — idle all day/week/month still shows zeros rather
+    # than silently vanishing. Then every currently-active roster member
+    # not already covered is added the same way, so a log with NO changes
+    # at all (long_rows completely empty) still lists the whole team.
+    for name, email in _roster_names_and_emails().items():
+        emails.setdefault(name, email)
+
     rows = [{"rep": rep, "email": emails.get(rep, ""), **by_rep.get(rep, {})}
             for rep in emails]
     rows.sort(key=lambda r: -r.get(sort_col, 0))
