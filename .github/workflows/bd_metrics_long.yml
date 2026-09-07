@@ -36,11 +36,9 @@ on:
         required: false
         default: false
       slot:
-        description: 'Which daily send this is — names the subject line so the two daily digests are distinguishable in an inbox. Set midday on the ~2:00 PM IST cron job and evening on the ~6:30 PM IST one.'
-        type: choice
+        description: 'Which daily send this is: midday or evening. Names the subject line so the two daily digests are distinguishable in an inbox. Blank or unrecognised = the plain unlabelled subject. Kept a free-text string rather than a choice: a choice cannot offer a blank option, and the scheduled cron-job.org calls pass no inputs at all.'
         required: false
         default: ''
-        options: ['', 'midday', 'evening']
 
 jobs:
   metrics:
