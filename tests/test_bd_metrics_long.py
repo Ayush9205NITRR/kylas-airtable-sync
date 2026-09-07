@@ -163,6 +163,40 @@ def test_rep_with_no_metrics_this_period_still_appears_with_zeros():
     assert out["Quiet Rep"].get("SQL (This Month)", 0) == 0
 
 
+# ── daily digest subject line: the two sends must be tellable apart ─────────
+#
+# Both daily sends used to carry the identical subject "BD Daily Digest —
+# <date>", so in an inbox the midday numbers were indistinguishable from the
+# day's final figures.
+
+def test_the_two_daily_sends_get_different_subject_lines():
+    midday = ml.digest_title("2026-09-07", "daily", "midday")
+    evening = ml.digest_title("2026-09-07", "daily", "evening")
+    assert midday != evening
+    assert midday == "BD Daily Digest (Midday) — 2026-09-07"
+    assert evening == "BD Daily Digest (End of Day) — 2026-09-07"
+
+
+def test_an_absent_or_unknown_slot_falls_back_to_the_plain_subject():
+    """A missing or typo'd slot must not put a raw flag value in front of the
+    whole team — it degrades to the original unlabelled subject."""
+    plain = "BD Daily Digest — 2026-09-07"
+    assert ml.digest_title("2026-09-07", "daily") == plain
+    assert ml.digest_title("2026-09-07", "daily", "") == plain
+    assert ml.digest_title("2026-09-07", "daily", "lunchtime") == plain
+
+
+def test_slot_is_ignored_for_weekly_and_monthly():
+    """Those run once per period, so there is nothing to disambiguate."""
+    assert "Midday" not in ml.digest_title("2026-09-07", "weekly", "midday")
+    assert "Midday" not in ml.digest_title("2026-09-07", "monthly", "midday")
+
+
+def test_slot_reaches_the_rendered_html_subject_heading():
+    html = ml.build_digest_html([], "2026-09-07", "daily", "evening")
+    assert "BD Daily Digest (End of Day) — 2026-09-07" in html
+
+
 def test_digest_html_contains_every_rep_and_is_valid_enough():
     rows = ml.team_digest_rows(
         dict([_row("Anjali Athya", "a@x", "2026-09-05", "Contact", "SQL", 3)]),

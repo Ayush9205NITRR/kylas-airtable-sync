@@ -136,7 +136,24 @@ def summarise(changes: list, order) -> dict:
 def _ensure(base_id: str, headers: dict, name: str, fields: list) -> bool:
     r = requests.get(f"{META}/{base_id}/tables", headers=headers, timeout=30)
     r.raise_for_status()
-    if any(t["name"] == name for t in r.json().get("tables", [])):
+    existing = next((t for t in r.json().get("tables", []) if t["name"] == name), None)
+    if existing:
+        # Creating the table is not enough: a column added to `fields` AFTER
+        # the table already existed never appears on it, and AirtableClient
+        # then drops that value on every write with only a WARNING. That is
+        # how "Company Id" stayed empty on every row of BD Stage Changes —
+        # which silently zeroed all four Company-group metrics downstream,
+        # because build_long() skips any change with no company_id.
+        have = {f["name"] for f in existing.get("fields", [])}
+        for spec in fields:
+            if spec["name"] in have:
+                continue
+            resp = requests.post(f"{META}/{base_id}/tables/{existing['id']}/fields",
+                                 json=spec, headers=headers, timeout=30)
+            ok = resp.status_code in (200, 201)
+            print(f"[stage]   {'+ added' if ok else '! could not add'} "
+                  f"column {spec['name']!r} to {name!r}"
+                  + ("" if ok else f" ({resp.status_code} {resp.text[:120]})"))
         print(f"[stage] Airtable table {name!r} already exists")
         return True
     resp = requests.post(f"{META}/{base_id}/tables",

@@ -379,6 +379,15 @@ _DIGEST_METRICS = [
     ("Handoff Calls Held",  "Company", "Handoff Calls Held"),
 ]
 
+# --slot value -> how it reads in the subject line. Anything else (including
+# blank) falls back to an unlabelled "BD Daily Digest — <date>", so an
+# unrecognised or missing slot degrades to the old behaviour rather than
+# putting a raw flag value in front of the whole team.
+SLOT_LABELS = {
+    "midday":  "Midday",
+    "evening": "End of Day",
+}
+
 # period -> (window every column uses, column set, the column rows sort by)
 PERIODS = {
     "daily":   ("today", _DIGEST_COLUMNS, "SQL (This Month)"),
@@ -473,12 +482,21 @@ def team_digest_rows(long_rows: dict, today: str, period: str = "daily") -> list
     return rows
 
 
-def digest_title(today: str, period: str) -> str:
+def digest_title(today: str, period: str, slot: str = "") -> str:
+    """Subject line. `slot` names WHICH daily send this is.
+
+    The daily digest goes out twice — around midday and again at end of day —
+    and both used to carry the identical subject "BD Daily Digest — <date>",
+    so the two were indistinguishable in an inbox and the midday numbers read
+    as if they were the day's final figures. The slot is shown for the daily
+    digest only; weekly and monthly run once and need no disambiguation.
+    """
     if period == "weekly":
         return f"BD Weekly Digest — week {funnel._iso_week(today)}"
     if period == "monthly":
         return f"BD Monthly Digest — {today[:7]}"
-    return f"BD Daily Digest — {today}"
+    label = SLOT_LABELS.get(slot.strip().lower(), "")
+    return f"BD Daily Digest{f' ({label})' if label else ''} — {today}"
 
 
 def _digest_blurb(period: str) -> str:
@@ -492,7 +510,8 @@ def _digest_blurb(period: str) -> str:
             f'movement — a contact counts on the day its stage moved.')
 
 
-def build_digest_html(rows: list, today: str, period: str = "daily") -> str:
+def build_digest_html(rows: list, today: str, period: str = "daily",
+                      slot: str = "") -> str:
     _win, columns, _sort = PERIODS[period]
     head = "".join(f'<th {_THL if i == 0 else _TH}>{h}</th>'
                    for i, (h, *_r) in enumerate([("BD Associate",)] + columns))
@@ -516,7 +535,7 @@ def build_digest_html(rows: list, today: str, period: str = "daily") -> str:
         '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;'
         'color:#333;max-width:900px;margin:0 auto;padding:20px;">'
         f'<p style="font-weight:bold;font-size:15px;margin:0 0 4px;">'
-        f'{digest_title(today, period)}</p>'
+        f'{digest_title(today, period, slot)}</p>'
         f'<p style="font-size:12px;color:#777;margin:0 0 8px;">'
         f'{_digest_blurb(period)}</p>'
         + table +
@@ -525,7 +544,8 @@ def build_digest_html(rows: list, today: str, period: str = "daily") -> str:
     )
 
 
-def send_team_digest(long_rows: dict, today: str, period: str = "daily") -> None:
+def send_team_digest(long_rows: dict, today: str, period: str = "daily",
+                     slot: str = "") -> None:
     """One email, to the whole team, for `period` (daily / weekly / monthly).
 
     Replaces the per-person sends: the 1:30pm/6:30pm ones (see
@@ -578,7 +598,7 @@ def send_team_digest(long_rows: dict, today: str, period: str = "daily") -> None
     msg["To"] = ", ".join(to_list)
     if cc_list:
         msg["CC"] = ", ".join(cc_list)
-    msg["Subject"] = digest_title(today, period)
+    msg["Subject"] = digest_title(today, period, slot)
     msg.attach(MIMEText(build_digest_html(rows, today, period), "html", "utf-8"))
 
     try:
@@ -625,6 +645,10 @@ def main() -> int:
                     help="roll up from the stored BD Metrics Daily table and "
                          "send the digest, writing nothing — how the weekly "
                          "and monthly runs read the base table")
+    ap.add_argument("--slot", default="",
+                    help="which daily send this is: 'midday' or 'evening'. Names "
+                         "the subject line so the two daily digests are told "
+                         "apart in an inbox. Ignored for weekly/monthly.")
     args = ap.parse_args()
 
     today = datetime.now(timezone.utc).date().isoformat()
@@ -643,7 +667,7 @@ def main() -> int:
     summarise(long_rows)
     if args.dry_run:
         rows = team_digest_rows(long_rows, today, args.period)
-        print(f"\n{digest_title(today, args.period)}")
+        print(f"\n{digest_title(today, args.period, args.slot)}")
         _win, columns, _sort = PERIODS[args.period]
         for r in rows:
             cells = "  ".join(f"{h}={r.get(h, 0)}" for h, *_x in columns)
@@ -653,7 +677,7 @@ def main() -> int:
     if not args.email_only:
         push(long_rows)
     if not args.no_email:
-        send_team_digest(long_rows, today, args.period)
+        send_team_digest(long_rows, today, args.period, args.slot)
     return 0
 
 

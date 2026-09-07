@@ -35,6 +35,12 @@ on:
         type: boolean
         required: false
         default: false
+      slot:
+        description: 'Which daily send this is — names the subject line so the two daily digests are distinguishable in an inbox. Set midday on the ~2:00 PM IST cron job and evening on the ~6:30 PM IST one.'
+        type: choice
+        required: false
+        default: ''
+        options: ['', 'midday', 'evening']
 
 jobs:
   metrics:
@@ -57,6 +63,9 @@ jobs:
             ARGS="--dry-run"
           elif [ "${{ github.event.inputs.no_email }}" = "true" ]; then
             ARGS="--no-email"
+          fi
+          if [ -n "${{ github.event.inputs.slot }}" ]; then
+            ARGS="$ARGS --slot ${{ github.event.inputs.slot }}"
           fi
           python scripts/bd_metrics_long.py $ARGS
         env:
