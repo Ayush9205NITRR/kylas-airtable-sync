@@ -45,6 +45,31 @@ def test_a_move_is_recorded_with_from_and_to():
     assert snap["c1"]["since"] == "2026-09-03"
 
 
+def test_a_stage_change_carries_the_contact_name_through():
+    """Regression: bd_stage_changes.py's push() reads c["name"] to fill the
+    Airtable "Contact" column. diff() used to build change records with no
+    "name" key at all, so any run with a real change crashed push() with
+    KeyError('name') -- and since modules/02_contact_sync.py and
+    modules/06_account_health.py both call push() inside a bare
+    try/except, they silently swallowed it instead of crashing, meaning
+    stage-change logging from those two paths never actually worked."""
+    snap, _, _ = sh.diff({}, _cur(c1="CNC (Could Not Connect) - 1"), "2026-09-02")
+    _, changes, _ = sh.diff(snap, _cur(c1="Follow-up (1)"), "2026-09-03")
+    assert changes[0]["name"] == "Cc1"
+
+
+def test_name_defaults_to_blank_for_a_caller_that_omits_it():
+    """Not every diff() caller's current-dict includes a name (e.g.
+    modules/02_contact_sync.py's batch doesn't) -- must default, not KeyError."""
+    nameless_prev = {"c1": {"stage": "CNC (Could Not Connect) - 1", "owner": "Anjali Athya",
+                            "email": "a@x", "company": "Acme", "changes": 0,
+                            "last_call_date": ""}}
+    nameless_cur = {"c1": {"stage": "Follow-up (1)", "owner": "Anjali Athya",
+                          "email": "a@x", "company": "Acme"}}
+    _, changes, _ = sh.diff(nameless_prev, nameless_cur, "2026-09-03")
+    assert changes[0]["name"] == ""
+
+
 def test_no_move_produces_no_row():
     snap, _, _ = sh.diff({}, _cur(c1="Follow-up (1)"), "2026-09-02")
     snap, changes, stats = sh.diff(snap, _cur(c1="Follow-up (1)"), "2026-09-03")
@@ -187,7 +212,7 @@ def test_is_call_false_records_the_change_but_not_the_call_date():
         snap, _cur(c1="LinkedIn Outreach Initiated"), "2026-09-05", is_call=is_call)
 
     assert stats["changed"] == 1 and len(changes) == 1, "the label move is still recorded"
-    assert changes[0] == {"contact_id": "c1", "owner": "Anjali Athya",
+    assert changes[0] == {"contact_id": "c1", "name": "Cc1", "owner": "Anjali Athya",
                           "email": "anjali.athya@enout.in", "company": "Acme",
                           # blank here because _cur() supplies no company_id;
                           # bd_stage_changes.read_contacts() always sets it, and
@@ -287,6 +312,7 @@ def test_new_contact_imported_already_in_progress_counts_as_a_move():
     assert changes[0]["from"] == "", "no previous stage existed — must stay blank"
     assert changes[0]["to"] == "Activation"
     assert changes[0]["date"] == "2026-09-06"
+    assert changes[0]["name"] == "Cc1"
 
 
 def test_bootstrap_run_never_fires_the_in_progress_rule():

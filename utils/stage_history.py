@@ -140,9 +140,13 @@ def diff(prev: dict, current: dict, today: str, is_call=None) -> tuple:
              stage change but never mistaken for a call.
 
     Returns (new_snapshot, changes, stats). `changes` is a list of
-    {contact_id, owner, email, company, from, to, date} — one per contact whose
-    stage differs from last time, REGARDLESS of is_call (the change is real
-    either way; only whether it set last_call_date depends on is_call).
+    {contact_id, name, owner, email, company, company_id, from, to, date} —
+    one per contact whose stage differs from last time, REGARDLESS of is_call
+    (the change is real either way; only whether it set last_call_date
+    depends on is_call). `name` defaults to "" for a caller whose `current`
+    entries don't carry one — every field here is read with .get() for
+    exactly that reason: callers may pass richer or sparser per-contact dicts
+    and must never crash a shared function over an optional field.
     Contacts absent from `current` (deleted, or outside this run's filter) are
     carried through untouched.
     """
@@ -185,6 +189,7 @@ def diff(prev: dict, current: dict, today: str, is_call=None) -> tuple:
             if started_in_progress:
                 changes.append({
                     "contact_id": cid,
+                    "name":    cur.get("name", ""),
                     "owner":   cur.get("owner", ""),
                     "email":   cur.get("email", ""),
                     "company": cur.get("company", ""),
@@ -205,10 +210,11 @@ def diff(prev: dict, current: dict, today: str, is_call=None) -> tuple:
         if stage != entry.get("stage"):
             changes.append({
                 "contact_id": cid,
+                "name":    cur.get("name", ""),
                 "owner":   cur.get("owner", ""),
                 "email":   cur.get("email", ""),
                 "company": cur.get("company", ""),
-                    "company_id": cur.get("company_id", ""),
+                "company_id": cur.get("company_id", ""),
                 "from":    entry.get("stage", ""),
                 "to":      stage,
                 "date":    today,

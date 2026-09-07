@@ -181,7 +181,7 @@ def push(changes: list, grid: dict) -> None:
                 "Key", key,
                 {"Key": key, "Date": c["date"], "Week": funnel._iso_week(c["date"]),
                  "Month": c["date"][:7], "Contact Id": c["contact_id"],
-                 "Contact": c["name"], "Company": c["company"],
+                 "Contact": c.get("name", ""), "Company": c["company"],
                  "Company Id": c.get("company_id", ""),
                  "BD Associate": c["owner"], "BD Email": c["email"],
                  "Previous Stage": c["from"], "Current Stage": c["to"],
