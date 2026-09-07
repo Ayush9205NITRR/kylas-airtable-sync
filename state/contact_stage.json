@@ -22228,12 +22228,12 @@
 "last_call_date": ""
 },
 "5356912": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "Not Interested",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "5356913": {
 "stage": "Activation",
@@ -130492,12 +130492,12 @@
 "last_call_date": ""
 },
 "5372244": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "Not Interested",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "5372245": {
 "stage": "LinkedIn Outreach Initiated",
@@ -180516,12 +180516,12 @@
 "last_call_date": ""
 },
 "5379113": {
-"stage": "Connect Later",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "5379114": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -232284,12 +232284,12 @@
 "last_call_date": ""
 },
 "5388103": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "5388104": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -236788,12 +236788,12 @@
 "last_call_date": ""
 },
 "5494986": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "5494987": {
 "stage": "Follow-up (1)",
@@ -250820,12 +250820,12 @@
 "last_call_date": ""
 },
 "5845749": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "MQL (Marketing Qualified Lead)",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "5845768": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -260756,12 +260756,12 @@
 "last_call_date": ""
 },
 "5972108": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Discovery Call Booked",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "5972187": {
 "stage": "MQL (Marketing Qualified Lead)",
