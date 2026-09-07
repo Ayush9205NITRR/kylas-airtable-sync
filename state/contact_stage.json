@@ -15468,12 +15468,12 @@
 "last_call_date": ""
 },
 "5356041": {
-"stage": "Connect Later",
+"stage": "MQL (Marketing Qualified Lead)",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "5356042": {
 "stage": "LinkedIn Outreach Initiated",
@@ -40029,8 +40029,8 @@
 },
 "5359439": {
 "stage": "Invalid Contact",
-"owner": "",
-"email": "",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
@@ -95269,8 +95269,8 @@
 },
 "5367157": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "",
-"email": "",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
@@ -169092,12 +169092,12 @@
 "last_call_date": ""
 },
 "5377525": {
-"stage": "LinkedIn Outreach Initiated",
+"stage": "Invalid Contact",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 2,
+"last_call_date": "2026-09-07"
 },
 "5377526": {
 "stage": "LinkedIn Outreach Initiated",
@@ -250548,12 +250548,12 @@
 "last_call_date": ""
 },
 "5841733": {
-"stage": "Follow-up (3)",
+"stage": "MQL (Marketing Qualified Lead)",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "5841745": {
 "stage": "Disqualified - Wrong POC",
@@ -264660,12 +264660,12 @@
 "last_call_date": ""
 },
 "6109645": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "MQL (Marketing Qualified Lead)",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "6109658": {
 "stage": "Activation",
@@ -264820,12 +264820,12 @@
 "last_call_date": ""
 },
 "6138083": {
-"stage": "Connect Later",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-07",
+"changes": 1,
+"last_call_date": "2026-09-07"
 },
 "6141438": {
 "stage": "Not a Decision Maker (NDM)",
@@ -264869,16 +264869,16 @@
 },
 "6182483": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "",
-"email": "",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
 },
 "6183084": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "",
-"email": "",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
