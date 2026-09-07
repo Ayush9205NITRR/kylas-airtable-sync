@@ -326,12 +326,82 @@ is marked cancelled even after the important work succeeded.
 BD Stage Changes; `bd_matrix_views` reads BD Metrics Daily. If an upstream job
 did not run, the downstream one has nothing to derive from and says so.
 
+**A change detected but not written is a change destroyed.** `diff()` is
+first-write-wins: it reports a move once, and the instant the snapshot advances
+past it, the move is unrecoverable — Kylas keeps no stage-change history to
+re-read it from. On 2026-09-07 `push()` crashed on `KeyError('name')` while
+modules 02/06 called it inside a bare `try/except`; they logged a WARNING,
+advanced the snapshot anyway, and every stage move made before ~1:30 PM IST
+that day was silently lost (the digest read 83 attempted against 101 on the
+Kylas chart). Guard: `push()` now **returns** whether the change log was
+written, and no caller saves the snapshot on `False` — the next run re-detects
+and re-logs instead. Retrying is safe because rows upsert on
+`"<contact_id> | <date>"`.
+
+**A silent drop is not a successful write.** Two paths return normally while
+storing nothing: `_ensure()` failing to reach the table, and `AirtableClient`
+swallowing `TOO_MANY_RECORDS_IN_BASE` (it warns, drops the batch, returns
+`[]`). Both now count as a failed write — the second via
+`AirtableClient.dropped_records`. Without that, hitting the record cap looks
+identical to a clean run and takes the snapshot with it.
+
+**Creating a table is not the same as keeping its columns.** `_ensure()`
+originally only created a table that did not exist; a column added to the field
+list *afterwards* was never created on the live table, and `AirtableClient`
+then dropped that value on every write with only a WARNING. "Company Id" sat
+empty for exactly this reason, and because `build_long()` skips any change with
+no `company_id`, all four Company-group metrics were structurally incapable of
+being anything but zero. `_ensure()` now backfills missing columns onto an
+existing table.
+
 ---
 
 ## 8. Change log
 
 Newest first. Every entry: **what** changed, **why**, **how** it works now, and
 the **impact** on existing numbers.
+
+### 2026-09-07 — Stage logging made loss-proof, and the company metrics unblocked
+
+**What.** Four fixes to the stage-change pipeline, all of the same family: a
+failure that stored nothing while looking like success.
+
+1. **`KeyError('name')` crashed every run with a real move.** `diff()` never put
+   a `name` key in its change records, but `push()` read `c["name"]` to fill the
+   Contact column. `diff()` now carries `name` through (via `.get()`, so a
+   caller whose dict omits it gets `""`).
+2. **A failed write no longer advances the snapshot.** `push()` returns whether
+   the change log was written; `bd_stage_changes.py`, `modules/02_contact_sync.py`
+   and `modules/06_account_health.py` all save the snapshot only on `True`.
+   Module 06 previously saved *before* pushing.
+3. **Silent drops now count as failures.** An unreachable table, and rows
+   dropped at the Airtable record limit (`AirtableClient.dropped_records`).
+4. **`_ensure()` backfills missing columns** onto an existing table, instead of
+   only creating absent tables.
+
+**Why.** On 2026-09-07 the crash plus the bare `try/except` in modules 02/06
+destroyed every stage move made before ~1:30 PM IST: detected, not written,
+snapshot advanced regardless. Separately, "Company Id" had never existed as a
+column, so `build_long()` skipped every change for company purposes and all four
+Company-group metrics read 0 for everyone, always.
+
+**How it works now.** Nothing advances past a change that is not stored. A
+failed write leaves the snapshot alone and the next run re-detects and re-logs
+it; retrying is safe because rows upsert on `"<contact_id> | <date>"`. A failure
+of the derived per-day rollup is reported but does *not* hold the snapshot back
+— digests recompute from the log table, so a missing rollup day costs a view,
+not a number, and blocking on it would retry forever.
+
+**Impact on existing numbers.** The moves lost on the morning of 2026-09-07 are
+unrecoverable — Kylas keeps no stage-change history, and "contacts updated
+today" cannot be used to reconstruct them because it also includes contacts
+merely touched. That day's Attempted/Connected are understated. The four
+Company-group metrics stay 0 for rows written before the column existed and
+populate from the next stage change onward.
+
+**Also.** The two daily digests now carry distinct subjects —
+`BD Daily Digest (Midday) — <date>` and `(End of Day)` — via a `slot` input;
+blank or unrecognised falls back to the old unlabelled subject.
 
 ### 2026-09-05 — Two digests a day, and recipients from the active roster
 

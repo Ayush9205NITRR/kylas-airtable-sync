@@ -92,6 +92,115 @@ def test_a_failed_column_add_does_not_abort_the_run(monkeypatch):
     assert bsc._ensure("app_test", {}, "BD Stage Changes", fields) is True
 
 
+# ── push() must report whether the change log actually got written ─────────
+#
+# This is the contract every caller relies on to decide whether it may advance
+# the stage snapshot. stage_history.diff() is first-write-wins: a change is
+# reported once, and the moment the snapshot moves past it, it is gone. Every
+# stage move before ~1:30 PM IST on 2026-09-07 was destroyed exactly this way
+# — detected, not written (the push crashed), snapshot advanced regardless.
+
+class _FakeAt:
+    """Stand-in for AirtableClient that records what it was asked to write."""
+    def __init__(self, *a, **k):
+        self.rows = []
+
+    def build_cache(self, _key):
+        return 0
+
+    def upsert(self, _kf, _kv, fields, _stamp, updated_at_field=""):
+        self.rows.append(fields)
+        return "created", None
+
+    def flush(self):
+        pass
+
+
+def _patch_airtable(monkeypatch, at=None, ensure=True):
+    """Point push() at a fake Airtable and a controllable _ensure()."""
+    import utils.airtable_client as ac
+    monkeypatch.setattr(ac, "AirtableClient", lambda *a, **k: at or _FakeAt())
+    monkeypatch.setattr(bsc, "_ensure", lambda *a, **k: ensure)
+    monkeypatch.setattr(bsc.funnel, "prune_expired", lambda *a, **k: None)
+    monkeypatch.setenv("AIRTABLE_BASE_ID", "app_test")
+    monkeypatch.setenv("AIRTABLE_PAT", "test")
+
+
+def _change(cid="1", to="Follow-up (1)"):
+    return {"contact_id": cid, "name": "A Contact", "owner": "Anjali Athya",
+            "email": "anjali.athya@enout.in", "company": "Acme",
+            "company_id": "501", "from": "CNC (Could Not Connect) - 1",
+            "to": to, "date": "2026-09-07"}
+
+
+def test_push_reports_success_when_the_log_is_written(monkeypatch):
+    at = _FakeAt()
+    _patch_airtable(monkeypatch, at=at)
+    assert bsc.push([_change()], {}) is True
+    assert len(at.rows) == 1
+
+
+def test_push_reports_failure_when_the_log_table_is_unavailable(monkeypatch):
+    """_ensure() returning False used to drop the rows and still look like
+    success — the caller then advanced the snapshot over them."""
+    _patch_airtable(monkeypatch, ensure=False)
+    assert bsc.push([_change()], {}) is False
+
+
+def test_push_reports_failure_when_the_write_raises(monkeypatch):
+    class _Boom(_FakeAt):
+        def upsert(self, *a, **k):
+            raise RuntimeError("Airtable 503")
+
+    _patch_airtable(monkeypatch, at=_Boom())
+    assert bsc.push([_change()], {}) is False
+
+
+def test_push_with_nothing_to_log_is_a_success(monkeypatch):
+    """No changes means nothing can be lost, so the snapshot may advance."""
+    _patch_airtable(monkeypatch)
+    assert bsc.push([], {}) is True
+
+
+def test_rows_dropped_at_the_record_limit_count_as_a_failed_write(monkeypatch):
+    """AirtableClient swallows TOO_MANY_RECORDS_IN_BASE: it warns, drops the
+    rows and returns normally. Without this check that is indistinguishable
+    from a clean write, so the snapshot advances over changes that were never
+    stored — the same silent loss as the KeyError, by a different route."""
+    at = _FakeAt()
+    at.dropped_records = 3
+    _patch_airtable(monkeypatch, at=at)
+    assert bsc.push([_change()], {}) is False
+
+
+def test_a_clean_write_reports_no_dropped_rows(monkeypatch):
+    at = _FakeAt()
+    at.dropped_records = 0
+    _patch_airtable(monkeypatch, at=at)
+    assert bsc.push([_change()], {}) is True
+
+
+def test_a_failed_rollup_does_not_block_the_snapshot(monkeypatch):
+    """The per-day rollup is derived — every digest recomputes from the log
+    table — so losing a rollup day costs a view, not a number. Blocking on it
+    would wedge the pipeline into retrying forever."""
+    at = _FakeAt()
+
+    def _ensure(_b, _h, name, _f):
+        return name != bsc.DAILY_TABLE      # log fine, rollup unavailable
+
+    import utils.airtable_client as ac
+    monkeypatch.setattr(ac, "AirtableClient", lambda *a, **k: at)
+    monkeypatch.setattr(bsc, "_ensure", _ensure)
+    monkeypatch.setattr(bsc.funnel, "prune_expired", lambda *a, **k: None)
+    monkeypatch.setenv("AIRTABLE_BASE_ID", "app_test")
+    monkeypatch.setenv("AIRTABLE_PAT", "test")
+
+    grid = {("Anjali Athya", "anjali.athya@enout.in", "2026-09-07"):
+            {"Stage Changes": 1, "Forward Moves": 1, "Backward Moves": 0}}
+    assert bsc.push([_change()], grid) is True
+
+
 def test_a_table_that_does_not_exist_yet_is_still_created(monkeypatch):
     """The original behaviour must survive: no table -> create it whole."""
     posts = []

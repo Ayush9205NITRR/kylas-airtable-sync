@@ -1028,16 +1028,22 @@ def run(kylas=None, send_email: bool = True) -> dict:
         stage_snap, _stage_changes, _stage_stats = _stage_history.diff(
             _prev_stage_snap, _stage_batch, date.today().isoformat(),
             is_call=lambda s: _ap_order.rank_of(s) != _ap_order.unmined_rank)
-        _stage_history.save(stage_snap, today=date.today().isoformat())
+        # Whoever detects a change is responsible for logging it: diff()
+        # is "first write wins", so if this run doesn't push these to BD
+        # Stage Changes / BD Stage Change Daily, the standalone
+        # bd_stage_changes.py job (or the next sync) will see this
+        # snapshot already reflects them and silently log NOTHING for a
+        # change that genuinely happened.
+        #
+        # So the snapshot is saved ONLY after the push is confirmed. It used
+        # to be saved first, which meant a failed push consumed the changes
+        # and destroyed them — every stage move before ~1:30 PM IST on
+        # 2026-09-07 was lost exactly that way, invisibly, because the
+        # failure was swallowed as a WARNING.
+        _stage_logged = True
         if _stage_changes:
             print(f"[Account Health] Stage changes (full coverage): "
                   f"{len(_stage_changes)}")
-            # Whoever detects a change is responsible for logging it: diff()
-            # is "first write wins", so if this run doesn't push these to BD
-            # Stage Changes / BD Stage Change Daily, the standalone
-            # bd_stage_changes.py job (or the next sync) will see this
-            # snapshot already reflects them and silently log NOTHING for a
-            # change that genuinely happened.
             try:
                 import importlib.util as _ilu
                 _bsc_path = os.path.join(os.path.dirname(__file__), "..",
@@ -1045,10 +1051,19 @@ def run(kylas=None, send_email: bool = True) -> dict:
                 _spec = _ilu.spec_from_file_location("bd_stage_changes", _bsc_path)
                 _bsc = _ilu.module_from_spec(_spec)
                 _spec.loader.exec_module(_bsc)
-                _bsc.push(_stage_changes, _bsc.summarise(_stage_changes, _ap_order))
+                _stage_logged = bool(_bsc.push(
+                    _stage_changes, _bsc.summarise(_stage_changes, _ap_order)))
             except Exception as _exc:
+                _stage_logged = False
                 print(f"[Account Health] WARNING: could not log stage changes "
                       f"to Airtable — {_exc}")
+
+        if _stage_logged:
+            _stage_history.save(stage_snap, today=date.today().isoformat())
+        else:
+            print(f"[Account Health] WARNING: stage snapshot NOT saved — "
+                  f"{len(_stage_changes)} change(s) still pending, so the next "
+                  f"run re-detects and re-logs them rather than losing them.")
     except Exception as _exc:
         print(f"[Account Health] WARNING: stage-change diff skipped — {_exc}")
         stage_snap = {}

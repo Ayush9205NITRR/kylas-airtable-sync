@@ -16,6 +16,13 @@ class AirtableClient:
         self._creates: List[Tuple[str, dict]] = []
         self._updates: List[Tuple[str, str, dict]] = []
         self._skip_fields: Set[str] = set()
+        # Rows this client gave up on rather than raising — currently only the
+        # base-record-limit path. A caller that treats a silent drop as success
+        # can destroy data downstream (bd_stage_changes.push() advances the
+        # stage snapshot on success, and stage_history.diff() is
+        # first-write-wins), so the drop has to be inspectable, not just
+        # printed.
+        self.dropped_records: int = 0
 
     def build_cache(self, key_field: str) -> int:
         for attempt in range(4):
@@ -98,6 +105,7 @@ class AirtableClient:
                 )
             except requests.exceptions.HTTPError as exc:
                 if "TOO_MANY_RECORDS_IN_BASE" in str(exc):
+                    self.dropped_records += len(records_fields)
                     print(f"[AirtableClient] WARNING: base is at record limit — "
                           f"skipping {len(records_fields)} create(s). "
                           f"Upgrade the Airtable workspace to allow new records.")

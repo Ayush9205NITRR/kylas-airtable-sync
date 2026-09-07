@@ -192,6 +192,10 @@ def run(test_mode: bool = False, test_id: int = None,
         stage_snap, stage_changes, stage_stats = _stage_history.diff(
             _prev_snap, _batch, today_iso,
             is_call=lambda s: _ap_order.rank_of(s) != _ap_order.unmined_rank)
+        # Gates the snapshot save further down: diff() is first-write-wins, so
+        # advancing the snapshot after a failed push destroys the very changes
+        # that failed to log. Nothing to log == nothing to lose == True.
+        _stage_logged = True
         if stage_changes:
             print(f"[Contacts] Stage changes detected: {len(stage_changes)} "
                   f"(of {stage_stats['changed'] + stage_stats['unchanged']} "
@@ -207,8 +211,10 @@ def run(test_mode: bool = False, test_id: int = None,
                 _spec = _ilu.spec_from_file_location("bd_stage_changes", _bsc_path)
                 _bsc = _ilu.module_from_spec(_spec)
                 _spec.loader.exec_module(_bsc)
-                _bsc.push(stage_changes, _bsc.summarise(stage_changes, _ap_order))
+                _stage_logged = bool(_bsc.push(
+                    stage_changes, _bsc.summarise(stage_changes, _ap_order)))
             except Exception as _exc:
+                _stage_logged = False
                 print(f"[Contacts] WARNING: could not log stage changes to "
                       f"Airtable — {_exc}")
 
@@ -335,7 +341,16 @@ def run(test_mode: bool = False, test_id: int = None,
         print(f"[Contacts] Account activity: {len(account_activity)} companies worked today")
 
         try:
-            _stage_history.save(stage_snap, today=today_iso)
+            # Only advance past changes that are safely logged. Saving after a
+            # failed push consumes them permanently (diff() is first-write-wins);
+            # skipping the save makes the next run re-detect and re-log them.
+            if _stage_logged:
+                _stage_history.save(stage_snap, today=today_iso)
+            else:
+                print(f"[Contacts] WARNING: stage snapshot NOT saved — "
+                      f"{len(stage_changes)} change(s) still pending, so the "
+                      f"next run re-detects and re-logs them rather than "
+                      f"losing them.")
         except Exception as exc:
             # Never let the snapshot write take down the sync — BD counts for
             # this run already used the in-memory diff either way.
