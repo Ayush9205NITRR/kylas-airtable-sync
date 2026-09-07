@@ -1,7 +1,7 @@
 {
  "_comment": "Account Health snapshot. Written by modules/06_account_health.py; see utils/health_history.py. git history is the archive.",
  "formula_version": 2,
- "as_of": "2026-09-06",
+ "as_of": "2026-09-07",
  "accounts": {
   "1770092": {
    "status": "Active",
@@ -98801,17 +98801,17 @@
    }
   },
   "1777566": {
-   "status": "MQL - Action Needed",
+   "status": "Active",
    "baseline": "MQL - Action Needed",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-09-07",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-07",
    "months": {
     "2026-08": "MQL - Action Needed",
-    "2026-09": "MQL - Action Needed"
+    "2026-09": "Active"
    }
   },
   "1777567": {
@@ -100943,17 +100943,17 @@
    }
   },
   "1777721": {
-   "status": "MQL - Action Needed",
+   "status": "Active",
    "baseline": "MQL - Action Needed",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-09-07",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-07",
    "months": {
     "2026-08": "MQL - Action Needed",
-    "2026-09": "MQL - Action Needed"
+    "2026-09": "Active"
    }
   },
   "1777722": {
@@ -161563,17 +161563,17 @@
    }
   },
   "1782150": {
-   "status": "Active",
+   "status": "Exhausted",
    "baseline": "Exhausted",
-   "prev": "Exhausted",
-   "changed": "2026-09-03",
-   "count": 1,
+   "prev": "Active",
+   "changed": "2026-09-07",
+   "count": 2,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-09-03",
+   "status_since": "2026-09-07",
    "months": {
     "2026-08": "Exhausted",
-    "2026-09": "Active"
+    "2026-09": "Exhausted"
    }
   },
   "1782151": {
