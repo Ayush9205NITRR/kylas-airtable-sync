@@ -1,0 +1,57 @@
+name: Set BD Member Active Status
+
+# Flips the Active checkbox on specific "BD Members" rows, by email — the
+# single source of truth for both the BD roster (bd_company_funnel.bd_roster())
+# and who receives the daily digest. Manual-only: this is a rare, deliberate
+# edit (someone joins or leaves), not something to run on a schedule.
+#
+# Defaults to a report-only dry run — you must type CONFIRM to let it write.
+
+on:
+  workflow_dispatch:
+    inputs:
+      inactive_emails:
+        description: 'Comma-separated email(s) to mark inactive (leaving/left)'
+        required: false
+        default: ''
+      active_emails:
+        description: 'Comma-separated email(s) to mark active (joining/rejoining)'
+        required: false
+        default: ''
+      confirm:
+        description: 'Type CONFIRM (exact case) to actually write. Anything else stays dry-run.'
+        required: false
+        default: ''
+
+jobs:
+  set-active:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Plan (and apply, only if confirmed)
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.inactive_emails }}" ]; then
+            ARGS="$ARGS --inactive $(echo "${{ github.event.inputs.inactive_emails }}" | tr ',' ' ')"
+          fi
+          if [ -n "${{ github.event.inputs.active_emails }}" ]; then
+            ARGS="$ARGS --active $(echo "${{ github.event.inputs.active_emails }}" | tr ',' ' ')"
+          fi
+          if [ "${{ github.event.inputs.confirm }}" = "CONFIRM" ]; then
+            ARGS="$ARGS --apply"
+          else
+            echo "Not confirmed (type CONFIRM in the input to write) — dry run only."
+          fi
+          python scripts/set_bd_member_active.py $ARGS
+        env:
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
