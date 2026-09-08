@@ -1,9 +1,9 @@
 name: Deal Meeting Notes -> Kylas
 
 # The "...-> Kylas" half of the Otter -> Zapier -> Airtable -> Kylas pipeline:
-# pushes each Airtable Deal's "Meeting Notes" field (written by the Zap) into
-# a Note on that deal in Kylas. See scripts/deal_meeting_notes_to_kylas.py for
-# the full design and the exact Zap steps.
+# pushes each Airtable Deal's "Updated Meeting Notes" field (written by the
+# Zap) into a Note on that deal in Kylas. See scripts/deal_meeting_notes_to_kylas.py
+# for the full design and the exact Zap steps.
 #
 # Idempotent (content-keyed against existing Kylas notes), so running this
 # often costs nothing on a quiet run. No native `schedule:` here, matching

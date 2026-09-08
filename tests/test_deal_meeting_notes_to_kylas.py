@@ -1,9 +1,13 @@
 """
-Tests for pushing Airtable Deals' "Meeting Notes" field into Kylas Notes.
+Tests for pushing Airtable Deals' "Updated Meeting Notes" field into Kylas
+Notes.
 
 Mirrors deal_remarks_to_notes.py's test shape: the safety net is the
 idempotency logic (never double-post) and the eligibility filter (never guess
-at a deal id), since this writes production Kylas data.
+at a deal id), since this writes production Kylas data. This script never
+reads or writes "Previous Meeting Notes" -- that rolling shift happens on the
+Zapier side -- so these tests don't touch it either, apart from
+ensure_notes_field() also being responsible for creating that column.
 """
 import importlib.util
 import os
@@ -143,7 +147,7 @@ class _Resp:
             raise AssertionError(f"HTTP {self.status_code}")
 
 
-def test_ensure_notes_field_adds_the_column_when_missing(monkeypatch):
+def test_ensure_notes_field_adds_both_columns_when_missing(monkeypatch):
     # ensure_notes_field() does `import requests` locally, binding to the same
     # sys.modules entry patched here -- no need to touch the dmn module itself.
     posts = []
@@ -154,16 +158,34 @@ def test_ensure_notes_field_adds_the_column_when_missing(monkeypatch):
     monkeypatch.setattr(real_requests, "post",
                         lambda url, **k: (posts.append((url, k.get("json"))), _Resp(status=200))[1])
     assert dmn.ensure_notes_field("app_test", {}) is True
+    assert len(posts) == 2
+    bodies_by_name = {body["name"]: body for _url, body in posts}
+    assert set(bodies_by_name) == {"Updated Meeting Notes", "Previous Meeting Notes"}
+    for url, body in posts:
+        assert url.endswith("/tables/tblX/fields")
+        assert body["type"] == "multilineText"
+
+
+def test_ensure_notes_field_adds_only_the_missing_one_of_the_two(monkeypatch):
+    posts = []
+    tables_payload = {"tables": [{"id": "tblX", "name": "Deals",
+                                  "fields": [{"name": "Deal Name"},
+                                             {"name": "Updated Meeting Notes"}]}]}
+    import requests as real_requests
+    monkeypatch.setattr(real_requests, "get", lambda *a, **k: _Resp(tables_payload))
+    monkeypatch.setattr(real_requests, "post",
+                        lambda url, **k: (posts.append((url, k.get("json"))), _Resp(status=200))[1])
+    assert dmn.ensure_notes_field("app_test", {}) is True
     assert len(posts) == 1
-    url, body = posts[0]
-    assert url.endswith("/tables/tblX/fields")
-    assert body == {"name": "Meeting Notes", "type": "multilineText"}
+    assert posts[0][1] == {"name": "Previous Meeting Notes", "type": "multilineText"}
 
 
 def test_ensure_notes_field_is_a_no_op_when_already_present(monkeypatch):
     posts = []
     tables_payload = {"tables": [{"id": "tblX", "name": "Deals",
-                                  "fields": [{"name": "Deal Name"}, {"name": "Meeting Notes"}]}]}
+                                  "fields": [{"name": "Deal Name"},
+                                             {"name": "Updated Meeting Notes"},
+                                             {"name": "Previous Meeting Notes"}]}]}
     import requests as real_requests
     monkeypatch.setattr(real_requests, "get", lambda *a, **k: _Resp(tables_payload))
     monkeypatch.setattr(real_requests, "post", lambda url, **k: (posts.append(url), _Resp())[1])

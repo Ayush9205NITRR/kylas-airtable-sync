@@ -1,32 +1,47 @@
 #!/usr/bin/env python3
 """
-Push each Airtable Deal's "Meeting Notes" field into a Note on that Deal in
-Kylas. The other half of the Otter -> Zapier -> Kylas pipeline; this is the
-"...-> Kylas" step.
+Push each Airtable Deal's "Updated Meeting Notes" field into a Note on that
+Deal in Kylas. The other half of the Otter -> Zapier -> Kylas pipeline; this
+is the "...-> Kylas" step.
 
 WHY AIRTABLE IS THE MIDDLE STEP, NOT A DIRECT ZAPIER-TO-KYLAS WRITE
 Zapier's native Kylas CRM app exposes only Create Contact / Create Company as
 actions -- no search-by-email, no create-note. Airtable's native Zapier app
-has full Find/Create/Update Record actions, and this repo already keeps
-Airtable's Contacts and Deals tables synced FROM Kylas (Kylas Contact Id /
-Kylas Deal Id are already on every row, via modules/02_contact_sync.py and
-modules/03_deal_sync.py). So the email -> deal lookup and the write both
-happen natively in Airtable, and this script -- the same route Kylas Deal
-notes already flow through, see deal_remarks_to_notes.py -- carries it the
-rest of the way into Kylas.
+(and, in the current Zap, a Code-by-Zapier step calling Airtable's REST API
+directly) can do the rest, and this repo already keeps Airtable's Deals table
+synced FROM Kylas. So the email -> deal lookup and the write both happen on
+the Zapier side, and this script -- the same route Kylas Deal notes already
+flow through, see deal_remarks_to_notes.py -- carries it the rest of the way
+into Kylas.
 
-THE ZAP (built in Zapier, not this repo):
-  1. Trigger:      Otter.ai "New Transcript" (Pro plan and up includes Zapier)
-  2. Find Record:  Airtable "Contacts" table, Email = <attendee email from step 1>
-  3. Find Record:  Airtable "Deals" table, Kylas Contact Id = <step 2's Kylas Contact Id>
-                   A contact with more than one deal returns whichever row the
-                   Deals view hits first -- sort that view by most-recently-
-                   updated if which deal wins should track recency.
-  4. Update Record: Airtable "Deals", that row's "Meeting Notes" = the transcript
-                   A plain overwrite is fine, no append needed: idempotency
-                   below is by CONTENT (like deal_remarks_to_notes.py), so
-                   each new transcript still produces its own Kylas note even
-                   though the Airtable field only ever holds the latest one.
+THE ZAP (built in Zapier, not this repo) matches a Deal directly by its
+"Email (POC)" field against the meeting's external attendee -- no separate
+Contacts-table hop needed, since the POC email lives on the Deal itself:
+  1. Trigger:  Otter.ai "New Recording"
+  2. Code:     extract the external (non-@enout.in) attendee's email
+  3. Code:     find the Deal by Email (POC) == that address, then PATCH it:
+                 - "Previous Meeting Notes" <- whatever "Updated Meeting
+                   Notes" currently holds (the ROLLING one-step-back shift,
+                   read below)
+                 - "Updated Meeting Notes"  <- this meeting's transcript
+
+TWO-FIELD ROLLING HISTORY, not accumulation. A Deal sees many meetings over
+its life; concatenating every transcript into one ever-growing field would
+make it unreadable and would re-push the entire history to Kylas on every
+run (since this script pushes whatever text currently sits in the field).
+Instead, only the immediately preceding version is kept, in "Previous
+Meeting Notes", and "Updated Meeting Notes" always holds just the latest:
+
+    run 1 (Meeting 1): Previous <- "" (nothing yet),   Updated <- Meeting 1
+    run 2 (Meeting 2): Previous <- "Meeting 1",         Updated <- Meeting 2
+    run 3 (Meeting 3): Previous <- "Meeting 2",         Updated <- Meeting 3
+
+The shift happens on the ZAPIER side (it already has the deal record loaded
+to do the POC-email match, so it reads the old Updated value and writes both
+fields in one PATCH). This script only ever reads "Updated Meeting Notes" --
+"Previous Meeting Notes" is a same-base historical reference for humans
+browsing Airtable, deliberately never pushed to Kylas again here, since its
+content was already pushed in the run where IT was the latest.
 
 IDEMPOTENT, same mechanism as deal_remarks_to_notes.py: existing Kylas notes
 on the deal are read once (get_all_notes) and a note is only created if this
@@ -52,10 +67,11 @@ from utils.kylas_client import KylasClient       # noqa: E402
 from utils.airtable_client import AirtableClient  # noqa: E402
 
 _WS = re.compile(r"\s+")
-TABLE           = "Deals"
-NOTES_FIELD     = "Meeting Notes"
-DEAL_ID_FIELD   = "Kylas Deal Id"
-DEAL_NAME_FIELD = "Deal Name"
+TABLE            = "Deals"
+NOTES_FIELD      = "Updated Meeting Notes"
+PREV_NOTES_FIELD = "Previous Meeting Notes"
+DEAL_ID_FIELD    = "Kylas Deal Id"
+DEAL_NAME_FIELD  = "Deal Name"
 
 
 def _html_unescape(text: str) -> str:
@@ -74,15 +90,15 @@ def _normalize(text: str) -> str:
 
 
 def ensure_notes_field(base_id: str, headers: dict) -> bool:
-    """Add the 'Meeting Notes' column to Airtable's Deals table if it is not
-    already there.
+    """Add the 'Updated Meeting Notes' / 'Previous Meeting Notes' columns to
+    Airtable's Deals table if either is not already there.
 
     This table is otherwise maintained by modules/03_deal_sync.py's Kylas ->
-    Airtable field map (config/field_map.json), which has no entry for this
-    field on purpose: it flows the opposite direction (Zapier writes it here,
-    this script reads it), so the regular sync would never create it. Without
-    this check, the field would need to be added by hand in the Airtable UI
-    before the Zap could ever write to it.
+    Airtable field map (config/field_map.json), which has no entry for these
+    fields on purpose: they flow the opposite direction (the Zap writes both,
+    this script only ever reads NOTES_FIELD back), so the regular sync would
+    never create them. Without this check, the Zap's PATCH would fail the
+    first time it tries to write a column that doesn't exist yet.
     """
     import requests
     META = "https://api.airtable.com/v0/meta/bases"
@@ -93,21 +109,24 @@ def ensure_notes_field(base_id: str, headers: dict) -> bool:
         print(f"[meeting-notes] ERROR: Airtable table {TABLE!r} does not exist")
         return False
     have = {f["name"] for f in table.get("fields", [])}
-    if NOTES_FIELD in have:
-        return True
-    resp = requests.post(f"{META}/{base_id}/tables/{table['id']}/fields",
-                         json={"name": NOTES_FIELD, "type": "multilineText"},
-                         headers=headers, timeout=30)
-    ok = resp.status_code in (200, 201)
-    print(f"[meeting-notes] {'+ added' if ok else '! could not add'} column "
-          f"{NOTES_FIELD!r} to {TABLE!r}"
-          + ("" if ok else f" ({resp.status_code} {resp.text[:150]})"))
+    ok = True
+    for field in (NOTES_FIELD, PREV_NOTES_FIELD):
+        if field in have:
+            continue
+        resp = requests.post(f"{META}/{base_id}/tables/{table['id']}/fields",
+                             json={"name": field, "type": "multilineText"},
+                             headers=headers, timeout=30)
+        field_ok = resp.status_code in (200, 201)
+        print(f"[meeting-notes] {'+ added' if field_ok else '! could not add'} column "
+              f"{field!r} to {TABLE!r}"
+              + ("" if field_ok else f" ({resp.status_code} {resp.text[:150]})"))
+        ok = field_ok and ok
     return ok
 
 
 def eligible_rows(at: AirtableClient) -> list:
     """[(deal_id, deal_name, notes_text), ...] for Deals rows with a non-blank
-    Meeting Notes field and a known Kylas Deal Id."""
+    Updated Meeting Notes field and a known Kylas Deal Id."""
     out = []
     for r in at.table.all():
         f = r["fields"]
@@ -149,7 +168,7 @@ def plan(at: AirtableClient, kylas: KylasClient) -> tuple:
 
 def main() -> int:
     ap = argparse.ArgumentParser(
-        description="Push each Airtable Deal's Meeting Notes field into a Kylas Note on that deal")
+        description="Push each Airtable Deal's Updated Meeting Notes field into a Kylas Note on that deal")
     ap.add_argument("--probe", action="store_true",
                     help="Create exactly ONE note on ONE eligible deal, re-read notes, confirm it appears")
     ap.add_argument("--dry-run", action="store_true",
@@ -169,7 +188,7 @@ def main() -> int:
     print("Fetching Deals from Airtable...")
     not_noted, already = plan(at, kylas)
     eligible_n = len(not_noted) + already
-    print(f"Eligible rows (non-blank Meeting Notes + Kylas Deal Id): {eligible_n}")
+    print(f"Eligible rows (non-blank Updated Meeting Notes + Kylas Deal Id): {eligible_n}")
 
     if args.probe:
         if not not_noted:
