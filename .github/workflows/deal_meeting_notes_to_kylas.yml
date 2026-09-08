@@ -1,0 +1,57 @@
+name: Deal Meeting Notes -> Kylas
+
+# The "...-> Kylas" half of the Otter -> Zapier -> Airtable -> Kylas pipeline:
+# pushes each Airtable Deal's "Meeting Notes" field (written by the Zap) into
+# a Note on that deal in Kylas. See scripts/deal_meeting_notes_to_kylas.py for
+# the full design and the exact Zap steps.
+#
+# Idempotent (content-keyed against existing Kylas notes), so running this
+# often costs nothing on a quiet run. No native `schedule:` here, matching
+# bd_stage_changes.yml / bd_metrics_long.yml elsewhere in this repo — point a
+# cron-job.org job at this workflow's dispatch URL (e.g. hourly) for the
+# "runs automatically for every meeting" behaviour with no manual trigger.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'probe = create ONE note + verify; dry_run = list eligible deals, write nothing; run = real run over all eligible deals'
+        type: choice
+        options: [probe, dry_run, run]
+        default: probe
+      limit:
+        description: 'With run: cap the number of notes created (blank = no cap)'
+        required: false
+        default: ''
+
+jobs:
+  deal-meeting-notes-to-kylas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Push Meeting Notes into Kylas
+        env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          if [ "${{ github.event.inputs.mode }}" = "probe" ]; then
+            ARGS="--probe"
+          elif [ "${{ github.event.inputs.mode }}" = "dry_run" ]; then
+            ARGS="--dry-run"
+          else
+            ARGS=""
+            if [ -n "${{ github.event.inputs.limit }}" ]; then
+              ARGS="--limit ${{ github.event.inputs.limit }}"
+            fi
+          fi
+          python scripts/deal_meeting_notes_to_kylas.py $ARGS
