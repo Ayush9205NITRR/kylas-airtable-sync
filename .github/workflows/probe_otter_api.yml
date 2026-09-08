@@ -1,0 +1,31 @@
+name: Probe Otter.ai API (discovery)
+
+# One-time discovery run, not a permanent pipeline step: tries the most
+# plausible Otter.ai Public API endpoints and prints exactly what each one
+# returns. See scripts/probe_otter_api.py for why -- Otter's own docs aren't
+# reachable from this environment, so the real pipeline needs to be written
+# against confirmed data, not a guess.
+#
+# Read-only: this makes GET requests only, never writes anything anywhere.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Probe candidate endpoints
+        env:
+          OTTER_API_KEY: ${{ secrets.OTTER_API_KEY }}
+        run: python scripts/probe_otter_api.py
