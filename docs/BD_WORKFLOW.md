@@ -354,12 +354,55 @@ no `company_id`, all four Company-group metrics were structurally incapable of
 being anything but zero. `_ensure()` now backfills missing columns onto an
 existing table.
 
+**Two independent paths building the same dict can silently diverge.**
+`02_contact_sync.py` and `06_account_health.py` each build their own batch of
+`{contact_id: {stage, owner, email, company, company_id}}` and hand it to the
+same `stage_history.diff()` — but each one computes `company_id` itself, by
+hand, at the point the dict literal is written. On 2026-09-09, `company_id`
+was computed correctly in `02_contact_sync.py` and then never added to the
+dict (only the display name was); `06_account_health.py` never computed it at
+all. Both looked identical to `_ensure()`'s column existing and being written
+to — the column was there, individual writes just carried blank values — so
+every Company-group metric read 0 for any move detected via either path, while
+Contact-group metrics for the same moves were fine (they never needed a
+company). Guard: the dict-building step is now `_stage_batch_row()` in each
+module, a single named function instead of an inline literal, with its own
+tests asserting `company_id` survives both shapes Kylas returns `company` in
+(bare int on search results, `{id, name}` on detail reads).
+
 ---
 
 ## 8. Change log
 
 Newest first. Every entry: **what** changed, **why**, **how** it works now, and
 the **impact** on existing numbers.
+
+### 2026-09-09 — Company Id dropped again, this time by the callers, not `_ensure()`
+
+**What.** `02_contact_sync.py` computed `company_id` for its stage-change
+batch and then never put it in the dict (only `company`, the display name,
+made it through); `06_account_health.py` didn't compute either field at all
+for its batch. Both fixed by extracting the batch-row construction into a
+named, individually-tested `_stage_batch_row()` in each module.
+
+**Why.** The 2026-09-07 fix made `_ensure()` create the "Company Id" column
+on the live table, and that column has existed and accepted writes ever
+since — this was a *different* bug in the same family: the column was there,
+the value handed to it for these two paths was just always blank. All four
+Company-group metrics read 0 again for 2026-09-09, the same symptom as the
+07th, from an unrelated cause — caught from the daily digest showing 0 for
+every associate while the run's own month-to-date total (computed fresh from
+the whole log, including days unaffected by this bug) was clearly non-zero.
+
+**How it works now.** Both modules call the same shape of function instead of
+writing the dict inline, and each has tests asserting `company_id` survives
+both shapes Kylas returns `company` in. A future change to either path that
+drops the field again fails a test instead of shipping silently.
+
+**Impact on existing numbers.** Rows already written on 2026-09-09 with a
+blank Company Id are not retroactively repaired — this fix only stops it
+from recurring on new stage changes going forward. Existing month-to-date
+Company totals from prior days are unaffected.
 
 ### 2026-09-07 — Stage logging made loss-proof, and the company metrics unblocked
 

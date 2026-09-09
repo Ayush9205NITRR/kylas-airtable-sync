@@ -58,6 +58,19 @@ def _owner_name(raw: dict, user_map: dict = None) -> str:
     return "Unassigned"
 
 
+def _stage_batch_row(ct: dict, stage: str, owner_nm: str, email: str) -> dict:
+    """One entry of the batch stage_history.diff() reads per contact.
+
+    Must carry company_id, not just the display name -- company_id being
+    computed and then left out of this dict is what silently zeroed every
+    Company-group metric for every move detected via this path, while
+    Contact-group metrics for the same moves were unaffected (2026-09-09).
+    """
+    co_id, co_name = _company_info(ct)
+    return {"stage": stage, "owner": owner_nm, "email": email,
+            "company": co_name, "company_id": co_id}
+
+
 def _map(raw: dict, user_map: dict = None, company_id_map: dict = None) -> dict:
     fm     = _fm()
     emails = raw.get("emails") or []
@@ -180,13 +193,9 @@ def run(test_mode: bool = False, test_id: int = None,
             _stage = _contact_stage(_ct)
             if not _stage:
                 continue
-            _co_id, _co_name = _company_info(_ct)
             _owner_nm = _owner_name(_ct, user_map)
-            _batch[str(_ct["id"])] = {
-                "stage": _stage, "owner": _owner_nm,
-                "email": user_email_map.get(_owner_nm, ""),
-                "company": _co_name,
-            }
+            _batch[str(_ct["id"])] = _stage_batch_row(
+                _ct, _stage, _owner_nm, user_email_map.get(_owner_nm, ""))
         from utils.account_pipeline import load_order as _load_order
         _ap_order = _load_order()
         stage_snap, stage_changes, stage_stats = _stage_history.diff(

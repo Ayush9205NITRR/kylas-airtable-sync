@@ -210,3 +210,32 @@ def test_stage_snap_defaults_to_empty_without_error():
     ct = _ct("2026-01-01T00:00:00Z", "2026-08-30T00:00:00Z", cid=1)
     health = ah.compute_health([ct])
     assert health["77"]["last_activity"] == "2026-08-30"
+
+
+# ── _stage_batch_row: company_id must reach stage_history.diff(), not just
+# the display name -- both were missing here entirely until 2026-09-09, which
+# silently zeroed every Company-group metric for every move this full-
+# coverage pass was the one to detect, while Contact-group metrics for the
+# same moves were unaffected (they don't need a company at all).
+
+def test_stage_batch_row_carries_company_id_from_a_nested_company_object():
+    row = ah._stage_batch_row({"company": {"id": 501, "name": "Acme"}},
+                              "Follow-up (1)", "jane@enout.in")
+    assert row["company_id"] == "501"
+    assert row["company"] == "Acme"
+
+
+def test_stage_batch_row_carries_company_id_from_a_bare_int_company():
+    """Search results return company as a bare int, not {'id':...,'name':...}
+    -- see BD_WORKFLOW.md's "Kylas returns bare integers" gotcha. Both shapes
+    must resolve to a usable company_id or this is right back to zeros."""
+    row = ah._stage_batch_row({"company": 777}, "CNC (Could Not Connect) - 1",
+                              "jane@enout.in")
+    assert row["company_id"] == "777"
+    assert row["company"] == ""
+
+
+def test_stage_batch_row_blank_company_stays_blank_not_missing():
+    row = ah._stage_batch_row({}, "Follow-up (1)", "jane@enout.in")
+    assert row["company_id"] == "" and row["company"] == ""
+    assert row["stage"] == "Follow-up (1)" and row["email"] == "jane@enout.in"

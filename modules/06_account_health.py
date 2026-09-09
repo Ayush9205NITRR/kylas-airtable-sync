@@ -75,12 +75,25 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.kylas_client import KylasClient
 from utils.airtable_client import AirtableClient
 from utils import stage_history as _stage_history
-from utils.bd_metrics import contact_stage
+from utils.bd_metrics import contact_stage, company_info
 from utils.redact import mask_email, mask_emails
 
 TEAM_PATH       = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "team.json")
 FM_PATH         = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "field_map.json")
 REASSIGN_CUTOFF = "2026-04-19"
+
+
+def _stage_batch_row(ct: dict, stage: str, email: str) -> dict:
+    """One entry of the batch stage_history.diff() reads per contact.
+
+    Must carry company and company_id -- both were missing here entirely,
+    which is what silently zeroed every Company-group metric for every move
+    this full-coverage pass (rather than 02_contact_sync.py's incremental
+    one) was the one to detect (2026-09-09).
+    """
+    co_id, co_name = company_info(ct)
+    return {"stage": stage, "owner": "", "email": email,
+            "company": co_name, "company_id": co_id}
 
 # Two different empty states, deliberately labelled differently:
 #
@@ -1019,11 +1032,8 @@ def run(kylas=None, send_email: bool = True) -> dict:
             _stg = contact_stage(_ct)
             if not _stg:
                 continue
-            _stage_batch[str(_ct["id"])] = {
-                "stage": _stg,
-                "owner": "",
-                "email": _contact_owner_email(_ct, user_email_map),
-            }
+            _stage_batch[str(_ct["id"])] = _stage_batch_row(
+                _ct, _stg, _contact_owner_email(_ct, user_email_map))
         _ap_order = _load_order()
         stage_snap, _stage_changes, _stage_stats = _stage_history.diff(
             _prev_stage_snap, _stage_batch, date.today().isoformat(),
