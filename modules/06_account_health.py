@@ -222,6 +222,17 @@ def _last_activity(ct: dict) -> str:
     )
 
 
+def _next_call(ct: dict) -> str:
+    """
+    A contact's next call date as an ISO date, or "" if it has none.
+
+    Same custom field 02_contact_sync writes to the contact row's
+    "Next Call Date"; read here so the account can carry the rollup too.
+    """
+    cf = ct.get("customFieldValues") or {}
+    return _parse_lc(cf.get("cfNextCallDate", ""))
+
+
 def _contact_owner_email(ct: dict, user_email_map: dict) -> str:
     """Extract owner email from a raw Kylas contact dict."""
     ob = ct.get("ownedBy") or {}
@@ -270,7 +281,7 @@ def compute_health(contacts: list, user_email_map: dict = None,
             "sql": 0, "dcb": 0, "offsite": 0, "offsite_done": 0,
             "terminal": 0, "noi": 0,
             "called": 0, "called_apr19": 0, "last_called": "",
-            "last_activity": "",
+            "last_activity": "", "next_call": "",
             "claimed_by": "",
             "_claimed_date": "",
         })
@@ -315,6 +326,15 @@ def compute_health(contacts: list, user_email_map: dict = None,
 
         if la > e["last_activity"]:
             e["last_activity"] = la
+
+        # EARLIEST next call date on the account, not the latest. The
+        # question a BD asks the queue is "what do I owe today", and that
+        # is answered by the soonest contact due, not the furthest out.
+        # A date already in the past stays — a call that was missed is the
+        # most urgent thing on the account, not something to hide.
+        nc = _next_call(ct)
+        if nc and (not e["next_call"] or nc < e["next_call"]):
+            e["next_call"] = nc
 
     for e in by_co.values():
         t    = e["total"]
@@ -459,6 +479,11 @@ def _write_table(tbl: AirtableClient, health: dict, fm: dict,
         _la = e.get("last_activity") or e["last_called"]
         if fm.get("lastCalledAtContacts") and _la:
             fields[fm["lastCalledAtContacts"]] = _la
+        # Written even when blank, unlike last-called above: a next call
+        # date that has been cleared in Kylas must clear here too, or the
+        # overlay keeps an account in "Connect today" forever.
+        if fm.get("nextCallDateContacts"):
+            fields[fm["nextCallDateContacts"]] = e.get("next_call", "")
         # Account Health history mirror — the record itself is the git snapshot;
         # these exist so reallocation can be filtered in Airtable. Baseline and
         # count are scoped to the CURRENT month and reset at the boundary.
