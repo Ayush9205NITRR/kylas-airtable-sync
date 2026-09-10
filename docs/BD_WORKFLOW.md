@@ -354,6 +354,21 @@ no `company_id`, all four Company-group metrics were structurally incapable of
 being anything but zero. `_ensure()` now backfills missing columns onto an
 existing table.
 
+**A blank attribution field is a silent delete.** `read_stage_changes()` drops
+any row whose Date, BD Associate or Current Stage is blank — it cannot be
+attributed, so it cannot be counted. Combined with first-write-wins, a caller
+that logs a change with a blank owner destroys it twice over: the row is
+written but unusable, and the snapshot advances anyway, so it can never be
+re-detected. `06_account_health.py` passed a hardcoded `"owner": ""` into
+every change its full-coverage pass detected; on 2026-09-10 that pass was the
+first to see the day's moves (the dedicated job was down), so 91 of 92 real
+stage changes were logged unattributed and the digest reported **0 for the
+entire team** while BD Stats showed 22 calls for one rep alone. Guards:
+`_stage_batch_row()` now resolves the owner through the same `funnel._owner()`
+the dedicated script uses, and `read_stage_changes()` **reports** what it
+drops instead of discarding it in silence — "no activity" and "attribution
+broke" must never look identical again.
+
 **Two independent paths building the same dict can silently diverge.**
 `02_contact_sync.py` and `06_account_health.py` each build their own batch of
 `{contact_id: {stage, owner, email, company, company_id}}` and hand it to the
@@ -376,6 +391,31 @@ tests asserting `company_id` survives both shapes Kylas returns `company` in
 
 Newest first. Every entry: **what** changed, **why**, **how** it works now, and
 the **impact** on existing numbers.
+
+### 2026-09-10 — The whole team read 0 because every move was logged unattributed
+
+**What.** `06_account_health.py` built its stage-change batch with a hardcoded
+`"owner": ""`. Every change its full-coverage pass detected was written to BD
+Stage Changes with a blank BD Associate, and `read_stage_changes()` silently
+drops rows it cannot attribute. Fixed at both ends: the owner is now resolved
+via `funnel._owner()` (the same helper `bd_stage_changes.py` uses, which
+handles `ownedBy` arriving as either an object or a bare id), and the read
+side now reports every row it discards.
+
+**Why it surfaced now, not earlier.** `bd_stage_changes.py` — which always
+resolved owners correctly — normally runs 15 min before the digest and
+consumes the day's moves first. It was down 2026-09-08 → 09-10 (a cron-job.org
+job was sending `inputs.slot` to a workflow with no such input, so GitHub
+rejected every dispatch with 422). With it gone, module 06 became the first
+detector and its blank owners went straight through.
+
+**Impact on existing numbers.** 2026-09-10's digest reported 0 across the
+board for all 13 reps against 92 genuine stage moves. Those rows exist but are
+unattributed, so no digest counted them. They cannot be re-detected — the
+snapshot advanced — but they ARE repairable, because the snapshot still holds
+owner and email per contact id: `scripts/backfill_stage_change_owners.py`
+joins the two and puts the names back. It never guesses; a contact the
+snapshot has no owner for is reported and left blank.
 
 ### 2026-09-09 — Company Id dropped again, this time by the callers, not `_ensure()`
 

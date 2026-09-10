@@ -1,0 +1,50 @@
+name: Backfill BD Stage Change owners
+
+# One-off repair, not a scheduled job: re-attributes BD Stage Changes rows that
+# 06_account_health.py logged with a blank "BD Associate" before 2026-09-10.
+# Those rows are real detected stage moves that no digest can ever count, and
+# they cannot be re-detected — the snapshot already advanced past them. See
+# scripts/backfill_stage_change_owners.py for why they are still recoverable.
+#
+# dry_run first, always: it prints exactly which owner/date each row would get.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'dry_run = report only, write nothing; apply = write the repaired rows'
+        type: choice
+        options: [dry_run, apply]
+        default: dry_run
+      date:
+        description: 'Optional: only touch rows for this date (YYYY-MM-DD). Blank = all.'
+        required: false
+        default: ''
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Re-attribute blank-owner stage changes
+        env:
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.mode }}" = "apply" ]; then
+            ARGS="--apply"
+          fi
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            ARGS="$ARGS --date ${{ github.event.inputs.date }}"
+          fi
+          python scripts/backfill_stage_change_owners.py $ARGS

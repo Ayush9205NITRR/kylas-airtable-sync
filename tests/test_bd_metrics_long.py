@@ -253,3 +253,48 @@ def test_roster_names_and_emails_returns_empty_when_roster_unavailable(monkeypat
         raise RuntimeError("Airtable down")
     monkeypatch.setattr(ml.funnel, "bd_roster", _boom)
     assert ml._roster_names_and_emails() == {}
+
+
+# ── read_stage_changes: an unusable row must be reported, never silent ──────
+# This filter hid a total attribution failure once: 06_account_health.py logged
+# every move it detected with a blank BD Associate, each row was discarded here
+# without a word, and the snapshot had already advanced past them. The digest
+# read 0 for the whole team while 92 real moves sat unattributed in the log.
+
+class _FakeCacheAt:
+    def __init__(self, rows):
+        self._cache = {str(i): {"fields": f} for i, f in enumerate(rows)}
+
+    def build_cache(self, _key):
+        return None
+
+
+def _patch_at(monkeypatch, rows):
+    import utils.airtable_client as ac
+    monkeypatch.setattr(ac, "AirtableClient", lambda *a, **k: _FakeCacheAt(rows))
+
+
+def test_read_stage_changes_keeps_a_fully_attributed_row(monkeypatch):
+    _patch_at(monkeypatch, [{"Date": "2026-09-10", "BD Associate": "Aditi saini",
+                             "BD Email": "aditi.saini@enout.in",
+                             "Company Id": "501", "Current Stage": "Follow-up (1)"}])
+    rows = ml.read_stage_changes()
+    assert len(rows) == 1 and rows[0]["rep"] == "Aditi saini"
+
+
+def test_read_stage_changes_warns_loudly_about_a_blank_owner(monkeypatch, capsys):
+    _patch_at(monkeypatch, [{"Date": "2026-09-10", "BD Associate": "",
+                             "BD Email": "aditi.saini@enout.in",
+                             "Current Stage": "Follow-up (1)"}])
+    rows = ml.read_stage_changes()
+    assert rows == [], "a row with no owner cannot be attributed"
+    out = capsys.readouterr().out
+    assert "1 row(s)" in out and "unusable" in out, \
+        "an unusable row must be reported — silence is what made this invisible"
+
+
+def test_read_stage_changes_stays_quiet_when_every_row_is_usable(monkeypatch, capsys):
+    _patch_at(monkeypatch, [{"Date": "2026-09-10", "BD Associate": "Aditi saini",
+                             "Current Stage": "Follow-up (1)"}])
+    ml.read_stage_changes()
+    assert "unusable" not in capsys.readouterr().out

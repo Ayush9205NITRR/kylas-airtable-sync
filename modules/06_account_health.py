@@ -83,16 +83,23 @@ FM_PATH         = os.path.join(os.path.dirname(os.path.dirname(__file__)), "conf
 REASSIGN_CUTOFF = "2026-04-19"
 
 
-def _stage_batch_row(ct: dict, stage: str, email: str) -> dict:
+def _stage_batch_row(ct: dict, stage: str, owner_nm: str, email: str) -> dict:
     """One entry of the batch stage_history.diff() reads per contact.
 
-    Must carry company and company_id -- both were missing here entirely,
-    which is what silently zeroed every Company-group metric for every move
-    this full-coverage pass (rather than 02_contact_sync.py's incremental
-    one) was the one to detect (2026-09-09).
+    `owner_nm` MUST be a real name. This used to be hardcoded "", and a change
+    logged with a blank BD Associate is dropped on read by
+    bd_metrics_long.read_stage_changes() -- while the snapshot still advances
+    past it, so the move is consumed and never counted anywhere. That is how
+    91 of 2026-09-10's 92 stage moves vanished: this full-coverage pass
+    detected them all, logged them all unattributed, and the digest reported
+    zero for the whole team.
+
+    Must also carry company and company_id, for the same class of reason: both
+    were missing entirely until 2026-09-09, zeroing every Company-group metric
+    for any move this pass was the one to detect.
     """
     co_id, co_name = company_info(ct)
-    return {"stage": stage, "owner": "", "email": email,
+    return {"stage": stage, "owner": owner_nm, "email": email,
             "company": co_name, "company_id": co_id}
 
 # Two different empty states, deliberately labelled differently:
@@ -1052,13 +1059,27 @@ def run(kylas=None, send_email: bool = True) -> dict:
     # updated to today's stage by Module 2 shows no further change here.
     try:
         _prev_stage_snap = _stage_history.load()
+        # Owner resolution goes through the same helper bd_stage_changes.py
+        # uses, rather than a local shortcut: the search API returns `ownedBy`
+        # as a bare id at least as often as a populated object, and _owner()
+        # is what already handles both shapes in production.
+        import importlib.util as _ilu_f
+        _fnl_path = os.path.join(os.path.dirname(__file__), "..",
+                                 "scripts", "bd_company_funnel.py")
+        _fspec = _ilu_f.spec_from_file_location("bd_company_funnel", _fnl_path)
+        _funnel = _ilu_f.module_from_spec(_fspec)
+        _fspec.loader.exec_module(_funnel)
+        _user_map = _funnel._build_user_map(kylas)
+
         _stage_batch = {}
         for _ct in contacts:
             _stg = contact_stage(_ct)
             if not _stg:
                 continue
+            _own_nm, _own_em = _funnel._owner(_ct, _user_map)
             _stage_batch[str(_ct["id"])] = _stage_batch_row(
-                _ct, _stg, _contact_owner_email(_ct, user_email_map))
+                _ct, _stg, _own_nm,
+                _own_em or _contact_owner_email(_ct, user_email_map))
         _ap_order = _load_order()
         stage_snap, _stage_changes, _stage_stats = _stage_history.diff(
             _prev_stage_snap, _stage_batch, date.today().isoformat(),

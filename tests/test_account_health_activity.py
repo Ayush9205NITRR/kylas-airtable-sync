@@ -220,7 +220,7 @@ def test_stage_snap_defaults_to_empty_without_error():
 
 def test_stage_batch_row_carries_company_id_from_a_nested_company_object():
     row = ah._stage_batch_row({"company": {"id": 501, "name": "Acme"}},
-                              "Follow-up (1)", "jane@enout.in")
+                              "Follow-up (1)", "Jane Doe", "jane@enout.in")
     assert row["company_id"] == "501"
     assert row["company"] == "Acme"
 
@@ -230,12 +230,23 @@ def test_stage_batch_row_carries_company_id_from_a_bare_int_company():
     -- see BD_WORKFLOW.md's "Kylas returns bare integers" gotcha. Both shapes
     must resolve to a usable company_id or this is right back to zeros."""
     row = ah._stage_batch_row({"company": 777}, "CNC (Could Not Connect) - 1",
-                              "jane@enout.in")
+                              "Jane Doe", "jane@enout.in")
     assert row["company_id"] == "777"
     assert row["company"] == ""
 
 
 def test_stage_batch_row_blank_company_stays_blank_not_missing():
-    row = ah._stage_batch_row({}, "Follow-up (1)", "jane@enout.in")
+    row = ah._stage_batch_row({}, "Follow-up (1)", "Jane Doe", "jane@enout.in")
     assert row["company_id"] == "" and row["company"] == ""
     assert row["stage"] == "Follow-up (1)" and row["email"] == "jane@enout.in"
+
+
+def test_stage_batch_row_carries_the_owner_name_through():
+    """The load-bearing one. A blank owner here is not a cosmetic gap: the row
+    is dropped on read by bd_metrics_long.read_stage_changes() while the
+    snapshot advances past it anyway, so the move is consumed and counted
+    nowhere. 91 of 2026-09-10's 92 moves were lost exactly this way."""
+    row = ah._stage_batch_row({"company": 777}, "Follow-up (1)",
+                              "Aditi saini", "aditi.saini@enout.in")
+    assert row["owner"] == "Aditi saini", "owner must never be blank"
+    assert row["email"] == "aditi.saini@enout.in"

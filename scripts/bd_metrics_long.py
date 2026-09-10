@@ -132,11 +132,19 @@ def read_stage_changes() -> list:
 
     Returns [{date, rep, email, company_id, to}]. Rows missing a date, owner or
     to-stage are unusable for attribution and are dropped.
+
+    A dropped row is REPORTED, never silent. This filter hid a total failure
+    once already: 06_account_health.py logged every stage change it detected
+    with a blank BD Associate, each row was discarded here without a word, and
+    the snapshot had already advanced past them -- so 2026-09-10's digest
+    reported 0 for the whole team while 92 moves sat unattributed in the log.
+    A count on stderr is the difference between "no activity" and "the
+    attribution broke", which otherwise look identical in the digest.
     """
     from utils.airtable_client import AirtableClient
     at = AirtableClient(STAGE_LOG_TABLE)
     at.build_cache("Key")
-    out = []
+    out, unusable = [], 0
     for rec in at._cache.values():
         f = rec.get("fields", {})
         row = {"date":       str(f.get("Date", "")).strip(),
@@ -146,6 +154,13 @@ def read_stage_changes() -> list:
                "to":         str(f.get("Current Stage", "")).strip()}
         if row["date"] and row["rep"] and row["to"]:
             out.append(row)
+        else:
+            unusable += 1
+    if unusable:
+        print(f"[long] WARNING: {unusable} row(s) in {STAGE_LOG_TABLE!r} are "
+              f"unusable (blank Date, BD Associate or Current Stage) and were "
+              f"NOT counted — these are detected stage moves that will never "
+              f"reach a digest. Whoever logged them left the field blank.")
     return out
 
 
