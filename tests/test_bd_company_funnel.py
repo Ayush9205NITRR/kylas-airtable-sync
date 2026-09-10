@@ -223,9 +223,14 @@ def test_roster_is_lowercased_emails():
 def test_roster_covers_the_reps_seen_in_the_funnel():
     """Emails from team.json must match what Kylas resolves, or real BD members
     would be silently dropped from the dashboard."""
+    # Names here are CURRENT BD members, so this list shrinks when someone
+    # leaves — gaurav@enout.in came out on 10 Sep along with eight others who
+    # had left. The guard is about email format drift between team.json and
+    # what Kylas resolves, not about headcount: a departure is a fixture
+    # update, a mismatched address is a bug.
     r = fn.bd_roster()
     for email in ("aditi.saini@enout.in", "mayra@enout.in", "anjali.athya@enout.in",
-                  "gaurav@enout.in", "gurnoor@enout.in", "muskan@enout.in",
+                  "gurnoor@enout.in", "muskan@enout.in",
                   "arshdeep@enout.in", "bhaumik@enout.in"):
         assert email in r, f"{email} missing from bd_team"
 
