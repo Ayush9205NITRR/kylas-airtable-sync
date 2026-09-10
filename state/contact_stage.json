@@ -23701,8 +23701,8 @@
 },
 "5357094": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -78525,8 +78525,8 @@
 },
 "5364916": {
 "stage": "Not Interested",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-08",
 "changes": 1,
 "last_call_date": "2026-09-08"
@@ -99733,8 +99733,8 @@
 },
 "5367835": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-08",
 "changes": 1,
 "last_call_date": "2026-09-08"
@@ -190357,8 +190357,8 @@
 },
 "5380349": {
 "stage": "POC - Organization - Changed",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-08",
 "changes": 1,
 "last_call_date": "2026-09-08"
@@ -251804,11 +251804,11 @@
 "last_call_date": ""
 },
 "5859163": {
-"stage": "SQL (Sales Qualified Lead)",
+"stage": "MQL (Marketing Qualified Lead)",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
 "since": "2026-09-10",
-"changes": 2,
+"changes": 3,
 "last_call_date": "2026-09-10"
 },
 "5859234": {
