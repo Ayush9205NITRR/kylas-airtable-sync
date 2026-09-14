@@ -9,11 +9,24 @@ name: BD Company Funnel
 # numbers, so re-running is always safe.
 
 on:
-  # Retired from schedule: superseded by "BD Metrics Daily"
-  # (bd_metrics_long.yml), which covers the same Company-group metrics in one
-  # long-form table alongside the Contact-group ones. Kept manually
-  # dispatchable, not deleted, in case the old wide-column shape is needed
-  # again before the Airtable tables themselves are removed.
+  # Un-retired 2026-09-14. It was taken off schedule on 09-05 as redundant with
+  # "BD Metrics Daily" (bd_metrics_long.yml), which carries the same six
+  # Company-group metrics — but only in long form, one row per metric. This
+  # table is the wide shape: one row per associate per month with all six as
+  # columns, which is what the monthly view is actually read from. Retiring it
+  # left that view frozen at 09-05 for nine days.
+  #
+  # Daily rather than monthly on purpose: the current month's counts move every
+  # day, and only the CURRENT month is ever rewritten (push_to_airtable freezes
+  # any closed month), so a daily run keeps the live month honest and cannot
+  # retroactively shrink a finished one.
+  #
+  # 15:00 UTC / 20:30 IST: after the evening sync chain, so it sweeps contacts
+  # that already reflect the day's work. GitHub cron rather than cron-job.org
+  # because monthly grain tolerates the ~2h drift that forced the digest jobs
+  # off it.
+  schedule:
+    - cron: '0 15 * * 1-6'
   workflow_dispatch:
     inputs:
       dry_run:
