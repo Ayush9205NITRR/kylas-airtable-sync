@@ -120,3 +120,59 @@ def test_reached_plus_not_reached_equals_worked():
     reached = sum(r["Companies"] for r in rows if r["Counts As Reached"] == "yes")
     not_reached = sum(r["Companies"] for r in rows if r["Counts As Reached"] == "no")
     assert reached + not_reached == worked == 5
+
+
+# ── --combine: a period is not the sum of its months ────────────────────────
+
+def test_a_company_worked_in_both_months_is_counted_once():
+    """The whole reason --combine exists. Adding the monthly rows would report
+    this company twice — 'company-months', not companies."""
+    _setup_funnel_module()
+    by_month = {("Aditi", "a@x.in", "2026-07"): {"c1": _SQL_RANK},
+                ("Aditi", "a@x.in", "2026-08"): {"c1": _CNC1_RANK}}
+    merged = fb.combine_months(by_month, {"2026-07", "2026-08"}, "JulAug")
+    rows = fb.breakout(merged, _ORDER, {"JulAug"})
+    assert sum(r["Companies"] for r in rows) == 1
+
+
+def test_the_best_stage_across_the_period_wins():
+    """CNC in July, SQL in August — the company reached SQL in the period, and
+    must not also appear as a CNC row."""
+    _setup_funnel_module()
+    by_month = {("Aditi", "a@x.in", "2026-07"): {"c1": _CNC1_RANK},
+                ("Aditi", "a@x.in", "2026-08"): {"c1": _SQL_RANK}}
+    merged = fb.combine_months(by_month, {"2026-07", "2026-08"}, "JulAug")
+    rows = fb.breakout(merged, _ORDER, {"JulAug"})
+    assert len(rows) == 1
+    assert rows[0]["Rank"] == _SQL_RANK
+    assert rows[0]["Counts As Reached"] == "yes"
+
+
+def test_distinct_companies_stay_distinct():
+    _setup_funnel_module()
+    by_month = {("Aditi", "a@x.in", "2026-07"): {"c1": _SQL_RANK},
+                ("Aditi", "a@x.in", "2026-08"): {"c2": _SQL_RANK}}
+    merged = fb.combine_months(by_month, {"2026-07", "2026-08"}, "JulAug")
+    rows = fb.breakout(merged, _ORDER, {"JulAug"})
+    assert sum(r["Companies"] for r in rows) == 2
+
+
+def test_combine_keeps_reps_separate():
+    """Two reps working the same company each keep it — the funnel attributes
+    per rep, so merging them would silently reassign work."""
+    _setup_funnel_module()
+    by_month = {("Aditi", "a@x.in", "2026-07"): {"c1": _SQL_RANK},
+                ("Gurnoor", "g@x.in", "2026-08"): {"c1": _SQL_RANK}}
+    merged = fb.combine_months(by_month, {"2026-07", "2026-08"}, "JulAug")
+    assert len(merged) == 2
+    rows = fb.breakout(merged, _ORDER, {"JulAug"})
+    assert sum(r["Companies"] for r in rows) == 2
+
+
+def test_combine_ignores_months_outside_the_period():
+    _setup_funnel_module()
+    by_month = {("Aditi", "a@x.in", "2026-06"): {"c9": _SQL_RANK},
+                ("Aditi", "a@x.in", "2026-07"): {"c1": _SQL_RANK}}
+    merged = fb.combine_months(by_month, {"2026-07"}, "JulOnly")
+    rows = fb.breakout(merged, _ORDER, {"JulOnly"})
+    assert sum(r["Companies"] for r in rows) == 1

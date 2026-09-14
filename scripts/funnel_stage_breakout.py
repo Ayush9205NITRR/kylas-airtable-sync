@@ -85,6 +85,29 @@ def breakout(by_month: dict, order, months: set) -> list:
     return rows
 
 
+def combine_months(by_month: dict, months: set, label: str) -> dict:
+    """Fold several months into one period, each company at its BEST rank
+    across them.
+
+    A company worked in both July and August is ONE company here, not two.
+    Adding the monthly rows instead would double-count it and answer a
+    different question -- "company-months worked" rather than "companies
+    worked" -- and would also let a company be counted at two different stages
+    at once, which the funnel's own one-row-per-company-per-period rule exists
+    to prevent.
+    """
+    merged = defaultdict(dict)
+    for (rep, email, period), cells in by_month.items():
+        if period not in months:
+            continue
+        cell = merged[(rep, email, label)]
+        for cid, rank in cells.items():
+            cur = cell.get(cid)
+            if cur is None or rank < cur:
+                cell[cid] = rank
+    return dict(merged)
+
+
 def reconcile(rows: list, reference: dict, months: set) -> list:
     """Per rep and month: derived vs the funnel table, and whether they agree."""
     derived = defaultdict(lambda: {"worked": 0, "reached": 0})
@@ -133,6 +156,10 @@ def main() -> int:
                     help="Months to report (default: the two most recent "
                          "closed months present in the data)")
     ap.add_argument("--out-dir", default=".", metavar="DIR")
+    ap.add_argument("--combine", action="store_true",
+                    help="Also emit a cumulative view treating the requested "
+                         "months as ONE period, each company counted once at "
+                         "its best stage across them")
     args = ap.parse_args()
 
     global _FUNNEL
@@ -177,6 +204,35 @@ def main() -> int:
               f"| not reached {worked - reached:,}")
         per_stage = defaultdict(int)
         for r in sub:
+            per_stage[(r["Rank"], r["Stage"], r["Counts As Reached"])] += r["Companies"]
+        for (rank, stage, is_reached), n in sorted(per_stage.items()):
+            flag = "  " if is_reached == "yes" else " ✗"
+            print(f"   {rank:3}{flag} {stage:44} {n:5,}")
+
+    if args.combine and len(months) > 1:
+        label = f"{min(months)}..{max(months)}"
+        merged = combine_months(by_month, months, label)
+        crows = breakout(merged, order, {label})
+        write_csv(os.path.join(args.out_dir,
+                               f"companies_reached_breakout_{label}.csv"),
+                  crows, ["Month", "BD Associate", "Rank", "Stage", "Companies",
+                          "Counts As Reached"])
+        c_worked = sum(r["Companies"] for r in crows)
+        c_reached = sum(r["Companies"] for r in crows
+                        if r["Counts As Reached"] == "yes")
+        s_worked = sum(r["Companies"] for r in rows)
+        s_reached = sum(r["Companies"] for r in rows
+                        if r["Counts As Reached"] == "yes")
+        print(f"\n{'=' * 78}\n\n{label}  (each company counted ONCE, at its best "
+              f"stage across the period)")
+        print(f"   worked {c_worked:,} | reached {c_reached:,} "
+              f"| not reached {c_worked - c_reached:,}")
+        print(f"   vs adding the months: worked {s_worked:,} | "
+              f"reached {s_reached:,}")
+        print(f"   → {s_worked - c_worked:,} company-month(s) are the SAME "
+              f"company worked in both months")
+        per_stage = defaultdict(int)
+        for r in crows:
             per_stage[(r["Rank"], r["Stage"], r["Counts As Reached"])] += r["Companies"]
         for (rank, stage, is_reached), n in sorted(per_stage.items()):
             flag = "  " if is_reached == "yes" else " ✗"

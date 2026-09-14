@@ -38,7 +38,7 @@ jobs:
         run: |
           mkdir -p breakout
           python scripts/funnel_stage_breakout.py \
-            --months "${{ github.event.inputs.months || '2026-07,2026-08' }}" \
+            --months "${{ github.event.inputs.months || '2026-07,2026-08' }}" --combine \
             --out-dir breakout
 
       - name: Upload the CSVs
