@@ -1,0 +1,35 @@
+name: Audit Airtable record usage
+
+# Read-only: counts rows per table in both bases and projects when the record
+# cap gets hit. Never writes or deletes. Run this before changing any retention
+# setting — the whole point is to budget from measured counts rather than from
+# rates estimated out of run logs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      cap:
+        description: 'Per-base record cap to measure headroom against'
+        required: false
+        default: '50000'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Count records per table
+        env:
+          AIRTABLE_PAT:             ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID:         ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_COMPANY_BASE_ID: ${{ secrets.AIRTABLE_COMPANY_BASE_ID }}
+        run: python scripts/audit_airtable_usage.py --cap "${{ github.event.inputs.cap || '50000' }}"
