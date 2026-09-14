@@ -252,7 +252,7 @@ def _iso_week(day: str) -> str:
         return ""
 
 
-def build_funnel(kylas, all_owners: bool = False) -> tuple:
+def build_funnel(kylas, all_owners: bool = False, with_raw: bool = False) -> tuple:
     """
     One Kylas fetch, two grains.
 
@@ -262,6 +262,13 @@ def build_funnel(kylas, all_owners: bool = False) -> tuple:
     The month grid is NOT the sum of the day grid: each is accumulated
     separately so a company worked on several days is one account for the month
     but appears on each of those days.
+
+    with_raw adds "by_month"/"by_day" to stats, each
+    (rep, email, period) -> {company_id: best_rank} — the per-company detail
+    _counts() collapses into the six columns. Anything reconciling against
+    these totals must read them from here rather than recomputing: a second
+    implementation of this loop would drift from it silently, which defeats
+    the point of checking.
     """
     from utils.bd_metrics import refresh_stage_map, contact_stage
     refresh_stage_map(kylas)     # bare option ids must resolve to real labels
@@ -338,6 +345,8 @@ def build_funnel(kylas, all_owners: bool = False) -> tuple:
     stats = {"contacts": len(contacts), "no_last_called": no_lc,
              "no_stage": no_stage, "no_company": no_company,
              "month_rows": len(month_grid), "day_rows": len(day_grid)}
+    if with_raw:
+        stats["by_month"], stats["by_day"] = dict(by_month), dict(by_day)
     print(f"[funnel] skipped: {no_lc} without a Last Called date, "
           f"{no_stage} with a blank stage, {no_company} without a company")
     print(f"[funnel] → {len(month_grid)} rep×month rows, {len(day_grid)} rep×day rows")

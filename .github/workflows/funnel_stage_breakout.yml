@@ -1,0 +1,49 @@
+name: Companies Reached — stage breakout
+
+# Opens up BD Company Funnel's "Companies Reached" figure: for each rep and
+# month, how many companies sat at EACH stage, and whether the non-CNC subtotal
+# equals what the funnel table reports.
+#
+# Read-only against Airtable. The CSVs are uploaded as a run artifact rather
+# than written to a table — this is analysis, and the base is near its record
+# cap.
+
+on:
+  workflow_dispatch:
+    inputs:
+      months:
+        description: 'Months to report, comma-separated (e.g. 2026-07,2026-08)'
+        required: false
+        default: '2026-07,2026-08'
+
+jobs:
+  breakout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build the stage breakout
+        env:
+          KYLAS_API_KEY:    ${{ secrets.KYLAS_API_KEY }}
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          mkdir -p breakout
+          python scripts/funnel_stage_breakout.py \
+            --months "${{ github.event.inputs.months || '2026-07,2026-08' }}" \
+            --out-dir breakout
+
+      - name: Upload the CSVs
+        uses: actions/upload-artifact@v4
+        with:
+          name: companies-reached-breakout
+          path: breakout/*.csv
+          if-no-files-found: error
