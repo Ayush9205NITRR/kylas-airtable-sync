@@ -1,0 +1,99 @@
+name: Prune Airtable (archive to git first)
+
+# Keeps the main base under its 50,000-record cap by archiving rows past their
+# retention window to CSV in this repo, then deleting them from Airtable.
+# See scripts/prune_with_archive.py for the windows and why each was chosen.
+#
+# ORDER MATTERS, and the job is split into three steps for one reason: the
+# archive is committed and pushed BEFORE anything is deleted. Deleting first
+# and pushing second means a failed push strands rows that no longer exist
+# anywhere — which is the exact outcome archiving exists to prevent. Archiving
+# is idempotent on the Airtable record id, so a retry of the whole sequence
+# costs nothing.
+#
+# dry_run first, always. It reports what each table would lose and writes
+# nothing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'dry_run = report only; apply = archive, commit, then delete'
+        type: choice
+        options: [dry_run, apply]
+        default: dry_run
+      table:
+        description: 'Optional: a single table name (blank = every table with a retention window)'
+        required: false
+        default: ''
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Report what would be pruned
+        env:
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.table }}" ]; then
+            ARGS="--table '${{ github.event.inputs.table }}'"
+          fi
+          eval python scripts/prune_with_archive.py $ARGS
+
+      # ---- everything below runs only for mode=apply ----
+
+      - name: Archive expired rows to CSV (deletes nothing)
+        if: github.event.inputs.mode == 'apply'
+        env:
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          ARGS="--archive-only"
+          if [ -n "${{ github.event.inputs.table }}" ]; then
+            ARGS="$ARGS --table '${{ github.event.inputs.table }}'"
+          fi
+          eval python scripts/prune_with_archive.py $ARGS
+
+      - name: Commit the archive BEFORE deleting anything
+        if: github.event.inputs.mode == 'apply'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state/archive
+          if git diff --staged --quiet; then
+            echo "nothing archived - no commit needed"
+          else
+            git commit -m "Archive pruned Airtable rows $(date -u +%F) [skip ci]"
+            for i in 1 2 3; do
+              if git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push; then
+                echo "archive pushed"; exit 0
+              fi
+              echo "push failed (attempt $i) - retrying"; sleep $((i * 5))
+            done
+            echo "::error::archive could not be pushed - NOT deleting anything"
+            exit 1
+          fi
+
+      - name: Delete the archived rows from Airtable
+        if: github.event.inputs.mode == 'apply'
+        env:
+          AIRTABLE_PAT:     ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          ARGS="--apply"
+          if [ -n "${{ github.event.inputs.table }}" ]; then
+            ARGS="$ARGS --table '${{ github.event.inputs.table }}'"
+          fi
+          eval python scripts/prune_with_archive.py $ARGS
