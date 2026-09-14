@@ -182,3 +182,60 @@ def test_archiving_the_same_rows_twice_does_not_duplicate_them(tmp_path, monkeyp
     with open(tmp_path / "bd_metrics_daily" / "2026-06.csv", newline="") as fh:
         got = list(csv.DictReader(fh))
     assert [r["_airtable_id"] for r in got] == ["rec1", "rec2"]
+
+
+# ── --purge: retiring a table outright, rather than trimming one ────────────
+
+def _purge_at(monkeypatch, rows, deleted):
+    class _Tbl:
+        def all(self):
+            return rows
+
+        def batch_delete(self, ids):
+            deleted.extend(ids)
+
+    class _At:
+        def __init__(self, *a, **k):
+            self.table = _Tbl()
+
+    monkeypatch.setattr(pr, "AirtableClient", _At)
+
+
+def test_purge_takes_every_row_including_ones_inside_the_window(tmp_path, monkeypatch):
+    """Retention spares recent rows; purge is retiring the table, so nothing
+    is spared."""
+    deleted = []
+    _purge_at(monkeypatch, [_row("r1", OLD), _row("r2", NEW)], deleted)
+    monkeypatch.setattr(pr, "ARCHIVE_DIR", str(tmp_path))
+    result = pr.prune_table("BD Company Funnel Daily", 0, "Date",
+                            apply=True, purge=True)
+    assert sorted(deleted) == ["r1", "r2"]
+    assert result["deleted"] == 2
+
+
+def test_purge_takes_undated_rows_too(tmp_path, monkeypatch):
+    """The undated guard stops a retention window eating rows it cannot prove
+    are old. That reasoning does not apply when the whole table is going."""
+    deleted = []
+    _purge_at(monkeypatch, [_row("r1", None), _row("r2", "not-a-date")], deleted)
+    monkeypatch.setattr(pr, "ARCHIVE_DIR", str(tmp_path))
+    pr.prune_table("BD Company Funnel Daily", 0, "Date", apply=True, purge=True)
+    assert sorted(deleted) == ["r1", "r2"]
+
+
+def test_purge_still_archives_before_deleting(tmp_path, monkeypatch):
+    deleted = []
+    _purge_at(monkeypatch, [_row("r1", "2026-09-14")], deleted)
+    monkeypatch.setattr(pr, "ARCHIVE_DIR", str(tmp_path))
+    pr.prune_table("BD Company Funnel Daily", 0, "Date", apply=True, purge=True)
+    assert (tmp_path / "bd_company_funnel_daily" / "2026-09.csv").exists()
+    assert deleted == ["r1"]
+
+
+def test_purge_dry_run_deletes_nothing(tmp_path, monkeypatch):
+    deleted = []
+    _purge_at(monkeypatch, [_row("r1", OLD), _row("r2", NEW)], deleted)
+    monkeypatch.setattr(pr, "ARCHIVE_DIR", str(tmp_path))
+    result = pr.prune_table("BD Company Funnel Daily", 0, "Date",
+                            apply=False, purge=True)
+    assert deleted == [] and result["would_delete"] == 2

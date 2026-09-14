@@ -141,9 +141,10 @@ def archive(table: str, rows: list, date_field: str) -> list:
 
 
 def prune_table(table: str, days: int, date_field: str, apply: bool,
-                archive_only: bool = False) -> dict:
+                archive_only: bool = False, purge: bool = False) -> dict:
     cutoff = (date.today() - timedelta(days=days)).isoformat()
-    print(f"\n  {table}  (keep {days}d, older than {cutoff})")
+    print(f"\n  {table}  " + ("(PURGE — entire contents)" if purge
+                              else f"(keep {days}d, older than {cutoff})"))
     try:
         at = AirtableClient(table)
         rows = at.table.all()
@@ -151,9 +152,17 @@ def prune_table(table: str, days: int, date_field: str, apply: bool,
         print(f"    ERROR: cannot read — {exc}")
         return {"table": table, "error": str(exc)}
 
-    to_delete, undated = expired(rows, date_field, cutoff)
-    print(f"    {len(rows):6,} row(s) | {len(to_delete):6,} older than cutoff"
-          + (f" | {undated:,} undated (kept)" if undated else ""))
+    if purge:
+        # Retiring a table, not trimming one: take every row, including any
+        # whose date will not parse. The date guard below exists to stop a
+        # retention window eating rows it cannot prove are old — irrelevant
+        # when the whole table is going.
+        to_delete, undated = list(rows), 0
+        print(f"    {len(rows):6,} row(s) | {len(to_delete):6,} to purge")
+    else:
+        to_delete, undated = expired(rows, date_field, cutoff)
+        print(f"    {len(rows):6,} row(s) | {len(to_delete):6,} older than cutoff"
+              + (f" | {undated:,} undated (kept)" if undated else ""))
     if not to_delete:
         return {"table": table, "total": len(rows), "deleted": 0}
 
@@ -197,19 +206,36 @@ def main() -> int:
                          "longer exist anywhere else.")
     ap.add_argument("--table", default="", metavar="NAME",
                     help="Only this table (default: every table in RETENTION)")
+    ap.add_argument("--purge", action="store_true",
+                    help="With --table: archive and delete the table's ENTIRE "
+                         "contents, not just rows past a retention window. For "
+                         "retiring a table nothing writes or reads any more. "
+                         "Airtable's API cannot drop the table itself, so the "
+                         "empty shell is left for you to remove by hand.")
+    ap.add_argument("--date-field", default="Date", metavar="NAME",
+                    help="Date column to group the archive by (purge only)")
     args = ap.parse_args()
 
-    tables = ({args.table: RETENTION[args.table]} if args.table in RETENTION
-              else RETENTION if not args.table else None)
+    if args.purge and not args.table:
+        print("ERROR: --purge requires --table. Refusing to empty every table.")
+        return 1
+
+    if args.purge:
+        tables = {args.table: (0, args.date_field)}
+    else:
+        tables = ({args.table: RETENTION[args.table]} if args.table in RETENTION
+                  else RETENTION if not args.table else None)
     if tables is None:
         print(f"ERROR: {args.table!r} has no retention window. "
-              f"Known: {', '.join(sorted(RETENTION))}")
+              f"Known: {', '.join(sorted(RETENTION))}. "
+              f"To retire a table entirely, use --purge.")
         return 1
 
     mode = ("ARCHIVE ONLY" if args.archive_only else
             "APPLY" if args.apply else "DRY RUN")
-    print(f"[prune] {mode} — {len(tables)} table(s)")
-    results = [prune_table(t, d, f, args.apply, args.archive_only)
+    print(f"[prune] {mode}{' PURGE' if args.purge else ''} — "
+          f"{len(tables)} table(s)")
+    results = [prune_table(t, d, f, args.apply, args.archive_only, args.purge)
                for t, (d, f) in sorted(tables.items())]
 
     freed = sum(r.get("deleted", 0) or r.get("archived", 0)

@@ -26,6 +26,11 @@ on:
         description: 'Optional: a single table name (blank = every table with a retention window)'
         required: false
         default: ''
+      purge:
+        description: 'Retire the named table: archive and delete ALL its rows, not just expired ones. Requires a table name.'
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   prune:
@@ -55,6 +60,9 @@ jobs:
           if [ -n "${{ github.event.inputs.table }}" ]; then
             ARGS="--table '${{ github.event.inputs.table }}'"
           fi
+          if [ "${{ github.event.inputs.purge }}" = "true" ]; then
+            ARGS="$ARGS --purge"
+          fi
           eval python scripts/prune_with_archive.py $ARGS
 
       # ---- everything below runs only for mode=apply ----
@@ -68,6 +76,9 @@ jobs:
           ARGS="--archive-only"
           if [ -n "${{ github.event.inputs.table }}" ]; then
             ARGS="$ARGS --table '${{ github.event.inputs.table }}'"
+          fi
+          if [ "${{ github.event.inputs.purge }}" = "true" ]; then
+            ARGS="$ARGS --purge"
           fi
           eval python scripts/prune_with_archive.py $ARGS
 
@@ -100,5 +111,8 @@ jobs:
           ARGS="--apply"
           if [ -n "${{ github.event.inputs.table }}" ]; then
             ARGS="$ARGS --table '${{ github.event.inputs.table }}'"
+          fi
+          if [ "${{ github.event.inputs.purge }}" = "true" ]; then
+            ARGS="$ARGS --purge"
           fi
           eval python scripts/prune_with_archive.py $ARGS
