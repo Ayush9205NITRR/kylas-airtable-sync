@@ -53,9 +53,15 @@ jobs:
 
       - name: Build the funnel
         run: |
-          ARGS=""
+          # --skip-daily: only the MONTHLY table is wanted here. The daily-grain
+          # companion ("BD Company Funnel Daily") duplicates what BD Metrics
+          # Daily already stores per day, and at 400-day retention it settles
+          # around 5k rows — real weight against a base that sits at ~86% of its
+          # 50k cap. Re-enabling this workflow on 2026-09-14 created it and
+          # wrote 806 rows before this flag was added.
+          ARGS="--skip-daily"
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            ARGS="--dry-run"
+            ARGS="$ARGS --dry-run"
           fi
           python scripts/bd_company_funnel.py $ARGS
         env:
