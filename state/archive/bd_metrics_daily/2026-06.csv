@@ -1,0 +1,859 @@
+_airtable_id,Updated At,Key,BD Email,Week,Month,Metric Group,Metric,Date,BD Associate,Value
+rec02Ix1jSJDg00mj,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Company | Companies Worked,mayra@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-10,Mayra Singh,26
+rec06A61T08pz7VVW,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Company | Companies Reached,mayra@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Mayra Singh,5
+rec088C4hZ9LuHF28,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Contact | MQL,gaurav@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-12,Gaurav Kumar,0
+rec0IWeoxAi2Mz0Fm,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Contact | SQL,gurnoor@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Gurnoor Kaur,0
+rec0Yd9xWLlVqa2fU,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Company | Companies Worked,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-05,Shreya Bodwal,33
+rec0kHRRgS3lCPuxG,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Company | Requirements Stated,rubal@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-09,Rubal Sansanwal,4
+rec0mG5HVAmrz1z9X,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Contact | SQL,bhaumik@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-03,Bhaumik Sachdeva,0
+rec0p0yztDj7R21Vz,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Contact | MQL,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-09,Shreya Bodwal,0
+rec0q1zRgKmDK1ceh,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Company | SQLs Accepted,rubal@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-12,Rubal Sansanwal,1
+rec0rE6xtRAHnpyj0,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Contact | Meeting Booked,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-03,Tanay Kumar,0
+rec0zPgUdyh4YtxaL,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Company | SQLs Accepted,gaurav@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-03,Gaurav Kumar,0
+rec0zSFvsBCppXpDx,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Contact | Call Connected,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-05,Shreya Bodwal,20
+rec135P8DT2iWHmTF,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Company | Requirements Stated,bhaumik@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-11,Bhaumik Sachdeva,6
+rec14EqmP3QLxwkGg,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Contact | SQL,aditi.saini@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Aditi saini,0
+rec1QpBmsdphbDW0t,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Company | SQLs Accepted,aditi.saini@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-03,Aditi saini,0
+rec1SGR09t15Rdvw5,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Contact | Meeting Done,aditi.saini@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-05,Aditi saini,0
+rec1ZLLux63UHM6em,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Company | Companies Reached,mayra@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-03,Mayra Singh,9
+rec1gbEgSFbtJOKc7,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Contact | Call Connected,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-10,Shreya Bodwal,1
+rec1hW4Oz02iALNir,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Company | Requirements Stated,aditi.saini@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-05,Aditi saini,1
+rec1rYV92ggCNgFU6,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Contact | Meeting Done,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Shreya Bodwal,1
+rec1rgD3mkIazHvcI,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Company | SQLs Rejected,rubal@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-12,Rubal Sansanwal,3
+rec1tR2p84DqeJW5X,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Contact | Call Attempted,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Devansh Shukla,30
+rec1uuyoilpFH0lhL,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Company | SQLs Rejected,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-05,Bhaumik Sachdeva,0
+rec1zpUfkdAvVPwmm,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Contact | Meeting Done,muskan@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Muskan Rajpoot,0
+rec28n8bn0ZWJXb3S,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Company | Handoff Calls Held,mayra@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Mayra Singh,0
+rec2AZIU73vuabR7G,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Company | Companies Worked,aditi.saini@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-03,Aditi saini,2
+rec2AgdIUlNr4msHd,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Company | Handoff Calls Held,rubal@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-11,Rubal Sansanwal,1
+rec2CNiuvXyPFxpsI,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Company | SQLs Rejected,shreya.bodwal@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-08,Shreya Bodwal,0
+rec2Ca9zkqYoNutkJ,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Company | Handoff Calls Held,aditi.saini@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Aditi saini,0
+rec2O7itipCv2YHaJ,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Company | SQLs Accepted,shreya.bodwal@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Shreya Bodwal,0
+rec2P9oBAhe8gYBi9,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Contact | Call Connected,aditi.saini@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-12,Aditi saini,2
+rec2PCem3tJ2CAZwb,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Company | Requirements Stated,devansh.shukla@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Devansh Shukla,3
+rec2TqA9pqp7uSgG6,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Company | SQLs Rejected,devansh.shukla@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-09,Devansh Shukla,0
+rec2WHZsN0mg6XSvn,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Contact | SQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Tanay Kumar,0
+rec2bQEVeKykmhEFH,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Company | Companies Reached,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-09,Shreya Bodwal,5
+rec2mSvPBuUoOewJM,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Company | Companies Reached,muskan@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Muskan Rajpoot,1
+rec2tAUlBmzhhRaJM,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Contact | Meeting Booked,rubal@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Rubal Sansanwal,0
+rec2yoVJNUpaAePuA,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Contact | MQL,gurnoor@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-09,Gurnoor Kaur,0
+rec2zscqr36RohBm2,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Company | SQLs Accepted,aditi.saini@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-08,Aditi saini,0
+rec31J9ze25iHnGbj,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Contact | Call Attempted,gurnoor@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Gurnoor Kaur,1
+rec39S34aL8ySsgyp,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Contact | Call Attempted,arshdeep@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-09,Arshdeep Singh,2
+rec3FpjwF7bPy8puc,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Company | Handoff Calls Held,gurnoor@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Gurnoor Kaur,0
+rec3WYw2Sa2vJPve9,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Contact | SQL,muskan@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-08,Muskan Rajpoot,0
+rec3YHAZq29j5lbRh,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Company | SQLs Rejected,muskan@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Muskan Rajpoot,0
+rec3YY4QL18bmz2xK,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Company | Requirements Stated,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-12,Shreya Bodwal,1
+rec3bxbGtKJh6H42n,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Contact | Call Connected,devansh.shukla@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-09,Devansh Shukla,9
+rec3cjMm4dT68ibCJ,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Contact | Call Connected,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Devansh Shukla,19
+rec3corwU8yvX0VFh,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Company | Requirements Stated,arshdeep@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Arshdeep Singh,1
+rec3iTATHrDk5ZRH5,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Company | SQLs Accepted,gurnoor@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Gurnoor Kaur,0
+rec3jbvQXmXS7Zmi0,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Company | SQLs Rejected,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-03,Devansh Shukla,0
+rec3qwnYgXu2QZHpA,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Contact | Meeting Done,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Devansh Shukla,0
+rec4Ai9czOJLNpKR9,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Company | Companies Reached,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Tanay Kumar,14
+rec4FFhIC7pxvpOZn,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Contact | MQL,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-10,Shreya Bodwal,0
+rec4Fj4XFtdT5ntI2,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Company | Handoff Calls Held,muskan@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Muskan Rajpoot,0
+rec4HPl9tMcgZDrBS,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Contact | Call Connected,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Shreya Bodwal,15
+rec4N97s9gWQtHPLG,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Contact | Meeting Booked,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-08,Bhaumik Sachdeva,0
+rec4Qpafudz14rmjP,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Contact | Meeting Done,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Mayra Singh,0
+rec4VSWZWBjQ2ulZG,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Company | SQLs Rejected,rubal@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Rubal Sansanwal,1
+rec4dZV0ZrjLAc9IM,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Contact | MQL,bhaumik@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-03,Bhaumik Sachdeva,1
+rec4s2y3xpmEo0zCZ,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Company | Companies Worked,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-10,Shreya Bodwal,1
+rec4sGG6lgWHYRQo2,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Company | Companies Worked,mayra@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Mayra Singh,14
+rec4vhrhtyQAZQvmN,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Contact | Meeting Booked,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Mayra Singh,0
+rec4x0hbNwYvZHgTX,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Company | Companies Worked,rubal@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-12,Rubal Sansanwal,36
+rec4zbQZfV0U383mk,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Company | Requirements Stated,bhaumik@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-08,Bhaumik Sachdeva,2
+rec5AyGmPqRKueJTI,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Company | Companies Worked,rubal@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-05,Rubal Sansanwal,22
+rec5E06H7mYqr91oN,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Company | SQLs Rejected,mayra@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-09,Mayra Singh,0
+rec5Qs86zgCR0iE5Z,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Company | Requirements Stated,rubal@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-12,Rubal Sansanwal,13
+rec5SUqk9Pn9yBlOn,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Company | SQLs Accepted,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Bhaumik Sachdeva,0
+rec5aChZNS2n8dQbd,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Company | SQLs Rejected,arshdeep@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Arshdeep Singh,0
+rec5c5cFE2WKenIxp,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Company | Requirements Stated,gurnoor@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Gurnoor Kaur,1
+rec5e9tffKPV2Vi5Y,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Company | Handoff Calls Held,devansh.shukla@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-09,Devansh Shukla,0
+rec5eIBABJASUNpgv,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Company | Companies Reached,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Bhaumik Sachdeva,9
+rec5fVRZkclOfRE0B,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Company | SQLs Accepted,aditi.saini@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Aditi saini,0
+rec5jPbkEgktbV3B9,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Contact | Meeting Booked,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-11,Bhaumik Sachdeva,1
+rec5lVux3TdJQBCpn,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Company | SQLs Accepted,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-05,Bhaumik Sachdeva,0
+rec5naMaZlCByxEN3,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Contact | Call Attempted,mayra@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-03,Mayra Singh,25
+rec5wGXGDemDRRnKH,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Contact | SQL,anjali.athya@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Anjali Athya,0
+rec5wHwX7ty4wqqxX,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Contact | Call Attempted,gurnoor@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Gurnoor Kaur,2
+rec5wrqSsSQoHZbg6,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Contact | MQL,arshdeep@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Arshdeep Singh,0
+rec60CXPjnwG5PcrF,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Contact | Meeting Done,gurnoor@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-12,Gurnoor Kaur,0
+rec62RVXUEuRe2vLB,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Contact | Call Connected,mayra@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-08,Mayra Singh,25
+rec68E54uEbCHf1hw,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Contact | Meeting Booked,rubal@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-08,Rubal Sansanwal,1
+rec69bZt8igJoGmm3,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Company | Companies Worked,mayra@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-09,Mayra Singh,26
+rec6ANmhzhpSiSm2t,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Contact | Call Attempted,rubal@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Rubal Sansanwal,14
+rec6CAck5Feeq7xkR,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Contact | Meeting Done,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-11,Bhaumik Sachdeva,1
+rec6Cz8fC7hgYmTWD,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Contact | Call Connected,muskan@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-08,Muskan Rajpoot,0
+rec6EHGicCm4IBTCM,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Contact | SQL,rubal@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-09,Rubal Sansanwal,0
+rec6GRc6nG8dF8LZw,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Company | SQLs Rejected,aditi.saini@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Aditi saini,0
+rec6LQIYS0pgwqGvq,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Company | SQLs Rejected,mayra@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-03,Mayra Singh,0
+rec6RfYOc9HrYCD9q,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Contact | Call Attempted,aditi.saini@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-05,Aditi saini,2
+rec6TyYZ3tX4ZD3PY,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Contact | Meeting Done,anjali.athya@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Anjali Athya,0
+rec6TyhIz7HKmIAd7,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Company | Companies Worked,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-09,Bhaumik Sachdeva,11
+rec6Vs3AZhcacRd1h,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Company | SQLs Rejected,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-10,Bhaumik Sachdeva,0
+rec6ddJH5V3AtMjdV,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Company | SQLs Accepted,mayra@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-09,Mayra Singh,0
+rec6fjoO4ZrIxXXms,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Contact | Call Connected,muskan@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Muskan Rajpoot,1
+rec6h35wiaTid3HWK,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Company | SQLs Accepted,tanay.kumar@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-12,Tanay Kumar,8
+rec6pDxe5qIefF24Y,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Contact | Meeting Booked,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-05,Bhaumik Sachdeva,0
+rec6sdn73jhvZekqZ,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Company | SQLs Accepted,arshdeep@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Arshdeep Singh,0
+rec6ufvDfwYra6YPw,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Company | Companies Reached,mayra@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-09,Mayra Singh,26
+rec6yZB0j2Pklrb1o,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Company | Companies Reached,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-05,Shreya Bodwal,19
+rec6zxQeUDmCG3fxF,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Company | SQLs Accepted,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-03,Tanay Kumar,0
+rec70rQOayCNqu6kD,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Company | Requirements Stated,rubal@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Rubal Sansanwal,9
+rec71fsQHPaN9l0M5,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Contact | Meeting Done,gurnoor@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-09,Gurnoor Kaur,1
+rec76HSIK6SF1UnFX,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Contact | Meeting Done,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Mayra Singh,0
+rec76xsOlCLk9dtrX,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Contact | Call Attempted,aditi.saini@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Aditi saini,4
+rec77XhcEjzqmZLeW,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Contact | Call Attempted,gaurav@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-12,Gaurav Kumar,1
+rec78XzvkM4ByfXyG,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Company | Companies Reached,gurnoor@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-09,Gurnoor Kaur,1
+rec79d1mN5WtS4QQW,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Contact | Meeting Booked,gurnoor@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-10,Gurnoor Kaur,0
+rec7APASnCJ70CI9p,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Contact | Meeting Booked,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-03,Mayra Singh,0
+rec7FeTA1CjiV9VAT,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Company | SQLs Accepted,rubal@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Rubal Sansanwal,0
+rec7FqdAW7BHzy8pO,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Company | Handoff Calls Held,rubal@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Rubal Sansanwal,0
+rec7HxpN0LjGPa7OU,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Company | Companies Reached,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Tanay Kumar,19
+rec7IzZ7mXMBIT9jl,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Company | Companies Reached,rubal@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-12,Rubal Sansanwal,28
+rec7SjMej0zny1mA5,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Company | Companies Worked,gurnoor@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Gurnoor Kaur,1
+rec7Syd6CNSMpp6r3,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Company | Companies Reached,gurnoor@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Gurnoor Kaur,2
+rec7T73TIjdwY208n,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Company | Handoff Calls Held,gurnoor@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Gurnoor Kaur,0
+rec7UDgAwGiJA3I1v,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Contact | MQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-05,Tanay Kumar,1
+rec7UMg80stJ6aDS2,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Company | SQLs Rejected,arshdeep@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Arshdeep Singh,0
+rec7aixuqq3W6Ha9T,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Company | SQLs Rejected,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Tanay Kumar,0
+rec80zv8NARohJjcN,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Contact | Meeting Done,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-10,Bhaumik Sachdeva,1
+rec82pkC8ceJf4bgJ,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-11,Bhaumik Sachdeva,1
+rec89u1qrPAkG3JGg,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Contact | Call Attempted,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-10,Bhaumik Sachdeva,5
+rec8D7N3SOrsYlKD1,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Company | Requirements Stated,arshdeep@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Arshdeep Singh,0
+rec8Dt1G8mWCnXBma,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Contact | Call Connected,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-10,Bhaumik Sachdeva,5
+rec8F4Bmv4nKS8fyX,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Company | SQLs Accepted,mayra@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Mayra Singh,0
+rec8FDwcGXxaFhqVv,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Contact | Meeting Done,rubal@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-05,Rubal Sansanwal,0
+rec8IANPCoFR0jkyq,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Contact | Meeting Booked,mayra@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-08,Mayra Singh,0
+rec8PZ3XxwR6KyH8t,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Company | SQLs Accepted,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Bhaumik Sachdeva,0
+rec8R7y44y5AizEch,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Contact | MQL,rubal@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Rubal Sansanwal,1
+rec8Zbz5MlNUyqSMe,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Company | Requirements Stated,devansh.shukla@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-05,Devansh Shukla,13
+rec8a33GqVDGdCDaN,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Contact | MQL,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-08,Shreya Bodwal,1
+rec8iuJVQroUZw2P8,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Company | Handoff Calls Held,rubal@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-05,Rubal Sansanwal,0
+rec8rYNDautfMJizJ,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Contact | MQL,aditi.saini@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Aditi saini,0
+rec8yE4KSf51UXymf,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Contact | Call Attempted,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Shreya Bodwal,5
+rec97FYTsLBxZW6BP,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Company | Companies Worked,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Bhaumik Sachdeva,12
+rec97k6jgF78k3Okf,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Contact | Meeting Done,mayra@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-08,Mayra Singh,0
+rec98ufHGnpaduiD5,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Company | Companies Worked,mayra@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-05,Mayra Singh,21
+rec9DzhAp5EA3Hqju,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Company | SQLs Rejected,gurnoor@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Gurnoor Kaur,0
+rec9Gi6u8I9sAxvyO,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Company | Companies Reached,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Shreya Bodwal,3
+rec9KZol35yGMcIui,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Contact | Meeting Done,gaurav@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-12,Gaurav Kumar,1
+rec9LyShc0UeZsAOc,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Company | Companies Reached,devansh.shukla@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-09,Devansh Shukla,9
+rec9NgDhICsfAwHFX,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Contact | Meeting Done,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Devansh Shukla,0
+rec9VAc5iAYnOreWH,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Contact | Meeting Booked,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-12,Shreya Bodwal,1
+rec9dJ4LQZdOZcSVH,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Contact | SQL,aditi.saini@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-05,Aditi saini,0
+rec9gjLdTBqCeBt2T,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Contact | MQL,mayra@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-09,Mayra Singh,3
+rec9tLmKMgRJMGd2A,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Contact | Call Connected,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Devansh Shukla,22
+rec9w7G9P5nWKGOE7,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Company | SQLs Accepted,gurnoor@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-10,Gurnoor Kaur,0
+rec9z0Hr1cKK4PONt,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Company | SQLs Accepted,devansh.shukla@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-09,Devansh Shukla,0
+recA2eOw26TaM4nAV,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Contact | Call Connected,rubal@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-09,Rubal Sansanwal,7
+recA4GfE2cBUMjQz5,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Contact | SQL,mayra@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Mayra Singh,0
+recADT5bdXNJHmIXA,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Contact | Call Connected,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-08,Bhaumik Sachdeva,3
+recAEuZia7RbFimtj,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Contact | Meeting Done,devansh.shukla@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-09,Devansh Shukla,0
+recAGKE9cp7dJ8Ucr,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Contact | Call Attempted,rubal@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-08,Rubal Sansanwal,50
+recAHXH9xoVNGCHGs,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Company | SQLs Accepted,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-10,Bhaumik Sachdeva,1
+recALgVcVqfnYf7k5,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Company | Handoff Calls Held,tanay.kumar@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-03,Tanay Kumar,0
+recAUZSUoeLWAjpfM,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Company | Handoff Calls Held,devansh.shukla@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Devansh Shukla,0
+recAaejEv5mM9D18d,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Contact | MQL,mayra@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-03,Mayra Singh,0
+recAbPaTDxeRumhoM,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Company | Handoff Calls Held,mayra@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Mayra Singh,0
+recAhabmgcLfdHzvp,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Company | SQLs Rejected,shreya.bodwal@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-12,Shreya Bodwal,0
+recAl5Hs8YhlfGGWl,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Company | SQLs Accepted,mayra@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Mayra Singh,0
+recB1iYNHFqINMsmD,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Company | Companies Worked,aditi.saini@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Aditi saini,3
+recBBWtWwYuukEkSz,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Contact | Meeting Booked,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-08,Shreya Bodwal,0
+recBKK1lW9jFBeMtB,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Contact | Meeting Booked,muskan@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Muskan Rajpoot,1
+recBKLsGOnChtMnVB,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Contact | SQL,bhaumik@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-10,Bhaumik Sachdeva,1
+recBLKRSAOSxv9qsC,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Company | SQLs Rejected,shreya.bodwal@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Shreya Bodwal,0
+recBSIg7Lkoe7lQF1,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Contact | Call Connected,mayra@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Mayra Singh,7
+recBYaBItR60wlpQb,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Company | Companies Reached,aditi.saini@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-03,Aditi saini,2
+recBZlCyCjqhp2NNd,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Company | Companies Reached,muskan@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Muskan Rajpoot,1
+recBdLYMSEwjycQdG,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Company | Requirements Stated,rubal@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Rubal Sansanwal,3
+recBp30Ma6JdHN3gS,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Company | Handoff Calls Held,mayra@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-10,Mayra Singh,0
+recBwK8Lyl12HANJE,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Contact | Call Attempted,mayra@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-08,Mayra Singh,60
+recC4mfyWj32SNNaa,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Company | Companies Reached,aditi.saini@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Aditi saini,0
+recC5tYar0tgfZmJK,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Contact | SQL,bhaumik@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Bhaumik Sachdeva,0
+recC76WmZwxC6GxUz,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Company | Handoff Calls Held,mayra@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-03,Mayra Singh,0
+recC8RlVDCzgGJ8MP,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Contact | Meeting Booked,gaurav@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Gaurav Kumar,0
+recCDF6k4e994936t,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Company | SQLs Rejected,gaurav@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-03,Gaurav Kumar,0
+recCEL59hDRDGjo06,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Contact | Meeting Done,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-03,Bhaumik Sachdeva,0
+recCGrLUR2FLL2OqR,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Contact | MQL,aditi.saini@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-03,Aditi saini,0
+recCOf37CPY1nkdac,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Contact | Meeting Done,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Bhaumik Sachdeva,0
+recCUhMGiYxGbcoBm,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Company | Companies Reached,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-08,Shreya Bodwal,10
+recCYjINDBPP86TiD,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Company | SQLs Rejected,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-08,Bhaumik Sachdeva,0
+recCedqycU1xqO9dJ,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Contact | Call Attempted,gaurav@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-03,Gaurav Kumar,1
+recCvNVjvb4DkM6Dl,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Contact | MQL,rubal@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-09,Rubal Sansanwal,0
+recCyOxqp7XCqVLs4,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Contact | SQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-05,Devansh Shukla,1
+recCyhYdP9nc8bn3k,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Company | SQLs Accepted,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-03,Bhaumik Sachdeva,0
+recD2vWXi3u2GouWL,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-08,Bhaumik Sachdeva,0
+recD3JXtVM3NYRVzy,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Company | Companies Worked,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-05,Bhaumik Sachdeva,6
+recD5dM6igHsGOUYr,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Contact | Meeting Booked,rubal@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Rubal Sansanwal,1
+recD7tSFVgJ7SWkiI,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Company | Companies Reached,rubal@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-09,Rubal Sansanwal,7
+recDETYeeX9QrPU6e,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Contact | Meeting Booked,muskan@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Muskan Rajpoot,0
+recDJfrj1vdVw7wRd,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Contact | Call Connected,gurnoor@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-12,Gurnoor Kaur,1
+recDU0LbYeIEqJsRE,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Company | Handoff Calls Held,gurnoor@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-12,Gurnoor Kaur,0
+recDXM1Yx7NxuKdy5,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Contact | Call Connected,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-05,Tanay Kumar,19
+recDcOMHBHSCnOM9U,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Contact | MQL,bhaumik@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Bhaumik Sachdeva,1
+recDniL0AjiyJU8dw,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Contact | SQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Tanay Kumar,0
+recDqs7wqet6ONswH,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Contact | SQL,rubal@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-12,Rubal Sansanwal,1
+recDw1dVYPx3NkEf1,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Company | Companies Worked,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-12,Bhaumik Sachdeva,9
+recE1eVIU0BKruBCm,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Company | Handoff Calls Held,anjali.athya@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-12,Anjali Athya,0
+recE3HUcL72GxioFr,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Company | SQLs Accepted,shreya.bodwal@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-08,Shreya Bodwal,0
+recE3PnZZAyD5XOiX,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Contact | MQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Shreya Bodwal,0
+recE9Qczd93owcRCD,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Company | Handoff Calls Held,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-09,Shreya Bodwal,2
+recECJKbHPaX7YEae,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Company | SQLs Rejected,rubal@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-05,Rubal Sansanwal,0
+recEHV4a2mTiNVzo1,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Contact | MQL,muskan@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Muskan Rajpoot,0
+recELUytEU4AK7fH1,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Company | Companies Worked,rubal@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-11,Rubal Sansanwal,7
+recES7q6CZTTUncWF,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Contact | SQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Devansh Shukla,0
+recETGKGlL8MldSNR,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Company | Companies Reached,gaurav@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-12,Gaurav Kumar,1
+recEUn22C6NEcyfUF,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Company | Handoff Calls Held,tanay.kumar@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Tanay Kumar,0
+recEUnHxoohea8WRW,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Contact | MQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Devansh Shukla,8
+recEaSORVI40M0IEd,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Contact | Meeting Booked,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Devansh Shukla,0
+recEbfzWvjZ2WS2pN,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Contact | Meeting Booked,rubal@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-09,Rubal Sansanwal,1
+recEguegVv2LrcfwC,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Contact | Meeting Booked,arshdeep@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Arshdeep Singh,0
+recEhzK1AjvjZPlqj,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Company | Requirements Stated,bhaumik@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-12,Bhaumik Sachdeva,3
+recEvDLe4r4Oa18xC,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-03 | Contact | Call Connected,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-03,Shreya Bodwal,0
+recEz3uB6KW6K4dH5,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Contact | SQL,bhaumik@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Bhaumik Sachdeva,0
+recFAdH6pbML705mW,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Company | Companies Worked,mayra@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Mayra Singh,7
+recFChYks3RECJoFA,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Company | Handoff Calls Held,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-12,Shreya Bodwal,1
+recFOhYQUlVpxyWBq,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Contact | SQL,arshdeep@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Arshdeep Singh,0
+recFPPc1PKnzzYQPP,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Contact | Meeting Booked,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Bhaumik Sachdeva,0
+recFeMu3A6CvbE1X6,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Company | Requirements Stated,bhaumik@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-09,Bhaumik Sachdeva,8
+recFfMLfjJW4UXf6c,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Company | Handoff Calls Held,aditi.saini@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-05,Aditi saini,0
+recFhmM1GTeZI9D6A,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Company | Companies Reached,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-12,Bhaumik Sachdeva,6
+recFnGxJeKIoGwmix,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Company | SQLs Accepted,arshdeep@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Arshdeep Singh,0
+recFpIL7rMxZ5bl53,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Company | SQLs Rejected,mayra@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-08,Mayra Singh,0
+recFy4g7M6uku8FP4,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Contact | MQL,anjali.athya@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Anjali Athya,0
+recG47AU3n3fMSzIZ,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Contact | Meeting Done,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-03,Devansh Shukla,0
+recGI7k6rdlGAyFIU,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Contact | Call Connected,anjali.athya@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Anjali Athya,3
+recGKRANPgg3ilmjw,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Company | Companies Reached,rubal@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-11,Rubal Sansanwal,6
+recGQpPHxlpkPyfx2,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Contact | Meeting Done,rubal@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Rubal Sansanwal,1
+recGUzQlGouaAxwEP,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Contact | Call Connected,rubal@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Rubal Sansanwal,28
+recGkjVtL7FKE1V02,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Company | SQLs Rejected,gurnoor@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-12,Gurnoor Kaur,0
+recGm8I3fa3ENXQ9z,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Contact | Meeting Booked,aditi.saini@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-05,Aditi saini,0
+recHDQTMdN63032DT,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Company | Requirements Stated,devansh.shukla@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-03,Devansh Shukla,2
+recHE1z17DVCqdE3f,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Contact | Call Connected,aditi.saini@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-03,Aditi saini,2
+recHLsSJW7pLShpTA,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Contact | Meeting Done,gaurav@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Gaurav Kumar,0
+recHWMaJYqJrvKjxX,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Company | SQLs Accepted,mayra@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-05,Mayra Singh,0
+recHX6QKqN0VJRiSH,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Contact | Call Connected,gurnoor@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Gurnoor Kaur,0
+recHYDin5tVSYYJJB,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Company | Companies Worked,rubal@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Rubal Sansanwal,13
+recHd7jgzCXU3j0m9,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Contact | Meeting Done,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-10,Shreya Bodwal,0
+recHtcOoHP4DhuU8L,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Contact | Meeting Booked,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-05,Mayra Singh,1
+recHvbYINSSmKA9NX,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Company | SQLs Rejected,aditi.saini@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-05,Aditi saini,0
+recHvvIP18DQ5BKpe,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Company | Requirements Stated,tanay.kumar@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-03,Tanay Kumar,1
+recI6FTS46yn7Ksbm,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Company | SQLs Rejected,muskan@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Muskan Rajpoot,0
+recI6hndjZM0iWqmW,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Contact | Call Attempted,aditi.saini@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-08,Aditi saini,2
+recI9gLwkZKvS8ini,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Company | Companies Worked,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Shreya Bodwal,5
+recIDCQxHrJmb1R0T,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Company | SQLs Rejected,aditi.saini@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Aditi saini,0
+recIEKdydI00R8z6W,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Contact | MQL,devansh.shukla@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-09,Devansh Shukla,1
+recIKHl9l02HzAMvg,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Company | Companies Worked,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Shreya Bodwal,21
+recIMkfuNSa7OaHLk,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Contact | Meeting Done,aditi.saini@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-03,Aditi saini,0
+recISH8tvcAQPaySK,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Contact | SQL,aditi.saini@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-08,Aditi saini,0
+recIbgejxAQtSKqSA,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Contact | Meeting Booked,gaurav@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-12,Gaurav Kumar,1
+recIdKkw6bvUQBmlR,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Company | Companies Reached,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-10,Shreya Bodwal,1
+recIiuyB82SSAvBED,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Contact | Meeting Booked,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-09,Bhaumik Sachdeva,2
+recIk7TPe6cVdUb23,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Company | Handoff Calls Held,tanay.kumar@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-05,Tanay Kumar,0
+recIkWn3vjFKVcwfI,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Contact | Meeting Booked,aditi.saini@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Aditi saini,0
+recIkg4PyZxG22pYf,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Contact | Call Attempted,gurnoor@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-10,Gurnoor Kaur,1
+recIoQo2tuYRxqG3F,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Company | SQLs Accepted,gaurav@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-12,Gaurav Kumar,1
+recIs6HM6nhNLbsZe,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Company | Companies Reached,mayra@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-10,Mayra Singh,16
+recIsx4UgiDL01jnB,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Company | Companies Reached,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Bhaumik Sachdeva,11
+recIwE4XX4IzNyaTd,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Contact | Call Attempted,anjali.athya@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Anjali Athya,4
+recJDtSY3vpQCi73n,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Contact | Call Connected,mayra@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-10,Mayra Singh,15
+recJHcqzTd0cjYDFR,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Company | Companies Worked,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Tanay Kumar,20
+recJJaPUHKPUifbhm,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Company | Requirements Stated,gurnoor@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Gurnoor Kaur,0
+recJSwj1J41cPQjPh,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Company | SQLs Accepted,muskan@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Muskan Rajpoot,0
+recJW0S3gEelBTYCY,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Contact | Meeting Done,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Tanay Kumar,0
+recJbzUoaFK9KtQAq,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Contact | Call Attempted,rubal@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-09,Rubal Sansanwal,9
+recJdvOlNlNWhVrmA,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Company | Handoff Calls Held,mayra@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-05,Mayra Singh,0
+recJfVk0pGJRC4O5s,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Company | SQLs Accepted,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Devansh Shukla,0
+recJfufbPDXOa89h1,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Company | SQLs Rejected,gurnoor@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-09,Gurnoor Kaur,0
+recJkD0LtPyzitEtI,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Contact | MQL,rubal@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Rubal Sansanwal,1
+recJqjerwckvpncKF,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Contact | MQL,rubal@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-05,Rubal Sansanwal,0
+recJtvJ30FPWUOdCK,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Company | SQLs Accepted,mayra@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-10,Mayra Singh,0
+recK1ohQTE8Nh76VY,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Company | Companies Reached,rubal@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Rubal Sansanwal,7
+recK5ffRuLkRkBk5E,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Company | Handoff Calls Held,arshdeep@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Arshdeep Singh,0
+recK6GSsAh2OP0qvW,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Company | Handoff Calls Held,devansh.shukla@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-03,Devansh Shukla,0
+recK8Ug5WkiyZbSKz,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Contact | SQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Devansh Shukla,0
+recKDnKwGM4ihQuGW,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Company | Companies Worked,anjali.athya@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Anjali Athya,3
+recKILlct9vec09Yn,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Company | SQLs Accepted,rubal@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-09,Rubal Sansanwal,0
+recKTFfJhTZaoTN8S,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Company | SQLs Accepted,shreya.bodwal@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-09,Shreya Bodwal,1
+recKXC0JmhDj6N0oc,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Company | SQLs Rejected,aditi.saini@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-03,Aditi saini,0
+recKaAiRMLjMewDuw,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Contact | Meeting Booked,aditi.saini@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-12,Aditi saini,2
+recKgGFsN1YErsHR2,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Contact | Meeting Booked,rubal@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Rubal Sansanwal,1
+recKll4xSyjsMBWby,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Company | SQLs Accepted,aditi.saini@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-05,Aditi saini,0
+recKmcbTpuFuivQes,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Contact | Call Connected,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Tanay Kumar,19
+recKq7oFrDm5tYwkM,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Contact | Call Attempted,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Tanay Kumar,33
+recKsproKxd5nBDo0,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Company | Requirements Stated,gaurav@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Gaurav Kumar,0
+recKw178v9Nnn3mWd,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Bhaumik Sachdeva,0
+recKyVAAMJiMr9Odn,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Contact | Meeting Done,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Tanay Kumar,0
+recKypCfb0eAoBTMk,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Company | SQLs Accepted,shreya.bodwal@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-10,Shreya Bodwal,0
+recL03f7nMFDxeuIX,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Company | Requirements Stated,gurnoor@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Gurnoor Kaur,0
+recL7tleaSeKW6Lhf,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Contact | Call Connected,rubal@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Rubal Sansanwal,6
+recLA8KL6NekUd5mo,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Contact | Call Connected,rubal@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-05,Rubal Sansanwal,14
+recLCBSiRd4BExbwz,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Contact | Call Connected,mayra@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-03,Mayra Singh,10
+recLEQWmWbXgFkksP,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Company | Handoff Calls Held,devansh.shukla@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Devansh Shukla,0
+recLFJEQShmT7yunv,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Contact | Call Connected,muskan@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Muskan Rajpoot,1
+recLO3mNA4dwOfU3G,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Company | SQLs Accepted,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Devansh Shukla,0
+recLPsawz938a5QtW,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Contact | Call Attempted,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-08,Bhaumik Sachdeva,3
+recLQp0Fi3IKchFit,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Contact | Meeting Done,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Shreya Bodwal,0
+recLUrX2SlAvfpMRr,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Company | Requirements Stated,aditi.saini@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-12,Aditi saini,2
+recLZTEs6tsFsUV3D,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Company | Companies Worked,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Devansh Shukla,28
+recLbj9thrhOcSRUh,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Contact | MQL,bhaumik@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-12,Bhaumik Sachdeva,0
+recLf87JmLfLBEPwr,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Contact | SQL,rubal@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Rubal Sansanwal,0
+recLfNTcahxnmM1pv,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Contact | SQL,rubal@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-11,Rubal Sansanwal,0
+recLgA60ALjoY5nYp,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Contact | Call Connected,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Tanay Kumar,20
+recLkn6cl6RAQK29l,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Company | SQLs Rejected,mayra@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Mayra Singh,0
+recLo7vabJ2aEt9kg,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Company | Handoff Calls Held,gurnoor@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Gurnoor Kaur,0
+recLpReJspTfFkk1d,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Company | SQLs Accepted,gurnoor@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-12,Gurnoor Kaur,0
+recLtbj42UqtRwe6l,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Company | SQLs Rejected,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-03,Tanay Kumar,0
+recLvO3QazoBvsnd2,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Contact | MQL,tanay.kumar@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-12,Tanay Kumar,0
+recLvvHGVq0LPqu4A,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Company | Companies Reached,mayra@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Mayra Singh,38
+recLypAnRQ4rzDR8k,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Company | Handoff Calls Held,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-10,Shreya Bodwal,0
+recMA3ocpnfW8LWQt,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Contact | Call Connected,muskan@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Muskan Rajpoot,0
+recMEb0ecSUVD55Ag,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Contact | Call Connected,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Devansh Shukla,12
+recMUbuVj9kE2c06M,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Company | SQLs Rejected,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Bhaumik Sachdeva,0
+recMbVxFwYuI2DqbY,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Contact | MQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Devansh Shukla,2
+recMdaS0RTmf6NDLv,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Company | Companies Worked,arshdeep@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Arshdeep Singh,2
+recMdhZOQZ51Cl6zq,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Company | Companies Worked,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Tanay Kumar,22
+recMdslnCf47OZnB6,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Contact | SQL,mayra@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Mayra Singh,0
+recMevdPjc8S9z6hf,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Company | SQLs Accepted,gurnoor@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Gurnoor Kaur,0
+recMmXYjTGA36cvPu,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Company | SQLs Rejected,gurnoor@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Gurnoor Kaur,0
+recMvRCxdYkEjKH90,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Company | Handoff Calls Held,rubal@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Rubal Sansanwal,1
+recMw06zertQygEfC,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Contact | SQL,mayra@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-08,Mayra Singh,0
+recN5ogBySZd2rcde,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Contact | MQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-03,Tanay Kumar,0
+recN6blMSiBZjPPbu,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Company | Handoff Calls Held,anjali.athya@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Anjali Athya,0
+recNBFhfqCqF86E06,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Company | SQLs Accepted,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Tanay Kumar,0
+recNCF41OYEgG228g,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Company | Requirements Stated,mayra@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Mayra Singh,20
+recNFYKr5n46Ej7Yo,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Company | Handoff Calls Held,rubal@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-08,Rubal Sansanwal,1
+recNFbCNFhFoTbxaS,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Company | Companies Reached,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Devansh Shukla,12
+recNLCdgEE7AXhRFA,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Company | Requirements Stated,aditi.saini@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Aditi saini,0
+recNNkqyD6mu9p8Gc,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Contact | Call Connected,arshdeep@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-09,Arshdeep Singh,1
+recNWDaWM2OYFENib,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Contact | Call Attempted,mayra@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Mayra Singh,10
+recNrse9jVj4BSyOp,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Company | SQLs Rejected,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Devansh Shukla,0
+recNxyVMnIMBklwQo,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Contact | Call Attempted,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-03,Bhaumik Sachdeva,18
+recO3Cvl9pnqcighX,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Contact | Meeting Booked,arshdeep@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Arshdeep Singh,0
+recO4lDzKBSln3zOb,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Company | SQLs Accepted,mayra@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-08,Mayra Singh,0
+recOB3HTVyze6bZt6,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Contact | MQL,gurnoor@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Gurnoor Kaur,0
+recOB6M6wUk5740qd,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Contact | MQL,aditi.saini@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-08,Aditi saini,0
+recOJDewKst1Kgubt,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Company | SQLs Rejected,muskan@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Muskan Rajpoot,0
+recOLtbxyiUtHGPO7,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Contact | Call Connected,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-12,Shreya Bodwal,1
+recOSka3br0GmioXi,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Contact | SQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-03,Devansh Shukla,0
+recOT8kQQy1BA5mJa,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Company | Companies Reached,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Bhaumik Sachdeva,1
+recOUBGxyflHCPAMB,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Company | Companies Worked,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-03,Devansh Shukla,14
+recOUElArNcZ0fU4P,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Contact | Meeting Booked,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Tanay Kumar,0
+recOaEWLf1Q2HU8ea,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Contact | Meeting Booked,gurnoor@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Gurnoor Kaur,0
+recOmTZQBUVwStGE4,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Contact | MQL,bhaumik@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-05,Bhaumik Sachdeva,1
+recOqwiNWrRYrWATG,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Company | Companies Reached,arshdeep@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Arshdeep Singh,5
+recOuLtWDNjcTmMMY,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Contact | Call Connected,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-03,Tanay Kumar,2
+recOxSlGI0oQ4yiyP,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Contact | Call Connected,arshdeep@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Arshdeep Singh,2
+recP2P5SNdTh8Mp1y,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-03 | Contact | SQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-03,Shreya Bodwal,0
+recP36GwR1kpYpvMZ,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Company | SQLs Accepted,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Tanay Kumar,0
+recP64iuMYXMS5TBR,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Contact | Call Attempted,gurnoor@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Gurnoor Kaur,1
+recP7LQCf5B70NwCH,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Company | Handoff Calls Held,devansh.shukla@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-05,Devansh Shukla,1
+recP7Q7C4OBTExKzu,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Contact | SQL,muskan@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Muskan Rajpoot,0
+recPCSoW76hJHskOv,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Company | Companies Worked,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-10,Bhaumik Sachdeva,5
+recPDAzatEaj7GT6w,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Contact | Meeting Done,arshdeep@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Arshdeep Singh,0
+recPDtTF2DC3mCEjH,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Company | SQLs Accepted,rubal@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-08,Rubal Sansanwal,1
+recPH9wjrkfKbiQqS,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Company | SQLs Accepted,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Bhaumik Sachdeva,0
+recPHTAmfsiI6755B,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Contact | Meeting Done,aditi.saini@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-08,Aditi saini,0
+recPHjfDlkcAnBsO6,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Contact | SQL,arshdeep@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Arshdeep Singh,0
+recPOvmKSAg8STsYq,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Company | Requirements Stated,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Shreya Bodwal,2
+recPVIxcmoyyWNsgV,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Contact | MQL,mayra@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Mayra Singh,5
+recPXJX0pKXN7SEtc,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Contact | Call Attempted,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-05,Tanay Kumar,32
+recPkzzhMSI8vqzSK,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Company | Requirements Stated,gurnoor@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-09,Gurnoor Kaur,1
+recPp8gEjr8OKmiEI,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Contact | Call Attempted,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-03,Devansh Shukla,14
+recQ8MBQ96B2TarvC,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Company | Requirements Stated,muskan@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Muskan Rajpoot,1
+recQAqjKmiT4HW8RR,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Contact | Call Attempted,mayra@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-09,Mayra Singh,27
+recQBfdcWm4VTlUE7,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Company | Handoff Calls Held,aditi.saini@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-03,Aditi saini,0
+recQBjykVlq2wmUOB,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Contact | SQL,tanay.kumar@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-12,Tanay Kumar,8
+recQC545iCFQxbaAU,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Contact | SQL,mayra@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-09,Mayra Singh,0
+recQcPp0RhSjnTdrP,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Contact | SQL,bhaumik@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-11,Bhaumik Sachdeva,1
+recQcRClnf8Svzd1a,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Company | Companies Worked,mayra@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-03,Mayra Singh,20
+recQcZUI50Iec09ue,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Company | Requirements Stated,rubal@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-05,Rubal Sansanwal,12
+recQhtmsMwEaXRboF,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Contact | SQL,gurnoor@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-12,Gurnoor Kaur,0
+recQkGnwxn4gSHUMk,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Contact | Call Connected,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-05,Devansh Shukla,17
+recQnOKXnzASqB1ez,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Contact | Call Attempted,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-09,Bhaumik Sachdeva,14
+recQoCaTA0xoBvsRa,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Company | Companies Reached,aditi.saini@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-08,Aditi saini,2
+recQp9j6z3YsfMaNz,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Company | Requirements Stated,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-09,Shreya Bodwal,5
+recQpHOWGxOlILg51,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Contact | Meeting Done,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-09,Bhaumik Sachdeva,1
+recQqbmfCqKRylVQu,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Contact | Call Attempted,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-03,Tanay Kumar,3
+recR3UQrtCVA50YNU,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Company | Requirements Stated,bhaumik@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-03,Bhaumik Sachdeva,2
+recR6LbjwWNdM2P5i,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Contact | Call Connected,mayra@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-09,Mayra Singh,21
+recR7XkBUAYZEADCB,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Company | SQLs Rejected,anjali.athya@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-12,Anjali Athya,0
+recRBOfCspZu6JoC8,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Company | SQLs Accepted,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-08,Bhaumik Sachdeva,0
+recRBxM1qEBAoSvhY,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Contact | Meeting Done,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-05,Shreya Bodwal,0
+recRDXh99TuqIWsIX,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Contact | Meeting Done,rubal@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Rubal Sansanwal,1
+recRFuxIMBftAbOuh,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Company | Handoff Calls Held,devansh.shukla@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Devansh Shukla,0
+recRJyOx5GvGn9uYx,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Contact | Call Connected,gurnoor@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-10,Gurnoor Kaur,1
+recRPAzoGVcuJf8iT,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Contact | Meeting Booked,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Shreya Bodwal,1
+recRRQC7T3ZYFJT7H,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-05,Bhaumik Sachdeva,0
+recRV6KXDSKhTdiTY,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Company | SQLs Rejected,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-03,Bhaumik Sachdeva,0
+recRc6MQ82YrQAeAM,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Company | Requirements Stated,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-08,Shreya Bodwal,3
+recRiyrc20BBJE91m,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Company | Requirements Stated,mayra@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-08,Mayra Singh,46
+recRjN94tngFQDJfb,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Contact | SQL,aditi.saini@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Aditi saini,0
+recRlQY43XAHu4e35,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Contact | Call Connected,gaurav@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-12,Gaurav Kumar,1
+recRoGvpuz1DGUw8c,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Company | SQLs Accepted,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Tanay Kumar,0
+recRyBXk7c7Ty6K6X,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Contact | MQL,muskan@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Muskan Rajpoot,0
+recS0BJ7dfvht4dJM,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Company | SQLs Rejected,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-09,Bhaumik Sachdeva,0
+recS43EeOheMZGqSU,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Company | Handoff Calls Held,aditi.saini@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-08,Aditi saini,0
+recS48EacztCWu38y,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Contact | Call Connected,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-09,Shreya Bodwal,2
+recSAYB7WBRzYqXz4,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Company | Handoff Calls Held,tanay.kumar@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-12,Tanay Kumar,8
+recSC95kQbg0hobMe,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Company | Companies Reached,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Devansh Shukla,80
+recSGAdKZ9lgQxNdj,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Company | SQLs Rejected,shreya.bodwal@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Shreya Bodwal,0
+recSIz0oML5udIYmK,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Company | SQLs Rejected,arshdeep@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-09,Arshdeep Singh,0
+recSMD8RA4ZwcCHt1,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Contact | Meeting Booked,gurnoor@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-12,Gurnoor Kaur,0
+recSRF035jOmIgc5d,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Bhaumik Sachdeva,0
+recSSXShJH2eDrv9i,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Company | SQLs Rejected,tanay.kumar@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-12,Tanay Kumar,0
+recSaIkTtqHu0v21Z,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Contact | MQL,mayra@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Mayra Singh,0
+recSfQNM197Yrvw76,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Contact | Meeting Booked,gurnoor@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-09,Gurnoor Kaur,1
+recSmuOoxhBNq81Vr,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Contact | SQL,bhaumik@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-08,Bhaumik Sachdeva,0
+recSs8bKPi2syLZaK,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Company | SQLs Rejected,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Devansh Shukla,0
+recT1VnJf5aHecCqJ,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Contact | Call Attempted,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Shreya Bodwal,22
+recT22b4h3QcZlGWS,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Contact | SQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-03,Tanay Kumar,0
+recT2dl1DULlt83De,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Contact | Call Attempted,rubal@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Rubal Sansanwal,45
+recTGrZ8QE2X6u5um,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Contact | SQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Shreya Bodwal,0
+recTKMSfPG0fU8Y9X,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Company | Companies Reached,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-05,Tanay Kumar,12
+recTRFzJmaFswM5Js,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Company | Companies Reached,anjali.athya@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-12,Anjali Athya,1
+recTSFzOEY2rw4NDR,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Company | SQLs Accepted,shreya.bodwal@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-12,Shreya Bodwal,1
+recTkkF6EuuZeNqtf,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Company | SQLs Accepted,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-12,Bhaumik Sachdeva,3
+recTu3smFsrR5powN,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Contact | Call Connected,gaurav@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-03,Gaurav Kumar,1
+recTyBOGotTy2XJmr,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Contact | Meeting Booked,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-10,Bhaumik Sachdeva,1
+recU66ZS6MyNdGmRi,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Company | SQLs Accepted,arshdeep@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Arshdeep Singh,0
+recU95Hv0mrlF5SZf,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Company | SQLs Accepted,rubal@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Rubal Sansanwal,0
+recU9kivi71JGS3uN,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Company | Companies Reached,tanay.kumar@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-12,Tanay Kumar,8
+recUKtrDa9cya4hYU,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Company | SQLs Rejected,rubal@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Rubal Sansanwal,0
+recUM6QzIW7jGT4PP,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Company | Companies Worked,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-09,Shreya Bodwal,5
+recUPspqBiRfiE1um,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Contact | MQL,muskan@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Muskan Rajpoot,0
+recUVvUJrsHehZ1XF,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Contact | Meeting Done,arshdeep@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Arshdeep Singh,0
+recUZ8ibtkcNF0PEK,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Contact | Meeting Done,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-05,Bhaumik Sachdeva,0
+recUfbiv1nIG3FANn,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Contact | Meeting Done,aditi.saini@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Aditi saini,0
+recUiaXOISqomN4AQ,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-03 | Contact | Meeting Booked,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-03,Shreya Bodwal,0
+recUu2MoMD4JhRqwP,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Contact | Meeting Done,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Tanay Kumar,0
+recV00wrnbkxUUQ0S,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Company | Companies Worked,gurnoor@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-09,Gurnoor Kaur,1
+recV2uA8dfRee6m8i,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Contact | Call Attempted,anjali.athya@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-12,Anjali Athya,1
+recV9nczyFpr1vVxY,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Contact | SQL,gurnoor@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Gurnoor Kaur,0
+recVCoLeswyT14aIa,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Company | Companies Worked,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-03,Bhaumik Sachdeva,11
+recVEZb1e12y9vn4Z,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Contact | Call Connected,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Shreya Bodwal,3
+recVFh1ek0Mp7fm5H,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Contact | Call Attempted,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Devansh Shukla,21
+recVHJYXPp0mvBAtD,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Contact | SQL,aditi.saini@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-12,Aditi saini,2
+recVJ7ZOn5EHtDkAy,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Company | Companies Worked,anjali.athya@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-12,Anjali Athya,1
+recVLn5aYjUHxiqro,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Company | Requirements Stated,devansh.shukla@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Devansh Shukla,6
+recVNZ4jvYbOwsppI,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Contact | Call Attempted,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-05,Shreya Bodwal,34
+recVUx95SuePTh8f1,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Company | Requirements Stated,bhaumik@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-10,Bhaumik Sachdeva,3
+recVrk992TMh7F7d5,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Contact | Call Attempted,aditi.saini@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-12,Aditi saini,2
+recVz7J1AprLYLaJ0,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Contact | Call Connected,rubal@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-08,Rubal Sansanwal,27
+recW10ltkUatD3ujR,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Company | Companies Worked,gurnoor@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-10,Gurnoor Kaur,1
+recW3RwVyE5n3GfCY,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Contact | Call Attempted,mayra@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Mayra Singh,36
+recW6QR2sUXZFnirr,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Contact | Call Attempted,arshdeep@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Arshdeep Singh,6
+recWKJTF07YznzQsp,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Contact | Call Attempted,aditi.saini@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Aditi saini,1
+recWLmCC78rP6HFEq,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Contact | SQL,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-12,Shreya Bodwal,1
+recWOmuDQ2KQbOysD,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Company | Companies Worked,aditi.saini@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Aditi saini,1
+recWRpycXSpektSBH,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Contact | Call Connected,gurnoor@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-09,Gurnoor Kaur,1
+recWY84elCnZy0BgI,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Contact | Call Connected,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-08,Shreya Bodwal,10
+recWdG1w6qnzSerIk,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Contact | Call Connected,tanay.kumar@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-12,Tanay Kumar,8
+recWi3W89evuad2OS,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Company | Requirements Stated,mayra@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-10,Mayra Singh,7
+recWqaP8XcjrWIxyq,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Contact | MQL,arshdeep@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Arshdeep Singh,1
+recWqyUtRov8RZKKt,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Contact | SQL,bhaumik@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Bhaumik Sachdeva,0
+recX9wRDhpekSjdOi,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Company | SQLs Accepted,rubal@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-05,Rubal Sansanwal,0
+recXCSSibh34Qb0zZ,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Company | SQLs Rejected,muskan@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-08,Muskan Rajpoot,0
+recXDVjEGIGkRZn5h,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Company | Companies Reached,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Shreya Bodwal,19
+recXKrPQIzuBsMSED,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Contact | MQL,bhaumik@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-08,Bhaumik Sachdeva,1
+recXO7O2gqMG8J1NJ,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Company | Companies Worked,aditi.saini@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-08,Aditi saini,2
+recXPcmvLqnApUIPt,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Company | Requirements Stated,aditi.saini@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-03,Aditi saini,1
+recXPkcZePHiQgcEi,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Contact | MQL,mayra@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-05,Mayra Singh,1
+recXTjh4ZllkXZqPo,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Contact | Call Attempted,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-12,Shreya Bodwal,1
+recXWFH7sE6Fg7xew,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Company | Companies Reached,rubal@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-08,Rubal Sansanwal,44
+recXbcvTdPN553yr5,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Contact | Call Attempted,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-05,Bhaumik Sachdeva,7
+recXdVuc1byIv5bsc,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Company | SQLs Accepted,rubal@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-11,Rubal Sansanwal,0
+recXdXeIb8DRvza69,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Contact | MQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Shreya Bodwal,0
+recXhuAwFwdLk1c1z,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Contact | MQL,mayra@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-10,Mayra Singh,0
+recXkMOxzdpf7wIXa,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Contact | Meeting Booked,rubal@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-05,Rubal Sansanwal,0
+recXkpRwxtfEufyGH,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Company | SQLs Accepted,aditi.saini@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-12,Aditi saini,2
+recY36frLNze6PS6H,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Company | Handoff Calls Held,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Shreya Bodwal,1
+recYCd9KKjsjCf9Ci,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Contact | MQL,gaurav@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-03,Gaurav Kumar,0
+recYCt8iTphrwi7gE,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Company | SQLs Rejected,rubal@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-11,Rubal Sansanwal,1
+recYOZSicntSdy2mZ,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Contact | MQL,mayra@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Mayra Singh,0
+recYPA5jBCqzW2RHs,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Company | Companies Worked,devansh.shukla@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-09,Devansh Shukla,13
+recYd6Y2kdXOS6YLN,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Company | SQLs Accepted,muskan@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Muskan Rajpoot,0
+recYkx8mfCV26moWE,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Contact | Call Attempted,tanay.kumar@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-12,Tanay Kumar,8
+recYqC8HqkIWbAvbi,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Contact | MQL,rubal@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Rubal Sansanwal,1
+recYr2JmBQdcVL9BX,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Company | Companies Worked,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Devansh Shukla,86
+recYzassiAbLjeqSp,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Company | SQLs Rejected,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-12,Bhaumik Sachdeva,0
+recZC0kdMLdYZZQig,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Contact | Meeting Booked,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Devansh Shukla,0
+recZTHm6R2HyJwPNr,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Company | Companies Worked,mayra@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Mayra Singh,41
+recZbETGXqDPKgWzY,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Contact | Call Attempted,rubal@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-05,Rubal Sansanwal,32
+reca3mRt1ilP9Jgww,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Company | Companies Reached,gurnoor@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Gurnoor Kaur,0
+reca86CB97wimnbz9,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Contact | Meeting Done,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-03,Tanay Kumar,0
+recaQthbfnw5xMKE5,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Contact | Meeting Done,muskan@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Muskan Rajpoot,0
+recaUQ9bDqkJcTrDR,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Contact | SQL,rubal@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-05,Rubal Sansanwal,0
+recaXwQEKZ4BJo3Jh,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Company | Companies Worked,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-08,Shreya Bodwal,22
+recaY0FSusZA26fEp,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Contact | Meeting Done,mayra@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-10,Mayra Singh,0
+recaYwCgaO927gLmo,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Contact | Meeting Booked,mayra@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-10,Mayra Singh,2
+recabeAjAXnPraAja,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Contact | Call Connected,rubal@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Rubal Sansanwal,7
+recafyNpDmNQm4kn6,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Contact | Call Attempted,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-12,Bhaumik Sachdeva,9
+recaj8QztmZCrSdyG,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Contact | MQL,mayra@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-08,Mayra Singh,3
+recajJnA3vBj9fQOx,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Contact | MQL,gurnoor@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-10,Gurnoor Kaur,0
+recalqQmsGtSKEYQp,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Contact | Meeting Done,anjali.athya@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-12,Anjali Athya,0
+recaoPtNMpKR5n7Us,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Contact | Meeting Done,rubal@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Rubal Sansanwal,0
+recb0OewJXbK1rRaP,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Company | Companies Worked,gaurav@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-12,Gaurav Kumar,1
+recb2v7OuyhlmX0FB,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Contact | Call Connected,rubal@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-11,Rubal Sansanwal,6
+recbDzQpgCmaFSV2M,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Contact | Meeting Done,aditi.saini@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Aditi saini,0
+recbG2tTKvvWU4YpQ,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Company | SQLs Rejected,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Bhaumik Sachdeva,0
+recbH5zP6WB18QZRp,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Contact | Meeting Booked,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Tanay Kumar,0
+recbYF9N2UfyIWHnt,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Company | Companies Worked,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Devansh Shukla,21
+recbfUKal3S3had7s,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Contact | SQL,gurnoor@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-09,Gurnoor Kaur,0
+recbiVeb5imKNbjix,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Company | SQLs Rejected,rubal@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-09,Rubal Sansanwal,0
+recbqvOer3g3YQxLb,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Company | SQLs Rejected,mayra@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Mayra Singh,0
+recbr1mJRmauVL21T,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Contact | SQL,gaurav@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-12,Gaurav Kumar,1
+recbruksRK7JQgP6v,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Contact | MQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Tanay Kumar,4
+recbvinzxp91fmHdO,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Company | Handoff Calls Held,aditi.saini@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-12,Aditi saini,2
+recc0x64mnGif8WPG,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Company | SQLs Accepted,muskan@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-08,Muskan Rajpoot,0
+recc1j6tNoc4XBFup,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Contact | Meeting Done,arshdeep@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-09,Arshdeep Singh,0
+recc2Z4ZPSTnXFGL0,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Company | Companies Reached,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-11,Bhaumik Sachdeva,7
+recc36eXpuNFvsmyD,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Company | Handoff Calls Held,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Shreya Bodwal,0
+recc5XRpPIS9VglZi,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Company | Requirements Stated,bhaumik@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Bhaumik Sachdeva,6
+reccCLWutKDVPTKeF,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Contact | Meeting Booked,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-12,Bhaumik Sachdeva,3
+reccDKIfeCHjBuNJY,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Contact | Call Connected,aditi.saini@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Aditi saini,0
+reccKXj1dpgdSbv5P,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Contact | SQL,devansh.shukla@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-09,Devansh Shukla,0
+reccNTCdjFWcbvB63,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Company | SQLs Accepted,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-05,Tanay Kumar,0
+reccZv6cwlFUmWTk5,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Contact | Meeting Booked,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Shreya Bodwal,0
+recceKkcDrA4Vh5Mj,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Company | Companies Worked,gaurav@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-03,Gaurav Kumar,1
+reccf5uY4CPnZoFUh,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Company | Companies Worked,aditi.saini@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-05,Aditi saini,2
+recchiiOwu6AR71fW,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Company | Companies Worked,mayra@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-08,Mayra Singh,57
+recclzZrtXKnF74SP,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Company | Companies Worked,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-11,Bhaumik Sachdeva,9
+reccrpNvwKJ4AffFt,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Contact | Call Connected,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-05,Bhaumik Sachdeva,4
+reccsIDaLQuUvrejO,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Contact | Meeting Booked,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Mayra Singh,0
+reccu6n6xrDg9vSP4,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Company | Requirements Stated,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Shreya Bodwal,0
+reccxFU7N9cq0vadR,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Contact | SQL,bhaumik@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-05,Bhaumik Sachdeva,0
+recd2HCbylT0agNq0,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Company | Requirements Stated,muskan@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-08,Muskan Rajpoot,1
+recd6NKLLU4fpub3n,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Company | SQLs Rejected,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Tanay Kumar,0
+recd882t32qpxBTzO,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Company | Handoff Calls Held,tanay.kumar@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Tanay Kumar,0
+recdEecjggKfbPMlz,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Company | SQLs Accepted,gaurav@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Gaurav Kumar,0
+recdFBRjSblJv00XH,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Company | Handoff Calls Held,mayra@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-08,Mayra Singh,0
+recdJtropnLGPkvBH,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Company | Requirements Stated,tanay.kumar@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Tanay Kumar,1
+recdPiygFOQabsyjp,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Contact | SQL,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-09,Shreya Bodwal,1
+recdRbVnqPv2qnWOG,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Contact | Meeting Done,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-05,Tanay Kumar,0
+recdRcKqwKi9d4GCu,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Company | SQLs Rejected,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-05,Tanay Kumar,0
+recdeKOjWwg4xo0TH,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Company | SQLs Rejected,gurnoor@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-10,Gurnoor Kaur,0
+recdgCKrzGnguFv0V,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Company | Requirements Stated,bhaumik@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Bhaumik Sachdeva,4
+recdhVbTJjNQ1DPob,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Company | SQLs Rejected,shreya.bodwal@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Shreya Bodwal,0
+recdkZTYmsOiqVxN1,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Contact | Call Connected,aditi.saini@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-05,Aditi saini,0
+recdkip7GFAUHFmBW,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-03 | Contact | Call Attempted,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-03,Shreya Bodwal,1
+recdoymJ2ClAQXKNv,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Contact | Meeting Done,muskan@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Muskan Rajpoot,0
+recdtwtNqGkkF4SBf,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Company | SQLs Rejected,anjali.athya@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Anjali Athya,0
+recdvMqrozgQUhEhh,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Company | Companies Reached,gurnoor@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Gurnoor Kaur,1
+recdwpC9yMLiyStkt,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Company | Companies Worked,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Shreya Bodwal,22
+recdzQPG9MjFSIUOT,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Company | Companies Reached,rubal@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Rubal Sansanwal,13
+rece8GgfwTVMDwqmW,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Company | Companies Reached,gaurav@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Gaurav Kumar,1
+receIf36VnduV0IxO,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Contact | SQL,mayra@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-03,Mayra Singh,0
+receKSE5a1uyx25Nq,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Company | SQLs Rejected,mayra@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-10,Mayra Singh,0
+receRAzp8XyqOCo8O,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Contact | Call Connected,gaurav@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Gaurav Kumar,1
+receRhJ6aAhIREU83,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Contact | Meeting Done,aditi.saini@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-12,Aditi saini,2
+receS0wG952CyxgAP,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Company | Requirements Stated,gurnoor@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-12,Gurnoor Kaur,0
+receSWqcdxPFkntGl,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Company | Handoff Calls Held,gurnoor@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-09,Gurnoor Kaur,1
+receSbRxHtnCWTtAu,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Contact | SQL,aditi.saini@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-03,Aditi saini,0
+receTh8vpqaMIXzDV,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Company | SQLs Rejected,rubal@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-08,Rubal Sansanwal,0
+receUfz4oTVHhIOhz,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Contact | Meeting Done,gurnoor@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Gurnoor Kaur,0
+receVUo02kSA9dZJh,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Company | SQLs Rejected,aditi.saini@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-12,Aditi saini,0
+recefHxx25huUSdsH,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Company | SQLs Rejected,gurnoor@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Gurnoor Kaur,0
+recejeuLzBwqPIOot,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Company | Companies Reached,gaurav@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-03,Gaurav Kumar,1
+recejvWikibm8bHYP,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Company | Companies Worked,muskan@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Muskan Rajpoot,2
+recenHaERMoQLIucI,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Company | Requirements Stated,rubal@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Rubal Sansanwal,3
+recep2ioW62sz2jDc,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Contact | Meeting Done,rubal@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-11,Rubal Sansanwal,1
+recer8R3TS8IEYu6Q,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Contact | Call Attempted,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Bhaumik Sachdeva,10
+receytLDzpBRLkHx6,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Company | SQLs Rejected,bhaumik@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Bhaumik Sachdeva,0
+recf2QX8gTB05kkxR,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Contact | Meeting Done,rubal@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-08,Rubal Sansanwal,1
+recf6FDBnFpEsDQHN,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Contact | Meeting Booked,aditi.saini@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-08,Aditi saini,0
+recfJZ3GUh6vUBMcS,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Company | Companies Worked,arshdeep@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-09,Arshdeep Singh,2
+recfMcmbejfF3qCCx,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Contact | Meeting Booked,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Devansh Shukla,0
+recfPdMeSnsbYwOvd,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Contact | MQL,bhaumik@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-10,Bhaumik Sachdeva,1
+recfQikZr6fwkCjB3,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Company | Requirements Stated,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-10,Shreya Bodwal,1
+recfQr3VLlRs2Yek4,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Company | Handoff Calls Held,arshdeep@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Arshdeep Singh,0
+recfRU5fsaAmTDyUg,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Company | Handoff Calls Held,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Shreya Bodwal,0
+recfSVhu58Om3msnx,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Contact | Call Connected,aditi.saini@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Aditi saini,3
+recfVoAiZdq3oDecT,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-09,Bhaumik Sachdeva,1
+recfZRytmfIsl8fjL,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Contact | Meeting Booked,aditi.saini@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-03,Aditi saini,0
+recfbhIE6X8m9ZNFY,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Company | SQLs Rejected,rubal@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Rubal Sansanwal,1
+recfcf2MjoCSJEsCk,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Contact | Meeting Done,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Shreya Bodwal,0
+recfj6iVgW9Lxk8yo,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Contact | Meeting Booked,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Tanay Kumar,0
+recfjyvfHdDKCVDsq,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Contact | Call Connected,aditi.saini@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-08,Aditi saini,1
+recfkPuxFDF9hAoo2,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Company | SQLs Accepted,arshdeep@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-09,Arshdeep Singh,0
+recfkey3jI7QGy5bh,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Company | Requirements Stated,muskan@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Muskan Rajpoot,0
+recfm6m7kDqJbxa4Q,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Company | SQLs Accepted,mayra@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-03,Mayra Singh,0
+recfnuIrUzo8G1bjR,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Contact | Call Attempted,rubal@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-12,Rubal Sansanwal,36
+recfoFv5IqYbFSbMq,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Contact | MQL,bhaumik@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Bhaumik Sachdeva,0
+recfrZLrTNN7upqHO,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Company | Companies Reached,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-08,Bhaumik Sachdeva,3
+recfxBEqKn55XKjNQ,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-12,Bhaumik Sachdeva,3
+recg1COvguco3PIT1,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Contact | Meeting Done,tanay.kumar@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-12,Tanay Kumar,8
+recgAXCOju5G8QPgR,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Company | Requirements Stated,mayra@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-09,Mayra Singh,18
+recgM0cVTtwPE89tA,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Company | Companies Worked,rubal@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Rubal Sansanwal,44
+recgOg2mfV8FnPSV6,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Company | Requirements Stated,arshdeep@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Arshdeep Singh,2
+recgVSGvSjCv3zT0m,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Company | Requirements Stated,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Shreya Bodwal,3
+recgXae1v3msQlug6,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Company | Requirements Stated,gaurav@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-12,Gaurav Kumar,1
+recgdUXMkZt4TxPyd,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Company | SQLs Rejected,gaurav@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-12,Gaurav Kumar,0
+recgt0s4IZjKulqwH,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Company | SQLs Rejected,arshdeep@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Arshdeep Singh,0
+recgvwfdMnUAT2iym,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Contact | Call Attempted,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-08,Shreya Bodwal,23
+recgyYQYUZJ0l4crk,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Contact | Meeting Booked,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-09,Shreya Bodwal,2
+recgywq6y84LVxO7s,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Company | Companies Worked,rubal@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-09,Rubal Sansanwal,7
+recgzevhKhepELx1u,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Company | SQLs Rejected,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-05,Devansh Shukla,0
+rech8BnsbiuAfU63A,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Contact | MQL,gurnoor@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Gurnoor Kaur,0
+rechAql2m48kWnzkS,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Contact | Meeting Done,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Devansh Shukla,0
+rechGE3Co63gDLTjF,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Company | Companies Reached,rubal@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Rubal Sansanwal,29
+rechGXDJlTlBq4k5K,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Contact | Meeting Booked,mayra@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-09,Mayra Singh,1
+rechLBqD4zRGm9rf4,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Company | Handoff Calls Held,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-05,Shreya Bodwal,0
+rechNpKtIPw5SFkqK,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Company | Companies Reached,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-03,Tanay Kumar,3
+rechP6gvNv6tSFlQz,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Company | Requirements Stated,tanay.kumar@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-05,Tanay Kumar,7
+rechRi8LSBIDpBAri,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Contact | Call Connected,gurnoor@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Gurnoor Kaur,1
+rechS3xtMw5oU3Are,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Company | Companies Reached,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-10,Bhaumik Sachdeva,5
+rechSWDD39BB5uqDR,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Contact | Call Attempted,mayra@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-05,Mayra Singh,21
+rechjFe3aPttKXNvq,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Company | Companies Reached,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-05,Devansh Shukla,21
+rechm1aF0PIK4SQkk,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Company | Handoff Calls Held,gurnoor@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-10,Gurnoor Kaur,0
+rechprvebme6AvgAA,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Contact | Call Connected,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Shreya Bodwal,3
+rechsUnKqmT9U2qjR,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Contact | MQL,gurnoor@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-12,Gurnoor Kaur,0
+rechwg9V5s4pOSTkg,2026-09-01T19:25:10Z,Aditi saini | 2026-06-03 | Contact | Call Attempted,aditi.saini@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-03,Aditi saini,2
+reci0kTVRbClgwxA8,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Contact | SQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-05,Tanay Kumar,0
+reci4NaCxhsRludFB,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Contact | MQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Devansh Shukla,1
+reci9qTvupTt61l7a,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Contact | Call Attempted,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-09,Shreya Bodwal,5
+reciDULq6JwuQGTFf,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Company | SQLs Accepted,muskan@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Muskan Rajpoot,0
+reciGznh8Q0YpQBCZ,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Contact | Meeting Done,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-03,Mayra Singh,0
+reciJ4dddtJp2Ccbn,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Company | Companies Reached,aditi.saini@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-12,Aditi saini,2
+reciK89hUqwb0Ck1w,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Contact | MQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-03,Devansh Shukla,0
+reciLTngq0AgqCyHJ,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Company | Handoff Calls Held,muskan@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Muskan Rajpoot,0
+reciM2OaMtQhtMBeU,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Company | SQLs Rejected,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-11,Bhaumik Sachdeva,0
+reciPXBzqQaJAIzJP,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Contact | Call Attempted,gurnoor@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-12,Gurnoor Kaur,1
+reciZ06kXXzF8BYRJ,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Contact | MQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-05,Shreya Bodwal,1
+recij45ECwvJpKDon,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Company | SQLs Rejected,shreya.bodwal@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-10,Shreya Bodwal,0
+recik8ORXFjdzVptS,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Company | SQLs Accepted,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Devansh Shukla,0
+recipM0kC9eCBIXHm,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Company | Requirements Stated,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-05,Shreya Bodwal,5
+reciwjoaGdwSRvDQ0,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Contact | Meeting Done,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-12,Bhaumik Sachdeva,3
+recj6fKC8F8zhmxoE,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Company | Requirements Stated,muskan@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Muskan Rajpoot,1
+recj8nsiAvzeqBVYx,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Contact | Call Connected,arshdeep@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Arshdeep Singh,4
+recj9q9fu1m3BUShP,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Company | Requirements Stated,bhaumik@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Bhaumik Sachdeva,0
+recjDmFkvHy8389Wv,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Contact | Call Attempted,devansh.shukla@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-09,Devansh Shukla,14
+recjFgoqLwEqOLwhJ,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Contact | SQL,gaurav@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Gaurav Kumar,0
+recjKB6F5eOHNfhOq,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Contact | Meeting Booked,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-10,Shreya Bodwal,1
+recjiCFOSxDOaVLXM,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Contact | Call Attempted,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-10,Shreya Bodwal,1
+recjjxsh7OUI989XG,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Company | Requirements Stated,aditi.saini@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-08,Aditi saini,2
+recjk4UJGB49kCDaO,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Company | Requirements Stated,tanay.kumar@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Tanay Kumar,9
+recjqXDf7t2dBqBqr,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Contact | Call Connected,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Bhaumik Sachdeva,6
+recjy353M00MNiAGE,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Company | Requirements Stated,gaurav@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-03,Gaurav Kumar,0
+reck3Tllma7xDYvqa,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Contact | Call Attempted,rubal@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-11,Rubal Sansanwal,9
+reckLROrFl8cEO0im,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Contact | Meeting Done,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-05,Devansh Shukla,1
+reckQP5tLJwYsaEXf,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Contact | SQL,mayra@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-10,Mayra Singh,0
+reckQfLHUgQDooYjs,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Company | Companies Reached,gurnoor@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-10,Gurnoor Kaur,1
+reckY3zPSTGvfbG9H,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Company | SQLs Accepted,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-03,Devansh Shukla,0
+reckq2AfcHb5w71AW,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Company | Companies Worked,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-08,Bhaumik Sachdeva,3
+reckv2VsmM2LTaObQ,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Company | Companies Worked,tanay.kumar@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-12,Tanay Kumar,8
+reckzy5kHEwhNx9R6,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Company | Requirements Stated,rubal@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-11,Rubal Sansanwal,6
+recl7xkUUjRLOb0Pc,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Contact | Meeting Booked,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Bhaumik Sachdeva,0
+reclEhPBHW9VAseaW,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Company | Companies Worked,arshdeep@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Arshdeep Singh,4
+reclGVkEq1M4cKFzZ,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Contact | Call Connected,rubal@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-12,Rubal Sansanwal,23
+reclH5Ra0gH9A2DtH,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Company | Requirements Stated,tanay.kumar@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-12,Tanay Kumar,8
+reclI89KMPS6JqdGv,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Contact | Call Attempted,muskan@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Muskan Rajpoot,1
+reclcVRUt610lFYpb,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Company | Companies Worked,rubal@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Rubal Sansanwal,16
+reclcwSQMRnH9eiht,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Company | Companies Worked,gurnoor@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-12,Gurnoor Kaur,1
+reclf8ajouV5MSYj7,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Contact | Call Attempted,muskan@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Muskan Rajpoot,1
+reclkdiPxHz7PJWbv,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Company | Companies Reached,aditi.saini@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-04,Aditi saini,3
+reclmyg6shoC4uU6y,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Contact | Call Attempted,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Bhaumik Sachdeva,14
+reclqiwf4EFWsE6oV,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Contact | Meeting Booked,arshdeep@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-09,Arshdeep Singh,0
+reclyRs6Eyf10Oug5,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Contact | Meeting Booked,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-02,Mayra Singh,0
+reclzw4IZKqLSES3K,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Contact | MQL,rubal@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-11,Rubal Sansanwal,0
+recm1EjkPfh8DnHv4,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Contact | Meeting Done,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Bhaumik Sachdeva,0
+recm3M6HV1bJ6M3yd,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Company | Companies Reached,arshdeep@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Arshdeep Singh,1
+recm6BSQFTRmlsbnm,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Contact | Call Attempted,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-05,Devansh Shukla,31
+recmTkfxB6UXYMJdg,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Company | Handoff Calls Held,rubal@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-09,Rubal Sansanwal,0
+recmamOC89SkQMYoW,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Contact | Call Connected,mayra@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-05,Mayra Singh,19
+recmhx6hu1GG8YuhB,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Company | Companies Worked,gurnoor@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Gurnoor Kaur,1
+recmiNUcGQsQhW63z,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Contact | SQL,arshdeep@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Arshdeep Singh,0
+recminDAKZhYV89ZF,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Contact | Meeting Booked,rubal@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-12,Rubal Sansanwal,4
+recmlDrDr6G0XPDKf,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Contact | Call Connected,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-12,Bhaumik Sachdeva,6
+recmlwNtGqqmAUfNu,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-12 | Company | Companies Reached,gurnoor@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-12,Gurnoor Kaur,1
+recmngL6unbGgHjCF,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Company | Requirements Stated,mayra@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Mayra Singh,4
+recmnhtszcqo8aDzi,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Contact | Meeting Booked,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Bhaumik Sachdeva,0
+recmqM6Dnny0AYzEp,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Contact | MQL,bhaumik@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Bhaumik Sachdeva,0
+recmu2E6lN4oAljes,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Contact | Meeting Booked,gaurav@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-03,Gaurav Kumar,0
+recn0hSyzYgGqBgJf,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Contact | Meeting Booked,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-03,Bhaumik Sachdeva,0
+recn31ubi9jDauUkc,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Contact | Call Connected,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-11,Bhaumik Sachdeva,6
+recn4JwunUblTdVPT,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Company | Companies Worked,aditi.saini@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-12,Aditi saini,2
+recn5FNzNUQE8vzrJ,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Company | Companies Reached,mayra@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-05,Mayra Singh,21
+recnJpX6G5DabFOoH,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Contact | Call Connected,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-03,Devansh Shukla,8
+recnLUpvnS9qATYCf,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-01 | Company | SQLs Accepted,rubal@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Rubal Sansanwal,0
+recnN5OuKrUuga1J6,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Contact | Call Attempted,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Tanay Kumar,25
+recneLwNd2I2x4fZf,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Contact | Call Connected,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-01,Bhaumik Sachdeva,1
+recni8qH2QPAB47tA,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Contact | Meeting Booked,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-05,Tanay Kumar,0
+recnjOlNIEemCXjsQ,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Contact | Call Attempted,arshdeep@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Arshdeep Singh,3
+recnprUrSgkJ51D2p,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-03 | Company | Requirements Stated,mayra@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-03,Mayra Singh,5
+recnx2Um22wyr89Ty,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Contact | Call Connected,gurnoor@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Gurnoor Kaur,1
+recnyJaadJr1NlgRB,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Contact | SQL,mayra@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Mayra Singh,0
+reco1hWDVSxoRzOrB,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Contact | Meeting Booked,muskan@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Muskan Rajpoot,0
+reco2ztQsvjTcqx3e,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Company | Handoff Calls Held,mayra@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-09,Mayra Singh,0
+reco46JFXtxEx1HEu,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Contact | MQL,bhaumik@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-09,Bhaumik Sachdeva,1
+reco47XRpq2Y8rmVS,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Company | Handoff Calls Held,gaurav@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-03,Gaurav Kumar,0
+recoB9qTpYeHbp0RL,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-03 | Contact | Meeting Done,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-03,Shreya Bodwal,0
+recoC1SBxfzMufkba,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Contact | Meeting Booked,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-05,Devansh Shukla,1
+recoKQ5OOiJulZCLt,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-04 | Company | Handoff Calls Held,muskan@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Muskan Rajpoot,0
+recoQUk9Cilu1LzYY,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-02 | Contact | Meeting Done,gurnoor@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-02,Gurnoor Kaur,0
+recoeQ3Ppi65HJ9cF,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Contact | MQL,gaurav@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Gaurav Kumar,0
+recokX3M5T9iN0oQJ,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Company | Handoff Calls Held,muskan@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-08,Muskan Rajpoot,0
+recoliumuLAnC8ZzL,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Contact | Meeting Booked,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-05,Shreya Bodwal,0
+recomEfoaHXeG48id,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-11 | Contact | Meeting Booked,rubal@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-11,Rubal Sansanwal,3
+recopTe9GmDw3RdLo,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Contact | Meeting Booked,anjali.athya@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-12,Anjali Athya,0
+recotQffKnHQLZHrx,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Contact | MQL,anjali.athya@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-12,Anjali Athya,0
+recp17tWzeKPOJKcH,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Contact | Call Attempted,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Shreya Bodwal,5
+recpBLb2R2DbembYY,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Company | Requirements Stated,anjali.athya@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Anjali Athya,0
+recpEc0A1Ce73vzM5,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Contact | Call Attempted,gurnoor@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-09,Gurnoor Kaur,1
+recpGKHpVrRowKDyK,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Contact | Meeting Done,muskan@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-08,Muskan Rajpoot,0
+recpKiZRPnB5m245e,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Contact | SQL,rubal@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Rubal Sansanwal,0
+recpMw1q0KGE7SMHk,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Company | Companies Reached,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Tanay Kumar,3
+recpN8npYejHRQcrP,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Company | Requirements Stated,anjali.athya@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-12,Anjali Athya,0
+recpNtuoxyLv3592N,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Contact | Call Connected,arshdeep@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Arshdeep Singh,1
+recpQJRcRVVXNgVlx,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Contact | MQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-05,Devansh Shukla,3
+recpQcLAUT1boEd8f,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-12 | Contact | SQL,bhaumik@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-12,Bhaumik Sachdeva,3
+recpS5QaN5VNQCoGF,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-03,Bhaumik Sachdeva,0
+recpcTGjuEvxDSs1e,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Contact | SQL,gurnoor@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-10,Gurnoor Kaur,0
+recpffgMDxPH8spFi,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Contact | SQL,muskan@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Muskan Rajpoot,0
+recpiySPin4hjslfX,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Contact | Meeting Done,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-12,Shreya Bodwal,1
+recpmkOvNtOR7FSCm,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Contact | Meeting Booked,anjali.athya@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Anjali Athya,0
+recppzZzMItFqSbgO,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Company | SQLs Accepted,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-05,Devansh Shukla,1
+recq0htq6EL2bQIMK,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Company | Companies Worked,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-12,Shreya Bodwal,1
+recq0q7ouGuxPGw15,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-08 | Contact | Meeting Done,bhaumik@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-08,Bhaumik Sachdeva,0
+recq2HFgckEeuLZal,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Contact | SQL,gaurav@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-03,Gaurav Kumar,0
+recq8yrIAa5QGzhT5,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Contact | SQL,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-08,Shreya Bodwal,0
+recqJrXUw2SvmZGay,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Company | Requirements Stated,gurnoor@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-10,Gurnoor Kaur,0
+recqREVt41mrwgTPK,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-05 | Company | Companies Reached,rubal@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-05,Rubal Sansanwal,20
+recqY0auoj8vIaS5Y,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Contact | SQL,anjali.athya@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-12,Anjali Athya,0
+recqiBtn7QwX2c2pY,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Contact | Call Attempted,muskan@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Muskan Rajpoot,2
+recqoHP5qt2sGIJdv,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Contact | Call Attempted,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Tanay Kumar,3
+recqqxZhgsTkoQlqA,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-10 | Contact | Meeting Done,gurnoor@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-10,Gurnoor Kaur,0
+recqr6E5Bexclh6Oo,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Company | Companies Worked,muskan@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-08,Muskan Rajpoot,1
+recqxjj7L5z21EWnI,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Company | SQLs Accepted,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-09,Bhaumik Sachdeva,1
+recr2Ft6sUmXPR3kn,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Company | SQLs Accepted,shreya.bodwal@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-05,Shreya Bodwal,0
+recr4u9OaI3WsQjDc,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Company | Requirements Stated,tanay.kumar@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-01,Tanay Kumar,7
+recr5huXubfFWu7aq,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Company | Companies Reached,mayra@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Mayra Singh,6
+recr7eqXZfZlk7td1,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Company | Companies Reached,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-12,Shreya Bodwal,1
+recrI6ArRdab4nk0D,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Contact | Meeting Done,bhaumik@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Bhaumik Sachdeva,0
+recrNTCKsscMg1GyE,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Contact | Call Connected,mayra@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-04,Mayra Singh,33
+recrTVGm3trAM53Oj,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Contact | Meeting Booked,devansh.shukla@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-09,Devansh Shukla,0
+recrcp36bXCGRGuXo,2026-09-01T19:25:10Z,Aditi saini | 2026-06-04 | Company | Requirements Stated,aditi.saini@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Aditi saini,2
+recrgTBCxrisLIEai,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Company | SQLs Accepted,shreya.bodwal@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-02,Shreya Bodwal,1
+recriGILvRXfNQGH3,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-10 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-10,Bhaumik Sachdeva,1
+recrjhwCqfHzZBTMn,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Contact | Meeting Booked,gurnoor@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-04,Gurnoor Kaur,0
+recrld8GYt9jsu1IM,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-02 | Company | Companies Worked,muskan@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Muskan Rajpoot,1
+recrmXEbsuEVHAFRo,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Contact | Meeting Booked,gurnoor@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Gurnoor Kaur,0
+recrmq6ccT8tqLorg,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-04 | Contact | SQL,rubal@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Rubal Sansanwal,0
+recs2sZIrnRjcU4pz,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Contact | Meeting Done,arshdeep@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Arshdeep Singh,0
+recs502aZMdaKiINL,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-12 | Contact | Meeting Booked,tanay.kumar@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-12,Tanay Kumar,8
+recsMkUs639AGQ42u,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Company | SQLs Accepted,bhaumik@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-11,Bhaumik Sachdeva,1
+recsRnBI1e1BlqddS,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Company | SQLs Rejected,shreya.bodwal@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-09,Shreya Bodwal,0
+recsSAE0E3pFhgEUQ,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Company | Companies Worked,rubal@enout.in,2026-W24,2026-06,Company,Companies Worked,2026-06-08,Rubal Sansanwal,45
+recsSELSbnYVHhQMR,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Contact | SQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Shreya Bodwal,1
+recsU4LnaHPq80flZ,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Company | SQLs Rejected,devansh.shukla@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Devansh Shukla,0
+recsWWWwuNageQLym,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Contact | MQL,arshdeep@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-09,Arshdeep Singh,0
+recsWqLAd53dVEhRt,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Company | Requirements Stated,mayra@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-02,Mayra Singh,3
+recsYSCoDGIw5V72P,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Contact | Call Connected,tanay.kumar@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Tanay Kumar,3
+recsZQOthJXz1gWYV,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-03 | Contact | Meeting Done,gaurav@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-03,Gaurav Kumar,0
+recsdIU4GApmjmfP6,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Contact | Meeting Done,gurnoor@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-01,Gurnoor Kaur,0
+recsgGeIz2tEPrpAY,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-09 | Contact | Meeting Done,rubal@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-09,Rubal Sansanwal,0
+recstNGm8bqKx0puu,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Contact | SQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-05,Shreya Bodwal,0
+rect5CsAWBGjAdHgX,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-09 | Contact | Meeting Done,mayra@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-09,Mayra Singh,0
+rect5dUebhGewl0hs,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Contact | SQL,bhaumik@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-09,Bhaumik Sachdeva,1
+rect6GQ68UNJQjFhU,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-03 | Company | Companies Worked,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-03,Tanay Kumar,3
+rect8VXwrWEor9AMA,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Contact | Call Connected,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-09,Bhaumik Sachdeva,9
+rect8iJsqSW73tMjb,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-04 | Company | SQLs Rejected,tanay.kumar@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-04,Tanay Kumar,0
+rectAZKuqaOOTVRPC,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Company | Companies Worked,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Tanay Kumar,3
+rectFycXJXEpzmc99,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Company | Companies Worked,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Bhaumik Sachdeva,3
+rectHjFVTsmQlGwnF,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Contact | Call Connected,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Bhaumik Sachdeva,8
+rectUAuk22AaIHhHW,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-02 | Contact | Call Attempted,arshdeep@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Arshdeep Singh,2
+rectUnSnQNtpZIHM3,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Contact | SQL,arshdeep@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-09,Arshdeep Singh,0
+rectYtw3aJzwrooEt,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-03 | Contact | MQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-03,Shreya Bodwal,0
+rectswqacOIUFQzpK,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Contact | SQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Tanay Kumar,0
+rectvZJPDRtzKFevj,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Contact | MQL,muskan@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-08,Muskan Rajpoot,0
+rectyPGqmwmEHeMNZ,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-09 | Company | Companies Reached,bhaumik@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-09,Bhaumik Sachdeva,10
+recu17UednB8gZexc,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Company | Companies Reached,muskan@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Muskan Rajpoot,2
+recu3dKmtBIqmTSa2,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Contact | MQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-04,Shreya Bodwal,0
+recu7hLQjuWIWedhv,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-04 | Company | Companies Worked,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Bhaumik Sachdeva,15
+recuFbNvWcPAL2oAY,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-10 | Contact | SQL,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-10,Shreya Bodwal,0
+recuI6QlZXX2WMsUL,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Contact | Call Connected,anjali.athya@enout.in,2026-W24,2026-06,Contact,Call Connected,2026-06-12,Anjali Athya,1
+recuLGrymdlOughKH,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-09 | Company | SQLs Accepted,gurnoor@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-09,Gurnoor Kaur,0
+recuLWLmjIBVpJdMj,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Contact | Meeting Booked,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-03,Devansh Shukla,0
+recuLnxhjwRB3ZoT1,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Company | Handoff Calls Held,arshdeep@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-09,Arshdeep Singh,0
+recuPDBODD6zz5grj,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Contact | Call Attempted,mayra@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Mayra Singh,18
+recuRbjZwzYA6yaJA,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Contact | Meeting Done,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-05,Mayra Singh,0
+recufKcq7Jm2PPSCm,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-12 | Contact | MQL,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-12,Shreya Bodwal,0
+recuixgCGSprWD8CN,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Company | Requirements Stated,bhaumik@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-05,Bhaumik Sachdeva,2
+recujNPO1QpV18mbz,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Contact | MQL,aditi.saini@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Aditi saini,0
+recup2i4VD1imQU2h,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Company | Handoff Calls Held,rubal@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Rubal Sansanwal,1
+recusrLQ41zUcVrv0,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Company | Handoff Calls Held,mayra@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Mayra Singh,0
+recuuCtnaGg2GXSji,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Contact | Meeting Done,mayra@enout.in,2026-W23,2026-06,Contact,Meeting Done,2026-06-04,Mayra Singh,0
+recv2AFdgof2BL9nP,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Contact | Call Attempted,bhaumik@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-11,Bhaumik Sachdeva,9
+recv3g6aRSfr4rNBT,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-01 | Contact | MQL,gurnoor@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Gurnoor Kaur,0
+recv7DKWJdScoAQRl,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Company | SQLs Rejected,gaurav@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-02,Gaurav Kumar,0
+recvOwBCfYLdRqG8D,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Company | Handoff Calls Held,aditi.saini@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-01,Aditi saini,0
+recvZDm5j83uwHHV3,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Contact | Meeting Booked,aditi.saini@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Aditi saini,0
+recvaihJeKYvsA7M9,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Company | Handoff Calls Held,shreya.bodwal@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-08,Shreya Bodwal,0
+recvdab0NF4N28Hra,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-11 | Contact | MQL,bhaumik@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-11,Bhaumik Sachdeva,0
+recvhkOus7mCeuFuG,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Company | Handoff Calls Held,arshdeep@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-04,Arshdeep Singh,0
+recvlTLshvRZ1HkbW,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Company | Companies Reached,arshdeep@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Arshdeep Singh,3
+recvnP8mnjGC2x3Qv,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-05 | Company | Companies Worked,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-05,Devansh Shukla,31
+recvncG76rZT7JVZC,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Contact | MQL,aditi.saini@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-05,Aditi saini,0
+recvp4hWFFJf507Yv,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-04 | Company | SQLs Accepted,mayra@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Mayra Singh,0
+recvrldvnyXKDRrFD,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-09 | Company | Requirements Stated,devansh.shukla@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-09,Devansh Shukla,4
+recvwSlGDSPQ7JarP,2026-09-01T19:25:10Z,Aditi saini | 2026-06-12 | Contact | MQL,aditi.saini@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-12,Aditi saini,0
+recvyZ34B5m379XxT,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-09 | Contact | Meeting Done,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-09,Shreya Bodwal,2
+recw0twdHHl6hFqQg,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Company | SQLs Accepted,anjali.athya@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Anjali Athya,0
+recwA2tzDezPUrSFN,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Company | Handoff Calls Held,gaurav@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Gaurav Kumar,0
+recwEmqpqxg2eVTQw,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Contact | Meeting Booked,muskan@enout.in,2026-W24,2026-06,Contact,Meeting Booked,2026-06-08,Muskan Rajpoot,0
+recwFIQTlTUOrJMac,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-01 | Company | Companies Reached,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Devansh Shukla,21
+recwHRiCFvE2oAg3Q,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-04 | Contact | SQL,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Shreya Bodwal,0
+recwJvfxgys4o8Va7,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-12 | Company | Handoff Calls Held,gaurav@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-12,Gaurav Kumar,1
+recwR8lHwLXdFWlfO,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Company | Requirements Stated,rubal@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-08,Rubal Sansanwal,32
+recwZfijRWCknCMT1,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Company | SQLs Accepted,shreya.bodwal@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Shreya Bodwal,0
+recwePK3AEqUeOqtH,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Company | Requirements Stated,devansh.shukla@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-04,Devansh Shukla,15
+recwgbo7f5ru8fdTb,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-08 | Company | Companies Reached,mayra@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-08,Mayra Singh,53
+recwnPEaz5DtGFILi,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Contact | Meeting Booked,arshdeep@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Arshdeep Singh,0
+recwuTMYySQVDpU0M,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-01 | Contact | MQL,arshdeep@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Arshdeep Singh,0
+recwwlUSkmjWCEplv,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Contact | SQL,rubal@enout.in,2026-W24,2026-06,Contact,SQL,2026-06-08,Rubal Sansanwal,1
+recx6fAvDtR9dSm6k,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Company | Companies Reached,arshdeep@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-09,Arshdeep Singh,1
+recx9FQYeU9bhKuKY,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-05 | Company | Companies Reached,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-05,Bhaumik Sachdeva,4
+recxB0KYGbYWQeo9x,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Contact | Call Connected,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-03,Bhaumik Sachdeva,7
+recxBhg1KqUJkgQ9X,2026-09-01T19:25:10Z,Aditi saini | 2026-06-01 | Company | SQLs Accepted,aditi.saini@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-01,Aditi saini,0
+recxClVmp6uPdonBW,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-12 | Company | SQLs Accepted,anjali.athya@enout.in,2026-W24,2026-06,Company,SQLs Accepted,2026-06-12,Anjali Athya,0
+recxDGTvhb7TPUMUF,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Contact | MQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-02,Tanay Kumar,0
+recxE5vBmW2Mmu63w,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Company | Requirements Stated,mayra@enout.in,2026-W23,2026-06,Company,Requirements Stated,2026-06-05,Mayra Singh,14
+recxEK0Iy20ypX4cC,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-10 | Contact | Call Attempted,mayra@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-10,Mayra Singh,26
+recxJfvn8gAnREc5o,2026-09-01T19:25:10Z,Aditi saini | 2026-06-08 | Company | SQLs Rejected,aditi.saini@enout.in,2026-W24,2026-06,Company,SQLs Rejected,2026-06-08,Aditi saini,0
+recxNerTAwMkHuOpS,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-08 | Contact | Meeting Done,shreya.bodwal@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-08,Shreya Bodwal,0
+recxP3CZNri7JNnOw,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-01 | Company | SQLs Rejected,mayra@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-01,Mayra Singh,0
+recxPCIpJOrqsL58X,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Company | SQLs Accepted,gurnoor@enout.in,2026-W23,2026-06,Company,SQLs Accepted,2026-06-04,Gurnoor Kaur,0
+recxYkKyBEoWQ6NAm,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Company | SQLs Rejected,mayra@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-05,Mayra Singh,0
+recxa3VMnoz2u7XGf,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Contact | Meeting Done,rubal@enout.in,2026-W24,2026-06,Contact,Meeting Done,2026-06-12,Rubal Sansanwal,4
+recxbvZ0cFT0AvPEy,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Contact | Call Attempted,gaurav@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Gaurav Kumar,1
+recxha81liVbhI4lW,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-01 | Contact | Call Attempted,bhaumik@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-01,Bhaumik Sachdeva,4
+recxx2SebJUHNxlXj,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Contact | MQL,rubal@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-12,Rubal Sansanwal,0
+recxxvYv2oBv8yepN,2026-09-01T19:25:10Z,Gaurav Kumar | 2026-06-02 | Company | Companies Worked,gaurav@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-02,Gaurav Kumar,1
+recxykL9hFp96y3a1,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-08 | Contact | MQL,rubal@enout.in,2026-W24,2026-06,Contact,MQL,2026-06-08,Rubal Sansanwal,2
+recy2Kmp7n0LH0Ojc,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Contact | SQL,muskan@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-01,Muskan Rajpoot,0
+recyDYgjqSK1S2x2N,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-03 | Company | Companies Reached,devansh.shukla@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-03,Devansh Shukla,9
+recyHEU8KLOeuLTvE,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-02 | Contact | Call Connected,mayra@enout.in,2026-W23,2026-06,Contact,Call Connected,2026-06-02,Mayra Singh,6
+recyKuGlHRi61aVIV,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-02 | Contact | Call Attempted,rubal@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-02,Rubal Sansanwal,13
+recyP4eorCBN1speq,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-02 | Contact | SQL,devansh.shukla@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-02,Devansh Shukla,0
+recyTPJVUsij1R6LU,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-02 | Company | Handoff Calls Held,bhaumik@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Bhaumik Sachdeva,0
+recyTRV0s4yzOCJBq,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Company | Companies Reached,muskan@enout.in,2026-W24,2026-06,Company,Companies Reached,2026-06-08,Muskan Rajpoot,1
+recyUq6uajbuLR7iN,2026-09-01T19:25:10Z,Aditi saini | 2026-06-05 | Company | Companies Reached,aditi.saini@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-05,Aditi saini,1
+recyk1DkvVwItlG5h,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Contact | SQL,gurnoor@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-04,Gurnoor Kaur,0
+recynotKL1245y64u,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-01 | Contact | Meeting Booked,shreya.bodwal@enout.in,2026-W23,2026-06,Contact,Meeting Booked,2026-06-01,Shreya Bodwal,0
+recyoQF6GH1H5pt1M,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-02 | Company | Handoff Calls Held,tanay.kumar@enout.in,2026-W23,2026-06,Company,Handoff Calls Held,2026-06-02,Tanay Kumar,0
+recysS7ViB6PHmxXv,2026-09-01T19:25:10Z,Mayra Singh | 2026-06-05 | Contact | SQL,mayra@enout.in,2026-W23,2026-06,Contact,SQL,2026-06-05,Mayra Singh,0
+recyyct9GUrEPkTz5,2026-09-01T19:25:10Z,Rubal Sansanwal | 2026-06-12 | Company | Handoff Calls Held,rubal@enout.in,2026-W24,2026-06,Company,Handoff Calls Held,2026-06-12,Rubal Sansanwal,4
+recz17YrorhoeAeS8,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-05 | Company | SQLs Rejected,shreya.bodwal@enout.in,2026-W23,2026-06,Company,SQLs Rejected,2026-06-05,Shreya Bodwal,0
+recz59UQ2hxGjMV7y,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-05 | Company | Companies Worked,tanay.kumar@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-05,Tanay Kumar,14
+recz67Rt68A90myJ7,2026-09-01T19:25:10Z,Tanay Kumar | 2026-06-01 | Contact | MQL,tanay.kumar@enout.in,2026-W23,2026-06,Contact,MQL,2026-06-01,Tanay Kumar,2
+recz8mmxBZDjyHbUF,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-09 | Company | Requirements Stated,arshdeep@enout.in,2026-W24,2026-06,Company,Requirements Stated,2026-06-09,Arshdeep Singh,0
+reczL9CC2s6izgZgw,2026-09-01T19:25:10Z,Arshdeep Singh | 2026-06-04 | Company | Companies Worked,arshdeep@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Arshdeep Singh,5
+reczLfYtII9OGY6qJ,2026-09-01T19:25:10Z,Bhaumik Sachdeva | 2026-06-03 | Company | Companies Reached,bhaumik@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-03,Bhaumik Sachdeva,3
+reczULtc65vY2A4uE,2026-09-01T19:25:10Z,Gurnoor Kaur | 2026-06-04 | Company | Companies Worked,gurnoor@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-04,Gurnoor Kaur,3
+reczY0uItWayHqoRQ,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-01 | Company | Companies Worked,muskan@enout.in,2026-W23,2026-06,Company,Companies Worked,2026-06-01,Muskan Rajpoot,2
+reczeDefRuLknVtQI,2026-09-01T19:25:10Z,Devansh Shukla | 2026-06-04 | Contact | Call Attempted,devansh.shukla@enout.in,2026-W23,2026-06,Contact,Call Attempted,2026-06-04,Devansh Shukla,28
+reczeDq8OCcdTDYJG,2026-09-01T19:25:10Z,Shreya Bodwal | 2026-06-02 | Company | Companies Reached,shreya.bodwal@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-02,Shreya Bodwal,15
+reczq0AftbQz2QLAO,2026-09-01T19:25:10Z,Anjali Athya | 2026-06-01 | Company | Companies Reached,anjali.athya@enout.in,2026-W23,2026-06,Company,Companies Reached,2026-06-01,Anjali Athya,3
+reczu2T9PCYo3x3vT,2026-09-01T19:25:10Z,Muskan Rajpoot | 2026-06-08 | Contact | Call Attempted,muskan@enout.in,2026-W24,2026-06,Contact,Call Attempted,2026-06-08,Muskan Rajpoot,1
