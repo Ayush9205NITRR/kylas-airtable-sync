@@ -39708,17 +39708,17 @@
    }
   },
   "1772963": {
-   "status": "Active",
+   "status": "MQL - Action Needed",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-19",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-19",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "MQL - Action Needed"
    }
   },
   "1772964": {
