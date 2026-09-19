@@ -8892,12 +8892,12 @@
 "last_call_date": ""
 },
 "5355037": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "MQL (Marketing Qualified Lead)",
 "owner": "Rubal Sansanwal",
 "email": "rubal@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-19",
+"changes": 1,
+"last_call_date": "2026-09-19"
 },
 "5355038": {
 "stage": "CNC (Could Not Connect) - 2",
