@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-09-18",
+"as_of": "2026-09-19",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -222460,12 +222460,12 @@
 "last_call_date": ""
 },
 "5384596": {
-"stage": "Connect Later",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Devansh Shukla",
 "email": "devansh.shukla@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-19",
+"changes": 1,
+"last_call_date": "2026-09-19"
 },
 "5384597": {
 "stage": "LinkedIn Outreach Initiated",
@@ -265556,12 +265556,12 @@
 "last_call_date": "2026-09-11"
 },
 "6185718": {
-"stage": "Follow-up (3)",
+"stage": "Connect Later",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-09-17",
-"changes": 4,
-"last_call_date": "2026-09-17"
+"since": "2026-09-19",
+"changes": 5,
+"last_call_date": "2026-09-19"
 },
 "6185838": {
 "stage": "Not Interested",
