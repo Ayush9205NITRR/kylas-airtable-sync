@@ -7522,17 +7522,17 @@
    }
   },
   "1770639": {
-   "status": "Active",
+   "status": "MQL - Action Needed",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "MQL - Action Needed"
    }
   },
   "1770640": {
@@ -52840,17 +52840,17 @@
    }
   },
   "1773920": {
-   "status": "Active",
+   "status": "MQL - Action Needed",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "MQL - Action Needed"
    }
   },
   "1773921": {
@@ -57166,17 +57166,17 @@
    }
   },
   "1774234": {
-   "status": "Active",
+   "status": "MQL - Action Needed",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "MQL - Action Needed"
    }
   },
   "1774235": {
@@ -86745,17 +86745,17 @@
    }
   },
   "1776685": {
-   "status": "Active",
+   "status": "Exhausted",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Exhausted"
    }
   },
   "1776686": {
@@ -105141,17 +105141,17 @@
    }
   },
   "1778028": {
-   "status": "Fresh",
+   "status": "Active",
    "baseline": "Active",
-   "prev": "Active",
-   "changed": "2026-09-06",
-   "count": 1,
+   "prev": "Fresh",
+   "changed": "2026-09-21",
+   "count": 2,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-09-06",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Fresh"
+    "2026-09": "Active"
    }
   },
   "1778029": {
@@ -117096,17 +117096,17 @@
    }
   },
   "1778895": {
-   "status": "MQL - Action Needed",
+   "status": "Active",
    "baseline": "MQL - Action Needed",
-   "prev": "Discovery Call Stage",
-   "changed": "2026-09-18",
-   "count": 2,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-09-21",
+   "count": 3,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-09-18",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "MQL - Action Needed",
-    "2026-09": "MQL - Action Needed"
+    "2026-09": "Active"
    }
   },
   "1778896": {
@@ -123004,17 +123004,17 @@
    }
   },
   "1779330": {
-   "status": "Offsite Delayed",
+   "status": "Discovery Call Stage",
    "baseline": "Offsite Delayed",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Offsite Delayed",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Offsite Delayed",
-    "2026-09": "Offsite Delayed"
+    "2026-09": "Discovery Call Stage"
    }
   },
   "1779331": {
@@ -143609,17 +143609,17 @@
    }
   },
   "1780827": {
-   "status": "Active",
+   "status": "Offsite Delayed",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Offsite Delayed"
    }
   },
   "1780828": {
@@ -145219,17 +145219,17 @@
    }
   },
   "1780945": {
-   "status": "Active",
+   "status": "Exhausted",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Exhausted"
    }
   },
   "1780946": {
@@ -148327,17 +148327,17 @@
    }
   },
   "1781171": {
-   "status": "MQL - Action Needed",
+   "status": "Active",
    "baseline": "MQL - Action Needed",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "MQL - Action Needed",
-    "2026-09": "MQL - Action Needed"
+    "2026-09": "Active"
    }
   },
   "1781172": {
@@ -170223,17 +170223,17 @@
    }
   },
   "1782814": {
-   "status": "Exhausted",
+   "status": "Active",
    "baseline": "Active",
-   "prev": "Active",
-   "changed": "2026-09-11",
-   "count": 1,
+   "prev": "Exhausted",
+   "changed": "2026-09-21",
+   "count": 2,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-09-11",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Exhausted"
+    "2026-09": "Active"
    }
   },
   "1782815": {
@@ -177055,17 +177055,17 @@
    }
   },
   "1783363": {
-   "status": "Active",
+   "status": "Exhausted",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Exhausted"
    }
   },
   "1783364": {
@@ -177951,17 +177951,17 @@
    }
   },
   "1783430": {
-   "status": "Active",
+   "status": "MQL - Action Needed",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "MQL - Action Needed"
    }
   },
   "1783431": {
@@ -181381,17 +181381,17 @@
    }
   },
   "1783695": {
-   "status": "Active",
+   "status": "MQL - Action Needed",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "MQL - Action Needed"
    }
   },
   "1783698": {
@@ -192571,15 +192571,15 @@
    }
   },
   "1907821": {
-   "status": "Active",
+   "status": "Exhausted",
    "baseline": "Active",
-   "prev": "Exhausted",
-   "changed": "2026-09-17",
-   "count": 2,
+   "prev": "Active",
+   "changed": "2026-09-21",
+   "count": 3,
    "month": "2026-09",
-   "status_since": "2026-09-17",
+   "status_since": "2026-09-21",
    "months": {
-    "2026-09": "Active"
+    "2026-09": "Exhausted"
    },
    "v": 2
   },
@@ -193395,17 +193395,17 @@
    }
   },
   "1925613": {
-   "status": "Exhausted",
+   "status": "Active",
    "baseline": "Exhausted",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Exhausted",
+   "changed": "2026-09-21",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-21",
    "months": {
     "2026-08": "Exhausted",
-    "2026-09": "Exhausted"
+    "2026-09": "Active"
    }
   },
   "1925720": {
@@ -194749,15 +194749,15 @@
    "v": 2
   },
   "1977815": {
-   "status": "Active",
+   "status": "Exhausted",
    "baseline": "Exhausted",
-   "prev": "Exhausted",
+   "prev": "Active",
    "changed": "2026-09-21",
-   "count": 1,
+   "count": 2,
    "month": "2026-09",
    "status_since": "2026-09-21",
    "months": {
-    "2026-09": "Active"
+    "2026-09": "Exhausted"
    },
    "v": 2
   },
@@ -194834,6 +194834,19 @@
    "count": 0,
    "month": "2026-09",
    "status_since": "2026-09-16",
+   "months": {
+    "2026-09": "Active"
+   },
+   "v": 2
+  },
+  "1983939": {
+   "status": "Active",
+   "baseline": "Active",
+   "prev": "",
+   "changed": "",
+   "count": 0,
+   "month": "2026-09",
+   "status_since": "2026-09-21",
    "months": {
     "2026-09": "Active"
    },
