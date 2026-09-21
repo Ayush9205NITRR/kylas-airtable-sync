@@ -24732,11 +24732,11 @@
 "last_call_date": ""
 },
 "5357224": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "LinkedIn Outreach Initiated",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-09-05",
-"changes": 0,
+"since": "2026-09-21",
+"changes": 1,
 "last_call_date": ""
 },
 "5357225": {
@@ -72212,11 +72212,11 @@
 "last_call_date": ""
 },
 "5364096": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "LinkedIn Outreach Initiated",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-09-05",
-"changes": 0,
+"since": "2026-09-21",
+"changes": 1,
 "last_call_date": ""
 },
 "5364097": {
@@ -85532,12 +85532,12 @@
 "last_call_date": ""
 },
 "5365800": {
-"stage": "Follow-up (1)",
+"stage": "Connect Later",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-09-16",
-"changes": 2,
-"last_call_date": "2026-09-16"
+"since": "2026-09-21",
+"changes": 3,
+"last_call_date": "2026-09-21"
 },
 "5365801": {
 "stage": "LinkedIn Outreach Initiated",
@@ -251820,12 +251820,12 @@
 "last_call_date": ""
 },
 "5852561": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Offsite Delayed",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-21",
+"changes": 1,
+"last_call_date": "2026-09-21"
 },
 "5852585": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -257420,12 +257420,12 @@
 "last_call_date": ""
 },
 "5930132": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "Closing Loops - Low Value",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-21",
+"changes": 1,
+"last_call_date": "2026-09-21"
 },
 "5930153": {
 "stage": "Not Interested",
@@ -266212,12 +266212,12 @@
 "last_call_date": "2026-09-16"
 },
 "6199775": {
-"stage": "Followup - CNC",
+"stage": "Follow-up (2)",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-09-17",
-"changes": 4,
-"last_call_date": "2026-09-17"
+"since": "2026-09-21",
+"changes": 5,
+"last_call_date": "2026-09-21"
 },
 "6199872": {
 "stage": "CNC (Could Not Connect) - 1",
