@@ -39348,12 +39348,12 @@
 "last_call_date": ""
 },
 "5359252": {
-"stage": "Follow-up (1)",
+"stage": "Follow-up (2)",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-21",
+"changes": 1,
+"last_call_date": "2026-09-21"
 },
 "5359253": {
 "stage": "Activation",
@@ -67260,12 +67260,12 @@
 "last_call_date": ""
 },
 "5363274": {
-"stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Arshdeep Singh",
+"email": "arshdeep@enout.in",
+"since": "2026-09-21",
+"changes": 1,
+"last_call_date": "2026-09-21"
 },
 "5363275": {
 "stage": "Invalid Contact",
@@ -95426,6 +95426,14 @@
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
+},
+"5367128": {
+"stage": "Follow-up (1)",
+"owner": "Arshdeep Singh",
+"email": "arshdeep@enout.in",
+"since": "2026-09-21",
+"changes": 1,
+"last_call_date": "2026-09-21"
 },
 "5367129": {
 "stage": "Not Interested",
@@ -188756,12 +188764,12 @@
 "last_call_date": ""
 },
 "5380113": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "POC - Organization - Changed",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-21",
+"changes": 1,
+"last_call_date": "2026-09-21"
 },
 "5380114": {
 "stage": "Invalid Contact",
@@ -254596,12 +254604,12 @@
 "last_call_date": ""
 },
 "5880746": {
-"stage": "Connect Later",
+"stage": "Not Interested",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-21",
+"changes": 1,
+"last_call_date": "2026-09-21"
 },
 "5881542": {
 "stage": "Not a Decision Maker (NDM)",
