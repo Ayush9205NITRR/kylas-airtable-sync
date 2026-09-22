@@ -133716,12 +133716,12 @@
 "last_call_date": ""
 },
 "5372601": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Follow-up (1)",
 "owner": "Vipul Bansal",
 "email": "vipul.bansal@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-09-22",
+"changes": 1,
+"last_call_date": "2026-09-22"
 },
 "5372602": {
 "stage": "LinkedIn Outreach Initiated",
