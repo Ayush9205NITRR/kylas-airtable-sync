@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-09-25",
+"as_of": "2026-09-26",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
