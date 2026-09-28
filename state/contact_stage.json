@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-09-27",
+"as_of": "2026-09-28",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -45876,12 +45876,12 @@
 "last_call_date": ""
 },
 "5360192": {
-"stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
+"stage": "Invalid Contact",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
+"since": "2026-09-28",
+"changes": 2,
+"last_call_date": "2026-09-28"
 },
 "5360193": {
 "stage": "LinkedIn Outreach Initiated",
@@ -95180,12 +95180,12 @@
 "last_call_date": ""
 },
 "5367034": {
-"stage": "Follow-up (2)",
+"stage": "Activation",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-09-24",
-"changes": 3,
-"last_call_date": "2026-09-24"
+"since": "2026-09-28",
+"changes": 4,
+"last_call_date": "2026-09-28"
 },
 "5367035": {
 "stage": "Disqualified - Wrong POC",
@@ -137636,12 +137636,12 @@
 "last_call_date": ""
 },
 "5373087": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-09-25",
-"changes": 1,
-"last_call_date": "2026-09-25"
+"since": "2026-09-28",
+"changes": 2,
+"last_call_date": "2026-09-28"
 },
 "5373088": {
 "stage": "LinkedIn Outreach Initiated",
@@ -207372,12 +207372,12 @@
 "last_call_date": ""
 },
 "5382519": {
-"stage": "Activation",
+"stage": "Follow-up (2)",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-09-24",
-"changes": 4,
-"last_call_date": "2026-09-24"
+"since": "2026-09-28",
+"changes": 5,
+"last_call_date": "2026-09-28"
 },
 "5382520": {
 "stage": "LinkedIn Outreach Initiated",
@@ -267196,12 +267196,12 @@
 "last_call_date": "2026-09-25"
 },
 "6243794": {
-"stage": "Follow-up (1)",
+"stage": "Follow-up (2)",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-09-25",
-"changes": 1,
-"last_call_date": "2026-09-25"
+"since": "2026-09-28",
+"changes": 2,
+"last_call_date": "2026-09-28"
 },
 "6244065": {
 "stage": "Not Interested",
