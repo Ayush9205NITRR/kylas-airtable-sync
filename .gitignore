@@ -9,3 +9,4 @@ build/
 .venv/
 venv/
 logs/
+data/linkedin_posts_mapping_report.csv
