@@ -1,4 +1,5 @@
 name: Map LinkedIn Posts CSV -> Airtable (run on demand)
+# Fills Airtable "Boolean (linked)" / "Offsite Timeline (linked)" from data/linkedin_posts_mapping.csv
 
 on:
   workflow_dispatch:
