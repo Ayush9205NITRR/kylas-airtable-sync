@@ -267338,6 +267338,30 @@
 "since": "2026-09-28",
 "changes": 1,
 "last_call_date": "2026-09-28"
+},
+"6256968": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-09-29",
+"changes": 1,
+"last_call_date": "2026-09-29"
+},
+"6257049": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-09-29",
+"changes": 1,
+"last_call_date": "2026-09-29"
+},
+"6257180": {
+"stage": "Offsite Done (Late Reachout)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-09-29",
+"changes": 1,
+"last_call_date": "2026-09-29"
 }
 }
 }

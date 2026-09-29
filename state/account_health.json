@@ -1,7 +1,7 @@
 {
  "_comment": "Account Health snapshot. Written by modules/06_account_health.py; see utils/health_history.py. git history is the archive.",
  "formula_version": 2,
- "as_of": "2026-09-28",
+ "as_of": "2026-09-29",
  "accounts": {
   "1770092": {
    "status": "Active",
@@ -31042,17 +31042,17 @@
    }
   },
   "1772335": {
-   "status": "MQL - Action Needed",
+   "status": "Active",
    "baseline": "Active",
-   "prev": "Active",
-   "changed": "2026-09-25",
-   "count": 1,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-09-29",
+   "count": 2,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-09-25",
+   "status_since": "2026-09-29",
    "months": {
     "2026-08": "Active",
-    "2026-09": "MQL - Action Needed"
+    "2026-09": "Active"
    }
   },
   "1772336": {
@@ -95649,17 +95649,17 @@
    }
   },
   "1777335": {
-   "status": "Active",
+   "status": "Offsite Done",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-29",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-29",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Offsite Done"
    }
   },
   "1777336": {
@@ -99317,17 +99317,17 @@
    }
   },
   "1777601": {
-   "status": "Offsite Delayed",
+   "status": "MQL - Action Needed",
    "baseline": "Offsite Delayed",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Offsite Delayed",
+   "changed": "2026-09-29",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-29",
    "months": {
     "2026-08": "Offsite Delayed",
-    "2026-09": "Offsite Delayed"
+    "2026-09": "MQL - Action Needed"
    }
   },
   "1777602": {
@@ -145078,17 +145078,17 @@
    }
   },
   "1780934": {
-   "status": "Active",
+   "status": "Exhausted",
    "baseline": "Active",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-09-29",
+   "count": 1,
    "month": "2026-09",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-09-29",
    "months": {
     "2026-08": "Active",
-    "2026-09": "Active"
+    "2026-09": "Exhausted"
    }
   },
   "1780935": {
@@ -194827,15 +194827,15 @@
    "v": 2
   },
   "1977843": {
-   "status": "Fresh",
+   "status": "Discovery Call Stage",
    "baseline": "Fresh",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Fresh",
+   "changed": "2026-09-29",
+   "count": 1,
    "month": "2026-09",
-   "status_since": "2026-09-28",
+   "status_since": "2026-09-29",
    "months": {
-    "2026-09": "Fresh"
+    "2026-09": "Discovery Call Stage"
    },
    "v": 2
   },
