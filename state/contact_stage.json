@@ -173660,12 +173660,12 @@
 "last_call_date": ""
 },
 "5378089": {
-"stage": "LinkedIn Outreach Initiated",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Charu Rathi",
 "email": "charu@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
 },
 "5378090": {
 "stage": "LinkedIn Outreach Initiated",
@@ -227716,12 +227716,12 @@
 "last_call_date": ""
 },
 "5385245": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Charu Rathi",
 "email": "charu@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
 },
 "5385246": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -267573,6 +267573,62 @@
 },
 "6263453": {
 "stage": "Disqualified - Wrong POC",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
+},
+"6264606": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
+},
+"6264622": {
+"stage": "Connect Later",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
+},
+"6264635": {
+"stage": "MQL (Marketing Qualified Lead)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
+},
+"6264643": {
+"stage": "MQL (Marketing Qualified Lead)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
+},
+"6264704": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
+},
+"6264726": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
+},
+"6264728": {
+"stage": "Connect Later",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
 "since": "2026-10-01",
