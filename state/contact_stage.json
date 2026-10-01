@@ -267436,12 +267436,12 @@
 "last_call_date": "2026-09-30"
 },
 "6257580": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "MQL (Marketing Qualified Lead)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-09-30",
-"changes": 1,
-"last_call_date": "2026-09-30"
+"since": "2026-10-01",
+"changes": 2,
+"last_call_date": "2026-10-01"
 },
 "6257966": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -267524,12 +267524,12 @@
 "last_call_date": "2026-09-30"
 },
 "6260585": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Connect Later",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-09-30",
-"changes": 1,
-"last_call_date": "2026-09-30"
+"since": "2026-10-01",
+"changes": 2,
+"last_call_date": "2026-10-01"
 },
 "6261918": {
 "stage": "Connect Later",
@@ -267538,6 +267538,30 @@
 "since": "2026-09-30",
 "changes": 1,
 "last_call_date": "2026-09-30"
+},
+"6263359": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
+},
+"6263445": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
+},
+"6263453": {
+"stage": "Disqualified - Wrong POC",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-01",
+"changes": 1,
+"last_call_date": "2026-10-01"
 }
 }
 }
