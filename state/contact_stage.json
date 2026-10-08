@@ -267636,12 +267636,12 @@
 "last_call_date": "2026-09-30"
 },
 "6260585": {
-"stage": "Connect Later",
+"stage": "Offsite Done (Late Reachout)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-01",
-"changes": 2,
-"last_call_date": "2026-10-01"
+"since": "2026-10-08",
+"changes": 3,
+"last_call_date": "2026-10-08"
 },
 "6261918": {
 "stage": "Connect Later",
@@ -267860,12 +267860,12 @@
 "last_call_date": "2026-10-07"
 },
 "6283150": {
-"stage": "Follow-up (1)",
+"stage": "Follow-up (2)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-07",
-"changes": 1,
-"last_call_date": "2026-10-07"
+"since": "2026-10-08",
+"changes": 2,
+"last_call_date": "2026-10-08"
 },
 "6285013": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -267883,6 +267883,14 @@
 "changes": 1,
 "last_call_date": "2026-10-07"
 },
+"6286080": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-08",
+"changes": 1,
+"last_call_date": "2026-10-08"
+},
 "6286192": {
 "stage": "CNC (Could Not Connect) - 1",
 "owner": "Arshdeep Singh",
@@ -267890,6 +267898,30 @@
 "since": "2026-10-07",
 "changes": 1,
 "last_call_date": "2026-10-07"
+},
+"6286196": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-08",
+"changes": 1,
+"last_call_date": "2026-10-08"
+},
+"6286233": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-08",
+"changes": 1,
+"last_call_date": "2026-10-08"
+},
+"6286426": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-08",
+"changes": 1,
+"last_call_date": "2026-10-08"
 },
 "6287088": {
 "stage": "Connect Later",
