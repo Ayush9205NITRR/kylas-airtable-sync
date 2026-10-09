@@ -267930,6 +267930,22 @@
 "since": "2026-10-07",
 "changes": 1,
 "last_call_date": "2026-10-07"
+},
+"6292993": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-09",
+"changes": 1,
+"last_call_date": "2026-10-09"
+},
+"6293026": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-09",
+"changes": 1,
+"last_call_date": "2026-10-09"
 }
 }
 }
