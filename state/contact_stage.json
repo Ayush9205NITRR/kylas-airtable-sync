@@ -268163,10 +268163,34 @@
 "changes": 1,
 "last_call_date": "2026-10-12"
 },
+"6308462": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
 "6308468": {
 "stage": "Not a Decision Maker (NDM)",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
+"6308522": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
+"6308743": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
 "since": "2026-10-12",
 "changes": 1,
 "last_call_date": "2026-10-12"
@@ -268179,6 +268203,38 @@
 "changes": 1,
 "last_call_date": "2026-10-12"
 },
+"6308887": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
+"6308898": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
+"6308911": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
+"6308987": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
 "6308998": {
 "stage": "Follow-up (1)",
 "owner": "Arshdeep Singh",
@@ -268187,10 +268243,34 @@
 "changes": 1,
 "last_call_date": "2026-10-12"
 },
+"6309027": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
 "6309156": {
 "stage": "Active Requirement Call Done \u2013 Awaiting Client Inputs",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
+"6309999": {
+"stage": "Discovery Call Booked",
+"owner": "Bhaumik Sachdeva",
+"email": "bhaumik@enout.in",
+"since": "2026-10-12",
+"changes": 1,
+"last_call_date": "2026-10-12"
+},
+"6310024": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
 "since": "2026-10-12",
 "changes": 1,
 "last_call_date": "2026-10-12"
