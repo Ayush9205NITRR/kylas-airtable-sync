@@ -24,6 +24,7 @@ Read-only: fetches from Kylas, writes nothing anywhere.
     python scripts/probe_deal_owner_teams.py --idle-days 2
 """
 import argparse
+import csv
 import importlib.util
 import json
 import os
@@ -111,9 +112,19 @@ def member_teams(kylas) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser(
-        description="List rotting deals with each owner's Kylas team")
+        description="List deals with each owner's Kylas team")
     ap.add_argument("--idle-days", type=int, default=None,
                     help="Override deal_rot.idle_days from team.json")
+    ap.add_argument("--all-deals", action="store_true",
+                    help="Every deal regardless of stage or idle time, "
+                         "open AND closed — not just the rotting ones the "
+                         "alert fires on")
+    ap.add_argument("--non-revenue-only", action="store_true",
+                    help="Keep only deals whose owner is NOT on the revenue team")
+    ap.add_argument("--revenue-team", default="Revenue", metavar="NAME",
+                    help="Kylas team name that counts as revenue (default: Revenue)")
+    ap.add_argument("--csv", default="", metavar="PATH",
+                    help="Also write the rows to this CSV")
     args = ap.parse_args()
 
     dr = _load_deal_rot()
@@ -122,29 +133,42 @@ def main() -> int:
     idle = args.idle_days or int(cfg.get("idle_days", 2))
 
     kylas = KylasClient()
-    print(f"[probe] reading deals (idle_days={idle})...")
+    print("[probe] reading deals...")
     deals = dr._read_deals(kylas)
-    rotten = dr._find_rotten(deals, idle, cfg.get("terminal_stages", []),
-                             cfg.get("alert_stages", []),
-                             cfg.get("excluded_stages", []))
-    print(f"[probe] {len(deals)} deal(s) read, {len(rotten)} rotting\n")
+    if args.all_deals:
+        # No stage or idle filter at all: a deal parked with the wrong team is
+        # a misassignment whether or not it is closed, and the rot alert's
+        # stage allow-list would hide most of them.
+        selected = [{**d, "idle": ""} for d in deals]
+        print(f"[probe] {len(deals)} deal(s) read, ALL included "
+              f"(open and closed, every stage)\n")
+    else:
+        selected = dr._find_rotten(deals, idle, cfg.get("terminal_stages", []),
+                                   cfg.get("alert_stages", []),
+                                   cfg.get("excluded_stages", []))
+        print(f"[probe] {len(deals)} deal(s) read, {len(selected)} rotting\n")
 
     print("[probe] reading Kylas team membership...")
     members = member_teams(kylas)
     print(f"[probe] {len(members)} Kylas user(s)\n")
 
+    rev = args.revenue_team.strip().lower()
     rows, unknown_owner = [], []
-    for d in rotten:
+    for d in selected:
         owner = (d.get("owner") or "").strip()
         info = members.get(owner.lower())
         if info is None:
-            unknown_owner.append(owner)
+            if owner:
+                unknown_owner.append(owner)
             teams, prof = ["(not found in Kylas users)"], ""
         else:
             teams = info["teams"] or ["(no team assigned)"]
             prof = info["profile"]
+        is_revenue = any(t.strip().lower() == rev for t in teams)
+        if args.non_revenue_only and is_revenue:
+            continue
         rows.append({"deal": d.get("name", ""), "owner": owner or "Unassigned",
-                     "teams": teams, "profile": prof,
+                     "teams": teams, "profile": prof, "revenue": is_revenue,
                      "stage": d.get("stage", ""), "idle": d.get("idle", "")})
 
     by_team = defaultdict(lambda: {"deals": 0, "owners": set()})
@@ -153,8 +177,12 @@ def main() -> int:
             by_team[t]["deals"] += 1
             by_team[t]["owners"].add(r["owner"])
 
+    label = "ALL DEALS" if args.all_deals else "ROTTING DEALS"
+    if args.non_revenue_only:
+        label += " — NON-REVENUE OWNERS ONLY"
+
     print("=" * 96)
-    print("ROTTING DEALS BY OWNER'S KYLAS TEAM")
+    print(f"{label} BY OWNER'S KYLAS TEAM")
     print("=" * 96)
     print(f"  {'team':34} {'deals':>6}  owners")
     print(f"  {'-' * 34} {'-' * 6}  {'-' * 44}")
@@ -163,20 +191,35 @@ def main() -> int:
         print(f"  {team:34} {v['deals']:6}  {who[:60]}")
 
     print("\n" + "=" * 96)
-    print("EVERY ROTTING DEAL")
+    print(label)
     print("=" * 96)
-    print(f"  {'deal':44} {'owner':20} {'idle':>4}  team")
-    print(f"  {'-' * 44} {'-' * 20} {'-' * 4}  {'-' * 24}")
-    for r in sorted(rows, key=lambda r: (r["teams"][0], -int(r["idle"] or 0))):
-        print(f"  {r['deal'][:44]:44} {r['owner'][:20]:20} {r['idle']:>4}  "
-              f"{'/'.join(r['teams'])[:30]}")
+    print(f"  {'account / deal':44} {'stage':26} {'owner':20} team")
+    print(f"  {'-' * 44} {'-' * 26} {'-' * 20} {'-' * 20}")
+    for r in sorted(rows, key=lambda r: (r["teams"][0], r["owner"], r["deal"])):
+        print(f"  {r['deal'][:44]:44} {r['stage'][:26]:26} "
+              f"{r['owner'][:20]:20} {'/'.join(r['teams'])[:20]}")
+
+    if args.csv:
+        os.makedirs(os.path.dirname(os.path.abspath(args.csv)) or ".",
+                    exist_ok=True)
+        with open(args.csv, "w", newline="", encoding="utf-8") as fh:
+            w = csv.writer(fh)
+            w.writerow(["Account / Deal Name", "Stage", "Assigned To",
+                        "Owner Kylas Team", "Counts As Revenue", "Idle (days)"])
+            for r in sorted(rows, key=lambda r: (r["teams"][0], r["owner"],
+                                                 r["deal"])):
+                w.writerow([r["deal"], r["stage"], r["owner"],
+                            "/".join(r["teams"]),
+                            "yes" if r["revenue"] else "no", r["idle"]])
+        print(f"\n[probe] wrote {len(rows)} row(s) → {args.csv}")
 
     if unknown_owner:
         print(f"\n[probe] {len(set(unknown_owner))} owner(s) not found among Kylas "
               f"users: {', '.join(sorted(set(unknown_owner)))}")
 
-    print(f"\n[probe] team.json revenue_team is "
-          f"{'EMPTY — nothing defines who counts as revenue' if not json.load(open(TEAM_PATH)).get('revenue_team') else 'populated'}")
+    print(f"\n[probe] revenue team = {args.revenue_team!r} (from Kylas team "
+          f"membership; team.json revenue_team is "
+          f"{'still EMPTY and unused' if not json.load(open(TEAM_PATH)).get('revenue_team') else 'populated'})")
     return 0
 
 
