@@ -1,0 +1,42 @@
+name: Probe — rotting deal owners by Kylas team
+
+# Read-only. Lists every deal the Deal Rotting alert currently fires on,
+# with its owner and that owner's Kylas team(s), then groups owners by team.
+#
+# Exists because "deals assigned to non-revenue folks" has no stored
+# definition: team.json's revenue_team key is empty and nothing reads it. This
+# shows what Kylas actually knows (team membership, the same signal
+# sync_team.py uses for Demand Generation) so the revenue/non-revenue split
+# can be decided from real data rather than guessed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      idle_days:
+        description: 'Override deal_rot.idle_days (blank = use team.json)'
+        required: false
+        default: ''
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: List rotting deals by owner team
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.idle_days }}" ]; then
+            ARGS="--idle-days ${{ github.event.inputs.idle_days }}"
+          fi
+          python scripts/probe_deal_owner_teams.py $ARGS
