@@ -26,6 +26,7 @@ Read-only: fetches from Kylas, writes nothing anywhere.
 import argparse
 import csv
 import importlib.util
+import io
 import json
 import os
 import sys
@@ -125,6 +126,10 @@ def main() -> int:
                     help="Kylas team name that counts as revenue (default: Revenue)")
     ap.add_argument("--csv", default="", metavar="PATH",
                     help="Also write the rows to this CSV")
+    ap.add_argument("--print-csv", action="store_true",
+                    help="Echo the CSV to stdout as well. The table above "
+                         "truncates long names to keep columns aligned, which "
+                         "is fine to read and useless to copy from.")
     args = ap.parse_args()
 
     dr = _load_deal_rot()
@@ -199,18 +204,33 @@ def main() -> int:
         print(f"  {r['deal'][:44]:44} {r['stage'][:26]:26} "
               f"{r['owner'][:20]:20} {'/'.join(r['teams'])[:20]}")
 
+    ordered = sorted(rows, key=lambda r: (r["teams"][0], r["owner"], r["deal"]))
+    header = ["Account / Deal Name", "Stage", "Assigned To",
+              "Owner Kylas Team", "Counts As Revenue", "Idle (days)"]
+
+    def _as_row(r):
+        return [r["deal"], r["stage"], r["owner"], "/".join(r["teams"]),
+                "yes" if r["revenue"] else "no", r["idle"]]
+
+    if args.print_csv:
+        print("\n" + "=" * 96)
+        print("CSV")
+        print("=" * 96)
+        buf = io.StringIO()
+        w = csv.writer(buf, lineterminator="\n")
+        w.writerow(header)
+        for r in ordered:
+            w.writerow(_as_row(r))
+        print(buf.getvalue(), end="")
+
     if args.csv:
         os.makedirs(os.path.dirname(os.path.abspath(args.csv)) or ".",
                     exist_ok=True)
         with open(args.csv, "w", newline="", encoding="utf-8") as fh:
             w = csv.writer(fh)
-            w.writerow(["Account / Deal Name", "Stage", "Assigned To",
-                        "Owner Kylas Team", "Counts As Revenue", "Idle (days)"])
-            for r in sorted(rows, key=lambda r: (r["teams"][0], r["owner"],
-                                                 r["deal"])):
-                w.writerow([r["deal"], r["stage"], r["owner"],
-                            "/".join(r["teams"]),
-                            "yes" if r["revenue"] else "no", r["idle"]])
+            w.writerow(header)
+            for r in ordered:
+                w.writerow(_as_row(r))
         print(f"\n[probe] wrote {len(rows)} row(s) → {args.csv}")
 
     if unknown_owner:

@@ -56,6 +56,7 @@ jobs:
           if [ "${{ github.event.inputs.non_revenue_only }}" != "false" ]; then
             ARGS="$ARGS --non-revenue-only"
           fi
+          ARGS="$ARGS --print-csv"
           eval python scripts/probe_deal_owner_teams.py $ARGS
 
       - name: Upload the CSV
