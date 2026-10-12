@@ -32,7 +32,7 @@ from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils.kylas_client import KylasClient   # noqa: E402
+from utils.kylas_client import KylasClient, KYLAS_BASE   # noqa: E402
 
 TEAM_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                          "config", "team.json")
@@ -50,44 +50,62 @@ def _load_deal_rot():
 def member_teams(kylas) -> dict:
     """{lowercased full name: {"email": str, "teams": [str], "profile": str}}
 
-    Read from the same endpoints sync_team.py uses. A user on no team at all
-    is kept with an empty list rather than dropped — "nobody assigned them a
-    team" is exactly the kind of thing this report should surface, not hide.
+    Paginated, like KylasClient.get_users_by_email: a bare GET returns only
+    the first page, which silently makes every user past it look like they do
+    not exist. That is exactly the wrong failure for this report -- an owner
+    who is merely on page 2 would be indistinguishable from one who is not a
+    Kylas user at all.
+
+    A user on no team is kept with an empty list rather than dropped: "nobody
+    assigned them a team" is a finding, not a reason to hide the row.
     """
     out = {}
     for path in ("tenant/team-members", "users"):
         try:
-            resp = kylas._get(path)
+            page = 0
+            while True:
+                kylas._pace()
+                r = kylas.session.get(f"{KYLAS_BASE}/{path}",
+                                      params={"page": page, "size": 100},
+                                      timeout=30)
+                r.raise_for_status()
+                resp = r.json()
+                members = resp.get("content") or resp.get("data") or []
+                if not isinstance(members, list):
+                    break
+                for m in members:
+                    name = (m.get("name") or
+                            f"{m.get('firstName', '')} {m.get('lastName', '')}".strip())
+                    if not name:
+                        continue
+                    teams = []
+                    for t in (m.get("teams") or []):
+                        tn = t.get("name") if isinstance(t, dict) else str(t)
+                        if tn:
+                            teams.append(tn)
+                    prof = m.get("profile") or {}
+                    prof_name = (prof.get("name") if isinstance(prof, dict)
+                                 else str(prof)) or m.get("profileName") or ""
+                    email = m.get("email") or m.get("emailId") or ""
+                    if not email:
+                        ef = m.get("emails") or []
+                        if isinstance(ef, list) and ef:
+                            first = ef[0]
+                            email = (first.get("value") or first.get("email")
+                                     or (first if isinstance(first, str) else ""))
+                    out[name.strip().lower()] = {"name": name, "email": email,
+                                                 "teams": teams,
+                                                 "profile": prof_name}
+                total_pages = resp.get("totalPages", 1)
+                if page >= total_pages - 1 or not members:
+                    break
+                page += 1
+            if out:
+                print(f"[probe] user list from /{path}")
+                return out
         except Exception as exc:
-            print(f"[probe] {path} failed — {exc}")
+            print(f"[probe] /{path} failed — {exc}")
             continue
-        members = resp.get("content") or resp.get("data") or []
-        if not isinstance(members, list) or not members:
-            continue
-        for m in members:
-            name = (m.get("name") or
-                    f"{m.get('firstName', '')} {m.get('lastName', '')}".strip())
-            if not name:
-                continue
-            teams = []
-            for t in (m.get("teams") or []):
-                tn = t.get("name") if isinstance(t, dict) else str(t)
-                if tn:
-                    teams.append(tn)
-            prof = m.get("profile") or {}
-            prof_name = (prof.get("name") if isinstance(prof, dict) else str(prof)) \
-                or m.get("profileName") or ""
-            email = m.get("email") or m.get("emailId") or ""
-            if not email:
-                ef = m.get("emails") or []
-                if isinstance(ef, list) and ef:
-                    first = ef[0]
-                    email = (first.get("value") or first.get("email")
-                             or (first if isinstance(first, str) else ""))
-            out[name.strip().lower()] = {"name": name, "email": email,
-                                         "teams": teams, "profile": prof_name}
-        if out:
-            return out
     return out
 
 
