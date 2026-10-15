@@ -107,7 +107,9 @@
       "ayush@enout.in",
       "vipul.bansal@enout.in",
       "akash@enout.in",
-      "keshav@enout.in"
+      "keshav@enout.in",
+      "lakshaya.sharma@enout.in",
+      "pawanjot@enout.in"
     ],
     "cc_owner": true,
     "_alert_stages_comment": "Explicit allow-list of pipeline stages that trigger a rot alert: every stage BEYOND 'Discovery Call Scheduled' that is not terminal. Kylas exposes no stage ordering via API (the /pipelines endpoints 400/404), so the order is recorded in _pipeline_order below and the allow-list is spelled out rather than computed. Names must match Kylas exactly (case-insensitive). Stages in neither this nor terminal_stages are reported as UNKNOWN at run time. NOTE: the DMM stages, Venue Locked and Production hold 0 deals today but are included so deals moving into them still alert.",

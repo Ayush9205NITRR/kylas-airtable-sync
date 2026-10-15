@@ -1,9 +1,13 @@
 name: Account Health — Weekly Digest
 
 on:
-  schedule:
-    # Every Monday 8:00 AM IST = 02:30 UTC
-    - cron: '30 2 * * 1'
+  # PAUSED 2026-10-15: the Kylas pipeline is no longer actively used, so its
+  # scheduled API calls are switched off. The base stays for the Deal Rotting
+  # alert (deal_rot.yml), which reads Kylas directly and needs none of this.
+  # Still runnable by hand via workflow_dispatch. Uncomment to resume.
+  # schedule:
+  # # Every Monday 8:00 AM IST = 02:30 UTC
+  # - cron: '30 2 * * 1'
   workflow_dispatch:
     inputs:
       no_email:

@@ -8,9 +8,13 @@ name: Daily Account Status → Kylas
 # still re-sync.
 
 on:
-  schedule:
-    # 7:00 PM IST = 13:30 UTC, Mon–Fri (30 min after the 6:30 PM sync)
-    - cron: '30 13 * * 1-5'
+  # PAUSED 2026-10-15: the Kylas pipeline is no longer actively used, so its
+  # scheduled API calls are switched off. The base stays for the Deal Rotting
+  # alert (deal_rot.yml), which reads Kylas directly and needs none of this.
+  # Still runnable by hand via workflow_dispatch. Uncomment to resume.
+  # schedule:
+  # # 7:00 PM IST = 13:30 UTC, Mon–Fri (30 min after the 6:30 PM sync)
+  # - cron: '30 13 * * 1-5'
   workflow_dispatch:
     inputs:
       since_date:

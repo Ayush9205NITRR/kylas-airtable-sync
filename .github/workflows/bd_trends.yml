@@ -5,10 +5,14 @@ name: BD Trends Rollup
 # feeding an Airtable Interface dashboard. See scripts/build_bd_trends.py.
 
 on:
-  schedule:
-    # 2:00 PM UTC = 7:30 PM IST, Mon-Sat — after the EOD sync (6:30 PM IST)
-    # and the daily account-status job (7:00 PM IST).
-    - cron: '0 14 * * 1-6'
+  # PAUSED 2026-10-15: the Kylas pipeline is no longer actively used, so its
+  # scheduled API calls are switched off. The base stays for the Deal Rotting
+  # alert (deal_rot.yml), which reads Kylas directly and needs none of this.
+  # Still runnable by hand via workflow_dispatch. Uncomment to resume.
+  # schedule:
+  # # 2:00 PM UTC = 7:30 PM IST, Mon-Sat — after the EOD sync (6:30 PM IST)
+  # # and the daily account-status job (7:00 PM IST).
+  # - cron: '0 14 * * 1-6'
   workflow_dispatch:
     inputs:
       mode:

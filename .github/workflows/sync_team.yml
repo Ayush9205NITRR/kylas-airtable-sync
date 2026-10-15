@@ -7,8 +7,12 @@ name: Sync Team from Kylas
 # left untouched.
 
 on:
-  schedule:
-    - cron: '30 1 * * 1-5'
+  # PAUSED 2026-10-15: the Kylas pipeline is no longer actively used, so its
+  # scheduled API calls are switched off. The base stays for the Deal Rotting
+  # alert (deal_rot.yml), which reads Kylas directly and needs none of this.
+  # Still runnable by hand via workflow_dispatch. Uncomment to resume.
+  # schedule:
+  # - cron: '30 1 * * 1-5'
   workflow_dispatch:
     inputs:
       probe:
