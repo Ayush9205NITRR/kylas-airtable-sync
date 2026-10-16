@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-10-15",
+"as_of": "2026-10-16",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -437,8 +437,8 @@
 },
 "5353870": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -925,8 +925,8 @@
 },
 "5353931": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -2013,8 +2013,8 @@
 },
 "5354070": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -3197,8 +3197,8 @@
 },
 "5354220": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -3669,8 +3669,8 @@
 },
 "5354279": {
 "stage": "Connect Later",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-10",
 "changes": 1,
 "last_call_date": "2026-09-10"
@@ -4013,8 +4013,8 @@
 },
 "5354323": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -4589,8 +4589,8 @@
 },
 "5354397": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -4637,8 +4637,8 @@
 },
 "5354403": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -4877,8 +4877,8 @@
 },
 "5354433": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -5173,8 +5173,8 @@
 },
 "5354472": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -6477,8 +6477,8 @@
 },
 "5354637": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -7133,8 +7133,8 @@
 },
 "5354725": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -7205,8 +7205,8 @@
 },
 "5354756": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -8957,8 +8957,8 @@
 },
 "5355042": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -9005,8 +9005,8 @@
 },
 "5355048": {
 "stage": "Invalid Contact",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -10709,8 +10709,8 @@
 },
 "5355264": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -11317,8 +11317,8 @@
 },
 "5355340": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -12389,8 +12389,8 @@
 },
 "5355607": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -12421,8 +12421,8 @@
 },
 "5355613": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -13005,8 +13005,8 @@
 },
 "5355715": {
 "stage": "Follow-up (3)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -13789,8 +13789,8 @@
 },
 "5355815": {
 "stage": "SQL (Sales Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -14293,8 +14293,8 @@
 },
 "5355879": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -14645,8 +14645,8 @@
 },
 "5355923": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -15077,8 +15077,8 @@
 },
 "5355978": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -15437,8 +15437,8 @@
 },
 "5356023": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -15893,8 +15893,8 @@
 },
 "5356081": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -16029,8 +16029,8 @@
 },
 "5356099": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -16077,8 +16077,8 @@
 },
 "5356105": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -16469,8 +16469,8 @@
 },
 "5356155": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -17397,8 +17397,8 @@
 },
 "5356274": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -17613,8 +17613,8 @@
 },
 "5356302": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -19061,8 +19061,8 @@
 },
 "5356490": {
 "stage": "SQL (Sales Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -19685,8 +19685,8 @@
 },
 "5356568": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -20005,8 +20005,8 @@
 },
 "5356609": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -20661,8 +20661,8 @@
 },
 "5356696": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -21013,8 +21013,8 @@
 },
 "5356740": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -21133,8 +21133,8 @@
 },
 "5356755": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -21541,8 +21541,8 @@
 },
 "5356807": {
 "stage": "Not Interested",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -22141,8 +22141,8 @@
 },
 "5356886": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -22204,12 +22204,12 @@
 "last_call_date": ""
 },
 "5356894": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-10-13",
-"changes": 1,
-"last_call_date": "2026-10-13"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5356896": {
 "stage": "LinkedIn Outreach Initiated",
@@ -22476,12 +22476,12 @@
 "last_call_date": ""
 },
 "5356929": {
-"stage": "LinkedIn Outreach Initiated",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-10-16",
+"changes": 1,
+"last_call_date": "2026-10-16"
 },
 "5356930": {
 "stage": "Activation",
@@ -22956,12 +22956,12 @@
 "last_call_date": ""
 },
 "5356990": {
-"stage": "LinkedIn Outreach Initiated",
-"owner": "Hisham Nisaar",
-"email": "hisham@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-10-16",
+"changes": 1,
+"last_call_date": "2026-10-16"
 },
 "5356991": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -23677,8 +23677,8 @@
 },
 "5357083": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -23965,8 +23965,8 @@
 },
 "5357120": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -24853,8 +24853,8 @@
 },
 "5357233": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -24981,8 +24981,8 @@
 },
 "5357251": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -27261,8 +27261,8 @@
 },
 "5357549": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -27341,8 +27341,8 @@
 },
 "5357561": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -27405,8 +27405,8 @@
 },
 "5357569": {
 "stage": "Invalid Contact",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -27485,8 +27485,8 @@
 },
 "5357579": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-24",
 "changes": 1,
 "last_call_date": "2026-09-24"
@@ -29741,8 +29741,8 @@
 },
 "5357873": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -29836,12 +29836,12 @@
 "last_call_date": ""
 },
 "5357885": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "Not Interested",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-10-16",
+"changes": 1,
+"last_call_date": "2026-10-16"
 },
 "5357886": {
 "stage": "LinkedIn Outreach Initiated",
@@ -30437,8 +30437,8 @@
 },
 "5357961": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -30717,8 +30717,8 @@
 },
 "5357997": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -31181,8 +31181,8 @@
 },
 "5358056": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -32149,8 +32149,8 @@
 },
 "5358180": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -33221,8 +33221,8 @@
 },
 "5358316": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -33237,8 +33237,8 @@
 },
 "5358318": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -34781,8 +34781,8 @@
 },
 "5358517": {
 "stage": "Connect Later",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -36005,8 +36005,8 @@
 },
 "5358677": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -36237,8 +36237,8 @@
 },
 "5358707": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Ayush Tiwari",
-"email": "ayush@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -36365,8 +36365,8 @@
 },
 "5358723": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -37365,8 +37365,8 @@
 },
 "5358853": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Ayush Tiwari",
-"email": "ayush@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -38261,8 +38261,8 @@
 },
 "5358966": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Charu Rathi",
-"email": "charu@enout.in",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -38284,12 +38284,12 @@
 "last_call_date": ""
 },
 "5358969": {
-"stage": "CNC (Could Not Connect) - 1",
-"owner": "Akash Deep Choudhary",
-"email": "akash@enout.in",
-"since": "2026-10-07",
-"changes": 1,
-"last_call_date": "2026-10-07"
+"stage": "CNC (Could Not Connect) - 2",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5358970": {
 "stage": "Invalid Contact",
@@ -38405,8 +38405,8 @@
 },
 "5358996": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -38565,8 +38565,8 @@
 },
 "5359032": {
 "stage": "Follow-up (1)",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -38821,8 +38821,8 @@
 },
 "5359109": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -38949,8 +38949,8 @@
 },
 "5359135": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -39092,12 +39092,12 @@
 "last_call_date": ""
 },
 "5359171": {
-"stage": "Follow-up (1)",
+"stage": "Connect Later",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 1,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5359172": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -39117,8 +39117,8 @@
 },
 "5359178": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -39493,8 +39493,8 @@
 },
 "5359269": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -39525,8 +39525,8 @@
 },
 "5359274": {
 "stage": "Offsite Delayed",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -39885,8 +39885,8 @@
 },
 "5359349": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -40101,8 +40101,8 @@
 },
 "5359393": {
 "stage": "Follow-up (1)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -40197,8 +40197,8 @@
 },
 "5359420": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -40309,16 +40309,16 @@
 },
 "5359451": {
 "stage": "POC - Organization - Changed",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5359458": {
 "stage": "SQL (Sales Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -40436,12 +40436,12 @@
 "last_call_date": "2026-10-15"
 },
 "5359492": {
-"stage": "CNC (Could Not Connect) - 3",
+"stage": "Followup - CNC",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-15",
-"changes": 4,
-"last_call_date": "2026-10-15"
+"since": "2026-10-16",
+"changes": 5,
+"last_call_date": "2026-10-16"
 },
 "5359494": {
 "stage": "Connect Later",
@@ -40452,12 +40452,12 @@
 "last_call_date": "2026-10-09"
 },
 "5359497": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-14",
-"changes": 3,
-"last_call_date": "2026-10-14"
+"since": "2026-10-16",
+"changes": 4,
+"last_call_date": "2026-10-16"
 },
 "5359498": {
 "stage": "POC - Organization - Changed",
@@ -40525,8 +40525,8 @@
 },
 "5359508": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -41316,12 +41316,12 @@
 "last_call_date": ""
 },
 "5359607": {
-"stage": "Connect Later",
+"stage": "POC - Organization - Changed",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-14",
-"changes": 3,
-"last_call_date": "2026-10-14"
+"since": "2026-10-16",
+"changes": 4,
+"last_call_date": "2026-10-16"
 },
 "5359608": {
 "stage": "Activation",
@@ -41333,8 +41333,8 @@
 },
 "5359609": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -41525,8 +41525,8 @@
 },
 "5359633": {
 "stage": "Closing Loops - Low Value",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -42821,8 +42821,8 @@
 },
 "5359796": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -42925,8 +42925,8 @@
 },
 "5359809": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -43909,8 +43909,8 @@
 },
 "5359932": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -44653,8 +44653,8 @@
 },
 "5360027": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Ifee Malpani",
-"email": "ife.malpani@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -45141,8 +45141,8 @@
 },
 "5360089": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -46269,8 +46269,8 @@
 },
 "5360232": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -48388,12 +48388,12 @@
 "last_call_date": ""
 },
 "5360501": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Not Interested",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-09-25",
-"changes": 1,
-"last_call_date": "2026-09-25"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5360502": {
 "stage": "LinkedIn Outreach Initiated",
@@ -48525,8 +48525,8 @@
 },
 "5360518": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -48597,8 +48597,8 @@
 },
 "5360527": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -48773,8 +48773,8 @@
 },
 "5360549": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -50045,8 +50045,8 @@
 },
 "5360709": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -50381,8 +50381,8 @@
 },
 "5360752": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -50661,8 +50661,8 @@
 },
 "5360787": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -50677,8 +50677,8 @@
 },
 "5360789": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -50877,8 +50877,8 @@
 },
 "5360814": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -51325,8 +51325,8 @@
 },
 "5360871": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -51357,8 +51357,8 @@
 },
 "5360875": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -51733,8 +51733,8 @@
 },
 "5360923": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -51853,8 +51853,8 @@
 },
 "5360938": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -51965,8 +51965,8 @@
 },
 "5360952": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -52293,8 +52293,8 @@
 },
 "5360994": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -52837,8 +52837,8 @@
 },
 "5361062": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -52957,8 +52957,8 @@
 },
 "5361077": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -53693,8 +53693,8 @@
 },
 "5361172": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -54213,8 +54213,8 @@
 },
 "5361238": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -54285,8 +54285,8 @@
 },
 "5361247": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -54693,8 +54693,8 @@
 },
 "5361299": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -56229,8 +56229,8 @@
 },
 "5361494": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -56973,8 +56973,8 @@
 },
 "5361588": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -58525,8 +58525,8 @@
 },
 "5361785": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -58837,8 +58837,8 @@
 },
 "5361915": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -59021,8 +59021,8 @@
 },
 "5361998": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -59389,8 +59389,8 @@
 },
 "5362109": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -59893,8 +59893,8 @@
 },
 "5362247": {
 "stage": "Discovery Call Booked",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -60117,8 +60117,8 @@
 },
 "5362314": {
 "stage": "Follow-up (1)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -60341,8 +60341,8 @@
 },
 "5362370": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -60405,8 +60405,8 @@
 },
 "5362378": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -61109,8 +61109,8 @@
 },
 "5362466": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -61165,8 +61165,8 @@
 },
 "5362473": {
 "stage": "POC - Organization - Changed",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-10",
 "changes": 1,
 "last_call_date": "2026-09-10"
@@ -61965,8 +61965,8 @@
 },
 "5362575": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -61996,12 +61996,12 @@
 "last_call_date": ""
 },
 "5362580": {
-"stage": "LinkedIn Outreach Initiated",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5362581": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -62317,8 +62317,8 @@
 },
 "5362620": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -63764,12 +63764,12 @@
 "last_call_date": ""
 },
 "5362806": {
-"stage": "Activation",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-10-16",
+"changes": 1,
+"last_call_date": "2026-10-16"
 },
 "5362807": {
 "stage": "LinkedIn Outreach Initiated",
@@ -63893,8 +63893,8 @@
 },
 "5362822": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Charu Rathi",
-"email": "charu@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -64533,8 +64533,8 @@
 },
 "5362904": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -64597,8 +64597,8 @@
 },
 "5362912": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -64701,8 +64701,8 @@
 },
 "5362925": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -65533,8 +65533,8 @@
 },
 "5363034": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -65901,8 +65901,8 @@
 },
 "5363080": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -67485,8 +67485,8 @@
 },
 "5363288": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -67661,8 +67661,8 @@
 },
 "5363346": {
 "stage": "Invalid Contact",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -67757,8 +67757,8 @@
 },
 "5363373": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -68085,8 +68085,8 @@
 },
 "5363438": {
 "stage": "Follow-up (1)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -68725,8 +68725,8 @@
 },
 "5363519": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -69245,8 +69245,8 @@
 },
 "5363584": {
 "stage": "Activation",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -69733,8 +69733,8 @@
 },
 "5363645": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -70549,8 +70549,8 @@
 },
 "5363748": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -70869,8 +70869,8 @@
 },
 "5363788": {
 "stage": "POC - Organization - Changed",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -72597,8 +72597,8 @@
 },
 "5364115": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -72764,12 +72764,12 @@
 "last_call_date": ""
 },
 "5364136": {
-"stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Arshdeep Singh",
+"email": "arshdeep@enout.in",
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5364137": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -74557,8 +74557,8 @@
 },
 "5364366": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -74765,16 +74765,16 @@
 },
 "5364393": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
 },
 "5364394": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -75013,8 +75013,8 @@
 },
 "5364424": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -75437,8 +75437,8 @@
 },
 "5364480": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Charu Rathi",
-"email": "charu@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -75789,8 +75789,8 @@
 },
 "5364524": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -76229,8 +76229,8 @@
 },
 "5364579": {
 "stage": "Activation",
-"owner": "Ayush Tiwari",
-"email": "ayush@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -76508,12 +76508,12 @@
 "last_call_date": ""
 },
 "5364614": {
-"stage": "LinkedIn Outreach Initiated",
+"stage": "Not Interested",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5364615": {
 "stage": "LinkedIn Outreach Initiated",
@@ -76701,8 +76701,8 @@
 },
 "5364638": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Ayush Tiwari",
-"email": "ayush@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -76997,8 +76997,8 @@
 },
 "5364678": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -77165,8 +77165,8 @@
 },
 "5364700": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -77621,8 +77621,8 @@
 },
 "5364757": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -78325,8 +78325,8 @@
 },
 "5364845": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -78484,12 +78484,12 @@
 "last_call_date": ""
 },
 "5364867": {
-"stage": "CNC (Could Not Connect) - 1",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 2",
+"owner": "Arshdeep Singh",
+"email": "arshdeep@enout.in",
+"since": "2026-10-16",
+"changes": 1,
+"last_call_date": "2026-10-16"
 },
 "5364868": {
 "stage": "LinkedIn Outreach Initiated",
@@ -80484,12 +80484,12 @@
 "last_call_date": ""
 },
 "5365122": {
-"stage": "Follow-up (1)",
+"stage": "Offsite Delayed",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5365123": {
 "stage": "LinkedIn Outreach Initiated",
@@ -81069,8 +81069,8 @@
 },
 "5365198": {
 "stage": "SQL (Sales Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -81789,8 +81789,8 @@
 },
 "5365289": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -83493,8 +83493,8 @@
 },
 "5365507": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -86085,8 +86085,8 @@
 },
 "5365840": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -86653,8 +86653,8 @@
 },
 "5365914": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -87077,8 +87077,8 @@
 },
 "5365968": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -87501,8 +87501,8 @@
 },
 "5366023": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -87805,8 +87805,8 @@
 },
 "5366061": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -88429,8 +88429,8 @@
 },
 "5366142": {
 "stage": "POC - Organization - Changed",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
@@ -88565,8 +88565,8 @@
 },
 "5366160": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -88909,8 +88909,8 @@
 },
 "5366206": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -90621,8 +90621,8 @@
 },
 "5366424": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -91029,8 +91029,8 @@
 },
 "5366476": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -91749,8 +91749,8 @@
 },
 "5366568": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -92189,8 +92189,8 @@
 },
 "5366625": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -92229,8 +92229,8 @@
 },
 "5366630": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Charu Rathi",
-"email": "charu@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -92317,8 +92317,8 @@
 },
 "5366641": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -92637,8 +92637,8 @@
 },
 "5366682": {
 "stage": "Activation",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -92797,8 +92797,8 @@
 },
 "5366705": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -93205,8 +93205,8 @@
 },
 "5366757": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -94477,8 +94477,8 @@
 },
 "5366920": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -94581,8 +94581,8 @@
 },
 "5366935": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Charu Rathi",
-"email": "charu@enout.in",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -94685,8 +94685,8 @@
 },
 "5366948": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -95565,8 +95565,8 @@
 },
 "5367103": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -95733,8 +95733,8 @@
 },
 "5367143": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -95812,12 +95812,12 @@
 "last_call_date": "2026-09-10"
 },
 "5367173": {
-"stage": "Follow-up (2)",
+"stage": "Connect Later",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-15",
-"changes": 5,
-"last_call_date": "2026-10-15"
+"since": "2026-10-16",
+"changes": 6,
+"last_call_date": "2026-10-16"
 },
 "5367174": {
 "stage": "MQL (Marketing Qualified Lead)",
@@ -95965,8 +95965,8 @@
 },
 "5367217": {
 "stage": "POC - Organization - Changed",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -95981,8 +95981,8 @@
 },
 "5367229": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -96101,8 +96101,8 @@
 },
 "5367259": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -96197,8 +96197,8 @@
 },
 "5367279": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -96237,8 +96237,8 @@
 },
 "5367284": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
@@ -97069,8 +97069,8 @@
 },
 "5367442": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -98941,8 +98941,8 @@
 },
 "5367677": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -99461,8 +99461,8 @@
 },
 "5367742": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -99741,8 +99741,8 @@
 },
 "5367777": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -102821,8 +102821,8 @@
 },
 "5368167": {
 "stage": "Not Interested",
-"owner": "Ifee Malpani",
-"email": "ife.malpani@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -106885,8 +106885,8 @@
 },
 "5368680": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -106981,8 +106981,8 @@
 },
 "5368692": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -107445,8 +107445,8 @@
 },
 "5368750": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -107725,8 +107725,8 @@
 },
 "5368786": {
 "stage": "Follow-up (1)",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -108461,8 +108461,8 @@
 },
 "5368880": {
 "stage": "Connect Later",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -108757,8 +108757,8 @@
 },
 "5368918": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -109389,8 +109389,8 @@
 },
 "5368998": {
 "stage": "Activation",
-"owner": "Ifee Malpani",
-"email": "ife.malpani@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -110261,8 +110261,8 @@
 },
 "5369107": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -110708,12 +110708,12 @@
 "last_call_date": ""
 },
 "5369163": {
-"stage": "Connect Later",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 3,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 4,
+"last_call_date": "2026-10-16"
 },
 "5369164": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -113165,8 +113165,8 @@
 },
 "5369645": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -113597,8 +113597,8 @@
 },
 "5369767": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -114285,8 +114285,8 @@
 },
 "5369887": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -114509,8 +114509,8 @@
 },
 "5369915": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -115324,12 +115324,12 @@
 "last_call_date": ""
 },
 "5370021": {
-"stage": "CNC (Could Not Connect) - 3",
+"stage": "Follow-up (1)",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-10-16",
+"changes": 3,
+"last_call_date": "2026-10-16"
 },
 "5370022": {
 "stage": "LinkedIn Outreach Initiated",
@@ -115621,8 +115621,8 @@
 },
 "5370058": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -115677,8 +115677,8 @@
 },
 "5370066": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -116125,8 +116125,8 @@
 },
 "5370124": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -117149,8 +117149,8 @@
 },
 "5370259": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -119789,8 +119789,8 @@
 },
 "5370595": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -121301,8 +121301,8 @@
 },
 "5370881": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -121677,8 +121677,8 @@
 },
 "5370930": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -122469,8 +122469,8 @@
 },
 "5371032": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -123245,8 +123245,8 @@
 },
 "5371133": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Bhaumik Sachdeva",
-"email": "bhaumik@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -124397,8 +124397,8 @@
 },
 "5371279": {
 "stage": "Follow-up (2)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -125540,12 +125540,12 @@
 "last_call_date": ""
 },
 "5371516": {
-"stage": "Follow-up (1)",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 1,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5371517": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -126556,12 +126556,12 @@
 "last_call_date": ""
 },
 "5371645": {
-"stage": "CNC (Could Not Connect) - 3",
+"stage": "Offsite Delayed",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 2,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 3,
+"last_call_date": "2026-10-16"
 },
 "5371646": {
 "stage": "Activation",
@@ -127029,8 +127029,8 @@
 },
 "5371705": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -127429,16 +127429,16 @@
 },
 "5371756": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
 },
 "5371758": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -127749,8 +127749,8 @@
 },
 "5371797": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -128645,8 +128645,8 @@
 },
 "5371913": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -129133,8 +129133,8 @@
 },
 "5371976": {
 "stage": "Activation",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -129325,8 +129325,8 @@
 },
 "5372000": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -129813,8 +129813,8 @@
 },
 "5372063": {
 "stage": "POC - Organization - Changed",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-10",
 "changes": 1,
 "last_call_date": "2026-09-10"
@@ -130428,12 +130428,12 @@
 "last_call_date": ""
 },
 "5372142": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-05",
-"changes": 3,
-"last_call_date": "2026-10-05"
+"since": "2026-10-16",
+"changes": 4,
+"last_call_date": "2026-10-16"
 },
 "5372143": {
 "stage": "Offsite Delayed",
@@ -130709,8 +130709,8 @@
 },
 "5372177": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -131733,8 +131733,8 @@
 },
 "5372305": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -131797,8 +131797,8 @@
 },
 "5372313": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -131820,12 +131820,12 @@
 "last_call_date": ""
 },
 "5372316": {
-"stage": "Followup - CNC",
+"stage": "Offsite Delayed",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-15",
-"changes": 4,
-"last_call_date": "2026-10-15"
+"since": "2026-10-16",
+"changes": 5,
+"last_call_date": "2026-10-16"
 },
 "5372318": {
 "stage": "Activation",
@@ -131837,8 +131837,8 @@
 },
 "5372319": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -133085,8 +133085,8 @@
 },
 "5372478": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -133157,8 +133157,8 @@
 },
 "5372487": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -134205,8 +134205,8 @@
 },
 "5372622": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -135220,12 +135220,12 @@
 "last_call_date": ""
 },
 "5372753": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-15",
-"changes": 1,
-"last_call_date": "2026-10-15"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5372754": {
 "stage": "Activation",
@@ -137013,8 +137013,8 @@
 },
 "5372978": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -137317,8 +137317,8 @@
 },
 "5373018": {
 "stage": "SQL (Sales Qualified Lead)",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -138053,8 +138053,8 @@
 },
 "5373112": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -138917,8 +138917,8 @@
 },
 "5373222": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -139277,8 +139277,8 @@
 },
 "5373268": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -139581,8 +139581,8 @@
 },
 "5373307": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -139933,8 +139933,8 @@
 },
 "5373352": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -140229,8 +140229,8 @@
 },
 "5373390": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -140253,8 +140253,8 @@
 },
 "5373393": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -140317,8 +140317,8 @@
 },
 "5373401": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -140597,8 +140597,8 @@
 },
 "5373437": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -140997,8 +140997,8 @@
 },
 "5373490": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -141101,8 +141101,8 @@
 },
 "5373504": {
 "stage": "POC - Organization - Changed",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-10",
 "changes": 1,
 "last_call_date": "2026-09-10"
@@ -141445,8 +141445,8 @@
 },
 "5373549": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -143525,8 +143525,8 @@
 },
 "5373820": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -143573,8 +143573,8 @@
 },
 "5373826": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -144117,8 +144117,8 @@
 },
 "5373896": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -144693,8 +144693,8 @@
 },
 "5373971": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -145805,8 +145805,8 @@
 },
 "5374111": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -146069,8 +146069,8 @@
 },
 "5374144": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -147069,8 +147069,8 @@
 },
 "5374278": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -147261,8 +147261,8 @@
 },
 "5374325": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -147813,8 +147813,8 @@
 },
 "5374445": {
 "stage": "Follow-up (2)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -147829,8 +147829,8 @@
 },
 "5374451": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
@@ -147861,8 +147861,8 @@
 },
 "5374459": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -147997,8 +147997,8 @@
 },
 "5374492": {
 "stage": "Followup - CNC",
-"owner": "Mayra Singh",
-"email": "mayra@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-24",
 "changes": 1,
 "last_call_date": "2026-09-24"
@@ -148052,12 +148052,12 @@
 "last_call_date": ""
 },
 "5374502": {
-"stage": "CNC (Could Not Connect) - 3",
+"stage": "Connect Later",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-09-29",
-"changes": 1,
-"last_call_date": "2026-09-29"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5374503": {
 "stage": "Not Interested",
@@ -148805,8 +148805,8 @@
 },
 "5374614": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -149045,8 +149045,8 @@
 },
 "5374645": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Bhaumik Sachdeva",
-"email": "bhaumik@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -151101,8 +151101,8 @@
 },
 "5374906": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -152365,8 +152365,8 @@
 },
 "5375066": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -152661,8 +152661,8 @@
 },
 "5375104": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -152893,8 +152893,8 @@
 },
 "5375134": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -154557,8 +154557,8 @@
 },
 "5375346": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -154669,8 +154669,8 @@
 },
 "5375361": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -155965,8 +155965,8 @@
 },
 "5375525": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -156197,8 +156197,8 @@
 },
 "5375554": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -156285,8 +156285,8 @@
 },
 "5375565": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -156429,8 +156429,8 @@
 },
 "5375583": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -156725,8 +156725,8 @@
 },
 "5375621": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -156869,8 +156869,8 @@
 },
 "5375639": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -156981,8 +156981,8 @@
 },
 "5375653": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Bhaumik Sachdeva",
-"email": "bhaumik@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -160493,8 +160493,8 @@
 },
 "5376097": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -160509,8 +160509,8 @@
 },
 "5376099": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -160981,8 +160981,8 @@
 },
 "5376158": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -162997,8 +162997,8 @@
 },
 "5376491": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -163101,8 +163101,8 @@
 },
 "5376517": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -164581,8 +164581,8 @@
 },
 "5376831": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -165565,8 +165565,8 @@
 },
 "5376958": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -165637,8 +165637,8 @@
 },
 "5376968": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -166285,8 +166285,8 @@
 },
 "5377051": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -166661,8 +166661,8 @@
 },
 "5377098": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-10",
 "changes": 1,
 "last_call_date": "2026-09-10"
@@ -167077,8 +167077,8 @@
 },
 "5377151": {
 "stage": "Not Interested",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Arshdeep Singh",
+"email": "arshdeep@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -167429,8 +167429,8 @@
 },
 "5377196": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-24",
 "changes": 1,
 "last_call_date": "2026-09-24"
@@ -167701,8 +167701,8 @@
 },
 "5377231": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -168221,8 +168221,8 @@
 },
 "5377298": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -168285,8 +168285,8 @@
 },
 "5377306": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -168333,8 +168333,8 @@
 },
 "5377312": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -168613,8 +168613,8 @@
 },
 "5377350": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -168749,8 +168749,8 @@
 },
 "5377368": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -168885,8 +168885,8 @@
 },
 "5377385": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -170845,8 +170845,8 @@
 },
 "5377705": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -173021,8 +173021,8 @@
 },
 "5377978": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -173237,8 +173237,8 @@
 },
 "5378005": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -173605,8 +173605,8 @@
 },
 "5378051": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -173757,8 +173757,8 @@
 },
 "5378070": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -174589,8 +174589,8 @@
 },
 "5378178": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -176565,8 +176565,8 @@
 },
 "5378489": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -176909,8 +176909,8 @@
 },
 "5378532": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -177357,8 +177357,8 @@
 },
 "5378590": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -177716,12 +177716,12 @@
 "last_call_date": ""
 },
 "5378635": {
-"stage": "MQL (Marketing Qualified Lead)",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 2",
+"owner": "Arshdeep Singh",
+"email": "arshdeep@enout.in",
+"since": "2026-10-16",
+"changes": 1,
+"last_call_date": "2026-10-16"
 },
 "5378636": {
 "stage": "POC - Organization - Changed",
@@ -177909,8 +177909,8 @@
 },
 "5378661": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -177965,8 +177965,8 @@
 },
 "5378668": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -178525,8 +178525,8 @@
 },
 "5378739": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -178685,8 +178685,8 @@
 },
 "5378759": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -178925,8 +178925,8 @@
 },
 "5378792": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -179941,8 +179941,8 @@
 },
 "5378925": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -180205,8 +180205,8 @@
 },
 "5378958": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -180557,8 +180557,8 @@
 },
 "5379005": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -181069,8 +181069,8 @@
 },
 "5379070": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -181317,8 +181317,8 @@
 },
 "5379101": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -181469,8 +181469,8 @@
 },
 "5379120": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -181829,8 +181829,8 @@
 },
 "5379166": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -182269,8 +182269,8 @@
 },
 "5379224": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -183693,8 +183693,8 @@
 },
 "5379408": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -184741,8 +184741,8 @@
 },
 "5379544": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -184925,8 +184925,8 @@
 },
 "5379568": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -185173,8 +185173,8 @@
 },
 "5379599": {
 "stage": "Follow-up (2)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -186117,8 +186117,8 @@
 },
 "5379722": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-24",
 "changes": 1,
 "last_call_date": "2026-09-24"
@@ -186677,8 +186677,8 @@
 },
 "5379793": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -187245,16 +187245,16 @@
 },
 "5379867": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5379868": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -187797,8 +187797,8 @@
 },
 "5379937": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -187821,8 +187821,8 @@
 },
 "5379940": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -188069,8 +188069,8 @@
 },
 "5379971": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -188277,8 +188277,8 @@
 },
 "5379997": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -188301,8 +188301,8 @@
 },
 "5380000": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -188429,8 +188429,8 @@
 },
 "5380016": {
 "stage": "Connect Later",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-10",
 "changes": 1,
 "last_call_date": "2026-09-10"
@@ -190149,8 +190149,8 @@
 },
 "5380236": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -190253,8 +190253,8 @@
 },
 "5380249": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -193397,8 +193397,8 @@
 },
 "5380651": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -194645,8 +194645,8 @@
 },
 "5380809": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -194661,8 +194661,8 @@
 },
 "5380811": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -195141,16 +195141,16 @@
 },
 "5380898": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5380900": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -195181,8 +195181,8 @@
 },
 "5380907": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -195205,8 +195205,8 @@
 },
 "5380913": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -195333,8 +195333,8 @@
 },
 "5380940": {
 "stage": "Activation",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -195421,8 +195421,8 @@
 },
 "5380957": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -195477,8 +195477,8 @@
 },
 "5380972": {
 "stage": "SQL (Sales Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -195669,8 +195669,8 @@
 },
 "5381000": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -196717,8 +196717,8 @@
 },
 "5381134": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -197869,8 +197869,8 @@
 },
 "5381279": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -198093,8 +198093,8 @@
 },
 "5381307": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -198605,8 +198605,8 @@
 },
 "5381371": {
 "stage": "Activation",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -198981,8 +198981,8 @@
 },
 "5381418": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -200293,8 +200293,8 @@
 },
 "5381584": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -200381,8 +200381,8 @@
 },
 "5381596": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -200613,16 +200613,16 @@
 },
 "5381625": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5381626": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -200765,8 +200765,8 @@
 },
 "5381644": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -201645,8 +201645,8 @@
 },
 "5381754": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -202381,8 +202381,8 @@
 },
 "5381848": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -202509,8 +202509,8 @@
 },
 "5381864": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -202589,8 +202589,8 @@
 },
 "5381874": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -203029,8 +203029,8 @@
 },
 "5381929": {
 "stage": "Invalid Contact",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -203285,8 +203285,8 @@
 },
 "5381961": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -203525,8 +203525,8 @@
 },
 "5381994": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -203821,8 +203821,8 @@
 },
 "5382032": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -203869,8 +203869,8 @@
 },
 "5382038": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -204021,8 +204021,8 @@
 },
 "5382058": {
 "stage": "Follow-up (3)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -204997,8 +204997,8 @@
 },
 "5382181": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -205109,8 +205109,8 @@
 },
 "5382195": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -207413,8 +207413,8 @@
 },
 "5382486": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -207861,8 +207861,8 @@
 },
 "5382542": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -208349,8 +208349,8 @@
 },
 "5382604": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -208940,12 +208940,12 @@
 "last_call_date": ""
 },
 "5382678": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 3,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 4,
+"last_call_date": "2026-10-16"
 },
 "5382679": {
 "stage": "LinkedIn Outreach Initiated",
@@ -208965,8 +208965,8 @@
 },
 "5382681": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -212925,8 +212925,8 @@
 },
 "5383289": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -212957,8 +212957,8 @@
 },
 "5383293": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -213085,8 +213085,8 @@
 },
 "5383310": {
 "stage": "Invalid Contact",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -213157,8 +213157,8 @@
 },
 "5383319": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Bhaumik Sachdeva",
-"email": "bhaumik@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -213973,8 +213973,8 @@
 },
 "5383421": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -214725,8 +214725,8 @@
 },
 "5383543": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -215148,12 +215148,12 @@
 "last_call_date": ""
 },
 "5383596": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "POC - Organization - Changed",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-05",
-"changes": 2,
-"last_call_date": "2026-10-05"
+"since": "2026-10-16",
+"changes": 3,
+"last_call_date": "2026-10-16"
 },
 "5383597": {
 "stage": "LinkedIn Outreach Initiated",
@@ -215453,8 +215453,8 @@
 },
 "5383636": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -215685,8 +215685,8 @@
 },
 "5383666": {
 "stage": "Not Interested",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -215781,8 +215781,8 @@
 },
 "5383678": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -216021,8 +216021,8 @@
 },
 "5383708": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -216309,8 +216309,8 @@
 },
 "5383745": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -216493,8 +216493,8 @@
 },
 "5383768": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -217829,8 +217829,8 @@
 },
 "5383939": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -218261,8 +218261,8 @@
 },
 "5383994": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -218301,8 +218301,8 @@
 },
 "5383999": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -220981,8 +220981,8 @@
 },
 "5384348": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-10",
 "changes": 2,
 "last_call_date": "2026-09-10"
@@ -221052,12 +221052,12 @@
 "last_call_date": ""
 },
 "5384357": {
-"stage": "Offsite Delayed",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 3,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 4,
+"last_call_date": "2026-10-16"
 },
 "5384358": {
 "stage": "LinkedIn Outreach Initiated",
@@ -221717,8 +221717,8 @@
 },
 "5384440": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -222813,8 +222813,8 @@
 },
 "5384582": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -223805,8 +223805,8 @@
 },
 "5384717": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -224093,8 +224093,8 @@
 },
 "5384753": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -224149,8 +224149,8 @@
 },
 "5384760": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -224909,8 +224909,8 @@
 },
 "5384855": {
 "stage": "Not Interested",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -225269,8 +225269,8 @@
 },
 "5384900": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -225901,8 +225901,8 @@
 },
 "5384979": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -226357,8 +226357,8 @@
 },
 "5385036": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -227093,8 +227093,8 @@
 },
 "5385130": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -228397,8 +228397,8 @@
 },
 "5385295": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -228749,8 +228749,8 @@
 },
 "5385340": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -229285,8 +229285,8 @@
 },
 "5385410": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -229541,8 +229541,8 @@
 },
 "5385453": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
@@ -229613,8 +229613,8 @@
 },
 "5385462": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -230205,8 +230205,8 @@
 },
 "5385538": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -230277,8 +230277,8 @@
 },
 "5385547": {
 "stage": "Activation",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -230581,8 +230581,8 @@
 },
 "5385586": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -230749,8 +230749,8 @@
 },
 "5385608": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -232509,8 +232509,8 @@
 },
 "5385834": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -232701,8 +232701,8 @@
 },
 "5385859": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -233701,8 +233701,8 @@
 },
 "5388469": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -234300,12 +234300,12 @@
 "last_call_date": ""
 },
 "5394525": {
-"stage": "SQL (Sales Qualified Lead)",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 2",
+"owner": "Arshdeep Singh",
+"email": "arshdeep@enout.in",
+"since": "2026-10-16",
+"changes": 1,
+"last_call_date": "2026-10-16"
 },
 "5412546": {
 "stage": "Not Interested",
@@ -235333,8 +235333,8 @@
 },
 "5460618": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235405,8 +235405,8 @@
 },
 "5467323": {
 "stage": "Offsite Delayed",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235429,8 +235429,8 @@
 },
 "5467332": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235501,8 +235501,8 @@
 },
 "5467401": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235541,8 +235541,8 @@
 },
 "5474742": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235573,8 +235573,8 @@
 },
 "5481666": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235589,8 +235589,8 @@
 },
 "5481669": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235621,8 +235621,8 @@
 },
 "5481690": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235637,8 +235637,8 @@
 },
 "5481696": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235661,8 +235661,8 @@
 },
 "5481708": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235685,8 +235685,8 @@
 },
 "5481728": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235701,8 +235701,8 @@
 },
 "5481751": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235733,8 +235733,8 @@
 },
 "5481758": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235749,16 +235749,16 @@
 },
 "5481792": {
 "stage": "Activation",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5481795": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235781,8 +235781,8 @@
 },
 "5481806": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235813,8 +235813,8 @@
 },
 "5481827": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235837,16 +235837,16 @@
 },
 "5481833": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5481839": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235893,24 +235893,24 @@
 },
 "5481866": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5481872": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5481876": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235933,24 +235933,24 @@
 },
 "5481906": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5481911": {
 "stage": "Follow-up (2)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5482050": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -235973,8 +235973,8 @@
 },
 "5482053": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236061,24 +236061,24 @@
 },
 "5482086": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5482093": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5482095": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236149,8 +236149,8 @@
 },
 "5482126": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236173,8 +236173,8 @@
 },
 "5482158": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236189,8 +236189,8 @@
 },
 "5482164": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236205,8 +236205,8 @@
 },
 "5482176": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236237,8 +236237,8 @@
 },
 "5482186": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236389,8 +236389,8 @@
 },
 "5483548": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236461,8 +236461,8 @@
 },
 "5483905": {
 "stage": "Activation",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236557,8 +236557,8 @@
 },
 "5483952": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236605,8 +236605,8 @@
 },
 "5483985": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236644,12 +236644,12 @@
 "last_call_date": "2026-09-08"
 },
 "5484032": {
-"stage": "Connect Later",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 2,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 3,
+"last_call_date": "2026-10-16"
 },
 "5484033": {
 "stage": "Invalid Contact",
@@ -236661,8 +236661,8 @@
 },
 "5484035": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236797,8 +236797,8 @@
 },
 "5484075": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236821,8 +236821,8 @@
 },
 "5484082": {
 "stage": "SQL (Sales Qualified Lead)",
-"owner": "Shreya Bodwal",
-"email": "shreya.bodwal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -236853,24 +236853,24 @@
 },
 "5484095": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5484096": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5484097": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237077,16 +237077,16 @@
 },
 "5484188": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5484189": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237149,8 +237149,8 @@
 },
 "5484223": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237165,8 +237165,8 @@
 },
 "5484228": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237245,8 +237245,8 @@
 },
 "5484260": {
 "stage": "Connect Later",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237277,8 +237277,8 @@
 },
 "5484282": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237293,8 +237293,8 @@
 },
 "5484288": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237405,8 +237405,8 @@
 },
 "5484346": {
 "stage": "Follow-up (1)",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237429,8 +237429,8 @@
 },
 "5484353": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237557,8 +237557,8 @@
 },
 "5486852": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237613,24 +237613,24 @@
 },
 "5494938": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5494939": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5494940": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237693,8 +237693,8 @@
 },
 "5494949": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -237853,8 +237853,8 @@
 },
 "5494971": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -238221,8 +238221,8 @@
 },
 "5505800": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -238261,40 +238261,40 @@
 },
 "5516190": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5516204": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5516224": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5516254": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5516263": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -238317,16 +238317,16 @@
 },
 "5518866": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5518898": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -238901,8 +238901,8 @@
 },
 "5524210": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -238949,8 +238949,8 @@
 },
 "5524216": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -239317,8 +239317,8 @@
 },
 "5528499": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -239525,16 +239525,16 @@
 },
 "5530167": {
 "stage": "Activation",
-"owner": "Ifee Malpani",
-"email": "ife.malpani@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5530168": {
 "stage": "Not Interested",
-"owner": "Ifee Malpani",
-"email": "ife.malpani@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -240077,8 +240077,8 @@
 },
 "5531790": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -240285,16 +240285,16 @@
 },
 "5531819": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5531820": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -240981,24 +240981,24 @@
 },
 "5569431": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5569432": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5569433": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -241085,16 +241085,16 @@
 },
 "5581110": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5581323": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -241381,24 +241381,24 @@
 },
 "5585110": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5585111": {
 "stage": "Invalid Contact",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5585112": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -241517,8 +241517,8 @@
 },
 "5585343": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -241549,64 +241549,64 @@
 },
 "5589337": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5589338": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5589339": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5589340": {
 "stage": "Invalid Contact",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5589341": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5589342": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5589343": {
 "stage": "Invalid Contact",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5589344": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -241677,16 +241677,16 @@
 },
 "5589356": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5589357": {
 "stage": "Not Interested",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -241820,12 +241820,12 @@
 "last_call_date": ""
 },
 "5590292": {
-"stage": "Follow-up (2)",
+"stage": "Connect Later",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-10-15",
-"changes": 3,
-"last_call_date": "2026-10-15"
+"since": "2026-10-16",
+"changes": 4,
+"last_call_date": "2026-10-16"
 },
 "5593350": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -242237,16 +242237,16 @@
 },
 "5597548": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5597549": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -243861,8 +243861,8 @@
 },
 "5666115": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -243885,16 +243885,16 @@
 },
 "5666324": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
 },
 "5666328": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -244285,8 +244285,8 @@
 },
 "5682538": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -244325,8 +244325,8 @@
 },
 "5682607": {
 "stage": "SQL (Sales Qualified Lead)",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -245349,8 +245349,8 @@
 },
 "5774594": {
 "stage": "Activation",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -245853,48 +245853,48 @@
 },
 "5781756": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781757": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781758": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781759": {
 "stage": "Activation",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781760": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781761": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -245925,96 +245925,96 @@
 },
 "5781765": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781766": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781767": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781768": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781769": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781770": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781771": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781772": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-10",
 "changes": 1,
 "last_call_date": "2026-09-10"
 },
 "5781773": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781774": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781775": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781776": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246061,24 +246061,24 @@
 },
 "5781782": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781783": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781784": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246117,40 +246117,40 @@
 },
 "5781789": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781790": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781791": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781792": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781793": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246189,48 +246189,48 @@
 },
 "5781798": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781799": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781800": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781801": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781802": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781803": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246245,32 +246245,32 @@
 },
 "5781805": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
 },
 "5781806": {
 "stage": "POC - Organization - Changed",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
 },
 "5781807": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
 },
 "5781808": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
@@ -246373,24 +246373,24 @@
 },
 "5781821": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781822": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781823": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246549,24 +246549,24 @@
 },
 "5781843": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781844": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781845": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246693,24 +246693,24 @@
 },
 "5781861": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781862": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781863": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246733,16 +246733,16 @@
 },
 "5781866": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781867": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246853,16 +246853,16 @@
 },
 "5781881": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781882": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246877,8 +246877,8 @@
 },
 "5781884": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246965,48 +246965,48 @@
 },
 "5781895": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781896": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781897": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781898": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781899": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781900": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247061,16 +247061,16 @@
 },
 "5781907": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781908": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247109,32 +247109,32 @@
 },
 "5781913": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781914": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781915": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781917": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247157,8 +247157,8 @@
 },
 "5781920": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247245,72 +247245,72 @@
 },
 "5783990": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5783991": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5784006": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5784019": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5784025": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5784027": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5784040": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5784043": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5784152": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247341,8 +247341,8 @@
 },
 "5784280": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247357,8 +247357,8 @@
 },
 "5784310": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247445,8 +247445,8 @@
 },
 "5791064": {
 "stage": "Follow-up (3)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247477,8 +247477,8 @@
 },
 "5791171": {
 "stage": "Connect Later",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247493,8 +247493,8 @@
 },
 "5791388": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247517,16 +247517,16 @@
 },
 "5791427": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5791445": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247549,8 +247549,8 @@
 },
 "5791539": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247573,24 +247573,24 @@
 },
 "5791902": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5791923": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5791929": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -247717,32 +247717,32 @@
 },
 "5791967": {
 "stage": "Activation",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5791985": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5791990": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5791995": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -248109,8 +248109,8 @@
 },
 "5795033": {
 "stage": "Not Interested",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -249420,12 +249420,12 @@
 "last_call_date": ""
 },
 "5814153": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Offsite Delayed",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 1,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5814154": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -250549,24 +250549,24 @@
 },
 "5819096": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5819112": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5819125": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -250893,40 +250893,40 @@
 },
 "5829817": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5829826": {
 "stage": "Follow-up (3)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5829837": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5829842": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5829849": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -250997,16 +250997,16 @@
 },
 "5830092": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5830130": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -251093,8 +251093,8 @@
 },
 "5830421": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -251109,8 +251109,8 @@
 },
 "5830508": {
 "stage": "Follow-up (2)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -251741,16 +251741,16 @@
 },
 "5841268": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5841283": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -252973,32 +252973,32 @@
 },
 "5861331": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5861411": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5861415": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5861420": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -253037,8 +253037,8 @@
 },
 "5861577": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -253061,16 +253061,16 @@
 },
 "5861591": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5861611": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -253093,16 +253093,16 @@
 },
 "5861623": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5861625": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -253405,48 +253405,48 @@
 },
 "5862130": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5862145": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5862149": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5862160": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5862161": {
 "stage": "Closing Loops - Low Value",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5862170": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -253525,16 +253525,16 @@
 },
 "5866514": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5866523": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -254069,8 +254069,8 @@
 },
 "5869448": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -254085,8 +254085,8 @@
 },
 "5869457": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -254101,8 +254101,8 @@
 },
 "5869465": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -254661,112 +254661,112 @@
 },
 "5878646": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878657": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878697": {
 "stage": "Discovery Call Booked",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878702": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878713": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878720": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878737": {
 "stage": "Follow-up (3)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878758": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878764": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878836": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878846": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878852": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878861": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5878865": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -254829,32 +254829,32 @@
 },
 "5879184": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5879192": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5879197": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5879206": {
 "stage": "Follow-up (2)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -254909,16 +254909,16 @@
 },
 "5879410": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5879417": {
 "stage": "Follow-up (2)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -254933,8 +254933,8 @@
 },
 "5879431": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -254957,32 +254957,32 @@
 },
 "5879476": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5879597": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5879616": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5879631": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -255333,24 +255333,24 @@
 },
 "5882123": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5882152": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5882162": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -255365,16 +255365,16 @@
 },
 "5882230": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5882236": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -255397,40 +255397,40 @@
 },
 "5882552": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5882614": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5882628": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5882637": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5882650": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -255445,16 +255445,16 @@
 },
 "5882828": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5882859": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -256205,16 +256205,16 @@
 },
 "5891476": {
 "stage": "Follow-up (2)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5891484": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -256357,72 +256357,72 @@
 },
 "5892388": {
 "stage": "CNC (Could Not Connect) - 3",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5892393": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5892401": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5892413": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5892422": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5892441": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5892444": {
 "stage": "Followup - CNC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5892525": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5892530": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -256445,16 +256445,16 @@
 },
 "5892574": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5892584": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -256693,32 +256693,32 @@
 },
 "5893246": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5893247": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5893252": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5893254": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -256877,24 +256877,24 @@
 },
 "5895486": {
 "stage": "Discovery Call Done - Awaiting Client Inputs",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5895493": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5895497": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -257469,56 +257469,56 @@
 },
 "5924886": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5924891": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5924897": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5924919": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5924931": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5924955": {
 "stage": "Invalid Contact",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5924963": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -257541,32 +257541,32 @@
 },
 "5925206": {
 "stage": "POC - Organization - Changed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5925209": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5925216": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5925227": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -258405,8 +258405,8 @@
 },
 "5935069": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -258717,8 +258717,8 @@
 },
 "5938754": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -258757,16 +258757,16 @@
 },
 "5938836": {
 "stage": "Connect Later",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5938851": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -258781,8 +258781,8 @@
 },
 "5938865": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -259916,20 +259916,20 @@
 "last_call_date": ""
 },
 "5947703": {
-"stage": "Connect Later",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 2,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 3,
+"last_call_date": "2026-10-16"
 },
 "5947704": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "POC - Organization - Changed",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-06",
-"changes": 1,
-"last_call_date": "2026-10-06"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "5947705": {
 "stage": "Follow-up (1)",
@@ -260765,64 +260765,64 @@
 },
 "5952284": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952287": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952300": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952335": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952342": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952356": {
 "stage": "Follow-up (1)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952367": {
 "stage": "Offsite Done (Late Reachout)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952370": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -260837,40 +260837,40 @@
 },
 "5952431": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952437": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952447": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952452": {
 "stage": "Not Interested",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5952456": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -261285,8 +261285,8 @@
 },
 "5954039": {
 "stage": "Discovery Call Booked",
-"owner": "Muskan Rajpoot",
-"email": "muskan@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -262108,20 +262108,20 @@
 "last_call_date": "2026-10-13"
 },
 "5973612": {
-"stage": "CNC (Could Not Connect) - 3",
+"stage": "Offsite Delayed",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-15",
-"changes": 4,
-"last_call_date": "2026-10-15"
+"since": "2026-10-16",
+"changes": 5,
+"last_call_date": "2026-10-16"
 },
 "5973633": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-15",
-"changes": 4,
-"last_call_date": "2026-10-15"
+"since": "2026-10-16",
+"changes": 5,
+"last_call_date": "2026-10-16"
 },
 "5973657": {
 "stage": "Connect Later",
@@ -262221,24 +262221,24 @@
 },
 "5981094": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5981101": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5981104": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -264613,24 +264613,24 @@
 },
 "6026829": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-10",
 "changes": 1,
 "last_call_date": "2026-09-10"
 },
 "6026849": {
 "stage": "Offsite Delayed",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
 },
 "6026878": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-09-07",
 "changes": 1,
 "last_call_date": "2026-09-07"
@@ -265388,12 +265388,12 @@
 "last_call_date": "2026-10-14"
 },
 "6059700": {
-"stage": "Not a Decision Maker (NDM)",
+"stage": "Follow-up (1)",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-15",
-"changes": 1,
-"last_call_date": "2026-10-15"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "6059954": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -265892,20 +265892,20 @@
 "last_call_date": "2026-10-05"
 },
 "6077216": {
-"stage": "Follow-up (1)",
+"stage": "Follow-up (2)",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-10-16",
+"changes": 3,
+"last_call_date": "2026-10-16"
 },
 "6077218": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "6077220": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -267764,12 +267764,12 @@
 "last_call_date": "2026-10-13"
 },
 "6244811": {
-"stage": "Activation",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-10-01",
-"changes": 1,
-"last_call_date": "2026-10-01"
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
 },
 "6244852": {
 "stage": "Follow-up (1)",
@@ -269044,12 +269044,20 @@
 "last_call_date": "2026-10-15"
 },
 "6325063": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-10-15",
+"since": "2026-10-16",
+"changes": 2,
+"last_call_date": "2026-10-16"
+},
+"6326035": {
+"stage": "MQL (Marketing Qualified Lead)",
+"owner": "Muskan Rajpoot",
+"email": "muskan@enout.in",
+"since": "2026-10-16",
 "changes": 1,
-"last_call_date": "2026-10-15"
+"last_call_date": "2026-10-16"
 },
 "6326247": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -269074,6 +269082,30 @@
 "since": "2026-10-15",
 "changes": 1,
 "last_call_date": "2026-10-15"
+},
+"6327571": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-10-16",
+"changes": 1,
+"last_call_date": "2026-10-16"
+},
+"6327573": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
+"since": "2026-10-16",
+"changes": 0,
+"last_call_date": ""
+},
+"6328253": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Arshdeep Singh",
+"email": "arshdeep@enout.in",
+"since": "2026-10-16",
+"changes": 1,
+"last_call_date": "2026-10-16"
 }
 }
 }
