@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-10-16",
+"as_of": "2026-10-17",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -12549,8 +12549,8 @@
 },
 "5355653": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -22021,8 +22021,8 @@
 },
 "5356868": {
 "stage": "Activation",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -28021,8 +28021,8 @@
 },
 "5357646": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -28492,12 +28492,12 @@
 "last_call_date": ""
 },
 "5357708": {
-"stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
+"stage": "Not a Decision Maker (NDM)",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
+"since": "2026-10-17",
+"changes": 2,
+"last_call_date": "2026-10-17"
 },
 "5357709": {
 "stage": "MQL (Marketing Qualified Lead)",
@@ -29429,8 +29429,8 @@
 },
 "5357829": {
 "stage": "Activation",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -31005,8 +31005,8 @@
 },
 "5358032": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -31717,8 +31717,8 @@
 },
 "5358123": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -33637,8 +33637,8 @@
 },
 "5358368": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -36069,8 +36069,8 @@
 },
 "5358683": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -39685,8 +39685,8 @@
 },
 "5359300": {
 "stage": "Offsite Delayed",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -41069,8 +41069,8 @@
 },
 "5359573": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -52157,8 +52157,8 @@
 },
 "5360973": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -61589,8 +61589,8 @@
 },
 "5362524": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -64189,8 +64189,8 @@
 },
 "5362856": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -87621,8 +87621,8 @@
 },
 "5366035": {
 "stage": "Activation",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -90749,8 +90749,8 @@
 },
 "5366438": {
 "stage": "Activation",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -90861,8 +90861,8 @@
 },
 "5366452": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -91765,8 +91765,8 @@
 },
 "5366567": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -92957,8 +92957,8 @@
 },
 "5366722": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -95802,6 +95802,14 @@
 "since": "2026-09-08",
 "changes": 2,
 "last_call_date": "2026-09-08"
+},
+"5367162": {
+"stage": "Connect Later",
+"owner": "Vipul Bansal",
+"email": "vipul.bansal@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
 },
 "5367163": {
 "stage": "Activation",
@@ -104877,8 +104885,8 @@
 },
 "5368425": {
 "stage": "Connect Later",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -106621,8 +106629,8 @@
 },
 "5368644": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -113893,8 +113901,8 @@
 },
 "5369835": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -115373,8 +115381,8 @@
 },
 "5370024": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -129373,8 +129381,8 @@
 },
 "5372003": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -131093,8 +131101,8 @@
 },
 "5372222": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -131925,8 +131933,8 @@
 },
 "5372327": {
 "stage": "Activation",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -131957,8 +131965,8 @@
 },
 "5372331": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -136909,8 +136917,8 @@
 },
 "5372962": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -164837,8 +164845,8 @@
 },
 "5376861": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -168893,8 +168901,8 @@
 },
 "5377382": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -191725,8 +191733,8 @@
 },
 "5380434": {
 "stage": "Invalid Contact",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -200029,8 +200037,8 @@
 },
 "5381544": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -202413,8 +202421,8 @@
 },
 "5381847": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -206149,8 +206157,8 @@
 },
 "5382320": {
 "stage": "Activation",
-"owner": "Rubal Sansanwal",
-"email": "rubal@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -214717,8 +214725,8 @@
 },
 "5383535": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -232773,8 +232781,8 @@
 },
 "5385862": {
 "stage": "Activation",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -240093,8 +240101,8 @@
 },
 "5531786": {
 "stage": "MQL (Marketing Qualified Lead)",
-"owner": "Devansh Shukla",
-"email": "devansh.shukla@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -240797,8 +240805,8 @@
 },
 "5564385": {
 "stage": "Not Interested",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246069,8 +246077,8 @@
 },
 "5781777": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gaurav Kumar",
-"email": "gaurav@enout.in",
+"owner": "keshav Kumar",
+"email": "keshav@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -267988,12 +267996,12 @@
 "last_call_date": "2026-10-01"
 },
 "6258162": {
-"stage": "LinkedIn Outreach Initiated",
+"stage": "Not Interested",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-09-30",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
 },
 "6258219": {
 "stage": "Not a Decision Maker (NDM)",
@@ -268004,12 +268012,12 @@
 "last_call_date": "2026-09-30"
 },
 "6258374": {
-"stage": "Follow-up (2)",
+"stage": "Followup - CNC",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 3,
+"last_call_date": "2026-10-17"
 },
 "6258513": {
 "stage": "Not Interested",
@@ -268188,12 +268196,12 @@
 "last_call_date": "2026-10-05"
 },
 "6279940": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 2,
+"last_call_date": "2026-10-17"
 },
 "6280063": {
 "stage": "Follow-up (2)",
@@ -268436,12 +268444,12 @@
 "last_call_date": "2026-10-10"
 },
 "6298527": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 3,
+"last_call_date": "2026-10-17"
 },
 "6302439": {
 "stage": "Not Interested",
@@ -268524,20 +268532,20 @@
 "last_call_date": "2026-10-16"
 },
 "6308887": {
-"stage": "Follow-up (1)",
+"stage": "Followup - CNC",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 3,
+"last_call_date": "2026-10-17"
 },
 "6308898": {
-"stage": "Not Interested",
+"stage": "Connect Later",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 3,
+"last_call_date": "2026-10-17"
 },
 "6308911": {
 "stage": "Not a Decision Maker (NDM)",
@@ -268644,20 +268652,20 @@
 "last_call_date": "2026-10-16"
 },
 "6310299": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 3,
+"last_call_date": "2026-10-17"
 },
 "6310325": {
-"stage": "Not Interested",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 2,
+"last_call_date": "2026-10-17"
 },
 "6310348": {
 "stage": "Disqualified - Wrong POC",
@@ -268828,12 +268836,12 @@
 "last_call_date": "2026-10-14"
 },
 "6314392": {
-"stage": "Follow-up (1)",
+"stage": "Follow-up (2)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 2,
+"last_call_date": "2026-10-17"
 },
 "6314436": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -268876,12 +268884,12 @@
 "last_call_date": "2026-10-14"
 },
 "6314627": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Connect Later",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 2,
+"last_call_date": "2026-10-17"
 },
 "6314636": {
 "stage": "Not a Decision Maker (NDM)",
@@ -268916,28 +268924,28 @@
 "last_call_date": "2026-10-14"
 },
 "6314793": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 2,
+"last_call_date": "2026-10-17"
 },
 "6314827": {
-"stage": "Follow-up (1)",
+"stage": "Follow-up (2)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 2,
+"last_call_date": "2026-10-17"
 },
 "6314839": {
-"stage": "Connect Later",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"since": "2026-10-17",
+"changes": 2,
+"last_call_date": "2026-10-17"
 },
 "6314849": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -269099,6 +269107,46 @@
 "changes": 2,
 "last_call_date": "2026-10-16"
 },
+"6325556": {
+"stage": "Follow-up (1)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6325806": {
+"stage": "Discovery Call Booked",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6325933": {
+"stage": "Follow-up (1)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6325976": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6325990": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
 "6326035": {
 "stage": "MQL (Marketing Qualified Lead)",
 "owner": "Muskan Rajpoot",
@@ -269131,6 +269179,22 @@
 "changes": 1,
 "last_call_date": "2026-10-15"
 },
+"6326427": {
+"stage": "Activation",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6327559": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
 "6327571": {
 "stage": "CNC (Could Not Connect) - 1",
 "owner": "Gurnoor Kaur",
@@ -269147,6 +269211,38 @@
 "changes": 0,
 "last_call_date": ""
 },
+"6327594": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6327890": {
+"stage": "Follow-up (1)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6328138": {
+"stage": "Discovery Call Booked",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6328203": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
 "6328253": {
 "stage": "CNC (Could Not Connect) - 1",
 "owner": "Arshdeep Singh",
@@ -269154,6 +269250,30 @@
 "since": "2026-10-16",
 "changes": 1,
 "last_call_date": "2026-10-16"
+},
+"6328262": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6328293": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6328576": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 0,
+"last_call_date": ""
 },
 "6328991": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -269163,6 +269283,62 @@
 "changes": 1,
 "last_call_date": "2026-10-16"
 },
+"6328998": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6329003": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6329123": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6329241": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6329246": {
+"stage": "Connect Later",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6329315": {
+"stage": "Follow-up (1)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6329363": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
 "6329372": {
 "stage": "Not a Decision Maker (NDM)",
 "owner": "Arshdeep Singh",
@@ -269170,6 +269346,22 @@
 "since": "2026-10-16",
 "changes": 1,
 "last_call_date": "2026-10-16"
+},
+"6329407": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
+},
+"6329662": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-17",
+"changes": 1,
+"last_call_date": "2026-10-17"
 }
 }
 }
