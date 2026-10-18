@@ -9,7 +9,7 @@ same calendar event rather than creating a duplicate.
 import os
 import smtplib
 import time
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -17,6 +17,55 @@ from utils.redact import mask_emails
 
 ADMIN_EMAIL   = "ayush@enout.in"
 VEDANT_EMAIL  = "vedant@enout.in"
+
+IST = timezone(timedelta(hours=5, minutes=30))
+
+
+def parse_kylas_datetime(raw) -> tuple:
+    """Return (date_str, time_str) in IST from a Next Call Date value.
+
+    time_str is 'HH:MM:SS', or '' when the value carries no time of day.
+
+    Kylas DATETIME_PICKER fields come back as UTC ("2026-10-19T03:30:00.000Z").
+    They were once read as if the clock digits were already IST, which put 136
+    of 156 invites at 03:30 AM -- that is the picker's 9:00 AM IST default
+    (03:30Z) shifted 5h30m early. The conversion can also move the DATE (18:45Z
+    is 00:15 IST the next day), so the date is taken from the converted value.
+
+    The "Oct 19, 2026 at 11:00 AM" display form carries no zone and is already
+    local, so it is read as-is.
+    """
+    raw = (raw or "").strip()
+    if not raw:
+        return "", ""
+    if raw[0].isdigit():
+        if len(raw) <= 10 or raw[10] != "T":
+            return raw[:10], ""
+        try:
+            dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        except ValueError:
+            # Unreadable time: an all-day invite is honest; a guessed hour is not.
+            return raw[:10], ""
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.astimezone(IST)
+        return dt.strftime("%Y-%m-%d"), dt.strftime("%H:%M:%S")
+    try:
+        parts = raw.split(" at ")
+        date_str = datetime.strptime(parts[0].strip(), "%b %d, %Y").strftime("%Y-%m-%d")
+        time_str = ""
+        if len(parts) > 1:
+            try:
+                time_str = datetime.strptime(parts[1].strip(), "%I:%M %p").strftime("%H:%M:%S")
+            except ValueError:
+                pass
+        return date_str, time_str
+    except ValueError:
+        return "", ""
+
+
+def _now_utc() -> datetime:
+    return datetime.now(timezone.utc)
 
 # Seconds to wait before the 2nd and 3rd attempt. Every invite opens a fresh
 # Gmail connection and logs in again, and Gmail drops those ("Connection
@@ -68,7 +117,7 @@ def _build_ical(
     uid = f"call-{contact_id}-{call_date.strftime('%Y%m%d')}@kylas-sync"
 
     if call_time:
-        # Treat stored time as IST (Kylas stores local time with Z suffix)
+        # call_time is already IST (see parse_kylas_datetime)
         time_compact = call_time.replace(":", "")[:6]  # HHMMSS
         end_dt = datetime.strptime(f"{call_date}T{call_time}", "%Y-%m-%dT%H:%M:%S") + timedelta(hours=1)
         dtstart_line = f"DTSTART;TZID=Asia/Kolkata:{call_date.strftime('%Y%m%d')}T{time_compact}"
@@ -123,9 +172,16 @@ def _build_ical(
     parts = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Kylas Sync//EN", "METHOD:REQUEST"]
     if vtimezone:
         parts.append(vtimezone)
+    # An update to an existing event only takes if its SEQUENCE is higher than
+    # the one already on the calendar. The invites used to carry none (0), so a
+    # corrected time could not replace a wrong one. Minutes since the epoch
+    # always grows between sends and stays well inside a 32-bit integer.
+    now = _now_utc()
     parts += [
         "BEGIN:VEVENT",
         f"UID:{uid}",
+        f"DTSTAMP:{now.strftime('%Y%m%dT%H%M%SZ')}",
+        f"SEQUENCE:{int(now.timestamp()) // 60}",
         dtstart_line,
         dtend_line,
         f"SUMMARY:{summary}",

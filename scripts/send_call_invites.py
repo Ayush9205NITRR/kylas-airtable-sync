@@ -20,36 +20,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from utils.kylas_client import KylasClient
-from utils.calendar_invite import send_invite
+from utils.calendar_invite import IST, parse_kylas_datetime, send_invite
 
 KYLAS_CONTACT_URL = "https://app.kylas.io/sales/contacts/details/{contact_id}"
 SEND_PACE_SECONDS = 2.0
 
 
 def _parse_dt(raw: str):
-    """Return (date_str, time_str) from cfNextCallDateCallLater value.
-    time_str is 'HH:MM:SS' if present, else ''.
-    Kylas stores timestamps with a Z but the actual value is IST.
+    """Return (date_str, time_str) in IST from the cfNextCallDateCallLater value.
+    time_str is 'HH:MM:SS' if present, else ''. Kylas returns this field as UTC;
+    the conversion lives in utils.calendar_invite.parse_kylas_datetime.
     """
-    raw = (raw or "").strip()
-    if not raw:
-        return "", ""
-    if raw[0].isdigit():
-        date_str = raw[:10]
-        time_str = raw[11:19] if len(raw) > 10 and raw[10] == "T" else ""
-        return date_str, time_str
-    try:
-        parts = raw.split(" at ")
-        date_str = datetime.strptime(parts[0].strip(), "%b %d, %Y").strftime("%Y-%m-%d")
-        time_str = ""
-        if len(parts) > 1:
-            try:
-                time_str = datetime.strptime(parts[1].strip(), "%I:%M %p").strftime("%H:%M:%S")
-            except ValueError:
-                pass
-        return date_str, time_str
-    except ValueError:
-        return "", ""
+    return parse_kylas_datetime(raw)
 
 
 def main():
@@ -87,7 +69,9 @@ def main():
     except Exception as e:
         print(f"[WARNING] Could not fetch user emails from Kylas: {e}")
 
-    today = date.today().isoformat()
+    # IST, not the runner's UTC clock: after 18:30 UTC it is already tomorrow
+    # in India, and the call dates being compared are IST dates.
+    today = datetime.now(IST).date().isoformat()
     print(f"Today: {today}")
 
     # Fetch contacts

@@ -385,6 +385,19 @@ module, a single named function instead of an inline literal, with its own
 tests asserting `company_id` survives both shapes Kylas returns `company` in
 (bare int on search results, `{id, name}` on detail reads).
 
+### Next Call Date (Call Later) is UTC, not IST
+
+`cfNextCallDateCallLater` is a Kylas `DATETIME_PICKER` and comes back as UTC
+(`2026-10-19T03:30:00.000Z`). Reading those digits as IST put the calendar
+invites 5h30m early: the picker's 9:00 AM IST default (03:30Z) went out as
+03:30 AM for 136 of 156 contacts on 2026-10-18. `parse_kylas_datetime()` in
+`utils/calendar_invite.py` converts to IST, and the converted value supplies the
+date too (18:45Z is 00:15 IST the *next* day, which also changes the invite UID).
+Invites now carry `DTSTAMP` and a growing `SEQUENCE`; without a higher SEQUENCE a
+corrected invite cannot replace the wrong one already on a calendar.
+`cfNextCallDate`, which the Airtable sync and module 02's inline invite read, is
+empty on every contact -- the invite field is the Call Later one.
+
 ---
 
 ## 8. Change log
