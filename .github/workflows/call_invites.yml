@@ -21,7 +21,10 @@ on:
 jobs:
   send-invites:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Pacing (2s) plus retry backoff (10s/30s) can stretch a large catch-up well
+    # past the old 10 minutes; a timeout kill mid-run would leave it unclear which
+    # invites went out.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
