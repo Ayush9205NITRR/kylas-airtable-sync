@@ -1,5 +1,5 @@
 """
-Hot Pipeline daily digest — emailed to management (Ayush + Vedant).
+Hot Pipeline daily digest — emailed to management (Ayush).
 
 Lists every company that has at least one contact sitting in a hot
 pipeline stage, grouped by stage:
@@ -181,7 +181,7 @@ def _build_body(groups: dict, friendly: str) -> str:
     if total == 0:
         return (
             f'<!DOCTYPE html><html><body {body_style}>'
-            '<p>Hi Ayush &amp; Vedant,</p>'
+            '<p>Hi Ayush,</p>'
             f'<p style="font-weight:bold;font-size:14px;">Hot Pipeline Snapshot &nbsp;&middot;&nbsp; {friendly}</p>'
             '<p style="color:#666;">No companies in hot stages right now.</p>'
             '<p style="color:#999;font-size:12px;margin-top:24px;">— Kylas Sync</p>'
@@ -214,7 +214,7 @@ def _build_body(groups: dict, friendly: str) -> str:
 
     return (
         f'<!DOCTYPE html><html><body {body_style}>'
-        '<p>Hi Ayush &amp; Vedant,</p>'
+        '<p>Hi Ayush,</p>'
         f'<p style="font-weight:bold;font-size:14px;margin:0 0 4px;">'
         f'Hot Pipeline Snapshot &nbsp;&middot;&nbsp; {friendly}</p>'
         '<p style="font-size:13px;color:#666;margin:0 0 16px;">'

@@ -14,7 +14,7 @@ on:
       recipients:
         description: 'Space-separated preview recipient emails'
         required: false
-        default: 'ayush@enout.in vedant@enout.in'
+        default: 'ayush@enout.in'
       member:
         description: "Render this BD member's REAL stats for today (e.g. Muskan). Blank = hardcoded sample."
         required: false

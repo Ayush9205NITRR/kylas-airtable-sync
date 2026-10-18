@@ -16,7 +16,6 @@ from email.mime.text import MIMEText
 from utils.redact import mask_emails
 
 ADMIN_EMAIL   = "ayush@enout.in"
-VEDANT_EMAIL  = "vedant@enout.in"
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -159,7 +158,7 @@ def _build_ical(
     )
     summary = _esc(f"Call: {contact_name}" + (f" ({company_name})" if company_name else ""))
 
-    base = {ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()}
+    base = {ADMIN_EMAIL.lower()}
     if owner_email:
         base.add(owner_email.lower())
     recipients = sorted(base)
@@ -210,7 +209,7 @@ def send_invite(
     call_time: str = "",
 ) -> bool:
     """
-    Send a calendar invite to owner_email + ayush@enout.in + vedant@enout.in.
+    Send a calendar invite to owner_email + ayush@enout.in.
     Reads SMTP_USER / SMTP_PASS from the environment.
     Returns True on success.
     """
@@ -222,7 +221,7 @@ def send_invite(
     if not owner_email:
         print(f"[CalendarInvite] No owner email for {contact_name!r} — sending to admin only")
 
-    base_recipients = {ADMIN_EMAIL.lower(), VEDANT_EMAIL.lower()}
+    base_recipients = {ADMIN_EMAIL.lower()}
     if owner_email:
         base_recipients.add(owner_email.lower())
     recipients = sorted(base_recipients)
