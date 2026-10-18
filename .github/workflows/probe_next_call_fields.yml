@@ -1,0 +1,32 @@
+name: Probe — Next Call Date fields
+
+# Read-only. Prints the Kylas field definitions and the raw stored value of
+# cfNextCallDate / cfNextCallDateCallLater for the given contacts, to settle
+# whether the calendar invites read the wrong field or misread the timezone.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: 'Kylas contact IDs, comma-separated'
+        required: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Show raw Next Call Date values
+        env:
+          KYLAS_API_KEY: ${{ secrets.KYLAS_API_KEY }}
+          IDS: ${{ github.event.inputs.ids }}
+        run: python scripts/probe_next_call_fields.py --ids "${IDS// /}"
