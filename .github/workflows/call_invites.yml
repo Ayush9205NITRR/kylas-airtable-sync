@@ -1,12 +1,8 @@
 name: Call Invites — Auto Calendar Block
 
 on:
-  # PAUSED 2026-10-15: the Kylas pipeline is no longer actively used, so its
-  # scheduled API calls are switched off. The base stays for the Deal Rotting
-  # alert (deal_rot.yml), which reads Kylas directly and needs none of this.
-  # Still runnable by hand via workflow_dispatch. Uncomment to resume.
-  # schedule:
-  # - cron: '0 13 * * 1-6'   # 1:00 PM UTC = 6:30 PM IST, Mon–Sat
+  schedule:
+    - cron: '0 13 * * 1-6'   # 1:00 PM UTC = 6:30 PM IST, Mon–Sat
   workflow_dispatch:
     inputs:
       contact_id:
