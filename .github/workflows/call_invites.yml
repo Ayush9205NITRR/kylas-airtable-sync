@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       contact_id:
-        description: 'Specific Kylas contact ID (leave blank to scan last 26h)'
+        description: 'Specific Kylas contact ID(s), comma-separated (leave blank to scan the last N hours)'
         required: false
         default: ''
       dry_run:
@@ -35,7 +35,7 @@ jobs:
       - name: Send call invites
         run: |
           ARGS="--hours ${HOURS}"
-          if [ -n "${CONTACT_ID}" ]; then ARGS="$ARGS --id ${CONTACT_ID}"; fi
+          if [ -n "${CONTACT_ID}" ]; then ARGS="$ARGS --ids ${CONTACT_ID// /}"; fi
           if [ "${DRY_RUN}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           python scripts/send_call_invites.py $ARGS
         env:

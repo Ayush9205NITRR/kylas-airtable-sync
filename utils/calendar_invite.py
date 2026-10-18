@@ -8,6 +8,7 @@ same calendar event rather than creating a duplicate.
 """
 import os
 import smtplib
+import time
 from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -16,6 +17,25 @@ from utils.redact import mask_emails
 
 ADMIN_EMAIL   = "ayush@enout.in"
 VEDANT_EMAIL  = "vedant@enout.in"
+
+# Seconds to wait before the 2nd and 3rd attempt. Every invite opens a fresh
+# Gmail connection and logs in again, and Gmail drops those ("Connection
+# unexpectedly closed") once they come fast enough -- a 156-invite catch-up on
+# 2026-10-18 sent 83 and lost 73 that way.
+_RETRY_DELAYS = (10, 30)
+
+
+def _is_transient(exc: Exception) -> bool:
+    """True for failures worth retrying: dropped/refused connections, timeouts
+    and Gmail's 4xx "try again later". Auth failures and permanent 5xx
+    rejections are not -- a retry just repeats them."""
+    if isinstance(exc, smtplib.SMTPAuthenticationError):
+        return False
+    if isinstance(exc, (smtplib.SMTPServerDisconnected, smtplib.SMTPConnectError)):
+        return True
+    if isinstance(exc, smtplib.SMTPResponseException):
+        return 400 <= exc.smtp_code < 500
+    return isinstance(exc, OSError)      # ConnectionError, TimeoutError, ...
 
 
 def _esc(text: str) -> str:
@@ -199,15 +219,25 @@ def send_invite(
     cal_part.add_header("Content-Disposition", "attachment", filename="invite.ics")
     msg.attach(cal_part)
 
-    try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as s:
-            s.ehlo()
-            s.starttls()
-            s.login(smtp_user, smtp_pass)
-            s.sendmail(smtp_user, recipients, msg.as_string())
-        print(f"[CalendarInvite] Sent → {contact_name!r} on {date_label}, "
-              f"recipients: {mask_emails(recipients)}")  # date_label already includes time if present
-        return True
-    except Exception as exc:
-        print(f"[CalendarInvite] ERROR for {contact_name!r}: {exc}")
-        return False
+    raw = msg.as_string()
+    attempts = len(_RETRY_DELAYS) + 1
+    for attempt in range(attempts):
+        try:
+            with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as s:
+                s.ehlo()
+                s.starttls()
+                s.login(smtp_user, smtp_pass)
+                s.sendmail(smtp_user, recipients, raw)
+            print(f"[CalendarInvite] Sent → {contact_name!r} on {date_label}, "
+                  f"recipients: {mask_emails(recipients)}")  # date_label already includes time if present
+            return True
+        except Exception as exc:
+            if _is_transient(exc) and attempt < attempts - 1:
+                delay = _RETRY_DELAYS[attempt]
+                print(f"[CalendarInvite] {exc} for {contact_name!r} — retrying "
+                      f"in {delay}s (attempt {attempt + 2}/{attempts})")
+                time.sleep(delay)
+                continue
+            print(f"[CalendarInvite] ERROR for {contact_name!r}: {exc}")
+            return False
+    return False

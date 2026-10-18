@@ -12,6 +12,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from datetime import date, datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,6 +23,7 @@ from utils.kylas_client import KylasClient
 from utils.calendar_invite import send_invite
 
 KYLAS_CONTACT_URL = "https://app.kylas.io/sales/contacts/details/{contact_id}"
+SEND_PACE_SECONDS = 2.0
 
 
 def _parse_dt(raw: str):
@@ -58,6 +60,10 @@ def main():
                         help="Print details but do not send email")
     parser.add_argument("--id", type=int, dest="contact_id",
                         help="Process a specific Kylas contact ID instead of scanning")
+    parser.add_argument("--ids", default="", metavar="ID,ID,...",
+                        help="Process exactly these Kylas contact IDs (comma-separated) "
+                             "instead of scanning. Use it to re-send only the invites "
+                             "a previous run reported as failed.")
     args = parser.parse_args()
 
     kylas = KylasClient()
@@ -85,7 +91,11 @@ def main():
     print(f"Today: {today}")
 
     # Fetch contacts
-    if args.contact_id:
+    if args.ids.strip():
+        wanted = [int(x) for x in args.ids.replace(" ", "").split(",") if x]
+        contacts = [kylas.get_contact(i) for i in wanted]
+        print(f"Fetched {len(contacts)} contact(s) by ID")
+    elif args.contact_id:
         contacts = [kylas.get_contact(args.contact_id)]
         print(f"Fetched contact {args.contact_id}")
     else:
@@ -97,6 +107,7 @@ def main():
     sent = 0
     failed = 0
     skipped = 0
+    failed_ids = []
 
     for ct in contacts:
         cf = ct.get("customFieldValues") or {}
@@ -165,8 +176,19 @@ def main():
             sent += 1
         else:
             failed += 1
+            failed_ids.append(contact_id)
+        # Each invite opens its own Gmail connection; sent back to back, Gmail
+        # starts dropping them. A short gap keeps a large catch-up under that.
+        time.sleep(SEND_PACE_SECONDS)
 
     print(f"\nSent: {sent} | Failed: {failed} | Skipped (no date): {skipped}")
+    if failed_ids:
+        # Copy-pasteable into --ids / the workflow's contact_id input, so a
+        # partial run can be finished without re-sending what already went out.
+        print(f"Failed contact IDs: {','.join(failed_ids)}")
+        # Non-zero so the workflow turns red. It used to exit 0 with 73 of 156
+        # invites lost, which looked identical to a clean run.
+        sys.exit(1)
 
 
 if __name__ == "__main__":
