@@ -233636,12 +233636,12 @@
 "last_call_date": ""
 },
 "5388427": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-10-01",
-"changes": 4,
-"last_call_date": "2026-10-01"
+"since": "2026-10-22",
+"changes": 5,
+"last_call_date": "2026-10-22"
 },
 "5388429": {
 "stage": "Activation",
