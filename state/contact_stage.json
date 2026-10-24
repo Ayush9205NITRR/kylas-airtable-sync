@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-10-23",
+"as_of": "2026-10-24",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -270347,6 +270347,30 @@
 "changes": 1,
 "last_call_date": "2026-10-23"
 },
+"6362188": {
+"stage": "Active Requirement Call Booked",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6362451": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6362497": {
+"stage": "Connect Later",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
 "6362633": {
 "stage": "Connect Later",
 "owner": "Muskan Rajpoot",
@@ -270355,6 +270379,46 @@
 "changes": 1,
 "last_call_date": "2026-10-23"
 },
+"6362645": {
+"stage": "Connect Later",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6362672": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6362693": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6362718": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6362828": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
 "6362868": {
 "stage": "CNC (Could Not Connect) - 1",
 "owner": "Muskan Rajpoot",
@@ -270362,6 +270426,78 @@
 "since": "2026-10-23",
 "changes": 1,
 "last_call_date": "2026-10-23"
+},
+"6362880": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6362901": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6362951": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6364550": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6364616": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6364899": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6364927": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6364985": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
+},
+"6364990": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-24",
+"changes": 1,
+"last_call_date": "2026-10-24"
 }
 }
 }
