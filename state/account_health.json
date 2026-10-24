@@ -82029,18 +82029,18 @@
    }
   },
   "1775934": {
-   "status": "Active",
+   "status": "SQL",
    "baseline": "Active",
-   "prev": "SQL",
-   "changed": "2026-09-10",
-   "count": 0,
+   "prev": "Active",
+   "changed": "2026-10-24",
+   "count": 1,
    "month": "2026-10",
    "v": 2,
-   "status_since": "2026-09-10",
+   "status_since": "2026-10-24",
    "months": {
     "2026-08": "SQL",
     "2026-09": "Active",
-    "2026-10": "Active"
+    "2026-10": "SQL"
    }
   },
   "1775935": {
