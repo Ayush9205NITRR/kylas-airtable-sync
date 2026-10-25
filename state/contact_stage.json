@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-10-24",
+"as_of": "2026-10-25",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -270348,12 +270348,12 @@
 "last_call_date": "2026-10-23"
 },
 "6362188": {
-"stage": "Active Requirement Call Booked",
+"stage": "SQL (Sales Qualified Lead)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-24",
-"changes": 1,
-"last_call_date": "2026-10-24"
+"since": "2026-10-25",
+"changes": 2,
+"last_call_date": "2026-10-25"
 },
 "6362451": {
 "stage": "CNC (Could Not Connect) - 1",

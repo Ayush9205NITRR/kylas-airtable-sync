@@ -1,7 +1,7 @@
 {
  "_comment": "Account Health snapshot. Written by modules/06_account_health.py; see utils/health_history.py. git history is the archive.",
  "formula_version": 2,
- "as_of": "2026-10-24",
+ "as_of": "2026-10-25",
  "accounts": {
   "1770092": {
    "status": "Active",
@@ -200973,18 +200973,18 @@
    }
   },
   "1812082": {
-   "status": "MQL - Action Needed",
+   "status": "SQL",
    "baseline": "SQL",
-   "prev": "SQL",
-   "changed": "2026-10-23",
-   "count": 1,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-10-25",
+   "count": 2,
    "month": "2026-10",
    "v": 2,
-   "status_since": "2026-10-23",
+   "status_since": "2026-10-25",
    "months": {
     "2026-08": "SQL",
     "2026-09": "SQL",
-    "2026-10": "MQL - Action Needed"
+    "2026-10": "SQL"
    }
   },
   "1812092": {
