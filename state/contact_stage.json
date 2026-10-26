@@ -270460,12 +270460,12 @@
 "last_call_date": "2026-10-24"
 },
 "6362951": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Connect Later",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-24",
-"changes": 1,
-"last_call_date": "2026-10-24"
+"since": "2026-10-26",
+"changes": 2,
+"last_call_date": "2026-10-26"
 },
 "6364550": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -270522,6 +270522,94 @@
 "since": "2026-10-24",
 "changes": 1,
 "last_call_date": "2026-10-24"
+},
+"6372738": {
+"stage": "Invalid Contact",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6372741": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6372787": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6372792": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6372882": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6372888": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6372959": {
+"stage": "Not Interested",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6372965": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6372993": {
+"stage": "Follow-up (1)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6373026": {
+"stage": "Follow-up (1)",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
+},
+"6373036": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-26",
+"changes": 1,
+"last_call_date": "2026-10-26"
 }
 }
 }
