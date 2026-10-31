@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-10-30",
+"as_of": "2026-10-31",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -197580,12 +197580,12 @@
 "last_call_date": ""
 },
 "5381193": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "SQL (Sales Qualified Lead)",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-10-30",
-"changes": 3,
-"last_call_date": "2026-10-30"
+"since": "2026-10-31",
+"changes": 4,
+"last_call_date": "2026-10-31"
 },
 "5381194": {
 "stage": "LinkedIn Outreach Initiated",
@@ -220452,12 +220452,12 @@
 "last_call_date": ""
 },
 "5384225": {
-"stage": "SQL (Sales Qualified Lead)",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Gurnoor Kaur",
 "email": "gurnoor@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-10-31",
+"changes": 1,
+"last_call_date": "2026-10-31"
 },
 "5384226": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -268300,12 +268300,12 @@
 "last_call_date": "2026-09-24"
 },
 "6242153": {
-"stage": "Follow-up (3)",
+"stage": "SQL (Sales Qualified Lead)",
 "owner": "Muskan Rajpoot",
 "email": "muskan@enout.in",
-"since": "2026-10-27",
-"changes": 9,
-"last_call_date": "2026-10-27"
+"since": "2026-10-31",
+"changes": 10,
+"last_call_date": "2026-10-31"
 },
 "6242211": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -270828,12 +270828,12 @@
 "last_call_date": "2026-10-28"
 },
 "6372965": {
-"stage": "Follow-up (2)",
+"stage": "Follow-up (3)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-29",
-"changes": 3,
-"last_call_date": "2026-10-29"
+"since": "2026-10-31",
+"changes": 4,
+"last_call_date": "2026-10-31"
 },
 "6372993": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -270868,12 +270868,12 @@
 "last_call_date": "2026-10-26"
 },
 "6373593": {
-"stage": "Connect Later",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-27",
-"changes": 1,
-"last_call_date": "2026-10-27"
+"since": "2026-10-31",
+"changes": 2,
+"last_call_date": "2026-10-31"
 },
 "6373712": {
 "stage": "Offsite Delayed",
@@ -271228,12 +271228,12 @@
 "last_call_date": "2026-10-29"
 },
 "6384085": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Not Interested",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-29",
-"changes": 1,
-"last_call_date": "2026-10-29"
+"since": "2026-10-31",
+"changes": 2,
+"last_call_date": "2026-10-31"
 },
 "6384092": {
 "stage": "SQL (Sales Qualified Lead)",
@@ -271291,6 +271291,22 @@
 "changes": 1,
 "last_call_date": "2026-10-30"
 },
+"6396632": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-31",
+"changes": 1,
+"last_call_date": "2026-10-31"
+},
+"6396753": {
+"stage": "Invalid Contact",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-31",
+"changes": 1,
+"last_call_date": "2026-10-31"
+},
 "6396826": {
 "stage": "Invalid Contact",
 "owner": "Arshdeep Singh",
@@ -271298,6 +271314,14 @@
 "since": "2026-10-30",
 "changes": 1,
 "last_call_date": "2026-10-30"
+},
+"6397522": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Enout Super Admin",
+"email": "crmadmin@enout.in",
+"since": "2026-10-31",
+"changes": 1,
+"last_call_date": "2026-10-31"
 }
 }
 }
