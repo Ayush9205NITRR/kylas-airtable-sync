@@ -45077,18 +45077,18 @@
    }
   },
   "1773134": {
-   "status": "Discovery Call Stage",
+   "status": "Active",
    "baseline": "Active",
-   "prev": "Active",
-   "changed": "2026-10-27",
-   "count": 3,
+   "prev": "Discovery Call Stage",
+   "changed": "2026-10-31",
+   "count": 4,
    "month": "2026-10",
    "v": 2,
-   "status_since": "2026-10-27",
+   "status_since": "2026-10-31",
    "months": {
     "2026-08": "Active",
     "2026-09": "Active",
-    "2026-10": "Discovery Call Stage"
+    "2026-10": "Active"
    }
   },
   "1773135": {
@@ -82342,18 +82342,18 @@
    }
   },
   "1775954": {
-   "status": "Discovery Call Stage",
+   "status": "SQL",
    "baseline": "Discovery Call Stage",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Discovery Call Stage",
+   "changed": "2026-10-31",
+   "count": 1,
    "month": "2026-10",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-10-31",
    "months": {
     "2026-08": "Discovery Call Stage",
     "2026-09": "Discovery Call Stage",
-    "2026-10": "Discovery Call Stage"
+    "2026-10": "SQL"
    }
   },
   "1775955": {
@@ -116434,18 +116434,18 @@
    }
   },
   "1778278": {
-   "status": "Discovery Call Stage",
+   "status": "Active",
    "baseline": "Active",
-   "prev": "MQL - Action Needed",
-   "changed": "2026-10-23",
-   "count": 2,
+   "prev": "Discovery Call Stage",
+   "changed": "2026-10-31",
+   "count": 3,
    "month": "2026-10",
    "v": 2,
-   "status_since": "2026-10-23",
+   "status_since": "2026-10-31",
    "months": {
     "2026-08": "Active",
     "2026-09": "Active",
-    "2026-10": "Discovery Call Stage"
+    "2026-10": "Active"
    }
   },
   "1778279": {
@@ -147208,18 +147208,18 @@
    }
   },
   "1780374": {
-   "status": "Exhausted",
+   "status": "MQL - Action Needed",
    "baseline": "Exhausted",
-   "prev": "Active",
-   "changed": "2026-10-17",
-   "count": 2,
+   "prev": "Exhausted",
+   "changed": "2026-10-31",
+   "count": 3,
    "month": "2026-10",
    "v": 2,
-   "status_since": "2026-10-17",
+   "status_since": "2026-10-31",
    "months": {
     "2026-08": "Active",
     "2026-09": "Exhausted",
-    "2026-10": "Exhausted"
+    "2026-10": "MQL - Action Needed"
    }
   },
   "1780375": {
