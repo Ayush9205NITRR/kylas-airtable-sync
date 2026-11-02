@@ -271012,12 +271012,12 @@
 "last_call_date": "2026-10-26"
 },
 "6373593": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Follow-up (1)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-31",
-"changes": 2,
-"last_call_date": "2026-10-31"
+"since": "2026-11-02",
+"changes": 3,
+"last_call_date": "2026-11-02"
 },
 "6373712": {
 "stage": "Offsite Delayed",
