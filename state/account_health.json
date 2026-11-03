@@ -1,7 +1,7 @@
 {
  "_comment": "Account Health snapshot. Written by modules/06_account_health.py; see utils/health_history.py. git history is the archive.",
  "formula_version": 2,
- "as_of": "2026-11-02",
+ "as_of": "2026-11-03",
  "accounts": {
   "1770092": {
    "status": "Active",
@@ -13394,19 +13394,19 @@
    }
   },
   "1770943": {
-   "status": "Fresh",
+   "status": "MQL - Action Needed",
    "baseline": "Fresh",
-   "prev": "Active",
-   "changed": "2026-10-22",
-   "count": 0,
+   "prev": "Fresh",
+   "changed": "2026-11-03",
+   "count": 1,
    "month": "2026-11",
    "v": 2,
-   "status_since": "2026-10-22",
+   "status_since": "2026-11-03",
    "months": {
     "2026-08": "Active",
     "2026-09": "Active",
     "2026-10": "Fresh",
-    "2026-11": "Fresh"
+    "2026-11": "MQL - Action Needed"
    }
   },
   "1770944": {
@@ -101761,19 +101761,19 @@
    }
   },
   "1776852": {
-   "status": "Fresh",
+   "status": "MQL - Action Needed",
    "baseline": "Fresh",
-   "prev": "Active",
-   "changed": "2026-10-24",
-   "count": 0,
+   "prev": "Fresh",
+   "changed": "2026-11-03",
+   "count": 1,
    "month": "2026-11",
    "v": 2,
-   "status_since": "2026-10-24",
+   "status_since": "2026-11-03",
    "months": {
     "2026-08": "Active",
     "2026-09": "Active",
     "2026-10": "Fresh",
-    "2026-11": "Fresh"
+    "2026-11": "MQL - Action Needed"
    }
   },
   "1776854": {
@@ -127486,19 +127486,19 @@
    }
   },
   "1778487": {
-   "status": "Offsite Done",
+   "status": "SQL",
    "baseline": "Offsite Done",
-   "prev": "Active",
-   "changed": "2026-10-31",
-   "count": 0,
+   "prev": "Offsite Done",
+   "changed": "2026-11-03",
+   "count": 1,
    "month": "2026-11",
    "v": 2,
-   "status_since": "2026-10-31",
+   "status_since": "2026-11-03",
    "months": {
     "2026-08": "Active",
     "2026-09": "Active",
     "2026-10": "Offsite Done",
-    "2026-11": "Offsite Done"
+    "2026-11": "SQL"
    }
   },
   "1778488": {
@@ -208561,19 +208561,19 @@
    }
   },
   "1783818": {
-   "status": "Fresh",
+   "status": "MQL - Action Needed",
    "baseline": "Fresh",
-   "prev": "Active",
-   "changed": "2026-10-22",
-   "count": 0,
+   "prev": "Fresh",
+   "changed": "2026-11-03",
+   "count": 1,
    "month": "2026-11",
    "v": 2,
-   "status_since": "2026-10-22",
+   "status_since": "2026-11-03",
    "months": {
     "2026-08": "Active",
     "2026-09": "Active",
     "2026-10": "Fresh",
-    "2026-11": "Fresh"
+    "2026-11": "MQL - Action Needed"
    }
   },
   "1783819": {
@@ -220264,19 +220264,19 @@
    "v": 2
   },
   "1907464": {
-   "status": "MQL - Action Needed",
+   "status": "Discovery Call Stage",
    "baseline": "MQL - Action Needed",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-11-03",
+   "count": 1,
    "month": "2026-11",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-11-03",
    "months": {
     "2026-08": "MQL - Action Needed",
     "2026-09": "MQL - Action Needed",
     "2026-10": "MQL - Action Needed",
-    "2026-11": "MQL - Action Needed"
+    "2026-11": "Discovery Call Stage"
    }
   },
   "1907485": {
@@ -223825,6 +223825,19 @@
    "status_since": "2026-11-02",
    "months": {
     "2026-11": "MQL - Action Needed"
+   },
+   "v": 2
+  },
+  "2018289": {
+   "status": "Active",
+   "baseline": "Active",
+   "prev": "",
+   "changed": "",
+   "count": 0,
+   "month": "2026-11",
+   "status_since": "2026-11-03",
+   "months": {
+    "2026-11": "Active"
    },
    "v": 2
   }
