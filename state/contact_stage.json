@@ -12132,12 +12132,12 @@
 "last_call_date": ""
 },
 "5355478": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5355484": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -14164,12 +14164,12 @@
 "last_call_date": ""
 },
 "5355856": {
-"stage": "Not a Decision Maker (NDM)",
+"stage": "Disqualified - Wrong POC",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-22",
-"changes": 11,
-"last_call_date": "2026-10-22"
+"since": "2026-11-03",
+"changes": 12,
+"last_call_date": "2026-11-03"
 },
 "5355857": {
 "stage": "Follow-up (3)",
@@ -15068,12 +15068,12 @@
 "last_call_date": ""
 },
 "5355970": {
-"stage": "Followup - CNC",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-17",
-"changes": 1,
-"last_call_date": "2026-09-17"
+"stage": "MQL (Marketing Qualified Lead)",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5355971": {
 "stage": "Invalid Contact",
@@ -17340,12 +17340,12 @@
 "last_call_date": ""
 },
 "5356260": {
-"stage": "Follow-up (2)",
+"stage": "Follow-up (3)",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 1,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5356261": {
 "stage": "Not Interested",
@@ -18308,12 +18308,12 @@
 "last_call_date": ""
 },
 "5356387": {
-"stage": "CNC (Could Not Connect) - 3",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 2",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5356388": {
 "stage": "LinkedIn Outreach Initiated",
@@ -25868,12 +25868,12 @@
 "last_call_date": ""
 },
 "5357361": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5357362": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -27885,8 +27885,8 @@
 },
 "5357624": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Mayra Singh",
+"email": "mayra@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -38469,8 +38469,8 @@
 },
 "5358998": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -38738,6 +38738,14 @@
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
+},
+"5359069": {
+"stage": "MQL (Marketing Qualified Lead)",
+"owner": "Mayra Singh",
+"email": "mayra@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5359071": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -39869,8 +39877,8 @@
 },
 "5359322": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -40204,12 +40212,12 @@
 "last_call_date": ""
 },
 "5359388": {
-"stage": "Follow-up (1)",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
-"since": "2026-10-28",
-"changes": 3,
-"last_call_date": "2026-10-28"
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 4,
+"last_call_date": "2026-11-03"
 },
 "5359390": {
 "stage": "Disqualified - Wrong POC",
@@ -46764,12 +46772,12 @@
 "last_call_date": ""
 },
 "5360277": {
-"stage": "Followup - CNC",
+"stage": "Connect Later",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5360278": {
 "stage": "Activation",
@@ -52212,12 +52220,12 @@
 "last_call_date": ""
 },
 "5360966": {
-"stage": "Followup - CNC",
+"stage": "Active Requirement Call Booked",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-10-21",
-"changes": 1,
-"last_call_date": "2026-10-21"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5360967": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -59156,12 +59164,12 @@
 "last_call_date": "2026-10-07"
 },
 "5361996": {
-"stage": "CNC (Could Not Connect) - 1",
-"owner": "Aditi saini",
-"email": "aditi.saini@enout.in",
-"since": "2026-10-23",
-"changes": 2,
-"last_call_date": "2026-10-23"
+"stage": "Follow-up (1)",
+"owner": "Mayra Singh",
+"email": "mayra@enout.in",
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5361998": {
 "stage": "Invalid Contact",
@@ -74684,12 +74692,12 @@
 "last_call_date": ""
 },
 "5364357": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Gurnoor Kaur",
 "email": "gurnoor@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5364358": {
 "stage": "LinkedIn Outreach Initiated",
@@ -75653,8 +75661,8 @@
 },
 "5364482": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Vipul Bansal",
-"email": "vipul.bansal@enout.in",
+"owner": "Mayra Singh",
+"email": "mayra@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -92860,12 +92868,12 @@
 "last_call_date": ""
 },
 "5366685": {
-"stage": "LinkedIn Outreach Initiated",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 2",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5366688": {
 "stage": "LinkedIn Outreach Initiated",
@@ -94501,8 +94509,8 @@
 },
 "5366897": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -96589,8 +96597,8 @@
 },
 "5367298": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -102908,12 +102916,12 @@
 "last_call_date": ""
 },
 "5368141": {
-"stage": "Followup - CNC",
+"stage": "Follow-up (1)",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-10-21",
-"changes": 1,
-"last_call_date": "2026-10-21"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5368142": {
 "stage": "Activation",
@@ -104652,12 +104660,12 @@
 "last_call_date": ""
 },
 "5368364": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-10-21",
-"changes": 1,
-"last_call_date": "2026-10-21"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5368365": {
 "stage": "LinkedIn Outreach Initiated",
@@ -105556,12 +105564,12 @@
 "last_call_date": ""
 },
 "5368477": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Connect Later",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-10-21",
-"changes": 1,
-"last_call_date": "2026-10-21"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5368478": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -106429,8 +106437,8 @@
 },
 "5368586": {
 "stage": "Followup - CNC",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -109412,12 +109420,12 @@
 "last_call_date": ""
 },
 "5368965": {
-"stage": "Connect Later",
+"stage": "Follow-up (1)",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5368966": {
 "stage": "LinkedIn Outreach Initiated",
@@ -122733,8 +122741,8 @@
 },
 "5371022": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-05",
 "changes": 1,
 "last_call_date": "2026-10-05"
@@ -125380,12 +125388,12 @@
 "last_call_date": ""
 },
 "5371450": {
-"stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-10-16",
-"changes": 2,
-"last_call_date": "2026-10-16"
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5371451": {
 "stage": "LinkedIn Outreach Initiated",
@@ -132084,12 +132092,12 @@
 "last_call_date": ""
 },
 "5372305": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "Followup - CNC",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5372306": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -137269,8 +137277,8 @@
 },
 "5372966": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -153732,12 +153740,12 @@
 "last_call_date": ""
 },
 "5375192": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "Follow-up (1)",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-10-23",
-"changes": 4,
-"last_call_date": "2026-10-23"
+"since": "2026-11-03",
+"changes": 5,
+"last_call_date": "2026-11-03"
 },
 "5375193": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -160109,8 +160117,8 @@
 },
 "5376001": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -161621,8 +161629,8 @@
 },
 "5376192": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-07",
 "changes": 2,
 "last_call_date": "2026-10-07"
@@ -163132,12 +163140,12 @@
 "last_call_date": ""
 },
 "5376397": {
-"stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5376398": {
 "stage": "MQL (Marketing Qualified Lead)",
@@ -166508,12 +166516,12 @@
 "last_call_date": ""
 },
 "5377025": {
-"stage": "Invalid Contact",
+"stage": "Connect Later",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-22",
-"changes": 11,
-"last_call_date": "2026-10-22"
+"since": "2026-11-03",
+"changes": 12,
+"last_call_date": "2026-11-03"
 },
 "5377026": {
 "stage": "LinkedIn Outreach Initiated",
@@ -172397,8 +172405,8 @@
 },
 "5377845": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -173117,8 +173125,8 @@
 },
 "5377935": {
 "stage": "Invalid Contact",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -183405,8 +183413,8 @@
 },
 "5379317": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Mayra Singh",
+"email": "mayra@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -195485,8 +195493,8 @@
 },
 "5380873": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -195884,12 +195892,12 @@
 "last_call_date": ""
 },
 "5380961": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Gurnoor Kaur",
 "email": "gurnoor@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5380967": {
 "stage": "SQL (Sales Qualified Lead)",
@@ -201740,12 +201748,12 @@
 "last_call_date": ""
 },
 "5381710": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-10-28",
-"changes": 2,
-"last_call_date": "2026-10-28"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5381711": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -202028,12 +202036,12 @@
 "last_call_date": ""
 },
 "5381746": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-10-13",
-"changes": 1,
-"last_call_date": "2026-10-13"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5381747": {
 "stage": "LinkedIn Outreach Initiated",
@@ -204069,8 +204077,8 @@
 },
 "5382007": {
 "stage": "Followup - CNC",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -219341,8 +219349,8 @@
 },
 "5384073": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Tanay Kumar",
-"email": "tanay.kumar@enout.in",
+"owner": "Mayra Singh",
+"email": "mayra@enout.in",
 "since": "2026-09-05",
 "changes": 1,
 "last_call_date": ""
@@ -225268,12 +225276,12 @@
 "last_call_date": ""
 },
 "5384839": {
-"stage": "Connect Later",
+"stage": "MQL (Marketing Qualified Lead)",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-10-27",
-"changes": 2,
-"last_call_date": "2026-10-27"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5384840": {
 "stage": "Invalid Contact",
@@ -230813,8 +230821,8 @@
 },
 "5385553": {
 "stage": "Activation",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -232884,12 +232892,12 @@
 "last_call_date": ""
 },
 "5385820": {
-"stage": "Connect Later",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 1,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5385821": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -236675,6 +236683,14 @@
 "changes": 1,
 "last_call_date": "2026-10-12"
 },
+"5482110": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
 "5482117": {
 "stage": "POC - Organization - Changed",
 "owner": "Anjali Athya",
@@ -236868,12 +236884,12 @@
 "last_call_date": "2026-10-15"
 },
 "5482206": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Disqualified - Wrong POC",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 1,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5482207": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -238652,17 +238668,17 @@
 "last_call_date": ""
 },
 "5494989": {
-"stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "Follow-up (1)",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5494990": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -244045,8 +244061,8 @@
 },
 "5646657": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -244061,19 +244077,19 @@
 },
 "5646661": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5646665": {
-"stage": "Follow-up (1)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-08",
-"changes": 1,
-"last_call_date": "2026-09-08"
+"stage": "Not Interested",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5646668": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -244085,8 +244101,8 @@
 },
 "5646670": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -246725,19 +246741,19 @@
 },
 "5781780": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5781781": {
-"stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "Disqualified - Wrong POC",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5781782": {
 "stage": "POC - Organization - Changed",
@@ -248149,8 +248165,8 @@
 },
 "5791125": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -248453,8 +248469,8 @@
 },
 "5792228": {
 "stage": "Follow-up (1)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-27",
 "changes": 1,
 "last_call_date": "2026-10-27"
@@ -249389,8 +249405,8 @@
 },
 "5797067": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-10",
 "changes": 1,
 "last_call_date": "2026-09-10"
@@ -250468,25 +250484,25 @@
 "last_call_date": "2026-09-09"
 },
 "5814984": {
-"stage": "Offsite Delayed",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5814985": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5814986": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-17",
 "changes": 1,
 "last_call_date": "2026-09-17"
@@ -253468,25 +253484,25 @@
 "last_call_date": "2026-10-07"
 },
 "5859242": {
-"stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-10-27",
-"changes": 1,
-"last_call_date": "2026-10-27"
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5859243": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-27",
 "changes": 1,
 "last_call_date": "2026-10-27"
 },
 "5859244": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
@@ -254212,12 +254228,12 @@
 "last_call_date": ""
 },
 "5866523": {
-"stage": "Follow-up (1)",
+"stage": "Active Requirement Call Booked",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-10-26",
-"changes": 1,
-"last_call_date": "2026-10-26"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5866550": {
 "stage": "Not Interested",
@@ -256693,40 +256709,40 @@
 },
 "5888824": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-05",
 "changes": 1,
 "last_call_date": "2026-10-05"
 },
 "5888825": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-05",
 "changes": 1,
 "last_call_date": "2026-10-05"
 },
 "5888826": {
 "stage": "Followup - CNC",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-13",
 "changes": 5,
 "last_call_date": "2026-10-13"
 },
 "5888827": {
 "stage": "Not Interested",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-09",
 "changes": 4,
 "last_call_date": "2026-10-09"
 },
 "5888828": {
 "stage": "CNC (Could Not Connect) - 2",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-05",
 "changes": 1,
 "last_call_date": "2026-10-05"
@@ -257124,12 +257140,12 @@
 "last_call_date": ""
 },
 "5892444": {
-"stage": "Followup - CNC",
+"stage": "Follow-up (1)",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5892525": {
 "stage": "Offsite Delayed",
@@ -258573,8 +258589,8 @@
 },
 "5928209": {
 "stage": "Follow-up (1)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-26",
 "changes": 6,
 "last_call_date": "2026-10-26"
@@ -259516,12 +259532,12 @@
 "last_call_date": ""
 },
 "5938874": {
-"stage": "Connect Later",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-09-10",
-"changes": 1,
-"last_call_date": "2026-09-10"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "5938876": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -259532,12 +259548,12 @@
 "last_call_date": ""
 },
 "5938906": {
-"stage": "Invalid Contact",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5938916": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -259588,20 +259604,20 @@
 "last_call_date": ""
 },
 "5938949": {
-"stage": "Connect Later",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-09-10",
-"changes": 2,
-"last_call_date": "2026-09-10"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5938955": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "Not a Decision Maker (NDM)",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-09-10",
-"changes": 2,
-"last_call_date": "2026-09-10"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5938961": {
 "stage": "Connect Later",
@@ -260412,28 +260428,28 @@
 "last_call_date": ""
 },
 "5943876": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5943887": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5943895": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5943909": {
 "stage": "MQL (Marketing Qualified Lead)",
@@ -260476,12 +260492,12 @@
 "last_call_date": "2026-11-02"
 },
 "5944015": {
-"stage": "Connect Later",
+"stage": "Not Interested",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5944022": {
 "stage": "LinkedIn Outreach Initiated",
@@ -260500,12 +260516,12 @@
 "last_call_date": ""
 },
 "5944161": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Follow-up (1)",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5944168": {
 "stage": "Invalid Contact",
@@ -260516,12 +260532,12 @@
 "last_call_date": "2026-11-02"
 },
 "5944184": {
-"stage": "Connect Later",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5944200": {
 "stage": "LinkedIn Outreach Initiated",
@@ -260540,12 +260556,12 @@
 "last_call_date": ""
 },
 "5944211": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5944357": {
 "stage": "LinkedIn Outreach Initiated",
@@ -260572,28 +260588,28 @@
 "last_call_date": ""
 },
 "5944390": {
-"stage": "LinkedIn Outreach Initiated",
-"owner": "Anjali Athya",
-"email": "anjali.athya@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
-},
-"5944436": {
 "stage": "CNC (Could Not Connect) - 1",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
+"since": "2026-11-03",
 "changes": 2,
-"last_call_date": "2026-11-02"
+"last_call_date": "2026-11-03"
 },
-"5944447": {
-"stage": "Connect Later",
+"5944436": {
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
+},
+"5944447": {
+"stage": "Disqualified - Wrong POC",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5944456": {
 "stage": "LinkedIn Outreach Initiated",
@@ -262452,17 +262468,17 @@
 "last_call_date": ""
 },
 "5957006": {
-"stage": "Followup - CNC",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-10-30",
-"changes": 5,
-"last_call_date": "2026-10-30"
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 6,
+"last_call_date": "2026-11-03"
 },
 "5957007": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-30",
 "changes": 4,
 "last_call_date": "2026-10-30"
@@ -262788,36 +262804,36 @@
 "last_call_date": "2026-10-27"
 },
 "5973319": {
-"stage": "POC - Organization - Changed",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
-"since": "2026-09-22",
-"changes": 1,
-"last_call_date": "2026-09-22"
-},
-"5973444": {
 "stage": "Not a Decision Maker (NDM)",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
-},
-"5973446": {
-"stage": "Not a Decision Maker (NDM)",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
-},
-"5973459": {
-"stage": "CNC (Could Not Connect) - 1",
 "owner": "Aditi saini",
 "email": "aditi.saini@enout.in",
-"since": "2026-10-27",
+"since": "2026-11-03",
 "changes": 2,
-"last_call_date": "2026-10-27"
+"last_call_date": "2026-11-03"
+},
+"5973444": {
+"stage": "Invalid Contact",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
+"5973446": {
+"stage": "Invalid Contact",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
+"5973459": {
+"stage": "CNC (Could Not Connect) - 2",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "5973493": {
 "stage": "Connect Later",
@@ -263117,19 +263133,19 @@
 },
 "5981339": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-09-05",
 "changes": 0,
 "last_call_date": ""
 },
 "5981340": {
-"stage": "MQL (Marketing Qualified Lead)",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5981341": {
 "stage": "MQL (Marketing Qualified Lead)",
@@ -267340,12 +267356,12 @@
 "last_call_date": ""
 },
 "6194580": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-10-21",
-"changes": 2,
-"last_call_date": "2026-10-21"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "6194603": {
 "stage": "Follow-up (1)",
@@ -268548,20 +268564,20 @@
 "last_call_date": "2026-09-29"
 },
 "6244869": {
-"stage": "Follow-up (3)",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
-"since": "2026-10-29",
-"changes": 4,
-"last_call_date": "2026-10-29"
+"stage": "MQL (Marketing Qualified Lead)",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 5,
+"last_call_date": "2026-11-03"
 },
 "6244896": {
-"stage": "Not a Decision Maker (NDM)",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
-"since": "2026-10-16",
-"changes": 2,
-"last_call_date": "2026-10-16"
+"stage": "Connect Later",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "6244975": {
 "stage": "CNC (Could Not Connect) - 3",
@@ -269004,12 +269020,12 @@
 "last_call_date": "2026-10-07"
 },
 "6286080": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-10-14",
-"changes": 2,
-"last_call_date": "2026-10-14"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "6286192": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -269476,20 +269492,20 @@
 "last_call_date": "2026-10-19"
 },
 "6312524": {
-"stage": "Not Interested",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
-"since": "2026-10-14",
-"changes": 1,
-"last_call_date": "2026-10-14"
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "6312554": {
-"stage": "Not Interested",
-"owner": "Arshdeep Singh",
-"email": "arshdeep@enout.in",
-"since": "2026-10-27",
-"changes": 3,
-"last_call_date": "2026-10-27"
+"stage": "Invalid Contact",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 4,
+"last_call_date": "2026-11-03"
 },
 "6312651": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -269548,12 +269564,12 @@
 "last_call_date": "2026-10-17"
 },
 "6314436": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Invalid Contact",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-10-13",
-"changes": 1,
-"last_call_date": "2026-10-13"
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "6314463": {
 "stage": "Not a Decision Maker (NDM)",
@@ -271100,12 +271116,12 @@
 "last_call_date": "2026-10-30"
 },
 "6376091": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Disqualified - Wrong POC",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-02",
-"changes": 2,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 3,
+"last_call_date": "2026-11-03"
 },
 "6376111": {
 "stage": "Invalid Contact",
@@ -271253,24 +271269,24 @@
 },
 "6382648": {
 "stage": "Disqualified - Wrong POC",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-28",
 "changes": 1,
 "last_call_date": "2026-10-28"
 },
 "6382657": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Enout Super Admin",
-"email": "crmadmin@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-29",
 "changes": 1,
 "last_call_date": "2026-10-29"
 },
 "6382665": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Enout Super Admin",
-"email": "crmadmin@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-29",
 "changes": 1,
 "last_call_date": "2026-10-29"
@@ -271284,25 +271300,25 @@
 "last_call_date": "2026-10-28"
 },
 "6382695": {
-"stage": "Activation",
-"owner": "Enout Super Admin",
-"email": "crmadmin@enout.in",
-"since": "2026-10-29",
-"changes": 1,
-"last_call_date": "2026-10-29"
+"stage": "Connect Later",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 2,
+"last_call_date": "2026-11-03"
 },
 "6382709": {
 "stage": "CNC (Could Not Connect) - 1",
-"owner": "Enout Super Admin",
-"email": "crmadmin@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-29",
 "changes": 1,
 "last_call_date": "2026-10-29"
 },
 "6382713": {
 "stage": "LinkedIn Outreach Initiated",
-"owner": "Enout Super Admin",
-"email": "crmadmin@enout.in",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
 "since": "2026-10-28",
 "changes": 0,
 "last_call_date": ""
@@ -271647,6 +271663,62 @@
 "stage": "Active Requirement Call Booked",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
+"6409788": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
+"6409811": {
+"stage": "Not a Decision Maker (NDM)",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
+"6410115": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
+"6410143": {
+"stage": "Activation",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
+"6410294": {
+"stage": "Follow-up (1)",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
+"6411181": {
+"stage": "Not Interested",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
+},
+"6411209": {
+"stage": "Activation",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
 "since": "2026-11-03",
 "changes": 1,
 "last_call_date": "2026-11-03"
