@@ -257132,12 +257132,12 @@
 "last_call_date": "2026-10-22"
 },
 "5892441": {
-"stage": "Followup - CNC",
-"owner": "Mayra Singh",
-"email": "mayra@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"stage": "Active Requirement Call Booked",
+"owner": "Vipul Bansal",
+"email": "vipul.bansal@enout.in",
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "5892444": {
 "stage": "Follow-up (1)",
@@ -270772,12 +270772,12 @@
 "last_call_date": "2026-10-23"
 },
 "6361750": {
-"stage": "LinkedIn Outreach Initiated",
+"stage": "Follow-up (1)",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-23",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-11-03",
+"changes": 1,
+"last_call_date": "2026-11-03"
 },
 "6361858": {
 "stage": "Not a Decision Maker (NDM)",
@@ -271044,12 +271044,12 @@
 "last_call_date": "2026-10-26"
 },
 "6373593": {
-"stage": "Follow-up (1)",
+"stage": "Connect Later",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-11-02",
-"changes": 3,
-"last_call_date": "2026-11-02"
+"since": "2026-11-03",
+"changes": 4,
+"last_call_date": "2026-11-03"
 },
 "6373712": {
 "stage": "Offsite Delayed",
