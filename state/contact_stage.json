@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-11-04",
+"as_of": "2026-11-05",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -40492,12 +40492,12 @@
 "last_call_date": ""
 },
 "5359461": {
-"stage": "Disqualified - Wrong POC",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-10-29",
-"changes": 3,
-"last_call_date": "2026-10-29"
+"since": "2026-11-05",
+"changes": 4,
+"last_call_date": "2026-11-05"
 },
 "5359463": {
 "stage": "Not Interested",
@@ -166124,12 +166124,12 @@
 "last_call_date": ""
 },
 "5376969": {
-"stage": "LinkedIn Outreach Initiated",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
+"since": "2026-11-05",
+"changes": 2,
+"last_call_date": "2026-11-05"
 },
 "5376970": {
 "stage": "LinkedIn Outreach Initiated",
@@ -257228,12 +257228,12 @@
 "last_call_date": "2026-10-22"
 },
 "5892441": {
-"stage": "Active Requirement Call Booked",
+"stage": "SQL (Sales Qualified Lead)",
 "owner": "Vipul Bansal",
 "email": "vipul.bansal@enout.in",
-"since": "2026-11-03",
-"changes": 1,
-"last_call_date": "2026-11-03"
+"since": "2026-11-05",
+"changes": 2,
+"last_call_date": "2026-11-05"
 },
 "5892444": {
 "stage": "Follow-up (1)",
@@ -259564,12 +259564,12 @@
 "last_call_date": ""
 },
 "5938807": {
-"stage": "Active Requirement Call Booked",
+"stage": "Active Requirement Call Done \u2013 Awaiting Client Inputs",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-11-04",
-"changes": 2,
-"last_call_date": "2026-11-04"
+"since": "2026-11-05",
+"changes": 3,
+"last_call_date": "2026-11-05"
 },
 "5938815": {
 "stage": "MQL (Marketing Qualified Lead)",
@@ -271940,12 +271940,12 @@
 "last_call_date": "2026-11-04"
 },
 "6413350": {
-"stage": "Active Requirement Call Booked",
+"stage": "Active Requirement Call Done \u2013 Awaiting Client Inputs",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-11-04",
-"changes": 1,
-"last_call_date": "2026-11-04"
+"since": "2026-11-05",
+"changes": 2,
+"last_call_date": "2026-11-05"
 },
 "6413435": {
 "stage": "Follow-up (1)",
@@ -272154,6 +272154,62 @@
 "since": "2026-11-04",
 "changes": 1,
 "last_call_date": "2026-11-04"
+},
+"6416229": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-05",
+"changes": 0,
+"last_call_date": ""
+},
+"6416234": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-05",
+"changes": 0,
+"last_call_date": ""
+},
+"6416253": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-05",
+"changes": 0,
+"last_call_date": ""
+},
+"6416257": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-05",
+"changes": 0,
+"last_call_date": ""
+},
+"6416301": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-05",
+"changes": 0,
+"last_call_date": ""
+},
+"6416319": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-05",
+"changes": 0,
+"last_call_date": ""
+},
+"6416575": {
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Aditi saini",
+"email": "aditi.saini@enout.in",
+"since": "2026-11-05",
+"changes": 1,
+"last_call_date": "2026-11-05"
 }
 }
 }
