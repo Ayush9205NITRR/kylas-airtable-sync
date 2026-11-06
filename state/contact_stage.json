@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-11-05",
+"as_of": "2026-11-06",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -42748,12 +42748,12 @@
 "last_call_date": ""
 },
 "5359766": {
-"stage": "Disqualified - Wrong POC",
+"stage": "POC - Organization - Changed",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-10-26",
-"changes": 2,
-"last_call_date": "2026-10-26"
+"since": "2026-11-06",
+"changes": 3,
+"last_call_date": "2026-11-06"
 },
 "5359767": {
 "stage": "Not Interested",
@@ -125052,12 +125052,12 @@
 "last_call_date": ""
 },
 "5371331": {
-"stage": "Disqualified - Wrong POC",
+"stage": "POC - Organization - Changed",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-11-04",
-"changes": 2,
-"last_call_date": "2026-11-04"
+"since": "2026-11-06",
+"changes": 3,
+"last_call_date": "2026-11-06"
 },
 "5371336": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -152460,12 +152460,12 @@
 "last_call_date": "2026-10-21"
 },
 "5375023": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "Connect Later",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-04",
-"changes": 2,
-"last_call_date": "2026-11-04"
+"since": "2026-11-06",
+"changes": 3,
+"last_call_date": "2026-11-06"
 },
 "5375024": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -184844,12 +184844,12 @@
 "last_call_date": ""
 },
 "5379492": {
-"stage": "CNC (Could Not Connect) - 3",
+"stage": "Connect Later",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-10-29",
-"changes": 4,
-"last_call_date": "2026-10-29"
+"since": "2026-11-06",
+"changes": 5,
+"last_call_date": "2026-11-06"
 },
 "5379493": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -186836,12 +186836,12 @@
 "last_call_date": ""
 },
 "5379749": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 1",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-10-29",
-"changes": 4,
-"last_call_date": "2026-10-29"
+"since": "2026-11-06",
+"changes": 5,
+"last_call_date": "2026-11-06"
 },
 "5379750": {
 "stage": "LinkedIn Outreach Initiated",
@@ -195556,12 +195556,12 @@
 "last_call_date": ""
 },
 "5380873": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "Connect Later",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-04",
-"changes": 1,
-"last_call_date": "2026-11-04"
+"since": "2026-11-06",
+"changes": 2,
+"last_call_date": "2026-11-06"
 },
 "5380874": {
 "stage": "Disqualified - Wrong POC",
@@ -240516,12 +240516,12 @@
 "last_call_date": ""
 },
 "5530182": {
-"stage": "LinkedIn Outreach Initiated",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-09-05",
-"changes": 1,
-"last_call_date": ""
+"stage": "CNC (Could Not Connect) - 1",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-06",
+"changes": 2,
+"last_call_date": "2026-11-06"
 },
 "5530183": {
 "stage": "Not Interested",
@@ -248652,12 +248652,12 @@
 "last_call_date": "2026-11-04"
 },
 "5792229": {
-"stage": "CNC (Could Not Connect) - 2",
-"owner": "Gurnoor Kaur",
-"email": "gurnoor@enout.in",
-"since": "2026-10-27",
-"changes": 1,
-"last_call_date": "2026-10-27"
+"stage": "Connect Later",
+"owner": "Anjali Athya",
+"email": "anjali.athya@enout.in",
+"since": "2026-11-06",
+"changes": 2,
+"last_call_date": "2026-11-06"
 },
 "5792230": {
 "stage": "Activation",
@@ -250708,12 +250708,12 @@
 "last_call_date": ""
 },
 "5814986": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-04",
-"changes": 2,
-"last_call_date": "2026-11-04"
+"since": "2026-11-06",
+"changes": 3,
+"last_call_date": "2026-11-06"
 },
 "5814987": {
 "stage": "CNC (Could Not Connect) - 2",
@@ -264964,12 +264964,12 @@
 "last_call_date": ""
 },
 "6010899": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-04",
-"changes": 1,
-"last_call_date": "2026-11-04"
+"since": "2026-11-06",
+"changes": 2,
+"last_call_date": "2026-11-06"
 },
 "6010900": {
 "stage": "CNC (Could Not Connect) - 1",
@@ -265756,12 +265756,12 @@
 "last_call_date": ""
 },
 "6029688": {
-"stage": "CNC (Could Not Connect) - 2",
+"stage": "CNC (Could Not Connect) - 3",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-11-04",
-"changes": 3,
-"last_call_date": "2026-11-04"
+"since": "2026-11-06",
+"changes": 4,
+"last_call_date": "2026-11-06"
 },
 "6029703": {
 "stage": "Connect Later",
@@ -266148,12 +266148,12 @@
 "last_call_date": "2026-10-30"
 },
 "6043519": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Arshdeep Singh",
 "email": "arshdeep@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-11-06",
+"changes": 1,
+"last_call_date": "2026-11-06"
 },
 "6043572": {
 "stage": "Not a Decision Maker (NDM)",
@@ -267468,12 +267468,12 @@
 "last_call_date": "2026-09-18"
 },
 "6191882": {
-"stage": "Active Requirement Call Done \u2013 Awaiting Client Inputs",
+"stage": "SQL (Sales Qualified Lead)",
 "owner": "Sejal Agrawal",
 "email": "sejal.agarwal@enout.in",
-"since": "2026-10-21",
-"changes": 3,
-"last_call_date": "2026-10-21"
+"since": "2026-11-06",
+"changes": 4,
+"last_call_date": "2026-11-06"
 },
 "6191903": {
 "stage": "Not Interested",
@@ -271444,12 +271444,12 @@
 "last_call_date": "2026-11-02"
 },
 "6381065": {
-"stage": "LinkedIn Outreach Initiated",
+"stage": "Invalid Contact",
 "owner": "Enout Super Admin",
 "email": "crmadmin@enout.in",
-"since": "2026-10-28",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-11-06",
+"changes": 1,
+"last_call_date": "2026-11-06"
 },
 "6382406": {
 "stage": "Activation",
@@ -272204,12 +272204,12 @@
 "last_call_date": "2026-11-04"
 },
 "6414579": {
-"stage": "CNC (Could Not Connect) - 1",
+"stage": "CNC (Could Not Connect) - 2",
 "owner": "Anjali Athya",
 "email": "anjali.athya@enout.in",
-"since": "2026-11-04",
-"changes": 1,
-"last_call_date": "2026-11-04"
+"since": "2026-11-06",
+"changes": 2,
+"last_call_date": "2026-11-06"
 },
 "6414593": {
 "stage": "CNC (Could Not Connect) - 1",
