@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-11-08",
+"as_of": "2026-11-09",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -272418,6 +272418,22 @@
 "since": "2026-11-06",
 "changes": 1,
 "last_call_date": "2026-11-06"
+},
+"6427445": {
+"stage": "Activation",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
+"since": "2026-11-09",
+"changes": 1,
+"last_call_date": "2026-11-09"
+},
+"6427571": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Sejal Agrawal",
+"email": "sejal.agarwal@enout.in",
+"since": "2026-11-09",
+"changes": 0,
+"last_call_date": ""
 }
 }
 }
