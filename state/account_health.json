@@ -1,7 +1,7 @@
 {
  "_comment": "Account Health snapshot. Written by modules/06_account_health.py; see utils/health_history.py. git history is the archive.",
  "formula_version": 2,
- "as_of": "2026-11-09",
+ "as_of": "2026-11-10",
  "accounts": {
   "1770092": {
    "status": "Active",
@@ -208364,6 +208364,19 @@
     "2026-11": "Fresh"
    }
   },
+  "1783786": {
+   "status": "Fresh",
+   "baseline": "Fresh",
+   "prev": "",
+   "changed": "",
+   "count": 0,
+   "month": "2026-11",
+   "status_since": "2026-11-10",
+   "months": {
+    "2026-11": "Fresh"
+   },
+   "v": 2
+  },
   "1783787": {
    "status": "Active",
    "baseline": "Active",
@@ -212221,6 +212234,19 @@
     "2026-09": "Exhausted",
     "2026-10": "MQL - Action Needed",
     "2026-11": "MQL - Action Needed"
+   },
+   "v": 2
+  },
+  "1808682": {
+   "status": "Fresh",
+   "baseline": "Fresh",
+   "prev": "",
+   "changed": "",
+   "count": 0,
+   "month": "2026-11",
+   "status_since": "2026-11-10",
+   "months": {
+    "2026-11": "Fresh"
    },
    "v": 2
   },
@@ -223603,6 +223629,19 @@
    },
    "v": 2
   },
+  "1998076": {
+   "status": "Fresh",
+   "baseline": "Fresh",
+   "prev": "",
+   "changed": "",
+   "count": 0,
+   "month": "2026-11",
+   "status_since": "2026-11-10",
+   "months": {
+    "2026-11": "Fresh"
+   },
+   "v": 2
+  },
   "1998080": {
    "status": "Active",
    "baseline": "Active",
@@ -223640,6 +223679,19 @@
    "months": {
     "2026-10": "MQL - Action Needed",
     "2026-11": "MQL - Action Needed"
+   },
+   "v": 2
+  },
+  "1998100": {
+   "status": "Fresh",
+   "baseline": "Fresh",
+   "prev": "",
+   "changed": "",
+   "count": 0,
+   "month": "2026-11",
+   "status_since": "2026-11-10",
+   "months": {
+    "2026-11": "Fresh"
    },
    "v": 2
   },
