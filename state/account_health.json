@@ -7076,19 +7076,19 @@
    }
   },
   "1770541": {
-   "status": "MQL - Action Needed",
+   "status": "Active",
    "baseline": "MQL - Action Needed",
-   "prev": "Active",
-   "changed": "2026-10-14",
-   "count": 0,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-11-10",
+   "count": 1,
    "month": "2026-11",
    "v": 2,
-   "status_since": "2026-10-14",
+   "status_since": "2026-11-10",
    "months": {
     "2026-08": "MQL - Action Needed",
     "2026-09": "Active",
     "2026-10": "MQL - Action Needed",
-    "2026-11": "MQL - Action Needed"
+    "2026-11": "Active"
    }
   },
   "1770542": {
@@ -113742,19 +113742,19 @@
    }
   },
   "1777612": {
-   "status": "MQL - Action Needed",
+   "status": "Active",
    "baseline": "MQL - Action Needed",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-11-10",
+   "count": 1,
    "month": "2026-11",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-11-10",
    "months": {
     "2026-08": "MQL - Action Needed",
     "2026-09": "MQL - Action Needed",
     "2026-10": "MQL - Action Needed",
-    "2026-11": "MQL - Action Needed"
+    "2026-11": "Active"
    }
   },
   "1777613": {
@@ -168514,19 +168514,19 @@
    }
   },
   "1781101": {
-   "status": "MQL - Action Needed",
+   "status": "Active",
    "baseline": "MQL - Action Needed",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "MQL - Action Needed",
+   "changed": "2026-11-10",
+   "count": 1,
    "month": "2026-11",
    "v": 2,
-   "status_since": "2026-08-31",
+   "status_since": "2026-11-10",
    "months": {
     "2026-08": "MQL - Action Needed",
     "2026-09": "MQL - Action Needed",
     "2026-10": "MQL - Action Needed",
-    "2026-11": "MQL - Action Needed"
+    "2026-11": "Active"
    }
   },
   "1781102": {
@@ -208365,15 +208365,15 @@
    }
   },
   "1783786": {
-   "status": "Fresh",
+   "status": "Active",
    "baseline": "Fresh",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Fresh",
+   "changed": "2026-11-10",
+   "count": 1,
    "month": "2026-11",
    "status_since": "2026-11-10",
    "months": {
-    "2026-11": "Fresh"
+    "2026-11": "Active"
    },
    "v": 2
   },
@@ -212238,15 +212238,15 @@
    "v": 2
   },
   "1808682": {
-   "status": "Fresh",
+   "status": "Active",
    "baseline": "Fresh",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Fresh",
+   "changed": "2026-11-10",
+   "count": 1,
    "month": "2026-11",
    "status_since": "2026-11-10",
    "months": {
-    "2026-11": "Fresh"
+    "2026-11": "Active"
    },
    "v": 2
   },
@@ -223630,15 +223630,15 @@
    "v": 2
   },
   "1998076": {
-   "status": "Fresh",
+   "status": "Active",
    "baseline": "Fresh",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Fresh",
+   "changed": "2026-11-10",
+   "count": 1,
    "month": "2026-11",
    "status_since": "2026-11-10",
    "months": {
-    "2026-11": "Fresh"
+    "2026-11": "Active"
    },
    "v": 2
   },
@@ -223683,15 +223683,15 @@
    "v": 2
   },
   "1998100": {
-   "status": "Fresh",
+   "status": "Active",
    "baseline": "Fresh",
-   "prev": "",
-   "changed": "",
-   "count": 0,
+   "prev": "Fresh",
+   "changed": "2026-11-10",
+   "count": 1,
    "month": "2026-11",
    "status_since": "2026-11-10",
    "months": {
-    "2026-11": "Fresh"
+    "2026-11": "Active"
    },
    "v": 2
   },
