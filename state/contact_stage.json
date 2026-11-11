@@ -1,7 +1,7 @@
 {
 "_comment": "Contact pipeline-stage snapshot. Written by scripts/bd_stage_changes.py; see utils/stage_history.py. git history is the archive.",
 "schema_version": 2,
-"as_of": "2026-11-10",
+"as_of": "2026-11-11",
 "contacts": {
 "5353815": {
 "stage": "LinkedIn Outreach Initiated",
@@ -8980,12 +8980,12 @@
 "last_call_date": ""
 },
 "5355041": {
-"stage": "Activation",
+"stage": "Followup - CNC",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-11-11",
+"changes": 1,
+"last_call_date": "2026-11-11"
 },
 "5355042": {
 "stage": "Not Interested",
@@ -154036,12 +154036,12 @@
 "last_call_date": ""
 },
 "5375217": {
-"stage": "MQL (Marketing Qualified Lead)",
+"stage": "Followup - CNC",
 "owner": "Mayra Singh",
 "email": "mayra@enout.in",
-"since": "2026-09-05",
-"changes": 0,
-"last_call_date": ""
+"since": "2026-11-11",
+"changes": 1,
+"last_call_date": "2026-11-11"
 },
 "5375218": {
 "stage": "Activation",
@@ -272538,6 +272538,110 @@
 "since": "2026-11-10",
 "changes": 1,
 "last_call_date": "2026-11-10"
+},
+"6432869": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6432873": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6432877": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6432944": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6432950": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6433155": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6433161": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6433171": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6433180": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6433189": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6433194": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6433206": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
+},
+"6433212": {
+"stage": "LinkedIn Outreach Initiated",
+"owner": "Gurnoor Kaur",
+"email": "gurnoor@enout.in",
+"since": "2026-11-11",
+"changes": 0,
+"last_call_date": ""
 }
 }
 }
